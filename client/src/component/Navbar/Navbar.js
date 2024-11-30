@@ -8,6 +8,7 @@ import {
     MenuItems,
   } from "@headlessui/react";
   import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+  import logo from './logo.jpg'
   
   const navigation = [
     { name: "Dashboard", href: "#", current: true },
@@ -36,7 +37,7 @@ import {
             {/* Logo and Navigation Links */}
             <div className="flex items-center space-x-4">
               <img
-                src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=500"
+                src={logo}
                 alt="Logo"
                 className="h-10 w-auto"
               />
