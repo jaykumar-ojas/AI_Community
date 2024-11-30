@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Removed 'Links'
+// import { Link } from "react-router-dom"; // Removed 'Links'
 
 const Register = () => {
   const [show, setShow] = useState(false);
@@ -81,12 +81,6 @@ const Register = () => {
                 </button>
                 <div className="mt-4 flex w-full max-w-xs justify-between">
                   <span>Already a member?</span>
-                  <Link
-                    to="/login"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Login here
-                  </Link>
                 </div>
               </div>
             </form>
