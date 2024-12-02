@@ -80,7 +80,7 @@ const Register = () => {
                   Register
                 </button>
                 <div className="mt-4 text-center">
-                  <span>Already a member? <Link to="/login" className="text-orange-500 hover:underline">Login</Link></span>
+                  <span>Already a member i am jay now? <Link to="/login" className="text-orange-500 hover:underline">Login</Link></span>
                 </div>
               </div>
             </form>
