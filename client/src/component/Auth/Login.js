@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [show, setShow] = useState(false);
@@ -8,9 +9,9 @@ const Login = () => {
       {/* Left Section */}
       <div className="flex flex-grow bg-black text-white md:w-1/2">
         <div className="mx-auto flex w-4/5 max-w-md flex-col justify-center">
-          <div>
-            <p className="text-2xl font-bold">Login|</p>
-            <p className="text-sm">Please login to continue|</p>
+          <div className="text-center">
+          <p className="text-4xl font-bold mb-2">Welcome to PixxelMind</p>
+          <p className="text-lg text-gray-300">Login</p>
           </div>
           <div className="my-6">
             <button className="flex w-3/4 mx-auto justify-center rounded-3xl bg-white p-2 text-black hover:bg-gray-200">
@@ -106,6 +107,9 @@ const Login = () => {
                 <button className="w-full rounded-full bg-orange-600 p-4 hover:bg-orange-800">
                   Login
                 </button>
+                <div className="mt-4 text-center">
+                  <span>Not a member? <Link to="/register" className="text-orange-500 hover:underline">Register</Link></span>
+                </div>
               </div>
             </form>
           </div>

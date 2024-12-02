@@ -2,20 +2,24 @@ import React from "react";
 
 const Card = () => {
   return (
-    <div class="relative grid h-[35rem] max-w-lg flex-col items-end justify-center overflow-hidden rounded-lg bg-white">
-      <div class="absolute inset-0 m-0 h-full w-full overflow-hidden rounded-none bg-transparent bg-[url('https://images.unsplash.com/photo-1552960562-daf630e9278b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80')] bg-cover bg-center">
-        <div class="to-bg-black-10 absolute inset-0 h-full w-full bg-gradient-to-t from-black/80 via-black/50"></div>
-      </div>
-      <div class="relative text-center p-6 px-6 py-14 md:px-12">
-        <h2 class="mb-6 text-3xl font-medium text-white">
-          How we design and code open-source projects?
-        </h2>
-        <h5 class="mb-4 text-xl font-semibold text-slate-300">Lewis Daniel</h5>
+    <div className="group border rounded-lg h-72 w-96 overflow-hidden relative">
+      <div className="h-full w-full">
         <img
-          alt="Lewis Daniel"
-          src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=1480&amp;q=80"
-          class="relative inline-block h-32 w-32 rounded-full border border-white"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6IsSqYCSJrypSaOwGzITZwuEx7Zp4KyR-lg&s"
+          className="h-full w-full object-cover opacity-95 hover:opacity-100 transition duration-300"
+          alt="Card Image"
         />
+        {/* Hidden div to show on hover */}
+        <div className="absolute top-2 left-2 flex items-center gap-2 p-2 rounded-lg bg-white  opacity-0 bg-opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-0">
+          <img
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKT8Lsye7-vjntnRIJIPB2bTlcBwEFuSKPQma5gaX_VcGzrgmijOizhOI&s"
+            className="h-8 w-8 rounded-full"
+            alt="Profile"
+          />
+          <div className="text-customgray-800 font-semibold">Jay kumar gupta</div>
+        </div>
+        <div className="absolute bottom-6 left-4 opacity-0 bg-opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-0 text-white-300 font-semibold">this is the teddy bear i want to gift my bangaaru</div>
+
       </div>
     </div>
   );
