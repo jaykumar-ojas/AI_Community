@@ -6,9 +6,9 @@ const page = () => {
   return (
     <>
       <Navbar></Navbar>
-      <div className="grid grid-cols-4 gap-4">
-        {Array.from({ length: 15 }, (_, i) => (
-          <div key={i}>
+      <div className="grid grid-cols-4 min-h-screen mx-auto w-full">
+        {Array.from({ length: 16}, (_, i) => (
+          <div key={i} className="flex justify-center">
             <Card />
           </div>
         ))}
