@@ -3,6 +3,35 @@ import { Link } from "react-router-dom";
 
 const Login = () => {
   const [show, setShow] = useState(false);
+  const [inpVal,setInpVal]=useState({
+    "email":"",
+    "password":""
+  })
+
+  console.log(inpVal);
+  const setVal=(e)=>{
+    
+    const {name,value}=e.target;
+    setInpVal(()=>{
+      return {
+        ...inpVal,
+        [name]:value
+      }
+    })
+  }
+
+  const addUserLogin=(e)=>{
+    const {email,password}=inpVal;
+    if(email===""){
+      alert("email is required");
+    }
+    else if(password===""){
+      alert("password is required");
+    }
+    else{
+      alert("good to go");
+    }
+  }
 
   return (
     <div className="flex h-screen w-screen flex-col md:flex-row">
@@ -39,6 +68,9 @@ const Login = () => {
                 <input
                   type="email"
                   id="email"
+                  name="email"
+                  value={inpVal.email}
+                  onChange={setVal}
                   className="w-full rounded-full bg-white p-2.5 text-black placeholder-indigo-900 shadow placeholder:opacity-30"
                   placeholder="mail@user.com"
                 />
@@ -51,6 +83,9 @@ const Login = () => {
                   <input
                     type={show ? "text" : "password"}
                     id="password"
+                    name="password"
+                    value={inpVal.password}
+                    onChange={setVal}
                     className="w-full rounded-full bg-white p-2.5 text-black placeholder-indigo-900 shadow placeholder:opacity-30"
                     placeholder="Enter your password"
                   />
@@ -104,7 +139,7 @@ const Login = () => {
                 </div>
               </div>
               <div className="my-6 w-full max-w-xs">
-                <button className="w-full rounded-full bg-orange-600 p-4 hover:bg-orange-800">
+                <button className="w-full rounded-full bg-orange-600 p-4 hover:bg-orange-800" onClick={addUserLogin}>
                   Login
                 </button>
                 <div className="mt-4 text-center">
