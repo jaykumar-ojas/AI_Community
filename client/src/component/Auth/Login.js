@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [show, setShow] = useState(false);
@@ -7,6 +7,8 @@ const Login = () => {
     "email":"",
     "password":""
   })
+
+  const history = useNavigate();
 
   console.log(inpVal);
   const setVal=(e)=>{
@@ -20,7 +22,8 @@ const Login = () => {
     })
   }
 
-  const addUserLogin=(e)=>{
+  const addUserLogin=async(e)=>{
+    e.preventDefault();
     const {email,password}=inpVal;
     if(email===""){
       alert("email is required");
@@ -29,7 +32,28 @@ const Login = () => {
       alert("password is required");
     }
     else{
-      alert("good to go");
+      const data=await fetch("http://localhost:8099/login",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          email,password
+        })
+      })
+      console.log("request done");
+
+      const res=await data.json();
+      console.log(res);
+      if(data.status===201){
+        alert("login successfully");
+        localStorage.setItem("userdatatoken",res.token);
+        history("/");
+        setInpVal({...inpVal,email:"",password:""});
+      }
+      else{
+        alert("some error occured");
+      }
     }
   }
 

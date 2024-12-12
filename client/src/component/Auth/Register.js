@@ -27,11 +27,11 @@ const Register = () => {
     else if(confirmPassword===""){
       alert("password2 is required");
     }
-    else if(password!=confirmPassword){
+    else if(password!==confirmPassword){
       alert("password is not matched")
     }
     else{
-      
+      console.log("going for post");
       const data= await fetch("http://localhost:8099/register",{
         method:"POST",
         headers:{
@@ -43,12 +43,18 @@ const Register = () => {
           }
         )
       });
+      console.log("coming for post");
       const res= await data.json();
-      console.log(res);
+      console.log(res.status);
+      if(data.status===201){
+        alert("user registration done");
+        setInpVal({ ...inpVal, userName: "", email: "", password: "", confirmPassword: "" });
+      }
+      else{
+        console.log(res.error);
+      }
     }
   }
-
-  console.log(inpVal);
 
   const setVal=(e)=>{
     // console.log(e.target.value);
