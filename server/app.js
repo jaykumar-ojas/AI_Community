@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv"); // Import dotenv
 const app = express();
 const cors = require("cors");
+const cookieparser= require("cookie-parser")
 
 const userRouter= require("./routes/userRoute")
 
@@ -22,11 +23,12 @@ require("./db/conn");
 app.use(express.json());
 app.use(cors());
 
-app.get("/", (req, res) => {
-      res.status(201).json("Server created");
-    });
+// app.get("/", (req, res) => {
+//       res.status(201).json("Server created");
+//     });
     
 app.use(userRouter);
+app.use(cookieparser);
 
 // Start the server
 app.listen(port, () => {

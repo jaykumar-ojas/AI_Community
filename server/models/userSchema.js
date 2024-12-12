@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
-const validator = require("validator")
+const validator = require("validator");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
 
 const userSchema = new mongoose.Schema({
     userName:{
@@ -38,8 +42,40 @@ const userSchema = new mongoose.Schema({
 })
 
 
+
+
+// hash the password
+userSchema.pre("save",async function(next){
+    if (this.isModified("password")) {
+        this.password = await bcrypt.hash(this.password, 12);
+        this.confirmPassword = await bcrypt.hash(this.confirmPassword,12);
+    }
+    next();
+})
+
+// create token
+
+userSchema.methods.generateAuthToken = async function() {
+    try{
+        
+        let token = jwt.sign({_id:this._id},keySecret,{
+            expiresIn:"1d"
+        });
+    
+        this.tokens=this.tokens.concat({token:token});
+
+        await this.save();
+        return token;
+    }
+    catch(error){
+        console.log(error);
+        res.status(422).json(error);
+    }
+}
+
 // create usermodel
 
 const userdb= new mongoose.model("users",userSchema);
+
 
 module.exports=userdb;

@@ -9,6 +9,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import React from 'react';
+import Context from './component/ContextProvider/context';
 
 
 const router = createBrowserRouter([
@@ -30,9 +31,11 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <React.StrictMode>
+    <Context>
+      <React.StrictMode>
     <RouterProvider router={router} />
     </React.StrictMode>
+    </Context>
   );
 }
 
