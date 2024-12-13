@@ -9,6 +9,9 @@ import {
   } from "@headlessui/react";
   import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
   import logo from './logo.jpg'
+import { useContext } from "react";
+import { LoginContext } from "../ContextProvider/context";
+import { useNavigate } from "react-router-dom";
   
   const navigation = [
     { name: "Dashboard", href: "#", current: true },
@@ -22,6 +25,39 @@ import {
   }
   
   export default function Navbar() {
+    const {loginData,setLoginData} = useContext(LoginContext);
+    const history = useNavigate();
+
+    const logoutUser =async()=>{
+      console.log("call happen");
+      const token = localStorage.getItem("userdatatoken");
+      console.log(token);
+      const data = await fetch("http://localhost:8099/logout",{
+        method:"GET",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":token,
+          Accept:"application/json"
+        },
+        credentials:"include"
+      });
+
+      const res = await data.json();
+      console.log("call happen with ", res);
+
+      if(!res || res.status===401){
+        console.log("some error happened");
+      }
+      else{
+        
+        localStorage.removeItem("userdatatoken");
+        setLoginData(false);
+        history("/login");
+        console.log("user successfully logout");
+      }
+    }
+
+
     return (
       <Disclosure as="nav" className="bg-gray-100 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,7 +124,7 @@ import {
                 >
                   <BellIcon className="h-6 w-6" />
                 </button>
-                <Menu as="div" className="relative">
+                <Menu as="div" className="relative z-10">
                   <MenuButton className="flex items-center focus:outline-none">
                     <img
                       src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -125,6 +161,7 @@ import {
                       {({ active }) => (
                         <a
                           href="#"
+                          onClick={logoutUser}
                           className={`block px-4 py-2 text-sm ${
                             active ? "bg-gray-100" : "text-gray-700"
                           }`}

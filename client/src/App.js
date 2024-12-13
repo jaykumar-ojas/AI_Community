@@ -4,6 +4,7 @@ import Navbar from './component/Navbar/Navbar'
 import DashBoardPage from "./pages/DashBoardPage/DashBoardPage"
 import Login from './component/Auth/Login'
 import Register from './component/Auth/Register';
+import Error from './component/Error/error'
 import {
   createBrowserRouter,
   RouterProvider,
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
   {
     path:"/",
     element:<DashBoardPage></DashBoardPage>
+  },
+  {
+    path:"*",
+    element:<Error></Error>
   }
 
 ]);

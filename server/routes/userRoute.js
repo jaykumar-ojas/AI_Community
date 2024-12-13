@@ -101,4 +101,19 @@ router.get("/validuser",authenticate,async(req,res)=>{
    }
 })
 
+router.get("/logout",authenticate,async(req,res)=>{
+    console.log("i am here");
+    try{
+        req.rootuser.tokens = req.rootuser.tokens.filter((currelem)=>{
+            return currelem.token !== req.token
+        })
+        res.clearCookie("usercookie",{path:"/"});
+        req.rootuser.save();
+        res.status(201).json(req.rootuser.tokens);
+    }
+    catch(error){
+        res.status(401).json({status:401,error});
+    }
+})
+
 module.exports=router;
