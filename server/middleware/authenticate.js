@@ -3,7 +3,7 @@ const userdb = require("../models/userSchema");
 const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
 
 const authenticate = async(req,res,next)=>{
-
+    console.log("idhar to aata main");
     try{
         const token= req.headers.authorization;
         // console.log(token);

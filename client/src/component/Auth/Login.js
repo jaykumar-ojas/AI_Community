@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -56,6 +56,33 @@ const Login = () => {
       }
     }
   }
+
+  const islogin=async()=>{
+    const token=localStorage.getItem("userdatatoken");
+
+    const data = await fetch("http://localhost:8099/validuser",{
+      method:"GET",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":token,
+        Accept:"application/json"
+      },
+      credentials:"include"
+    });
+
+    const res = await data.json();
+
+    if(!data || data.status==401){
+      console.log("invalid user");
+    }
+    else{
+      history("/");
+    }
+  }
+
+  useEffect(()=>{
+    islogin();
+  },[]);
 
   return (
     <div className="flex h-screen w-screen flex-col md:flex-row">
