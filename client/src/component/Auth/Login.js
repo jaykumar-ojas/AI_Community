@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import GoogleLogin from "../Auth//GoogleLogin";
 
 const Login = () => {
   const [show, setShow] = useState(false);
@@ -93,16 +94,8 @@ const Login = () => {
           <p className="text-4xl font-bold mb-2">Welcome to PixxelMind</p>
           <p className="text-lg text-gray-300">Login</p>
           </div>
-          <div className="my-6">
-            <button className="flex w-3/4 mx-auto justify-center rounded-3xl bg-white p-2 text-black hover:bg-gray-200">
-              <img
-                src="https://freesvg.org/img/1534129544.png"
-                className="mr-2 w-6 object-fill"
-                alt="Google Icon"
-              />
-              Sign in with Google
-            </button>
-          </div>
+          {/* we add google function */}
+          <GoogleLogin></GoogleLogin>
           <div className="mt-6">
             <fieldset className="border-t border-gray-600">
               <legend className="mx-auto px-2 text-center text-sm">
