@@ -8,6 +8,7 @@ const session = require("express-session");
 const oauth2Strategy = require("passport-google-oauth2").Strategy;
 const goodledb = require("./models/googleSchema");
 const awsRoute = require("./routes/awsRoute");
+const postRoute = require("./routes/postRoute");
 
 
 const userRouter= require("./routes/userRoute")
@@ -95,6 +96,8 @@ passport.deserializeUser((user,done)=>{
 app.get("/",passport.authenticate("google",{scope:["profile","email"]}));
 
 app.use("/",awsRoute);
+
+app.use("/",postRoute);
 
 
 app.get("/auth/google/callback",passport.authenticate("google",{
