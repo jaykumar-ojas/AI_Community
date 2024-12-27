@@ -37,9 +37,6 @@ app.use(
 // for sending cookies user credentials
 app.use(cookieparser());
 
-
-
-
 // for google authenticating full code in googleroute in any problem
 
 app.use("/",userRouter);

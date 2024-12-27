@@ -12,6 +12,7 @@ import {
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
   
   const navigation = [
     { name: "Dashboard", href: "#", current: true },
@@ -44,7 +45,7 @@ import { useNavigate } from "react-router-dom";
 
       const res = await data.json();
       console.log("call happen with ", res);
-
+      console.log(res)
       if(!res || res.status===401){
         console.log("some error happened");
       }
@@ -135,14 +136,14 @@ import { useNavigate } from "react-router-dom";
                   <MenuItems className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <MenuItem>
                       {({ active }) => (
-                        <a
-                          href="#"
+                        <Link
+                          to="/userprofile"
                           className={`block px-4 py-2 text-sm ${
                             active ? "bg-gray-100" : "text-gray-700"
                           }`}
                         >
                           Your Profile
-                        </a>
+                        </Link>
                       )}
                     </MenuItem>
                     <MenuItem>

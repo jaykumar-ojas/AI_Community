@@ -17,7 +17,6 @@ const bucketName = process.env.BUCKET;
 const bucketRegion = process.env.REGION;
 const accessKey = process.env.S3_ACCESS_KEY;
 const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
-console.log("Using AWS region:", bucketRegion);
 const s3 = new S3Client({
     credentials: {
         accessKeyId: accessKey,
@@ -52,7 +51,6 @@ router.post("/api/posts", upload.single('image'), async (req, res) => {
     // resize image
     const buffer = await sharp(req.file.buffer).resize({ height: 1920, width: 1080, fit: "contain" }).toBuffer()
     try{
-        console.log("i am going to save in aws");
         const imageName = randomImageName();
         const params = {
             Bucket: bucketName,
@@ -62,18 +60,14 @@ router.post("/api/posts", upload.single('image'), async (req, res) => {
         }
 
         const command = new PutObjectCommand(params);
-        console.log("i am going to send in aws");
-        console.log(bucketName);
-        console.log(bucketRegion);
-        console.log(accessKey);
-        console.log(secretAccessKey);
+        
         await s3.send(command)
-        console.log("i am going to sedn in backend");
+        
         res.status(201).json({status:201,imageName});
-        console.log(' here everything is ok');
+        
     }
     catch(error){
-        console.error("Error uploading image:", error);
+        
         res.status(500).send("Error uploading image.");
     }
 })

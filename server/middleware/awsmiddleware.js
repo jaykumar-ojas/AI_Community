@@ -18,7 +18,6 @@ const bucketName = process.env.BUCKET;
 const bucketRegion = process.env.REGION;
 const accessKey = process.env.S3_ACCESS_KEY;
 const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
-console.log("Using AWS region:", bucketRegion);
 const s3 = new S3Client({
     credentials: {
         accessKeyId: accessKey,
@@ -36,7 +35,7 @@ const upload = multer({ storage: storage });
 // router.post("/api/posts", upload.single('image'), async (req, res) => {
 const awsuploadMiddleware = async(req,res,next) => {
     // resize image
-    console.log("i am in middlware");
+   
     const buffer = await sharp(req.file.buffer).resize({ height: 1920, width: 1080, fit: "contain" }).toBuffer()
     try{
         const imageName = randomImageName();
@@ -55,7 +54,6 @@ const awsuploadMiddleware = async(req,res,next) => {
         next();
     }
     catch(error){
-        console.error("Error uploading image:", error);
         res.status(500).send("Error uploading image.");
     }
 };
