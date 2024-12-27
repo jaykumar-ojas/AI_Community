@@ -1,14 +1,17 @@
 const express = require("express");
 const router = new express.Router();
 const userdb = require("../models/userSchema");
+const googledb = require("../models/googleSchema");
 const bcrypt = require("bcryptjs");
 
 const authenticate = require("../middleware/authenticate");
 
+const jwt = require("jsonwebtoken");
+const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
+
 // for user registration
 
 router.post("/register",async(req,res)=>{
-    console.log(req.body);
 
     const {userName, email, password, confirmPassword} = req.body;
 
@@ -31,14 +34,12 @@ router.post("/register",async(req,res)=>{
         })
 
         const storedata= await finaluser.save();
-        console.log(storedata);
+       
         res.status(201).json(storedata);
        }
     }
     catch(errr){
-        console.log("some error occurd in registration");
         res.status(422).json({error:"some error occured"});
-        
     }
 })
 
@@ -46,28 +47,28 @@ router.post("/register",async(req,res)=>{
 // for user login
 
 router.post("/login",async(req,res)=>{
-    console.log(req.body);
+   
     const {email,password} = req.body;
-    console.log("1");
+    
     if(! email || !password){
         res.status(422).json({error:"please enter reqyired field"});
     }
 
     try{
-        console.log("2");
+       
         const uservalid= await userdb.findOne({email:email});
-        console.log("this si ",uservalid);
+        
         if(uservalid){
 
             const isvalid = await bcrypt.compare(password,uservalid.password);
-            console.log("3");
+           
             if(!isvalid){
                 res.status(422).json({error:"invalid details"});
             }
             else{
-                console.log("4");
+               
                 const token = await uservalid.generateAuthToken();
-                console.log(token);
+               
                 res.cookie("usercookie",token,{
                     expires : new Date(Date.now()+9000000),
                     httpOnly : true
@@ -77,7 +78,6 @@ router.post("/login",async(req,res)=>{
                     uservalid,
                     token
                 }
-                console.log(result);
                 res.status(201).json(result);
             }
 
@@ -85,7 +85,7 @@ router.post("/login",async(req,res)=>{
 
     }
     catch(error){
-        console.log("invalid details");
+        res.status(422).json({status:422,error:"user not found"})
     }
 })
 
@@ -93,27 +93,31 @@ router.post("/login",async(req,res)=>{
 
 router.get("/validuser",authenticate,async(req,res)=>{
    try{
-    const validuserone = await userdb.findOne({_id:req.userId});
+    const validuserone = await userdb.findOne({_id:req.userId}) || await googledb.findOne({_id:req.userId});
     res.status(201).json({status:201,validuserone});
    }
    catch(error){
-    res.status(401).json({status:401,error});
+    res.status(401).json({status:401,message:"user not found"});
    }
 })
 
-router.get("/logout",authenticate,async(req,res)=>{
-    console.log("i am here");
-    try{
-        req.rootuser.tokens = req.rootuser.tokens.filter((currelem)=>{
-            return currelem.token !== req.token
-        })
-        res.clearCookie("usercookie",{path:"/"});
-        req.rootuser.save();
-        res.status(201).json(req.rootuser.tokens);
+router.get("/logout", authenticate, async (req, res) => {
+    try {
+      // 1. Handle JWT Logout: Remove token from user's tokens array
+      req.rootuser.tokens = req.rootuser.tokens.filter((currelem) => {
+        return currelem.token !== req.token;
+
+      });
+      res.clearCookie("usercookie", { path: "/" });
+      // 2. Save the updated user document
+      await req.rootuser.save();
+  
+      res.status(200).json({ status:200,message: "Logged out successfully", tokens: req.rootuser });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(401).json({ status: 401, error });
     }
-    catch(error){
-        res.status(401).json({status:401,error});
-    }
-})
+  });
+  
 
 module.exports=router;

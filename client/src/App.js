@@ -4,6 +4,7 @@ import Navbar from './component/Navbar/Navbar'
 import DashBoardPage from "./pages/DashBoardPage/DashBoardPage"
 import Login from './component/Auth/Login'
 import Register from './component/Auth/Register';
+import UserProfile from './component/UserProfile/userProfile'
 import Error from './component/Error/error'
 import {
   createBrowserRouter,
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
   {
     path:"*",
     element:<Error></Error>
+  },
+  {
+    path:'/userprofile',
+    element:<UserProfile></UserProfile>
   }
 
 ]);
