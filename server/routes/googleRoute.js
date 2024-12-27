@@ -68,9 +68,11 @@ router.get(
   async (req, res) => {
     try {
       const googleUser = req.user;
+      console.log(googleUser);
 
       // Generate JWT token
       const token = await googleUser.generateAuthToken();
+      console.log(token);
 
       // Optionally, set a cookie for the token
       res.cookie("usercookie", token, {
@@ -80,7 +82,9 @@ router.get(
       });
 
       // Redirect to frontend with token
+      console.log("we redirect to dashboard");
       res.redirect(`http://localhost:3000?token=${token}`);
+      console.log("we are succesfully redirect")
     } catch (error) {
       res.redirect("http://localhost:3000/login");
     }

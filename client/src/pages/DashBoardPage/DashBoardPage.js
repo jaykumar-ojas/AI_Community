@@ -10,7 +10,6 @@ const Page = () => {
   const history = useNavigate();
   const googleLog= ()=>{
     console.log("first i am");
-    window.onload = () => {
       console.log("i am here");
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("token");
@@ -22,7 +21,6 @@ const Page = () => {
         // Optionally, remove the token from the URL for a cleaner experience
         window.history.replaceState({}, document.title, "/");
       }
-    };
   }
 
   
