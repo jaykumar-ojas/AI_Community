@@ -3,7 +3,7 @@ import { LoginContext } from '../ContextProvider/context';
 
 const ProfileCard = () => {
 
-   const {loginData,setLoginData} = useContext(LoginContext);
+   const {loginData} = useContext(LoginContext);
    console.log("this is user page",loginData.validuserone.image);
   return (
     <div className="h-screen bg-gray-200 dark:bg-gray-800 flex flex-wrap items-center justify-center">
