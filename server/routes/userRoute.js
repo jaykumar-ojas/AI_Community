@@ -2,7 +2,9 @@ const express = require("express");
 const router = new express.Router();
 const userdb = require("../models/userSchema");
 const googledb = require("../models/googleSchema");
+const otpdb = require("../models/otpSchema");
 const bcrypt = require("bcryptjs");
+
 
 const authenticate = require("../middleware/authenticate");
 
@@ -12,16 +14,16 @@ const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
 // for user registration
 
 router.post("/register",async(req,res)=>{
-
-    const {userName, email, password, confirmPassword} = req.body;
-
-    if(!userName || !email || !password || !confirmPassword){
-        res.status(422).json({error:"fill all the details"});
+    console.log("1");
+    const {userName, email, password, confirmPassword, otp} = req.body;
+    console.log(req.body);
+    if(!userName || !email || !password || !confirmPassword || !otp){
+       return res.status(422).json({error:"fill all the details"});
     }
     try{
 
        const preuser= await userdb.findOne({email:email});
-
+        console.log(preuser);
        if(preuser){
         res.status(422).json({error:"user already exist"});
        }
@@ -29,13 +31,34 @@ router.post("/register",async(req,res)=>{
         res.status(422).json({error:"password is not matched"});
        }
        else {
+        console.log("i m going to get otp");
+        const otpUser = await otpdb.findOne({email:email});
+        console.log(otpUser);
+        if(!otpUser){
+            res.status(422).json({status:422,message:"otp is not fill"});
+        }
+        else if(otpUser.otp != otp){
+            res.status(422).json({status:422,message:"otp is incorrect"});
+        }
+
         const finaluser=new userdb({
             userName,email,password,confirmPassword
         })
 
         const storedata= await finaluser.save();
+        const token = await storedata.generateAuthToken();
+               
+                res.cookie("usercookie",token,{
+                    expires : new Date(Date.now()+9000000),
+                    httpOnly : true
+                })
+
+                const result={
+                    storedata,
+                    token
+                }
        
-        res.status(201).json(storedata);
+        res.status(201).json(result);
        }
     }
     catch(errr){
