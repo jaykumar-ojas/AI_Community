@@ -5,6 +5,7 @@ import DashBoardPage from "./pages/DashBoardPage/DashBoardPage"
 import Login from './component/Auth/Login'
 import Register from './component/Auth/Register';
 import Error from './component/Error/error'
+import Uploader from './pages/Uploader';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
   {
     path:"*",
     element:<Error></Error>
+  },
+  {
+    path:"/Uploader",
+    element:<Uploader></Uploader>
   }
 
 ]);
