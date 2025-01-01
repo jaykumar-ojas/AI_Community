@@ -6,6 +6,7 @@ import Login from './component/Auth/Login'
 import Register from './component/Auth/Register';
 import UserProfile from './component/UserProfile/userProfile'
 import Error from './component/Error/error'
+import Uploader from './pages/Uploader';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -32,8 +33,13 @@ const router = createBrowserRouter([
     element:<Error></Error>
   },
   {
+<<<<<<< HEAD
+    path:"/Uploader",
+    element:<Uploader></Uploader>
+=======
     path:'/userprofile',
     element:<UserProfile></UserProfile>
+>>>>>>> da3fc29df36a00c4fff29186bcd98b8a1fd46f6d
   }
 
 ]);
