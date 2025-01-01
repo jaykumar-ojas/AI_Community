@@ -1,6 +1,7 @@
 import React from "react";
 
 const GoogleLogin = () => {
+ 
     const loginwithGoogle =()=>{
         window.open("http://localhost:8099/auth/google/callback","_self");
     }

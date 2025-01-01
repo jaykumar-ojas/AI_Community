@@ -8,7 +8,25 @@ const Page = () => {
   const { loginData, setLoginData } = useContext(LoginContext);
   console.log(loginData);
   const history = useNavigate();
+  const googleLog= ()=>{
+    console.log("first i am");
+      console.log("i am here");
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
+      
+      if (token) {
+        localStorage.setItem("userdatatoken", token); // Save the token in localStorage
+        console.log("Token saved to localStorage:", token);
+    
+        // Optionally, remove the token from the URL for a cleaner experience
+        window.history.replaceState({}, document.title, "/");
+      }
+  }
+
+  
+
   const dashboardValid = async () => {
+    console.log("second i am");
     let token = localStorage.getItem("userdatatoken");
     console.log(token);
     const data = await fetch("http://localhost:8099/validuser", {
@@ -31,6 +49,7 @@ const Page = () => {
   };
 
   useEffect(() => {
+    googleLog();
     dashboardValid();
   },[]);
   return (
