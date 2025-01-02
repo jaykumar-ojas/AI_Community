@@ -33,13 +33,8 @@ const router = createBrowserRouter([
     element:<Error></Error>
   },
   {
-<<<<<<< HEAD
     path:"/Uploader",
     element:<Uploader></Uploader>
-=======
-    path:'/userprofile',
-    element:<UserProfile></UserProfile>
->>>>>>> da3fc29df36a00c4fff29186bcd98b8a1fd46f6d
   }
 
 ]);
