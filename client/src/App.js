@@ -4,6 +4,7 @@ import Navbar from './component/Navbar/Navbar'
 import DashBoardPage from "./pages/DashBoardPage/DashBoardPage"
 import Login from './component/Auth/Login'
 import Register from './component/Auth/Register';
+import UserProfile2 from './component/UserProfile/userProfile2'
 import UserProfile from './component/UserProfile/userProfile'
 import Error from './component/Error/error'
 import Uploader from './pages/Uploader';
@@ -13,6 +14,7 @@ import {
 } from "react-router-dom";
 import React from 'react';
 import Context from './component/ContextProvider/context';
+import ForgotPassword from './component/Auth/ForgotPassword';
 
 
 const router = createBrowserRouter([
@@ -33,13 +35,16 @@ const router = createBrowserRouter([
     element:<Error></Error>
   },
   {
-<<<<<<< HEAD
     path:"/Uploader",
     element:<Uploader></Uploader>
-=======
+  },
+  {
     path:'/userprofile',
     element:<UserProfile></UserProfile>
->>>>>>> da3fc29df36a00c4fff29186bcd98b8a1fd46f6d
+  },
+  {
+    path:'/forgot-password',
+    element: <ForgotPassword></ForgotPassword>
   }
 
 ]);
@@ -49,7 +54,9 @@ function App() {
   return (
     <Context>
       <React.StrictMode>
-    <RouterProvider router={router} />
+    <RouterProvider router={router}>
+
+    </RouterProvider>
     </React.StrictMode>
     </Context>
   );
