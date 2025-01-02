@@ -7,6 +7,7 @@ import Register from './component/Auth/Register';
 import UserProfile2 from './component/UserProfile/userProfile2'
 import UserProfile from './component/UserProfile/userProfile'
 import Error from './component/Error/error'
+import Uploader from './pages/Uploader';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -34,13 +35,16 @@ const router = createBrowserRouter([
     element:<Error></Error>
   },
   {
+    path:"/Uploader",
+    element:<Uploader></Uploader>
+  },
+  {
     path:'/userprofile',
     element:<UserProfile></UserProfile>
   },
   {
     path:'/forgot-password',
     element: <ForgotPassword></ForgotPassword>
-  
   }
 
 ]);
