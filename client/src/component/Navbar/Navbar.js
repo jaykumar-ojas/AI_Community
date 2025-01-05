@@ -11,7 +11,7 @@ import {
   import logo from './logo.jpg'
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
   
   const navigation = [
@@ -27,7 +27,7 @@ import { Link } from "react-router-dom";
   
   export default function Navbar() {
     const {loginData,setLoginData} = useContext(LoginContext);
-    const history = useNavigate();
+    // const history = useNavigate();
 
     const logoutUser =async()=>{
       console.log("call happen");
@@ -53,7 +53,8 @@ import { Link } from "react-router-dom";
         
         localStorage.removeItem("userdatatoken");
         setLoginData(false);
-        history("/login");
+        // history("/login");
+        alert("user successfully logout");
         console.log("user successfully logout");
       }
     }

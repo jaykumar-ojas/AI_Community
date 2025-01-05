@@ -1,42 +1,43 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const ForgotPassword = () => {
-  const [otp, setOtp] = useState(["", "", "", ""]);
-  const [show ,setShow]= useState(true);
-  const handleChange = (value, index) => {
-    if (!/^[0-9]*$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+  const [email,setEmail]= useState("");
+  const history = useNavigate();
+  
+  const handleChange = (e)=>{
+    setEmail(e.target.value);
+  }
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    const data =await fetch("http://localhost:3000/forget-password",{
+      method:'POST',
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        email:email
+      })
+    });
 
-    // Move to the next input if a number is entered
-    if (value && index < otp.length - 1) {
-      document.getElementById(`otp-${index + 1}`).focus();
+    const res= await data.json();
+
+    if(res.status===201 || res.status===200){
+      alert("email verified successfully");
+      history(`/verify-otp/${res.token}`);
+      
     }
-  };
-
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      document.getElementById(`otp-${index - 1}`).focus();
+    else{
+      alert(res.error);
     }
-  };
-
-  const handleSubmit = () => {
-    const enteredOtp = otp.join("");
-    console.log("Entered OTP:", enteredOtp);
-    // Add your OTP verification logic here
-  };
-
-  const handleResend = () => {
-    console.log("Resend OTP clicked");
-    // Add your resend OTP logic here
+    // Handle password reset logic here
+    console.log("Password reset requested");
   };
 
   return (
-    <div className="bg-white min-h-screen">
-    <main id="content" role="main" className="w-full max-w-md mx-auto  p-6">
+    <main id="content" role="main" className="w-full max-w-md mx-auto p-6">
       <div className="mt-7 bg-white rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 border-2 border-indigo-300">
+        
         <div className="p-4 sm:p-7">
           <div className="text-center">
             <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
@@ -54,7 +55,7 @@ const ForgotPassword = () => {
           </div>
 
           <div className="mt-5">
-            <div>
+            <form onSubmit={handleSubmit}>
               <div className="grid gap-y-4">
                 <div>
                   <label
@@ -70,6 +71,7 @@ const ForgotPassword = () => {
                       name="email"
                       className="py-3 px-4 block w-full border-2 border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                       required
+                      onChange={handleChange}
                       aria-describedby="email-error"
                     />
                   </div>
@@ -81,49 +83,15 @@ const ForgotPassword = () => {
                     you
                   </p>
                 </div>
-                {!show && <button
+                <button
                   type="submit"
                   className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800"
                 >
-                  Verify Email
-                </button>}
+                  Reset password
+                </button>
               </div>
-            </div>
-            {/* thsi is after otp sent */}
-            {show && <div className="max-w-md mx-auto  max-w-sm mt-5 rounded">
-            <div className="block text-sm font-bold ml-1 mb-2 dark:text-white">
-                    Enter Otp
-                </div>
-              <div className="shadow-md px-4 pt-3">
-                <div className="flex justify-between gap-4 mb-6">
-                  {otp &&
-                    otp.map((value, index) => (
-                      <input
-                        key={index}
-                        id={`otp-${index}`}
-                        className="w-12 h-12 text-center border rounded-md shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                        type="text"
-                        maxLength="1"
-                        pattern="[0-9]"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        value={value}
-                        onChange={(e) => handleChange(e.target.value, index)}
-                        onKeyDown={(e) => handleKeyDown(e, index)}
-                        required
-                      />
-                    ))}
-                </div>
-              </div>
-            </div>}
-            {show && <button
-                  type="submit"
-                  className="w-full py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800"
-                >
-                  Submit
-            </button>}
+            </form>
           </div>
-          
         </div>
       </div>
 
@@ -154,7 +122,6 @@ const ForgotPassword = () => {
         </a>
       </p>
     </main>
-    </div>
   );
 };
 
