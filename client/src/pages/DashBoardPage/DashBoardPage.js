@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Navbar from "../../component/Navbar/Navbar";
 import Card from "../../component/Card/Card";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,8 @@ import { LoginContext } from "../../component/ContextProvider/context";
 
 const Page = () => {
   const { loginData, setLoginData } = useContext(LoginContext);
-  console.log(loginData);
+  console.log(loginData,"this is my logindata");
+  const [postdata,setPostData]=useState([]);
   const history = useNavigate();
   const googleLog= ()=>{
     console.log("first i am");
@@ -44,26 +45,56 @@ const Page = () => {
       history("/login");
     } else {
       setLoginData(res);
+      console.log("aftr i finished now it starting data fetch");
       console.log("user verified");
     }
   };
+  useEffect(() => {
+    dataFetch();
+  }, [loginData]);
+
+  const dataFetch = async()=>{
+    console.log("after fetching logindata",loginData);
+    const userId=loginData ?loginData.validuserone._id:"";
+    console.log("this is user id",userId);
+    console.log("i am goint to request");
+    const res = await fetch("http://localhost:8099/allget",{
+      method:'GET',
+      headers:{
+        'Content-Type':'application/json'
+      }
+    });
+    console.log("i back from requrest");
+    const data= await res.json();
+    console.log("this data come from" ,data);
+    if(data){
+      setPostData(data.userposts);
+    }
+  }
 
   useEffect(() => {
     googleLog();
     dashboardValid();
   },[]);
+
   return (
-    <>
+    <div className="min-h-screen">
       <Navbar></Navbar>
-      <div className="grid grid-cols-4 min-h-screen mx-auto w-full">
-        {Array.from({ length: 16 }, (_, i) => (
-          <div key={i} className="flex justify-center">
-            <Card />
-          </div>
-        ))}
+
+      <div className="grid grid-cols-3  gap-2 mt-2 mx-auto w-full">
+        {postdata ? (
+          postdata.map((post) => (
+            <div key={post._id} className="flex justify-center w-full">
+                <Card post={post} />
+            </div>
+          ))
+        ) : (
+          // Add a fallback UI when postdata is empty
+          <div className="text-center col-span-3 mt-10">Loading posts...</div>
+        )}
       </div>
-    </>
-  );
+    </div>
+  )
 };
 
 export default Page;
