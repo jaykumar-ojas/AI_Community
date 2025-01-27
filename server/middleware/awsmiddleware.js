@@ -29,61 +29,87 @@ const s3 = new S3Client({
 const router = require("express").Router();
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const allowedMimeTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'video/mp4',
+    'video/mkv',
+    'video/webm',
+];
+
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        console.log("MIME Type:", file.mimetype);
+        if (allowedMimeTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Unsupported file type. Only images and videos are allowed."), false);
+        }
+    },
+});
+
+
 
 
 // router.post("/api/posts", upload.single('image'), async (req, res) => {
-const awsuploadMiddleware = async(req,res,next) => {
-    // resize image
-   
-    const buffer = await sharp(req.file.buffer).resize({ height: 1920, width: 1080, fit: "contain" }).toBuffer()
-    try{
-        const imageName = randomImageName();
-        const params = {
-            Bucket: bucketName,
-            Key: imageName,
-            Body: buffer,
-            ContentType: req.file.mimetype,
+    const awsuploadMiddleware = async (req, res, next) => {
+        console.log("i ma coiming here");
+        try {
+            const isImage = req.file.mimetype.startsWith('image/');
+            console.log(isImage,"this is imageNmae");
+            const buffer = isImage 
+                ? await sharp(req.file.buffer).resize({ height: 1920, width: 1080, fit: "contain" }).toBuffer()
+                : req.file.buffer; // For videos, use the original buffer
+    
+            const fileName = randomImageName(); // Use the same function to generate a unique file name
+            console.log("this is file name",fileName);
+            const params = {
+                Bucket: bucketName,
+                Key: fileName,
+                Body: buffer,
+                ContentType: req.file.mimetype,
+            };
+            console.log("making bucket");
+    
+            const command = new PutObjectCommand(params);
+
+            await s3.send(command);
+            console.log("coming after save");
+    
+            req.fileName = fileName; // Store the file name in the request object
+            next();
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            res.status(500).send("Error uploading file.");
         }
-
-        const command = new PutObjectCommand(params);
-        await s3.send(command)
-
-        req.imageName = imageName;
-
-        next();
-    }
-    catch(error){
-        res.status(500).send("Error uploading image.");
-    }
-};
-
-const awsgetMiddleware = async(req,res,next)=>{
+    };
+    
+const generateSignedUrl = async(keys)=>{
     try{
         const getObjectParams = {
             Bucket: bucketName,
-            Key: req.params.id,
+            Key: keys,
         }
         const command = new GetObjectCommand(getObjectParams);
         const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-
-        req.url= url;
-        next();
+        return url;
     }catch (error) {
         console.error("Error generating signed URL:", error);
-        res.status(500).send("Error generating signed URL.");
+        throw new Error("failed to generate signed url");
     }
 }
 
-const awsdeleteMiddleware = async(req,res,next)=>{
+const awsdeleteMiddleware = async(key)=>{
     try{
         const params = {
                 Bucket: bucketName,
-                Key: req.params.id,
+                Key: key,
             }
         const command = new DeleteObjectCommand(params);
         await s3.send(command);
-        next();
+        return true;
     }catch(error){
         res.status(422).json({status:422,error:"failed to delete"});
     }
@@ -92,7 +118,7 @@ const awsdeleteMiddleware = async(req,res,next)=>{
 
 
 module.exports={
-    awsgetMiddleware,
+    generateSignedUrl,
     awsuploadMiddleware,
     awsdeleteMiddleware
 };

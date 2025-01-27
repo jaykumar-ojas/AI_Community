@@ -1,11 +1,18 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const Card = () => {
+const Card = ({post}) => {
+  console.log(post);
+  const navigate = useNavigate();
+  const handleCardClick = () => {
+    navigate(`/userPost/${post?._id}`);
+  };
+
   return (
-    <div className="group border rounded-lg h-72 w-96 overflow-hidden relative">
+    <div onClick={handleCardClick} className="group border rounded-lg h-72 w-96 overflow-hidden relative hover:cursor-pointer">
       <div className="h-full w-full">
         <img
-          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6IsSqYCSJrypSaOwGzITZwuEx7Zp4KyR-lg&s"
+          src={post.signedUrl}
           className="h-full w-full object-cover opacity-95 hover:opacity-100 transition duration-300"
           alt="Card Image"
         />
@@ -16,9 +23,9 @@ const Card = () => {
             className="h-8 w-8 rounded-full"
             alt="Profile"
           />
-          <div className="text-customgray-800 font-semibold">Jay kumar gupta</div>
+          <div className="text-customgray-800 font-semibold">{post.desc}</div>
         </div>
-        <div className="absolute bottom-6 left-4 opacity-0 bg-opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-0 text-white-300 font-semibold">this is the teddy bear i want to gift my bangaaru</div>
+        <div className="absolute bottom-6 left-4 opacity-0 bg-opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-0 text-white-300 font-semibold">{post.desc}</div>
 
       </div>
     </div>
