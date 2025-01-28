@@ -53,15 +53,16 @@ const UserContent = ({ post }) => {
       {/* user header */}
       <div className=" flex justify-between items-center w-full h-full">
         <div className="flex jsutify-between">
-          <div className="w-12 h-12  m-2">
+          <div className="w-12 h-12  m-2 ">
             <img
-              src="https://t3.ftcdn.net/jpg/02/43/12/34/360_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg"
+              src={post?.image}
               className="w-full h-full rounded-full"
+              referrerPolicy="no-referrer"
             ></img>
           </div>
           {/* user name remiand */}
           <div className="font-bold text-red-700 m-2 flex items-center">
-            Jay kumar gupta
+            {post?.userName}
           </div>
         </div>
 
@@ -107,13 +108,13 @@ const UserContent = ({ post }) => {
         style={{ height: "280px" }}
         onClick={() =>
           openInNewTab(
-            "https://t3.ftcdn.net/jpg/01/79/43/16/240_F_179431698_84mS6LULTiVwIwwwbLaSsPXjbJx2DlPC.jpg"
+            post?.signedUrl
           )
         } // Adjust the height and width as needed
       >
         <img
           src={post?.signedUrl}
-          className="max-w-full max-h-full object-contain"
+          className="w-full h-full object-cover"
           alt="example"
         />
       </div>

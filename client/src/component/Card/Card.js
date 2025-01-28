@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { LoginContext } from "../../component/ContextProvider/context";
+
 
 const Card = ({post}) => {
-  console.log(post);
+  const {logindata} =useContext(LoginContext);
   const navigate = useNavigate();
   const handleCardClick = () => {
     navigate(`/userPost/${post?._id}`);
@@ -17,15 +19,19 @@ const Card = ({post}) => {
           alt="Card Image"
         />
         {/* Hidden div to show on hover */}
-        <div className="absolute top-2 left-2 flex items-center gap-2 p-2 rounded-lg bg-white  opacity-0 bg-opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-0">
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKT8Lsye7-vjntnRIJIPB2bTlcBwEFuSKPQma5gaX_VcGzrgmijOizhOI&s"
-            className="h-8 w-8 rounded-full"
-            alt="Profile"
-          />
-          <div className="text-customgray-800 font-semibold">{post.desc}</div>
-        </div>
-        <div className="absolute bottom-6 left-4 opacity-0 bg-opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-0 text-white-300 font-semibold">{post.desc}</div>
+        <div className="absolute top-2 left-2 flex items-center gap-2 p-2 rounded-lg bg-white bg-opacity-0 opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-50">
+  <img
+    src={post.image}
+    className="h-8 w-8 rounded-full"
+    alt="Profile"
+    referrerPolicy="no-referrer"
+  />
+  <div className="text-white font-semibold">{post.userName}</div>
+</div>
+<div className="absolute bottom-6 text-white left-4 opacity-0 transition duration-700 group-hover:opacity-100 bg-white bg-opacity-0 group-hover:bg-opacity-25 text-white font-semibold p-2 rounded-lg">
+  {post.desc}
+</div>
+
 
       </div>
     </div>
