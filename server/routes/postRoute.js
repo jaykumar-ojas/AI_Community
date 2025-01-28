@@ -2,6 +2,8 @@ const express = require("express");
 const router = new express.Router();
 const multer = require('multer')
 const postdb = require("../models/postSchema");
+const userdb = require("../models/userSchema");
+const googledb = require("../models/googleSchema");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -80,9 +82,15 @@ router.get('/allget',async(req,res)=>{
         const userpostsWithUrls = await Promise.all(
             userposts.map(async (post) => {
                 const signedUrl = await generateSignedUrl(post.imgKey);
+                const userData = await userdb.findOne({_id:post.userId}) || await googledb.findOne({_id:post.userId});
+                const userName = userData.userName;
+                const image = userData.image;
+
                 return {
                     ...post.toObject(), 
                     signedUrl,
+                    userName,
+                    image
                 };
             })
         );
@@ -102,9 +110,14 @@ router.post('/getPostById',async(req,res)=>{
         }
         const post = await postdb.findOne({_id:postId});
         const signedUrl = await generateSignedUrl(post.imgKey);
+        const userData = await userdb.findOne({_id:post.userId}) || await googledb.findOne({_id:post.userId});
+        const userName = userData.userName;
+        const image = userData.image;
         const updatedPost = {
             ...post.toObject(), // Ensure mutability by converting to a plain object
             signedUrl,
+            userName,
+            image
           };
           console.log("i am succesffully",post);
         res.status(201).json({status:201,postdata:updatedPost});

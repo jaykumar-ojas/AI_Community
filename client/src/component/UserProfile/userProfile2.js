@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { LoginContext } from "../ContextProvider/context";
 
 const Uploader = () => {
+  const {loginData} = useContext(LoginContext);
   // Sample user data
   const user = {
-    name: "John Doe",
+    name: loginData.validuserone.userName,
     bio: "Digital artist, filmmaker, and music producer. I love to create and share my work with the world.",
-    avatar: "https://via.placeholder.com/150", // Placeholder avatar
-    banner: "https://via.placeholder.com/1200x300", // Placeholder banner
+    avatar: loginData?.validuserone.image, // Placeholder avatar
+    banner: "https://img.freepik.com/premium-photo/flat-futuristic-circuit-border-with-central-copy-space-concept-as-digital-frame-featuring-futuri_980716-646191.jpg", // Placeholder banner
     content: [
       {
         type: "image",
