@@ -38,6 +38,14 @@ const userSchema = new mongoose.Schema({
                 required:true
             }
         }
+    ],
+    forget_tokens:[
+        {
+            token:{
+                type:String,
+                required:true
+            }
+        }
     ]
 })
 
@@ -72,6 +80,25 @@ userSchema.methods.generateAuthToken = async function() {
         res.status(422).json(error);
     }
 }
+
+userSchema.methods.generateForgetToken = async function() {
+    try{
+        console.log("i am genreate token");
+        let token = jwt.sign({email:this.email},keySecret,{
+            expiresIn:"300s"
+        });
+    
+        this.tokens=this.forget_tokens.concat({token:token});
+
+        await this.save();
+        return token;
+    }
+    catch(error){
+        console.log(error);
+        res.status(422).json(error);
+    }
+}
+
 
 // create usermodel
 
