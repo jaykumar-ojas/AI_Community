@@ -3,6 +3,7 @@ import Navbar from "../../component/Navbar/Navbar";
 import Card from "../../component/Card/Card";
 import { useNavigate } from "react-router-dom";
 import { LoginContext } from "../../component/ContextProvider/context";
+import Login from "../../component/Auth/Login";
 
 const Page = () => {
   const { loginData, setLoginData } = useContext(LoginContext);
@@ -33,7 +34,7 @@ const Page = () => {
 
     const res = await data.json();
     if (!res || res.status == 401) {
-      history("/login");
+      console.log("user not login");
     } else {
       setLoginData(res);
     }
@@ -41,7 +42,7 @@ const Page = () => {
   useEffect(() => {
     dataFetch();
     console.log(loginData);
-  }, [loginData]);
+  }, []);
 
   const dataFetch = async()=>{
     const userId=loginData ?loginData.validuserone._id:"";
@@ -65,7 +66,6 @@ const Page = () => {
   return (
     <div className="min-h-screen">
       <Navbar></Navbar>
-
       <div className="grid grid-cols-3  gap-2 mt-2 mx-auto w-full">
         {postdata ? (
           postdata.map((post) => (

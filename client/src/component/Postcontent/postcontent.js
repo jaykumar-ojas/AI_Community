@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import Comment from "./Comment";
 import UserContent from "./UserContent";
 import Card from "../Card/Card";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const PostContent = () => {
+  const history = useNavigate();
   const {id} = useParams();
   const [post,setPost] = useState();
   console.log(post);

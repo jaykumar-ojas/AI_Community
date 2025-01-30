@@ -5,7 +5,7 @@ import DashBoardPage from "./pages/DashBoardPage/DashBoardPage";
 import Login from "./component/Auth/Login";
 import Register from "./component/Auth/Register";
 import UserProfile2 from "./component/UserProfile/userProfile2";
-import UserProfile from "./component/UserProfile/userProfile2";
+import UserProfile from "./component/UserProfile/userProfile";
 import Error from "./component/Error/error";
 import UpdatePassword from "./component/Auth/updatePassword";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -34,17 +34,29 @@ const router = createBrowserRouter([
     element: <Error></Error>,
   },
   {
-    path:'/userprofile',
-    element:<UserProfile></UserProfile>
+    path: "/userprofile",
+    element: <UserProfile2></UserProfile2>,
   },
   {
-    path:'/userPost/:id',
+    path: "/forgot-password",
+    element: <ForgotPassword></ForgotPassword>,
+  },
+  {
+    path: "/verify-otp/:id",
+    element:<VerfiyOtp></VerfiyOtp>
+  },
+  {
+    path:'/update-password/:id',
+    element:<UpdatePassword></UpdatePassword>
+  },
+  {
+    path:"/userPost/:id",
     element:<PostContent></PostContent>
   },
   {
     path:'/test2',
     element:<PostData></PostData>
-  },
+  }
 ]);
 
 function App() {
