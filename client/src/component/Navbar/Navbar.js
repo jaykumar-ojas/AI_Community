@@ -11,12 +11,12 @@ import {
   import logo from './logo.jpg'
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
   
   const navigation = [
     { name: "Dashboard", href: "#", current: true },
-    { name: "Team", href: "#", current: false },
+    { name: "Team", href: "/test2", current: false },
     { name: "Projects", href: "#", current: false },
     { name: "Calendar", href: "#", current: false },
   ];
@@ -27,7 +27,7 @@ import { Link } from "react-router-dom";
   
   export default function Navbar() {
     const {loginData,setLoginData} = useContext(LoginContext);
-    const history = useNavigate();
+    // const history = useNavigate();
 
     const logoutUser =async()=>{
       console.log("call happen");
@@ -53,7 +53,8 @@ import { Link } from "react-router-dom";
         
         localStorage.removeItem("userdatatoken");
         setLoginData(false);
-        history("/login");
+        // history("/login");
+        alert("user successfully logout");
         console.log("user successfully logout");
       }
     }
@@ -80,9 +81,9 @@ import { Link } from "react-router-dom";
               />
               <div className="hidden sm:flex space-x-6">
                 {navigation.map((item) => (
-                  <a
+                  <Link
                     key={item.name}
-                    href={item.href}
+                    to={item.href}
                     className={classNames(
                       item.current
                         ? "text-indigo-600 font-semibold"
@@ -92,7 +93,7 @@ import { Link } from "react-router-dom";
                     aria-current={item.current ? "page" : undefined}
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
