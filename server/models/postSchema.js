@@ -15,6 +15,11 @@ const postSchema = new mongoose.Schema({
     imgKey:{
         type:String,
     },
+    fileType:{
+        type:String,
+        enum: ['image', 'video', 'audio'],
+        default: 'image'
+    },
     like:{
         likdId:{
             type:String,

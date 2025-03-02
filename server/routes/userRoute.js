@@ -4,12 +4,17 @@ const userdb = require("../models/userSchema");
 const googledb = require("../models/googleSchema");
 const otpdb = require("../models/otpSchema");
 const bcrypt = require("bcryptjs");
-
+const multer = require("multer");
 
 const authenticate = require("../middleware/authenticate");
+const {awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware} = require("../middleware/awsmiddleware");
 
 const jwt = require("jsonwebtoken");
 const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // for user registration
 
@@ -117,10 +122,36 @@ router.post("/login",async(req,res)=>{
 router.get("/validuser",authenticate,async(req,res)=>{
    try{
     const validuserone = await userdb.findOne({_id:req.userId}) || await googledb.findOne({_id:req.userId});
-    res.status(201).json({status:201,validuserone});
+    
+    // Generate URLs for profile picture and background image if they exist
+    let profilePictureUrl = "";
+    let backgroundImageUrl = "";
+    
+    if (validuserone.constructor.modelName === "users" && validuserone.profilePicture) {
+        profilePictureUrl = await generateSignedUrl(validuserone.profilePicture);
+    } else if (validuserone.constructor.modelName === "googleAuth") {
+        if (validuserone.profilePicture) {
+            profilePictureUrl = await generateSignedUrl(validuserone.profilePicture);
+        } else {
+            profilePictureUrl = validuserone.image; // Use Google profile image
+        }
+    }
+    
+    if (validuserone.backgroundImage) {
+        backgroundImageUrl = await generateSignedUrl(validuserone.backgroundImage);
+    }
+    
+    // Add URLs to the response
+    const userResponse = {
+        ...validuserone._doc,
+        profilePictureUrl,
+        backgroundImageUrl
+    };
+    
+    res.status(201).json({status:201, validuserone: userResponse});
    }
    catch(error){
-    res.status(401).json({status:401,message:"user not found"});
+    res.status(401).json({status:401, message:"user not found"});
    }
 })
 
@@ -142,5 +173,172 @@ router.get("/logout", authenticate, async (req, res) => {
     }
   });
   
+
+// Upload profile picture
+router.post("/upload-profile-picture", authenticate, upload.single('file'), awsuploadMiddleware, async(req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({status: 401, error: "User not logged in"});
+        }
+
+        console.log("Profile picture upload request received");
+        console.log("- File:", req.file ? req.file.originalname : "No file");
+        console.log("- File name from middleware:", req.fileName);
+        
+        if (!req.fileName) {
+            return res.status(400).json({status: 400, error: "File upload failed - no filename received"});
+        }
+        
+        // Find user
+        const user = await userdb.findOne({_id: req.userId}) || await googledb.findOne({_id: req.userId});
+        
+        if (!user) {
+            return res.status(404).json({status: 404, error: "User not found"});
+        }
+        
+        // Delete old profile picture if exists
+        if (user.profilePicture) {
+            try {
+                await awsdeleteMiddleware(user.profilePicture);
+            } catch (deleteError) {
+                console.error("Error deleting old profile picture:", deleteError);
+                // Continue with update even if delete fails
+            }
+        }
+        
+        // Update user with new profile picture
+        try {
+            if (user.constructor.modelName === "users") {
+                await userdb.updateOne({_id: req.userId}, {profilePicture: req.fileName});
+            } else {
+                await googledb.updateOne({_id: req.userId}, {profilePicture: req.fileName});
+            }
+            
+            console.log("Profile picture updated successfully");
+            return res.status(200).json({status: 200, message: "Profile picture updated successfully", fileName: req.fileName});
+        } catch (updateError) {
+            console.error("Error updating user profile picture:", updateError);
+            return res.status(500).json({status: 500, error: "Failed to update user profile picture"});
+        }
+    } catch (error) {
+        console.error("Error in profile picture upload:", error);
+        return res.status(422).json({status: 422, error: error.message || "Unknown error"});
+    }
+});
+
+// Upload background image
+router.post("/upload-background-image", authenticate, upload.single('file'), awsuploadMiddleware, async(req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({status: 401, error: "User not logged in"});
+        }
+
+        console.log("Background image upload request received");
+        console.log("- File:", req.file ? req.file.originalname : "No file");
+        console.log("- File name from middleware:", req.fileName);
+        
+        if (!req.fileName) {
+            return res.status(400).json({status: 400, error: "File upload failed - no filename received"});
+        }
+        
+        // Find user
+        const user = await userdb.findOne({_id: req.userId}) || await googledb.findOne({_id: req.userId});
+        
+        if (!user) {
+            return res.status(404).json({status: 404, error: "User not found"});
+        }
+        
+        // Delete old background image if exists
+        if (user.backgroundImage) {
+            try {
+                await awsdeleteMiddleware(user.backgroundImage);
+            } catch (deleteError) {
+                console.error("Error deleting old background image:", deleteError);
+                // Continue with update even if delete fails
+            }
+        }
+        
+        // Update user with new background image
+        try {
+            if (user.constructor.modelName === "users") {
+                await userdb.updateOne({_id: req.userId}, {backgroundImage: req.fileName});
+            } else {
+                await googledb.updateOne({_id: req.userId}, {backgroundImage: req.fileName});
+            }
+            
+            console.log("Background image updated successfully");
+            return res.status(200).json({status: 200, message: "Background image updated successfully", fileName: req.fileName});
+        } catch (updateError) {
+            console.error("Error updating user background image:", updateError);
+            return res.status(500).json({status: 500, error: "Failed to update user background image"});
+        }
+    } catch (error) {
+        console.error("Error in background image upload:", error);
+        return res.status(422).json({status: 422, error: error.message || "Unknown error"});
+    }
+});
+
+// Get user profile picture URL
+router.get("/get-profile-picture", authenticate, async(req, res) => {
+    try {
+        if (!req.userId) {
+            throw new Error("User not logged in");
+        }
+        
+        // Find user
+        const user = await userdb.findOne({_id: req.userId}) || await googledb.findOne({_id: req.userId});
+        
+        if (!user) {
+            throw new Error("User not found");
+        }
+        
+        let profilePictureUrl = "";
+        
+        // For regular users
+        if (user.constructor.modelName === "users" && user.profilePicture) {
+            profilePictureUrl = await generateSignedUrl(user.profilePicture);
+        } 
+        // For Google users, use either the uploaded profile picture or the Google image
+        else if (user.constructor.modelName === "googleAuth") {
+            if (user.profilePicture) {
+                profilePictureUrl = await generateSignedUrl(user.profilePicture);
+            } else {
+                profilePictureUrl = user.image; // Use Google profile image
+            }
+        }
+        
+        res.status(200).json({status: 200, profilePictureUrl});
+    } catch (error) {
+        console.error("Error getting profile picture URL:", error);
+        res.status(422).json({status: 422, error: error.message || "Unknown error"});
+    }
+});
+
+// Get user background image URL
+router.get("/get-background-image", authenticate, async(req, res) => {
+    try {
+        if (!req.userId) {
+            throw new Error("User not logged in");
+        }
+        
+        // Find user
+        const user = await userdb.findOne({_id: req.userId}) || await googledb.findOne({_id: req.userId});
+        
+        if (!user) {
+            throw new Error("User not found");
+        }
+        
+        let backgroundImageUrl = "";
+        
+        if (user.backgroundImage) {
+            backgroundImageUrl = await generateSignedUrl(user.backgroundImage);
+        }
+        
+        res.status(200).json({status: 200, backgroundImageUrl});
+    } catch (error) {
+        console.error("Error getting background image URL:", error);
+        res.status(422).json({status: 422, error: error.message || "Unknown error"});
+    }
+});
 
 module.exports=router;

@@ -1,5 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const heartSvg = () => {
@@ -21,8 +21,24 @@ const heartSvg = () => {
 const UserContent = ({ post }) => {
   const history = useNavigate();
 
+  useEffect(() => {
+    console.log("UserContent received post:", post);
+    if (post) {
+      console.log("Post file URL:", post.signedUrl);
+      console.log("Post file type:", post.fileType);
+      console.log("Post user image:", post.image);
+    }
+  }, [post]);
+
   const handleDelete = async (postId, imgKey) => {
+    // Ask for confirmation before deleting
+    if (!window.confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+    
     try {
+      console.log("Deleting post:", postId, "with image key:", imgKey);
+      
       const response = await fetch(`http://localhost:8099/delete/${postId}`, {
         method: "DELETE",
         headers: {
@@ -32,20 +48,124 @@ const UserContent = ({ post }) => {
       });
 
       const result = await response.json();
+      console.log("Delete response:", result);
+      
       if (response.ok) {
         console.log("Post deleted successfully:", result);
-        alert("succesfylly deleted");
-        history("/");
+        alert("Post deleted successfully");
+        // Refresh the page or redirect
+        window.location.reload();
       } else {
         console.error("Failed to delete post:", result.error);
+        alert("Failed to delete post: " + (result.error || "Unknown error"));
       }
     } catch (error) {
       console.error("Error occurred while deleting post:", error);
+      alert("Error occurred while deleting post. Please try again.");
     }
   };
 
   const openInNewTab = (url) => {
     window.open(url, "_blank", "noreferrer");
+  };
+
+  const handleMediaClick = () => {
+    if (!post?.signedUrl) return;
+    
+    if (post.fileType === 'image') {
+      openInNewTab(post.signedUrl);
+    }
+    // For video and audio, we'll let the built-in controls handle playback
+  };
+
+  if (!post) {
+    return (
+      <div className="w-full border rounded-lg bg-white shadow-lg p-4 flex items-center justify-center" style={{ height: "400px" }}>
+        <div className="text-gray-500">Loading post content...</div>
+      </div>
+    );
+  }
+
+  // Render different media types
+  const renderMedia = () => {
+    if (!post.signedUrl) {
+      return (
+        <div className="flex items-center justify-center h-full w-full text-gray-500">
+          Media not available
+        </div>
+      );
+    }
+
+    const fileType = post.fileType || 'image'; // Default to image if not specified
+
+    if (fileType === 'image') {
+      return (
+        <img
+          src={post.signedUrl}
+          className="w-full h-full object-cover"
+          alt="Post content"
+          onError={(e) => {
+            console.error("Error loading image:", e);
+            e.target.src = "https://via.placeholder.com/400x280?text=Image+Not+Available";
+          }}
+        />
+      );
+    } else if (fileType === 'video') {
+      return (
+        <div className="relative w-full h-full bg-gradient-to-br from-blue-900 to-purple-900">
+          <video 
+            src={post.signedUrl} 
+            className="w-full h-full object-contain"
+            controls
+            preload="metadata"
+            onError={(e) => {
+              console.error("Error loading video:", e);
+            }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-black bg-opacity-50 rounded-full p-5 shadow-lg transform transition-transform hover:scale-110">
+              <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </div>
+          </div>
+          <div className="absolute bottom-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm font-medium">
+            Video
+          </div>
+        </div>
+      );
+    } else if (fileType === 'audio') {
+      return (
+        <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-800 to-purple-700 p-6">
+          <div className="bg-white bg-opacity-20 p-6 rounded-full mb-4 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+          </div>
+          <div className="w-3/4 bg-white bg-opacity-10 p-3 rounded-lg shadow-md">
+            <audio 
+              src={post.signedUrl} 
+              controls 
+              className="w-full"
+              onError={(e) => {
+                console.error("Error loading audio:", e);
+              }}
+            />
+          </div>
+          <div className="absolute bottom-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm font-medium">
+            Audio
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center h-full w-full text-gray-500">
+        Unsupported media type
+      </div>
+    );
   };
 
   return (
@@ -58,11 +178,15 @@ const UserContent = ({ post }) => {
               src={post?.image}
               className="w-full h-full rounded-full"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                console.error("Error loading user image:", e);
+                e.target.src = "https://via.placeholder.com/40";
+              }}
             ></img>
           </div>
           {/* user name remiand */}
           <div className="font-bold text-red-700 m-2 flex items-center">
-            {post?.userName}
+            {post?.userName || "Unknown User"}
           </div>
         </div>
 
@@ -102,21 +226,13 @@ const UserContent = ({ post }) => {
           </Menu>
         </div>
       </div>
-      {/* user image content */}
+      {/* user media content */}
       <div
-        className="h-81 w-full bg-gray-200 flex items-center justify-center overflow-hidden cursor-pointer"
+        className={`h-81 w-full bg-gray-200 flex items-center justify-center overflow-hidden ${post.fileType === 'image' ? 'cursor-pointer' : ''}`}
         style={{ height: "280px" }}
-        onClick={() =>
-          openInNewTab(
-            post?.signedUrl
-          )
-        } // Adjust the height and width as needed
+        onClick={handleMediaClick}
       >
-        <img
-          src={post?.signedUrl}
-          className="w-full h-full object-cover"
-          alt="example"
-        />
+        {renderMedia()}
       </div>
 
       {/* user description */}
@@ -124,7 +240,7 @@ const UserContent = ({ post }) => {
         <div className="flex items-center justify-center h-8 w-8 m-2">
           {heartSvg()}
         </div>
-        <div className="p-2 h-16">{post?.desc}</div>
+        <div className="p-2 h-16">{post?.desc || "No description available"}</div>
       </div>
     </div>
   );

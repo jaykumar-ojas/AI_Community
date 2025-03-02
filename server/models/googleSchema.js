@@ -7,6 +7,10 @@ const googleSchema = new mongoose.Schema({
     userName : String,
     email : String,
     image : String,
+    backgroundImage : {
+        type: String,
+        default: ""
+    },
     tokens:[{
         token:{
             type:String

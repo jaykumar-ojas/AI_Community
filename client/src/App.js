@@ -61,7 +61,9 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-        <RouterProvider router={router} />
+    <Context>
+      <RouterProvider router={router} />
+    </Context>
   );
 }
 

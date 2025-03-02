@@ -11,6 +11,7 @@ const googleRoute = require("./routes/googleRoute");
 const userRouter= require("./routes/userRoute")
 const otpRouter = require("./routes/otpRoute");
 const forgetOtpRoute = require("./routes/forgetOtpRoute");
+const commentsRouter = require("./routes/comments"); 
 
 // Load environment variables from .env file
 dotenv.config();
@@ -47,7 +48,7 @@ app.use("/",postRoute);
 app.use("/",googleRoute);
 app.use("/",otpRouter);
 app.use("/",forgetOtpRoute);
-
+app.use("/comments", commentsRouter);
 // Start the server
 app.listen(port, () => {
   console.log(`Server started at port: ${port}`);
