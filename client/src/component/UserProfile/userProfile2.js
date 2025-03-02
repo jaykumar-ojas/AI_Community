@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { LoginContext } from "../ContextProvider/context";
 
 const Uploader = () => {
-  const {loginData} = useContext(LoginContext);
+  const {loginData,setLoginData} = useContext(LoginContext);
   const [userPosts, setUserPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -18,37 +18,42 @@ const Uploader = () => {
 
   // Fetch user posts when component mounts
   useEffect(() => {
-    const validateUser = async () => {
-      const token = localStorage.getItem("userdatatoken");
-      if (!token) {
-        console.log("No token found");
-        return;
-      }
-      
-      try {
-        const data = await fetch("http://localhost:8099/validuser", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": token,
-          },
-        });
-        
-        const res = await data.json();
-        if (!res || res.status === 401) {
-          console.log("Invalid user");
-          navigate('/login');
-        } else {
-          // If we have valid user data, fetch the posts
-          fetchUserPosts(res.validuserone._id);
-        }
-      } catch (error) {
-        console.error("Error validating user:", error);
-      }
-    };
-    
+    console.log(" i m coming after refresh");
     validateUser();
-  }, [navigate]);
+  }, []);
+
+  const validateUser = async () => {
+    const token = localStorage.getItem("userdatatoken");
+    if (!token) {
+      console.log("No token found");
+      return;
+    }
+    
+    try {
+      const data = await fetch("http://localhost:8099/validuser", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+      });
+      
+      const res = await data.json();
+      if (!res || res.status === 401) {
+        
+        console.log("Invalid user");
+        navigate('/login');
+      } else {
+        console.log("this is my res",res);
+        setLoginData(res);
+        // If we have valid user data, fetch the posts
+        fetchUserPosts(res.validuserone._id);
+      }
+    } catch (error) {
+      console.error("Error validating user:", error);
+    }
+  };
+  
   
   const fetchUserPosts = async (userId) => {
     if (!userId) {
@@ -220,7 +225,7 @@ const Uploader = () => {
       if (data.status === 200) {
         alert('Background image updated successfully');
         // Refresh user data
-        window.location.reload();
+        // window.location.reload();
       } else {
         alert('Failed to update background image');
       }
@@ -285,9 +290,9 @@ const Uploader = () => {
     }
   };
 
-  if (!loginData || !loginData.validuserone) {
-    return <div className="text-center p-10">Loading user data...</div>;
-  }
+  // if (!loginData || !loginData.validuserone) {
+  //   return <div className="text-center p-10">Loading user data...</div>;
+  // }
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -295,7 +300,7 @@ const Uploader = () => {
       <div className="relative">
         <div className="relative h-64 overflow-hidden group">
           <img
-            src={backgroundPreview || loginData.validuserone.backgroundImageUrl || "https://img.freepik.com/premium-photo/flat-futuristic-circuit-border-with-central-copy-space-concept-as-digital-frame-featuring-futuri_980716-646191.jpg"}
+            src={loginData?.validuserone?.backgroundImageUrl}
             alt="User Banner"
             className="w-full h-64 object-cover"
           />
@@ -326,7 +331,7 @@ const Uploader = () => {
         <div className="absolute bottom-4 left-6 flex items-center">
           <div className="relative group">
             <img
-              src={profilePreview || loginData.validuserone.profilePictureUrl || loginData.validuserone.image || "https://via.placeholder.com/150"}
+              src={ loginData?.validateUser?.profilePictureUrl || loginData?.validuserone.image }
               alt="User Avatar"
               className="w-24 h-24 rounded-full border-4 border-white object-cover"
             />
@@ -343,8 +348,8 @@ const Uploader = () => {
             </div>
           </div>
           <div className="ml-4">
-            <h1 className="text-3xl font-bold text-white">{loginData?.validuserone.userName}</h1>
-            <p className="text-gray-200">{loginData?.validuserone.email}</p>
+            <h1 className="text-3xl font-bold text-white">{loginData?.validuserone?.userName}</h1>
+            <p className="text-gray-200">{loginData?.validuserone?.email}</p>
             {profileFile && (
               <button 
                 className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm mt-2"

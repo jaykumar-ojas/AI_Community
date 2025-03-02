@@ -5,11 +5,14 @@ import Login from "../Auth/Login";
 
 const Card = ({ post }) => {
   const [showLogin, setShowLogin] = useState(false);
-  const { logindata } = useContext(LoginContext);
+  const { loginData } = useContext(LoginContext);
   const navigate = useNavigate();
   const handleCardClick = () => {
-    if(logindata){
+    console.log(" i ma goint ot click");
+    console.log("this is loginData",loginData);
+    if(loginData){
       navigate(`/userPost/${post?._id}`);
+      // navigate(`/userPost/askdjhjdj`);
     }
     else{
       setShowLogin(true);
@@ -22,7 +25,6 @@ const Card = ({ post }) => {
       onClick={handleCardClick}
       className="group border rounded-lg h-72 w-96 overflow-hidden relative hover:cursor-pointer"
     >
-      {showLogin && <Login ></Login>}
       <div className="h-full w-full">
         <img
           src={post.signedUrl}
