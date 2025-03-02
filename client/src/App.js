@@ -8,7 +8,7 @@ import UserProfile2 from "./component/UserProfile/userProfile2";
 import UserProfile from "./component/UserProfile/userProfile";
 import Error from "./component/Error/error";
 import UpdatePassword from "./component/Auth/updatePassword";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useNavigate } from "react-router-dom";
 import React from "react";
 import Context from "./component/ContextProvider/context";
 import ForgotPassword from "./component/Auth/ForgotPassword";
@@ -19,7 +19,7 @@ import PostData from "./component/Postcontent/PostData";
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login></Login>,
+    element:<Login></Login>
   },
   {
     path: "/register",
@@ -60,11 +60,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return (
-    <Context>
-      <RouterProvider router={router} />
-    </Context>
+  return (  
+        <RouterProvider router={router} />
   );
 }
 
 export default App;
+
+
