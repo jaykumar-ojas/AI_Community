@@ -3,6 +3,15 @@ const dotenv = require("dotenv"); // Import dotenv
 const app = express();
 const cors = require("cors");
 const cookieparser= require("cookie-parser")
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
 
 // importing route
 const awsRoute = require("./routes/awsRoute");
@@ -12,6 +21,7 @@ const userRouter= require("./routes/userRoute")
 const otpRouter = require("./routes/otpRoute");
 const forgetOtpRoute = require("./routes/forgetOtpRoute");
 const commentsRouter = require("./routes/comments"); 
+const forumRoutes = require("./routes/forumRoutes");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -49,7 +59,38 @@ app.use("/",googleRoute);
 app.use("/",otpRouter);
 app.use("/",forgetOtpRoute);
 app.use("/comments", commentsRouter);
-// Start the server
-app.listen(port, () => {
-  console.log(`Server started at port: ${port}`);
+app.use("/forum", forumRoutes);
+
+// WebSocket event handlers
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  // Join a topic room
+  socket.on('join_topic', (topicId) => {
+    socket.join(`topic_${topicId}`);
+  });
+
+  // Leave a topic room
+  socket.on('leave_topic', (topicId) => {
+    socket.leave(`topic_${topicId}`);
+  });
+
+  // New topic created
+  socket.on('new_topic', (topic) => {
+    io.emit('topic_created', topic);
+  });
+
+  // New reply added
+  socket.on('new_reply', (reply) => {
+    io.to(`topic_${reply.topicId}`).emit('reply_created', reply);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+// Change app.listen to server.listen
+server.listen(8099, () => {
+  console.log("Server started at port 8099");
 });

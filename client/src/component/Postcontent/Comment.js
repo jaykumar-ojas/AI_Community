@@ -161,6 +161,44 @@ const Discussion = ({ postId }) => {
     }
   };
 
+  // Handle deleting a comment
+  const handleDeleteComment = async (commentId) => {
+    if (!currentUser.id) {
+      alert("Please log in to delete comments");
+      return;
+    }
+
+    // Ask for confirmation before deleting
+    if (!window.confirm("Are you sure you want to delete this comment? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${API_URL}/${commentId}`, {
+        data: { userId: currentUser.id }
+      });
+      
+      if (response.status === 200) {
+        // Refresh comments after deletion
+        const updatedResponse = await axios.get(`${API_URL}?postId=${postId}`);
+        if (updatedResponse.data && updatedResponse.data.comments) {
+          const commentsArray = transformCommentsToArray(updatedResponse.data.comments);
+          setComments(commentsArray);
+        } else {
+          // If no comments left, set empty array
+          setComments([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      if (error.response && error.response.status === 403) {
+        alert("You are not authorized to delete this comment");
+      } else {
+        alert("Error deleting comment. Please try again.");
+      }
+    }
+  };
+
   // Toggle reply form visibility
   const toggleReplyForm = useCallback((commentId) => {
     if (!currentUser.id) {
@@ -255,20 +293,37 @@ const Discussion = ({ postId }) => {
 
   // Recursive component to render comments and their replies
   const CommentComponent = ({ comment, level = 0 }) => {
+    // Check if the current user is the author of this comment
+    const isAuthor = currentUser.id === comment.author.id;
+    
     return (
       <div key={comment._id} className={`mt-${level > 0 ? 2 : 0}`}>
         <div className={`flex w-full justify-between border rounded-md ${level > 0 ? 'ml-5' : ''}`}>
           <div className="p-3 w-full">
-            <div className="flex gap-3 items-center">
-              <img
-                src="https://avatars.githubusercontent.com/u/22263436?v=4"
-                alt="avatar"
-                className="object-cover w-10 h-10 rounded-full border-2 border-emerald-400 shadow-emerald-400"
-              />
-              <div className="flex flex-col">
-                <h3 className="font-bold">{comment.author.name}</h3>
-                <span className="text-xs text-gray-400">{formatDate(comment.postedDate)}</span>
+            <div className="flex gap-3 items-center justify-between">
+              <div className="flex gap-3 items-center">
+                <img
+                  src="https://avatars.githubusercontent.com/u/22263436?v=4"
+                  alt="avatar"
+                  className="object-cover w-10 h-10 rounded-full border-2 border-emerald-400 shadow-emerald-400"
+                />
+                <div className="flex flex-col">
+                  <h3 className="font-bold">{comment.author.name}</h3>
+                  <span className="text-xs text-gray-400">{formatDate(comment.postedDate)}</span>
+                </div>
               </div>
+              
+              {/* Delete button - only visible to the author */}
+              {isAuthor && (
+                <button 
+                  className="text-red-500 hover:text-red-700 text-sm"
+                  onClick={() => handleDeleteComment(comment._id)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
             </div>
             <p className="text-gray-600 mt-2">{comment.commentText}</p>
             <div className="flex justify-between items-center mt-2">
