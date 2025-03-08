@@ -37,6 +37,46 @@ const updateComment = (req, res) => {
     .catch(err => res.status(500).json({error: err}))
 }
 
+const deleteComment = (req, res) => {
+    const commentId = req.params.id;
+    const userId = req.body.userId;
+
+    // First find the comment to check ownership
+    Comment.findById(commentId)
+    .exec()
+    .then(comment => {
+        if (!comment) {
+            return res.status(404).json({
+                error: "Comment not found"
+            });
+        }
+
+        // Check if the user is the author of the comment
+        if (comment.author.id.toString() !== userId) {
+            return res.status(403).json({
+                error: "Not authorized to delete this comment"
+            });
+        }
+
+        // If this is a parent comment, delete all its replies (comments with this parentId)
+        Comment.deleteMany({ parentId: commentId })
+        .exec()
+        .then(() => {
+            // Now delete the comment itself
+            Comment.deleteOne({ _id: commentId })
+            .exec()
+            .then(() => {
+                res.status(200).json({
+                    message: "Comment and its replies deleted successfully"
+                });
+            })
+            .catch(err => res.status(500).json({error: err}));
+        })
+        .catch(err => res.status(500).json({error: err}));
+    })
+    .catch(err => res.status(500).json({error: err}));
+}
+
 const getComments = (req, res) => {
     const postId = req.query.postId;
     if (!postId) {
@@ -82,5 +122,6 @@ const getComments = (req, res) => {
 router.get('/', getComments);
 router.post('/edit', updateComment);
 router.post('/', addComment);
+router.delete('/:id', deleteComment);
 
 module.exports = router;
