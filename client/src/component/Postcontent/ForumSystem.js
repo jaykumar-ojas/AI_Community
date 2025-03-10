@@ -280,7 +280,7 @@ const ForumSystem = () => {
     
     return (
       <div key={reply._id} className={`pl-${depth * 4} mb-4`}>
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-white rounded-lg border p-0">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center">
               <span className="font-medium text-blue-600">{reply.userName}</span>

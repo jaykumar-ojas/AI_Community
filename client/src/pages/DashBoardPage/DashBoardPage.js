@@ -74,6 +74,8 @@ const Page = () => {
     }
   }
 
+  console.log(postdata);
+
   useEffect(() => {
     googleLog();
     dashboardValid();
@@ -83,22 +85,21 @@ const Page = () => {
     <>
       <Navbar />
       {!loginData ? (
-        <div className="flex justify-center items-center h-screen">
+        <div className="border border-black flex justify-center items-center h-screen">
           <Login />
         </div>
       ) : (
         <div className="min-h-screen bg-gray-100">
-          <div className="container mx-auto px-4 py-8">
+          <div className="container mx-auto px-4">
             <div className="flex gap-8">
               {/* Main content area with grid layout */}
               <div className="flex-1">
-                <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
                 {loading ? (
                   <div className="flex justify-center items-center h-64">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                   </div>
                 ) : postdata && postdata.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className=" grid grid-cols-1 md:grid-cols-3 gap-4">
                     {postdata.map((post) => (
                       <div key={post._id} className="flex justify-center">
                         <Card post={post} />
@@ -106,14 +107,14 @@ const Page = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center text-gray-500">No posts available</div>
+                  <div className=" text-center text-gray-500">No posts available</div>
                 )}
               </div>
 
               {/* Forum system on the right - sticky with scrolling */}
-              <div className="w-96 relative hidden md:block">
-                <div className="sticky top-20 h-[calc(100vh-6rem)] overflow-hidden">
-                  <div className="h-full overflow-y-auto rounded-lg shadow-lg">
+              <div className=" w-96  relative hidden md:block">
+                <div className=" sticky top-20 h-[calc(100vh-6rem)] overflow-hidden">
+                  <div className=" h-full overflow-y-auto rounded-lg shadow-lg">
                     <ForumSystem />
                   </div>
                 </div>
