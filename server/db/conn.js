@@ -11,6 +11,6 @@ mongoose.connect(DB,{
     useNewUrlParser : true
 }).then(()=>console.log("database connected"))
 .catch((errr)=>{
-    console.log(errr);
+    console.log(errr,"my database connect nau hua");
 })
 

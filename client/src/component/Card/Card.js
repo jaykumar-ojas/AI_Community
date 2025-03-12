@@ -10,14 +10,7 @@ const Card = ({ post }) => {
   const handleCardClick = () => {
     console.log(" i ma goint ot click");
     console.log("this is loginData",loginData);
-    if(loginData){
-      navigate(`/userPost/${post?._id}`);
-      // navigate(`/userPost/askdjhjdj`);
-    }
-    else{
-      setShowLogin(true);
-    }
-   
+      navigate(`/userPost/${post?._id}`); 
   };
 
   return (
