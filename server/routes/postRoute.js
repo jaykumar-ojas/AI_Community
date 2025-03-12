@@ -146,15 +146,17 @@ router.delete('/delete/:id',async(req,res)=>{
 
 // getting all the post user login or not
 router.get('/allget',async(req,res)=>{
+    console.log("i am coming here for getting data");
     try{
         const userposts = await postdb.find();
         const userpostsWithUrls = await Promise.all(
             userposts.map(async (post) => {
+                console.log("this is my imagKey",post.imgKey); 
                 const signedUrl = await generateSignedUrl(post.imgKey);
                 const userData = await userdb.findOne({_id:post.userId}) || await googledb.findOne({_id:post.userId});
                 const userName = userData.userName;
                 const image = userData.image;
-
+                console.log("i am coming to fetch the url");
                 return {
                     ...post.toObject(), 
                     signedUrl,

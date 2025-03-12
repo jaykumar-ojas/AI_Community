@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import GoogleLogin from "../Auth//GoogleLogin";
+import { LoginContext } from "../ContextProvider/context";
 
 const Login = () => {
+  const {loginData,setLoginData} = useContext(LoginContext);
   const [show, setShow] = useState(false);
   const [inpVal,setInpVal]=useState({
     "email":"",
@@ -10,6 +12,7 @@ const Login = () => {
   })
 
   const history = useNavigate();
+  const location = useLocation();
 
   console.log(inpVal);
   const setVal=(e)=>{
@@ -49,7 +52,9 @@ const Login = () => {
       if(data.status===201){
         alert("login successfully");
         localStorage.setItem("userdatatoken",res.token);
-        history("/");
+        if(location.pathname =="/login"){
+          history("/");
+        }
         setInpVal({...inpVal,email:"",password:""});
       }
       else{
@@ -77,6 +82,8 @@ const Login = () => {
       console.log("invalid user");
     }
     else{
+      setLoginData(res.validuserone);
+      console.log("user login already",res);
       history("/");
     }
   }
