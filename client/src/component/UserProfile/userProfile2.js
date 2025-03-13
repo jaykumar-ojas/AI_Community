@@ -24,6 +24,7 @@ const Uploader = () => {
   useEffect(() => {
     console.log(" i m coming after refresh");
     validateUser();
+    fetchUserPosts();
   }, []);
 
   const validateUser =() => {

@@ -9,7 +9,7 @@ import {
   } from "@headlessui/react";
   import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
   import logo from './logo.jpg'
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { LoginContext } from "../ContextProvider/context";
 // import { useNavigate } from "react-router-dom";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -28,6 +28,12 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
   export default function Navbar() {
     const {loginData,setLoginData} = useContext(LoginContext);
     const history = useNavigate();
+    // useEffect(() => {
+    //   const storedData = JSON.parse(localStorage.getItem("userData"));
+    //   if (storedData) {
+    //       setLoginData(storedData);
+    //   }
+    // }, []);
 
     const logoutUser =async()=>{
       const token = localStorage.getItem("userdatatoken");
@@ -42,10 +48,11 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
       });
       const res = await data.json();
       if(!res || res.status===401){
-        console.log("some error happened");
+        console.log("some error happened"); 
       }
       else{
         localStorage.removeItem("userdatatoken");
+        localStorage.removeItem('userData');
         setLoginData(false);
         alert("user successfully logout");
       }
@@ -121,7 +128,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
                   <BellIcon className="h-6 w-6" />
                 </button>
                 {loginData ?
-                <Menu as="div" className="relative z-10">
+                (<Menu as="div" className="relative z-10">
                   <MenuButton className="flex items-center focus:outline-none">
                     <img
                       src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -168,7 +175,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
                       )}
                     </MenuItem>
                   </MenuItems>
-                </Menu>
+                </Menu>)
                 :(<button onClick={()=> history('/login')}>Sign In</button>) }
               </div>
             </div>
