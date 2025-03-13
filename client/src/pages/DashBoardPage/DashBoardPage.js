@@ -26,6 +26,44 @@ const Page = () => {
     }
   }
 
+  const validateUser = async () => {
+    let token = localStorage.getItem("userdatatoken");
+
+    
+    console.log("i am here");
+    if(!loginData){
+
+    try {
+      const response = await fetch("http://localhost:8099/validuser", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const res = await response.json();
+      console.log("i am printing result");
+      if (!res || res.status === 401) {
+        localStorage.removeItem("userdatatoken"); // Clear invalid token
+      } else {
+        console.log(res);
+        setLoginData(res.validuserone); // No need for await here
+        localStorage.setItem("userdatatoken",token);
+        localStorage.setItem("userData", JSON.stringify(res.validuserone)); 
+      }
+    } catch (error) {
+      console.error("Error validating user:", error);
+      localStorage.removeItem("userdatatoken");
+      return false;
+    }
+  }
+  };
+
 
   const dataFetch = async () => {
     try {
@@ -49,6 +87,7 @@ const Page = () => {
 
   useEffect(() => {
     googleLog();
+    validateUser();
     dataFetch();
   }, []);
 

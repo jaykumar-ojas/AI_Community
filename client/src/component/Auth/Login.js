@@ -52,6 +52,7 @@ const Login = () => {
       if(data.status===201){
         alert("login successfully");
         localStorage.setItem("userdatatoken",res.token);
+        localStorage.setItem("userData", JSON.stringify(res.uservalid)); 
         if(location.pathname =="/login"){
           history("/");
         }
