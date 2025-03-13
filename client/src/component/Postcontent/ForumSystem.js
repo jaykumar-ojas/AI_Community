@@ -263,24 +263,13 @@ const ForumSystem = () => {
   // Render a single reply and its children recursively
   const renderReply = (reply, depth = 0) => {
     const isReplying = replyingTo === reply._id;
-    
-    // Check if the current user is the author or an admin
-    const isAuthor = loginData?.validuserone?._id.toString() === reply.userId.toString();
+    const isAuthor = loginData?.validuserone?._id === reply.userId;
     const isAdmin = loginData?.validuserone?.role === 'admin';
     const canDelete = isAuthor || isAdmin;
     
-    console.log('Reply permissions:', {
-      replyId: reply._id,
-      replyUserId: reply.userId,
-      currentUserId: loginData?.validuserone?._id,
-      isAuthor,
-      isAdmin,
-      canDelete
-    });
-    
     return (
       <div key={reply._id} className={`pl-${depth * 4} mb-4`}>
-        <div className="bg-white rounded-lg border p-0">
+        <div className="bg-white rounded-lg border p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center">
               <span className="font-medium text-blue-600">{reply.userName}</span>
@@ -289,10 +278,7 @@ const ForumSystem = () => {
             <div className="flex items-center">
               {canDelete && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteReply(reply._id);
-                  }}
+                  onClick={() => handleDeleteReply(reply._id)}
                   className="text-red-500 hover:text-red-700 mr-3"
                   title="Delete reply"
                 >
@@ -380,15 +366,6 @@ const ForumSystem = () => {
 
     try {
       setIsLoading(true);
-      
-      // Log the request details for debugging
-      console.log('Deleting topic:', {
-        topicId,
-        userId: loginData.validuserone._id,
-        userRole: loginData.validuserone.role || 'user',
-        headers: getAuthHeaders()
-      });
-      
       const response = await axios.delete(`${TOPICS_URL}/${topicId}`, {
         headers: getAuthHeaders()
       });
@@ -434,15 +411,6 @@ const ForumSystem = () => {
 
     try {
       setIsLoading(true);
-      
-      // Log the request details for debugging
-      console.log('Deleting reply:', {
-        replyId,
-        userId: loginData.validuserone._id,
-        userRole: loginData.validuserone.role || 'user',
-        headers: getAuthHeaders()
-      });
-      
       const response = await axios.delete(`${REPLIES_URL}/${replyId}`, {
         headers: getAuthHeaders()
       });
@@ -534,7 +502,7 @@ const ForumSystem = () => {
               </button>
               
               {/* Add delete button for topic owner or admin */}
-              {(loginData?.validuserone?._id.toString() === selectedTopic.userId.toString() || loginData?.validuserone?.role === 'admin') && (
+              {(loginData?.validuserone?._id === selectedTopic.userId || loginData?.validuserone?.role === 'admin') && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -616,7 +584,7 @@ const ForumSystem = () => {
                     </div>
                     
                     {/* Add delete button for topic owner or admin */}
-                    {(loginData?.validuserone?._id.toString() === topic.userId.toString() || loginData?.validuserone?.role === 'admin') && (
+                    {(loginData?.validuserone?._id === topic.userId || loginData?.validuserone?.role === 'admin') && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

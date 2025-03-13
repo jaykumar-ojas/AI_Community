@@ -165,44 +165,22 @@ router.put('/topics/:id', authenticate, async (req, res) => {
 // Delete a topic
 router.delete('/topics/:id', authenticate, async (req, res) => {
   try {
-    const topicId = req.params.id;
-    const userId = req.userId;
-    const userRole = req.userRole || 'user';
-    
-    console.log('Delete topic request:', {
-      topicId,
-      userId,
-      userRole,
-      headers: req.headers
-    });
-    
-    const topic = await ForumTopic.findById(topicId);
+    const topic = await ForumTopic.findById(req.params.id);
     
     if (!topic) {
       return res.status(404).json({ status: 404, error: 'Topic not found' });
     }
     
-    // Check if user is the owner of the topic or an admin
-    const isOwner = topic.userId.toString() === userId.toString();
-    const isAdmin = userRole === 'admin';
-    
-    console.log('Authorization check:', {
-      topicUserId: topic.userId,
-      requestUserId: userId,
-      isOwner,
-      userRole,
-      isAdmin
-    });
-    
-    if (!isOwner && !isAdmin) {
+    // Check if user is the owner of the topic
+    if (topic.userId.toString() !== req.userId && req.userRole !== 'admin') {
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this topic' });
     }
     
     // Delete all replies to this topic
-    await ForumReply.deleteMany({ topicId: topicId });
+    await ForumReply.deleteMany({ topicId: req.params.id });
     
     // Delete the topic
-    await ForumTopic.findByIdAndDelete(topicId);
+    await ForumTopic.findByIdAndDelete(req.params.id);
     
     res.status(200).json({ status: 200, message: 'Topic deleted successfully' });
   } catch (error) {
@@ -318,41 +296,19 @@ router.put('/replies/:id', authenticate, async (req, res) => {
 // Delete a reply
 router.delete('/replies/:id', authenticate, async (req, res) => {
   try {
-    const replyId = req.params.id;
-    const userId = req.userId;
-    const userRole = req.userRole || 'user';
-    
-    console.log('Delete reply request:', {
-      replyId,
-      userId,
-      userRole,
-      headers: req.headers
-    });
-    
-    const reply = await ForumReply.findById(replyId);
+    const reply = await ForumReply.findById(req.params.id);
     
     if (!reply) {
       return res.status(404).json({ status: 404, error: 'Reply not found' });
     }
     
-    // Check if user is the owner of the reply or an admin
-    const isOwner = reply.userId.toString() === userId.toString();
-    const isAdmin = userRole === 'admin';
-    
-    console.log('Authorization check:', {
-      replyUserId: reply.userId,
-      requestUserId: userId,
-      isOwner,
-      userRole,
-      isAdmin
-    });
-    
-    if (!isOwner && !isAdmin) {
+    // Check if user is the owner of the reply
+    if (reply.userId.toString() !== req.userId && req.userRole !== 'admin') {
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this reply' });
     }
     
     // Delete the reply
-    await ForumReply.findByIdAndDelete(replyId);
+    await ForumReply.findByIdAndDelete(req.params.id);
     
     // Decrement reply count on the topic
     const topic = await ForumTopic.findById(reply.topicId);

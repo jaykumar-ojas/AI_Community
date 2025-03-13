@@ -31,11 +31,6 @@ const userSchema = new mongoose.Schema({
         required:true,
         minlength:8  
     },
-    role:{
-        type:String,
-        enum: ['user', 'admin', 'moderator'],
-        default:'user'
-    },
     profilePicture:{
         type:String,
         default:""
