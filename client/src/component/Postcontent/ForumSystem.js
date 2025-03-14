@@ -383,14 +383,6 @@ const ForumSystem = () => {
     try {
       setIsLoading(true);
       
-      // Log the request details for debugging
-      console.log('Deleting topic:', {
-        topicId,
-        userId: loginData.validuserone._id,
-        userRole: loginData.validuserone.role || 'user',
-        headers: getAuthHeaders()
-      });
-      
       const response = await axios.delete(`${TOPICS_URL}/${topicId}`, {
         headers: getAuthHeaders()
       });
@@ -436,14 +428,6 @@ const ForumSystem = () => {
 
     try {
       setIsLoading(true);
-      
-      // Log the request details for debugging
-      console.log('Deleting reply:', {
-        replyId,
-        userId: loginData.validuserone._id,
-        userRole: loginData.validuserone.role || 'user',
-        headers: getAuthHeaders()
-      });
       
       const response = await axios.delete(`${REPLIES_URL}/${replyId}`, {
         headers: getAuthHeaders()
