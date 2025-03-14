@@ -85,6 +85,16 @@ io.on('connection', (socket) => {
     io.to(`topic_${reply.topicId}`).emit('reply_created', reply);
   });
 
+  // Topic deleted
+  socket.on('delete_topic', (topicId) => {
+    io.emit('topic_deleted', topicId);
+  });
+
+  // Reply deleted
+  socket.on('delete_reply', (data) => {
+    io.to(`topic_${data.topicId}`).emit('reply_deleted', data.replyId);
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });

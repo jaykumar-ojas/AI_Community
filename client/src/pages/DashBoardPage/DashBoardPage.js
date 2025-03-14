@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { LoginContext } from "../../component/ContextProvider/context";
 import ForumSystem from "../../component/Postcontent/ForumSystem";
 import Login from "../../component/Auth/Login";
+import { validUserForPage } from "../../component/GlobalFunction/GlobalFunctionForResue";
 
 const Page = () => {
   const { loginData, setLoginData } = useContext(LoginContext);
@@ -13,6 +14,8 @@ const Page = () => {
   const history = useNavigate();
   
   const googleLog = () => {
+    // when we use google login we are redirecting to this page
+    // that's why we get token from url and set the usertoken to our localstorage
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     
@@ -23,17 +26,15 @@ const Page = () => {
     }
   }
 
-  const dashboardValid = async () => {
-    setLoading(true);
+  const validateUser = async () => {
     let token = localStorage.getItem("userdatatoken");
+
     
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    
+    console.log("i am here");
+    if(!loginData){
+
     try {
-      const data = await fetch("http://localhost:8099/validuser", {
+      const response = await fetch("http://localhost:8099/validuser", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -41,21 +42,28 @@ const Page = () => {
         },
       });
 
-      const res = await data.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const res = await response.json();
+      console.log("i am printing result");
       if (!res || res.status === 401) {
-        console.log("user not login");
         localStorage.removeItem("userdatatoken"); // Clear invalid token
       } else {
-        setLoginData(res);
-        // Only fetch posts after user data is loaded
-        await dataFetch();
+        console.log(res);
+        setLoginData(res.validuserone); // No need for await here
+        localStorage.setItem("userdatatoken",token);
+        localStorage.setItem("userData", JSON.stringify(res.validuserone)); 
       }
     } catch (error) {
       console.error("Error validating user:", error);
-    } finally {
-      setLoading(false);
+      localStorage.removeItem("userdatatoken");
+      return false;
     }
+  }
   };
+
 
   const dataFetch = async () => {
     try {
@@ -68,6 +76,7 @@ const Page = () => {
       const data = await res.json();
       if (data && data.userposts) {
         setPostData(data.userposts);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -78,17 +87,13 @@ const Page = () => {
 
   useEffect(() => {
     googleLog();
-    dashboardValid();
+    validateUser();
+    dataFetch();
   }, []);
 
   return (
     <>
       <Navbar />
-      {!loginData ? (
-        <div className="border border-black flex justify-center items-center h-screen">
-          <Login />
-        </div>
-      ) : (
         <div className="min-h-screen bg-gray-100">
           <div className="container mx-auto px-4">
             <div className="flex gap-8">
@@ -99,7 +104,7 @@ const Page = () => {
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                   </div>
                 ) : postdata && postdata.length > 0 ? (
-                  <div className=" grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className=" grid grid-cols-1 md:grid-cols-3">
                     {postdata.map((post) => (
                       <div key={post._id} className="flex justify-center">
                         <Card post={post} />
@@ -122,7 +127,6 @@ const Page = () => {
             </div>
           </div>
         </div>
-      )}
     </>
   );
 };

@@ -64,9 +64,25 @@ const ForumSystem = () => {
       }
     });
 
+    // Listen for deleted topics
+    socket.on('topic_deleted', (deletedTopicId) => {
+      setTopics(prevTopics => prevTopics.filter(topic => topic._id !== deletedTopicId));
+      if (selectedTopic && selectedTopic._id === deletedTopicId) {
+        setSelectedTopic(null);
+        setReplies([]);
+      }
+    });
+
+    // Listen for deleted replies
+    socket.on('reply_deleted', (deletedReplyId) => {
+      setReplies(prevReplies => prevReplies.filter(reply => reply._id !== deletedReplyId));
+    });
+
     return () => {
       socket.off('topic_created');
       socket.off('reply_created');
+      socket.off('topic_deleted');
+      socket.off('reply_deleted');
     };
   }, [currentTab, selectedTopic]);
 
@@ -366,11 +382,23 @@ const ForumSystem = () => {
 
     try {
       setIsLoading(true);
+      
+      // Log the request details for debugging
+      console.log('Deleting topic:', {
+        topicId,
+        userId: loginData.validuserone._id,
+        userRole: loginData.validuserone.role || 'user',
+        headers: getAuthHeaders()
+      });
+      
       const response = await axios.delete(`${TOPICS_URL}/${topicId}`, {
         headers: getAuthHeaders()
       });
 
       if (response.status === 200) {
+        // Emit socket event for topic deletion
+        socket.emit('delete_topic', topicId);
+        
         // If the deleted topic is currently selected, clear the selection
         if (selectedTopic && selectedTopic._id === topicId) {
           setSelectedTopic(null);
@@ -379,9 +407,6 @@ const ForumSystem = () => {
         
         // Refresh the topics list
         fetchTopics();
-        
-        // Emit socket event to notify other users
-        socket.emit('forum-update', { action: 'delete-topic', topicId });
       }
     } catch (error) {
       console.error('Error deleting topic:', error);
@@ -411,18 +436,27 @@ const ForumSystem = () => {
 
     try {
       setIsLoading(true);
+      
+      // Log the request details for debugging
+      console.log('Deleting reply:', {
+        replyId,
+        userId: loginData.validuserone._id,
+        userRole: loginData.validuserone.role || 'user',
+        headers: getAuthHeaders()
+      });
+      
       const response = await axios.delete(`${REPLIES_URL}/${replyId}`, {
         headers: getAuthHeaders()
       });
 
       if (response.status === 200) {
+        // Emit socket event for reply deletion
+        socket.emit('delete_reply', { replyId, topicId: selectedTopic._id });
+        
         // Refresh the replies for the current topic
         if (selectedTopic) {
           fetchReplies(selectedTopic._id);
         }
-        
-        // Emit socket event to notify other users
-        socket.emit('forum-update', { action: 'delete-reply', replyId, topicId: selectedTopic?._id });
       }
     } catch (error) {
       console.error('Error deleting reply:', error);

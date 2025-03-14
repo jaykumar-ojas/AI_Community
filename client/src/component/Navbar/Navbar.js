@@ -9,10 +9,10 @@ import {
   } from "@headlessui/react";
   import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
   import logo from './logo.jpg'
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { LoginContext } from "../ContextProvider/context";
 // import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
   
   const navigation = [
     { name: "Dashboard", href: "#", current: true },
@@ -27,12 +27,16 @@ import { Link } from "react-router-dom";
   
   export default function Navbar() {
     const {loginData,setLoginData} = useContext(LoginContext);
-    // const history = useNavigate();
+    const history = useNavigate();
+    // useEffect(() => {
+    //   const storedData = JSON.parse(localStorage.getItem("userData"));
+    //   if (storedData) {
+    //       setLoginData(storedData);
+    //   }
+    // }, []);
 
     const logoutUser =async()=>{
-      console.log("call happen");
       const token = localStorage.getItem("userdatatoken");
-      console.log(token);
       const data = await fetch("http://localhost:8099/logout",{
         method:"GET",
         headers:{
@@ -42,22 +46,19 @@ import { Link } from "react-router-dom";
         },
         credentials:"include"
       });
-
       const res = await data.json();
-      console.log("call happen with ", res);
-      console.log(res)
       if(!res || res.status===401){
-        console.log("some error happened");
+        console.log("some error happened"); 
       }
       else{
-        
         localStorage.removeItem("userdatatoken");
+        localStorage.removeItem('userData');
         setLoginData(false);
-        // history("/login");
         alert("user successfully logout");
-        console.log("user successfully logout");
       }
     }
+
+    
 
 
     return (
@@ -126,7 +127,8 @@ import { Link } from "react-router-dom";
                 >
                   <BellIcon className="h-6 w-6" />
                 </button>
-                <Menu as="div" className="relative z-10">
+                {loginData ?
+                (<Menu as="div" className="relative z-10">
                   <MenuButton className="flex items-center focus:outline-none">
                     <img
                       src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -173,7 +175,8 @@ import { Link } from "react-router-dom";
                       )}
                     </MenuItem>
                   </MenuItems>
-                </Menu>
+                </Menu>)
+                :(<button onClick={()=> history('/login')}>Sign In</button>) }
               </div>
             </div>
           </div>
@@ -202,5 +205,5 @@ import { Link } from "react-router-dom";
         </DisclosurePanel>
       </Disclosure>
     );
-  }
+}
   

@@ -1,11 +1,13 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LoginContext } from "../ContextProvider/context";
+import { ValidUserForPage } from "../GlobalFunction/GlobalFunctionForResue";
 
 const Uploader = () => {
   const {loginData,setLoginData} = useContext(LoginContext);
   const [userPosts, setUserPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showLogin,setShowLogin]= useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [filteredContent, setFilteredContent] = useState([]);
   const [profileFile, setProfileFile] = useState(null);
@@ -15,43 +17,26 @@ const Uploader = () => {
   const [uploadingProfile, setUploadingProfile] = useState(false);
   const [uploadingBackground, setUploadingBackground] = useState(false);
   const navigate = useNavigate();
+  const validatePage = ValidUserForPage();
 
   // Fetch user posts when component mounts
+  console.log(loginData);
   useEffect(() => {
     console.log(" i m coming after refresh");
     validateUser();
+    fetchUserPosts();
   }, []);
 
-  const validateUser = async () => {
-    const token = localStorage.getItem("userdatatoken");
-    if (!token) {
-      console.log("No token found");
-      return;
-    }
-    
-    try {
-      const data = await fetch("http://localhost:8099/validuser", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
-      });
-      
-      const res = await data.json();
-      if (!res || res.status === 401) {
-        
-        console.log("Invalid user");
-        navigate('/login');
-      } else {
-        console.log("this is my res",res);
-        setLoginData(res);
-        // If we have valid user data, fetch the posts
-        fetchUserPosts(res.validuserone._id);
+  const validateUser =() => {
+    if(!loginData){
+      let checkUser = validatePage();
+      if(checkUser == false){
+        console.log("i am come here after checking");
       }
-    } catch (error) {
-      console.error("Error validating user:", error);
-    }
+      else{
+        console.log("i am already login");
+      }
+  }
   };
   
   
@@ -331,7 +316,7 @@ const Uploader = () => {
         <div className="absolute bottom-4 left-6 flex items-center">
           <div className="relative group">
             <img
-              src={ loginData?.validateUser?.profilePictureUrl || loginData?.validuserone.image }
+              src={ loginData?.validateUser?.profilePictureUrl || loginData?.validuserone?.image }
               alt="User Avatar"
               className="w-24 h-24 rounded-full border-4 border-white object-cover"
             />
