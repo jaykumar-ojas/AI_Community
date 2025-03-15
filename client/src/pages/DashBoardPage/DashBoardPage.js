@@ -30,38 +30,38 @@ const Page = () => {
     let token = localStorage.getItem("userdatatoken");
 
     
-    console.log("i am here");
+    console.log("i am here in validateUserFunction",loginData);
     if(!loginData){
+      try {
+        const response = await fetch("http://localhost:8099/validuser", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+        });
 
-    try {
-      const response = await fetch("http://localhost:8099/validuser", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
-      });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        const res = await response.json();
+        console.log("i am printing result");
+        if (!res || res.status === 401) {
+          localStorage.removeItem("userdatatoken"); // Clear invalid token
+        } else {
+          console.log("i am valid user page i am printing result",res);
+          setLoginData(res); // No need for await here
+          console.log(" i am here for getting token",token);
+          localStorage.setItem("userdatatoken",token);
+          localStorage.setItem("userData", JSON.stringify(res)); 
+        }
+      } catch (error) {
+        console.error("Error validating user:", error);
+        localStorage.removeItem("userdatatoken");
+        return false;
       }
-
-      const res = await response.json();
-      console.log("i am printing result");
-      if (!res || res.status === 401) {
-        localStorage.removeItem("userdatatoken"); // Clear invalid token
-      } else {
-        console.log(res);
-        setLoginData(res.validuserone); // No need for await here
-        localStorage.setItem("userdatatoken",token);
-        localStorage.setItem("userData", JSON.stringify(res.validuserone)); 
-      }
-    } catch (error) {
-      console.error("Error validating user:", error);
-      localStorage.removeItem("userdatatoken");
-      return false;
     }
-  }
   };
 
 
