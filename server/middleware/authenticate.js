@@ -29,7 +29,6 @@ const authenticate = async(req, res, next) => {
             req.token = token;
             req.rootuser = rootuser;
             req.userId = rootuser._id;
-            req.userRole = rootuser.role || 'user';
             
             next();
         } catch (jwtError) {
