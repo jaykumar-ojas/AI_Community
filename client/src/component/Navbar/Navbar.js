@@ -28,6 +28,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
   export default function Navbar() {
     const {loginData,setLoginData} = useContext(LoginContext);
     const history = useNavigate();
+    console.log(loginData);
     // useEffect(() => {
     //   const storedData = JSON.parse(localStorage.getItem("userData"));
     //   if (storedData) {
@@ -36,7 +37,9 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
     // }, []);
 
     const logoutUser =async()=>{
+     
       const token = localStorage.getItem("userdatatoken");
+      console.log("i am going for logout this is token",token);
       const data = await fetch("http://localhost:8099/logout",{
         method:"GET",
         headers:{
@@ -131,9 +134,10 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
                 (<Menu as="div" className="relative z-10">
                   <MenuButton className="flex items-center focus:outline-none">
                     <img
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      src={loginData?.validuserone?.image}
                       alt="Profile"
                       className="h-8 w-8 rounded-full"
+                      referrerPolicy="no-referrer"
                     />
                   </MenuButton>
                   <MenuItems className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
