@@ -9,7 +9,7 @@ const Context=({children})=>{
     useEffect(() => {
         console.log("i am coming to set userData");
         const storedUser = localStorage.getItem("userData");
-        if (storedUser) {
+        if (storedUser ) {
           setLoginData(JSON.parse(storedUser));
         }
         

@@ -6,10 +6,18 @@ export const LogOutUser = () => {
     
   const { setLoginData } = useContext(LoginContext);
   const validate = ValidUserForPage();
+  
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   const logoutUser =async()=>{
-    validate();
+    await validate();
     const token = localStorage.getItem("userdatatoken");
     if(!token){
+      localStorage.removeItem("userdatatoken");
+      localStorage.removeItem('userData');
+      setLoginData(null);
       alert("user not login");
       return;
     }
@@ -27,10 +35,17 @@ export const LogOutUser = () => {
       alert("logout not gonna happen");
     }
     else{
+      localStorage.removeItem('userData');  
       localStorage.removeItem("userdatatoken");
-      localStorage.removeItem('userData');
-      setLoginData(null);
-      alert("user successfully logout");
+      while (localStorage.getItem("userdatatoken") !== null ||  localStorage.getItem("userData") !== null ) {
+        console.log("Waiting for localStorage to clear...");
+        await sleep(500); // Wait 500ms and check again
+      }
+    //   setTimeout(() => {
+    //     setLoginData(null);
+    // }, 2000); 
+    setLoginData(null);
+    //   alert("user successfully logout");
     }
   }
   return logoutUser;

@@ -50,8 +50,6 @@ const Page = () => {
     }
   }
 
-  console.log(postdata);
-
   useEffect(() => {
     googleLog();
     validateUser();
