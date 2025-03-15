@@ -22,21 +22,28 @@ const Uploader = () => {
   // Fetch user posts when component mounts
   console.log(loginData);
   useEffect(() => {
-    console.log(" i m coming after refresh");
+    console.log("i m coming after refresh");
     validateUser();
-    fetchUserPosts();
-  }, []);
+    
+    // Get the userId from loginData if available
+    const userId = loginData?.validuserone?._id || loginData?.validateUser?._id;
+    if (userId) {
+      fetchUserPosts(userId);
+    }
+  }, [loginData]); // Add loginData as a dependency
 
-  const validateUser =() => {
-    if(!loginData){
-      let checkUser = validatePage();
-      if(checkUser == false){
-        console.log("i am come here after checking");
-      }
-      else{
+  const validateUser = () => {
+    if (!loginData) {
+      const userData = validatePage();
+      if (userData) {
+        setLoginData({ validuserone: userData });
         console.log("i am already login");
+      } else {
+        console.log("i am come here after checking");
+        // Redirect to login or show login modal
+        setShowLogin(true);
       }
-  }
+    }
   };
   
   
