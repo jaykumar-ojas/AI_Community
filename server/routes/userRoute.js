@@ -101,19 +101,16 @@ router.post("/login",async(req,res)=>{
                     expires : new Date(Date.now()+9000000),
                     httpOnly : true
                 })
-
-                const result={
-                    uservalid,
-                    token
-                }
-                res.status(201).json(result);
+                // const result={
+                //     uservalid,
+                //     token
+                // }
+                res.status(201).json({status:201,token:token,uservalidone:uservalid});
             }
-
         }
-
     }
     catch(error){
-        res.status(422).json({status:422,error:"user not found"})
+        res.status(422).json({status:422,error:"user not found"});
     }
 })
 

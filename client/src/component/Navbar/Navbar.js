@@ -7,12 +7,12 @@ import {
     MenuItem,
     MenuItems,
   } from "@headlessui/react";
-  import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-  import logo from './logo.jpg'
-import { useContext, useEffect } from "react";
+import { Bars3Icon, BellIcon } from "@heroicons/react/24/outline";
+import logo from './logo.jpg'
+import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
-// import { useNavigate } from "react-router-dom";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { LogOutUser } from "./NavBarFunc";
   
   const navigation = [
     { name: "Dashboard", href: "#", current: true },
@@ -28,41 +28,12 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
   export default function Navbar() {
     const {loginData,setLoginData} = useContext(LoginContext);
     const history = useNavigate();
-    console.log(loginData);
-    // useEffect(() => {
-    //   const storedData = JSON.parse(localStorage.getItem("userData"));
-    //   if (storedData) {
-    //       setLoginData(storedData);
-    //   }
-    // }, []);
+    const logout = LogOutUser();
+
 
     const logoutUser =async()=>{
-     
-      const token = localStorage.getItem("userdatatoken");
-      console.log("i am going for logout this is token",token);
-      const data = await fetch("http://localhost:8099/logout",{
-        method:"GET",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":token,
-          Accept:"application/json"
-        },
-        credentials:"include"
-      });
-      const res = await data.json();
-      if(!res || res.status===401){
-        console.log("some error happened"); 
-      }
-      else{
-        localStorage.removeItem("userdatatoken");
-        localStorage.removeItem('userData');
-        setLoginData(false);
-        alert("user successfully logout");
-      }
+      logout();
     }
-
-    
-
 
     return (
       <Disclosure as="nav" className="sticky top-0 z-50 bg-gray-100 shadow-md">

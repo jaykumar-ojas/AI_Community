@@ -49,10 +49,10 @@ const Login = () => {
 
       const res=await data.json();
       console.log(res);
-      if(data.status===201){
+      if(res.status===201){
         alert("login successfully");
         localStorage.setItem("userdatatoken",res.token);
-        localStorage.setItem("userData", JSON.stringify(res.uservalid)); 
+        localStorage.setItem("userData", JSON.stringify(res)); 
         if(location.pathname =="/login"){
           history("/");
         }

@@ -6,10 +6,12 @@ export const ValidUserForPage = () => {
   const { setLoginData } = useContext(LoginContext);
 
   const validateUser = async () => {
+    console.log("i come for validate user in global");
     let token = localStorage.getItem("userdatatoken");
+    console.log("i here come for token",token);
 
     if (!token) {
-      return false;
+      return ;
     }
 
     try {
@@ -29,15 +31,16 @@ export const ValidUserForPage = () => {
 
       if (!res || res.status === 401) {
         localStorage.removeItem("userdatatoken"); // Clear invalid token
-        return false;
+        localStorage.removeItem("userData");
+        setLoginData(null);
       } else {
         setLoginData(res); // No need for await here
         return true;
       }
     } catch (error) {
-      console.error("Error validating user:", error);
-      localStorage.removeItem("userdatatoken");
-      return false;
+      localStorage.removeItem("userdatatoken"); // Clear invalid token
+      localStorage.removeItem("userData");
+      setLoginData(null);
     }
   };
 

@@ -3,17 +3,18 @@ import Navbar from "../../component/Navbar/Navbar";
 import Card from "../../component/Card/Card";
 import { useNavigate } from "react-router-dom";
 import { LoginContext } from "../../component/ContextProvider/context";
-import ForumSystem from "../../component/Postcontent/ForumSystem";
-import Login from "../../component/Auth/Login";
-import { validUserForPage } from "../../component/GlobalFunction/GlobalFunctionForResue";
+import ForumSystem from "../../component/AiForumPage/ForumSystem";
+import { ValidUserForPage } from "../../component/GlobalFunction/GlobalFunctionForResue";
 
 const Page = () => {
   const { loginData, setLoginData } = useContext(LoginContext);
   const [postdata, setPostData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const validate = ValidUserForPage();
   const history = useNavigate();
   
   const googleLog = () => {
+
     // when we use google login we are redirecting to this page
     // that's why we get token from url and set the usertoken to our localstorage
     const urlParams = new URLSearchParams(window.location.search);
@@ -24,44 +25,10 @@ const Page = () => {
       // Optionally, remove the token from the URL for a cleaner experience
       window.history.replaceState({}, document.title, "/");
     }
-  }
+  }    
 
   const validateUser = async () => {
-    let token = localStorage.getItem("userdatatoken");
-
-    
-    console.log("i am here in validateUserFunction",loginData);
-    if(!loginData){
-      try {
-        const response = await fetch("http://localhost:8099/validuser", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const res = await response.json();
-        console.log("i am printing result");
-        if (!res || res.status === 401) {
-          localStorage.removeItem("userdatatoken"); // Clear invalid token
-        } else {
-          console.log("i am valid user page i am printing result",res);
-          setLoginData(res); // No need for await here
-          console.log(" i am here for getting token",token);
-          localStorage.setItem("userdatatoken",token);
-          localStorage.setItem("userData", JSON.stringify(res)); 
-        }
-      } catch (error) {
-        console.error("Error validating user:", error);
-        localStorage.removeItem("userdatatoken");
-        return false;
-      }
-    }
+    validate();
   };
 
 
