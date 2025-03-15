@@ -15,7 +15,6 @@ const ForumSystem = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentTab, setCurrentTab] = useState('popular'); // 'popular', 'recent', 'my'
-  console.log("this si forum apge", loginData);
 
   // State for reply forms
   const [replyingTo, setReplyingTo] = useState(null);
