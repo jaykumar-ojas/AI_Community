@@ -78,7 +78,6 @@ const Register = () => {
       });
       console.log("coming for post");
       const res = await data.json();
-      console.log(res.status);
       if (data.status === 201) {
         alert("user registration done");
         setInpVal({
