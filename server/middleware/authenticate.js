@@ -13,7 +13,7 @@ const authenticate = async(req, res, next) => {
         }
         
         try {
-            const verifytoken = await jwt.verify(token, keySecret);
+            const verifytoken = jwt.verify(token, keySecret);
             console.log("Token verified:", verifytoken);
             
             // Try to find the user in different collections

@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 const socket = io('http://localhost:8099');
 
 const ForumSystem = () => {
-  const { loginData } = useContext(LoginContext);
+  const {loginData } = useContext(LoginContext);
   const [topics, setTopics] = useState([]);
   const [newTopic, setNewTopic] = useState({ title: '', content: '' });
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -15,6 +15,7 @@ const ForumSystem = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentTab, setCurrentTab] = useState('popular'); // 'popular', 'recent', 'my'
+  console.log("this si forum apge", loginData);
 
   // State for reply forms
   const [replyingTo, setReplyingTo] = useState(null);
@@ -162,7 +163,7 @@ const ForumSystem = () => {
 
   // Modify handleCreateTopic to emit socket event
   const handleCreateTopic = async () => {
-    if (!loginData || !loginData.validuserone) {
+    if (!loginData) {
       alert('Please log in to create a topic');
       return;
     }

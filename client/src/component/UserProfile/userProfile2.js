@@ -275,10 +275,6 @@ const Uploader = () => {
     }
   };
 
-  // if (!loginData || !loginData.validuserone) {
-  //   return <div className="text-center p-10">Loading user data...</div>;
-  // }
-
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* Banner */}
