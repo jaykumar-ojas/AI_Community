@@ -1,14 +1,16 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { LoginContext } from "../ContextProvider/context";
 
-const heartSvg = () => {
+const heartSvg = (filled = false) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="21" id="heart">
       <path
-        fill="none"
+        fill={filled ? "#ff4d4d" : "none"}
         fillRule="evenodd"
-        stroke="#000"
+        stroke={filled ? "#ff4d4d" : "#000"}
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"
@@ -18,8 +20,24 @@ const heartSvg = () => {
   );
 };
 
+const thumbsDownSvg = (filled = false) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={filled ? "#3b82f6" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" fill={filled ? "#3b82f6" : "none"}></path>
+    </svg>
+  );
+};
+
 const UserContent = ({ post }) => {
   const history = useNavigate();
+  const { loginData } = useContext(LoginContext);
+  const [currentUser, setCurrentUser] = useState({
+    id: '',
+    name: ''
+  });
+  const [postData, setPostData] = useState(post);
+  const [userLiked, setUserLiked] = useState(false);
+  const [userDisliked, setUserDisliked] = useState(false);
 
   useEffect(() => {
     console.log("UserContent received post:", post);
@@ -27,8 +45,33 @@ const UserContent = ({ post }) => {
       console.log("Post file URL:", post.signedUrl);
       console.log("Post file type:", post.fileType);
       console.log("Post user image:", post.image);
+      setPostData(post);
+      
+      // Check if current user has liked or disliked this post
+      if (loginData && loginData.validuserone && post.likes && post.dislikes) {
+        const userId = loginData.validuserone._id;
+        setUserLiked(post.likes.includes(userId));
+        setUserDisliked(post.dislikes.includes(userId));
+      }
     }
   }, [post]);
+
+  // Set current user from login data
+  useEffect(() => {
+    if (loginData && loginData.validuserone) {
+      setCurrentUser({
+        id: loginData.validuserone._id,
+        name: loginData.validuserone.userName
+      });
+      
+      // Check if current user has liked or disliked this post
+      if (postData && postData.likes && postData.dislikes) {
+        const userId = loginData.validuserone._id;
+        setUserLiked(postData.likes.includes(userId));
+        setUserDisliked(postData.dislikes.includes(userId));
+      }
+    }
+  }, [loginData, postData]);
 
   const handleDelete = async (postId, imgKey) => {
     // Ask for confirmation before deleting
@@ -65,20 +108,102 @@ const UserContent = ({ post }) => {
     }
   };
 
+  const handleLikePost = async () => {
+    if (!currentUser.id) {
+      alert("Please log in to like posts");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`http://localhost:8099/${postData._id}/like`, {
+        userId: currentUser.id
+      });
+      
+      if (response.status === 200) {
+        // Update local state to reflect the change
+        const updatedPost = { ...postData };
+        
+        if (userLiked) {
+          // Remove like
+          updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
+        } else {
+          // Add like and remove dislike if exists
+          if (!updatedPost.likes) updatedPost.likes = [];
+          if (!updatedPost.likes.includes(currentUser.id)) {
+            updatedPost.likes.push(currentUser.id);
+          }
+          
+          // Remove from dislikes if present
+          if (updatedPost.dislikes && updatedPost.dislikes.includes(currentUser.id)) {
+            updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
+          }
+        }
+        
+        setPostData(updatedPost);
+        setUserLiked(!userLiked);
+        if (userDisliked) setUserDisliked(false);
+      }
+    } catch (error) {
+      console.error('Error liking post:', error);
+      alert("Error liking post. Please try again.");
+    }
+  };
+
+  const handleDislikePost = async () => {
+    if (!currentUser.id) {
+      alert("Please log in to dislike posts");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`http://localhost:8099/${postData._id}/dislike`, {
+        userId: currentUser.id
+      });
+      
+      if (response.status === 200) {
+        // Update local state to reflect the change
+        const updatedPost = { ...postData };
+        
+        if (userDisliked) {
+          // Remove dislike
+          updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
+        } else {
+          // Add dislike and remove like if exists
+          if (!updatedPost.dislikes) updatedPost.dislikes = [];
+          if (!updatedPost.dislikes.includes(currentUser.id)) {
+            updatedPost.dislikes.push(currentUser.id);
+          }
+          
+          // Remove from likes if present
+          if (updatedPost.likes && updatedPost.likes.includes(currentUser.id)) {
+            updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
+          }
+        }
+        
+        setPostData(updatedPost);
+        setUserDisliked(!userDisliked);
+        if (userLiked) setUserLiked(false);
+      }
+    } catch (error) {
+      console.error('Error disliking post:', error);
+      alert("Error disliking post. Please try again.");
+    }
+  };
+
   const openInNewTab = (url) => {
     window.open(url, "_blank", "noreferrer");
   };
 
   const handleMediaClick = () => {
-    if (!post?.signedUrl) return;
+    if (!postData?.signedUrl) return;
     
-    if (post.fileType === 'image') {
-      openInNewTab(post.signedUrl);
+    if (postData.fileType === 'image') {
+      openInNewTab(postData.signedUrl);
     }
     // For video and audio, we'll let the built-in controls handle playback
   };
 
-  if (!post) {
+  if (!postData) {
     return (
       <div className="w-full border rounded-lg bg-white shadow-lg p-4 flex items-center justify-center" style={{ height: "400px" }}>
         <div className="text-gray-500">Loading post content...</div>
@@ -88,7 +213,7 @@ const UserContent = ({ post }) => {
 
   // Render different media types
   const renderMedia = () => {
-    if (!post.signedUrl) {
+    if (!postData.signedUrl) {
       return (
         <div className="flex items-center justify-center h-full w-full text-gray-500">
           Media not available
@@ -96,12 +221,12 @@ const UserContent = ({ post }) => {
       );
     }
 
-    const fileType = post.fileType || 'image'; // Default to image if not specified
+    const fileType = postData.fileType || 'image'; // Default to image if not specified
 
     if (fileType === 'image') {
       return (
         <img
-          src={post.signedUrl}
+          src={postData.signedUrl}
           className="w-full h-full object-cover"
           alt="Post content"
           onError={(e) => {
@@ -114,7 +239,7 @@ const UserContent = ({ post }) => {
       return (
         <div className="relative w-full h-full bg-gradient-to-br from-blue-900 to-purple-900">
           <video 
-            src={post.signedUrl} 
+            src={postData.signedUrl} 
             className="w-full h-full object-contain"
             controls
             preload="metadata"
@@ -146,7 +271,7 @@ const UserContent = ({ post }) => {
           </div>
           <div className="w-3/4 bg-white bg-opacity-10 p-3 rounded-lg shadow-md">
             <audio 
-              src={post.signedUrl} 
+              src={postData.signedUrl} 
               controls 
               className="w-full"
               onError={(e) => {
@@ -175,7 +300,7 @@ const UserContent = ({ post }) => {
         <div className="flex jsutify-between">
           <div className="w-12 h-12  m-2 ">
             <img
-              src={post?.image}
+              src={postData?.image}
               className="w-full h-full rounded-full"
               referrerPolicy="no-referrer"
               onError={(e) => {
@@ -186,7 +311,7 @@ const UserContent = ({ post }) => {
           </div>
           {/* user name remiand */}
           <div className="font-bold text-red-700 m-2 flex items-center">
-            {post?.userName || "Unknown User"}
+            {postData?.userName || "Unknown User"}
           </div>
         </div>
 
@@ -205,7 +330,7 @@ const UserContent = ({ post }) => {
                     className={`block border rounded-md px-4 py-2 w-full text-sm font-extrabold text-red-700 ${
                       active ? "bg-red-100 border-red-300" : " text-gray-700"
                     }`}
-                    onClick={()=>handleDelete(post._id, post.imgKey)}
+                    onClick={()=>handleDelete(postData._id, postData.imgKey)}
                   >
                     Delete
                   </button>
@@ -228,19 +353,37 @@ const UserContent = ({ post }) => {
       </div>
       {/* user media content */}
       <div
-        className={`h-81 w-full bg-gray-200 flex items-center justify-center overflow-hidden ${post.fileType === 'image' ? 'cursor-pointer' : ''}`}
+        className={`h-81 w-full bg-gray-200 flex items-center justify-center overflow-hidden ${postData.fileType === 'image' ? 'cursor-pointer' : ''}`}
         style={{ height: "280px" }}
         onClick={handleMediaClick}
       >
         {renderMedia()}
       </div>
 
-      {/* user description */}
+      {/* user description and interaction */}
       <div className="">
-        <div className="flex items-center justify-center h-8 w-8 m-2">
-          {heartSvg()}
+        <div className="flex items-center gap-4 m-2">
+          {/* Like button */}
+          <button 
+            className="flex items-center gap-1"
+            onClick={handleLikePost}
+            title={userLiked ? "Remove like" : "Like this post"}
+          >
+            {heartSvg(userLiked)}
+            <span className="text-sm font-medium">{postData.likes ? postData.likes.length : 0}</span>
+          </button>
+          
+          {/* Dislike button */}
+          <button 
+            className="flex items-center gap-1"
+            onClick={handleDislikePost}
+            title={userDisliked ? "Remove dislike" : "Dislike this post"}
+          >
+            {thumbsDownSvg(userDisliked)}
+            <span className="text-sm font-medium">{postData.dislikes ? postData.dislikes.length : 0}</span>
+          </button>
         </div>
-        <div className="p-2 h-16">{post?.desc || "No description available"}</div>
+        <div className="p-2 h-16">{postData?.desc || "No description available"}</div>
       </div>
     </div>
   );

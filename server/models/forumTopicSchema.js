@@ -39,6 +39,14 @@ const forumTopicSchema = new mongoose.Schema({
   tags: [{
     type: String,
     trim: true
+  }],
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users'
+  }],
+  dislikes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users'
   }]
 }, { timestamps: true });
 

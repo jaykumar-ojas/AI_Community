@@ -20,12 +20,14 @@ const postSchema = new mongoose.Schema({
         enum: ['image', 'video', 'audio'],
         default: 'image'
     },
-    like:{
-        likdId:{
-            type:String,
-            trim:true,
-        }
-    },
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    dislikes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 });
 
 const postdb = new mongoose.model("userPosts",postSchema);

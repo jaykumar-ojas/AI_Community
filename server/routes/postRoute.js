@@ -51,7 +51,9 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async(req, re
         userId: userId,
         desc: desc,
         imgKey: req.fileName,
-        fileType: fileType // Store the file type
+        fileType: fileType, // Store the file type
+        likes: [],
+        dislikes: []
     });
 
     console.log("Saving post with data:", {
@@ -202,5 +204,122 @@ router.post('/getPostById',async(req,res)=>{
     }
 })
 
+// Like a post
+router.post('/:id/like', async(req, res) => {
+    const postId = req.params.id;
+    const userId = req.body.userId;
+
+    try {
+        if (!userId) {
+            return res.status(400).json({
+                error: "User ID is required"
+            });
+        }
+
+        const post = await postdb.findById(postId);
+        if (!post) {
+            return res.status(404).json({
+                error: "Post not found"
+            });
+        }
+
+        // Check if user already liked this post
+        const alreadyLiked = post.likes.includes(userId);
+        // Check if user already disliked this post
+        const alreadyDisliked = post.dislikes.includes(userId);
+
+        // If already liked, remove the like (toggle)
+        if (alreadyLiked) {
+            await postdb.updateOne(
+                { _id: postId },
+                { $pull: { likes: userId } }
+            );
+            res.status(200).json({
+                message: "Like removed successfully"
+            });
+        } 
+        // If not liked, add like and remove dislike if exists
+        else {
+            let updateOperation = { $addToSet: { likes: userId } };
+            
+            // If already disliked, remove the dislike
+            if (alreadyDisliked) {
+                updateOperation.$pull = { dislikes: userId };
+            }
+            
+            await postdb.updateOne(
+                { _id: postId },
+                updateOperation
+            );
+            res.status(200).json({
+                message: "Post liked successfully"
+            });
+        }
+    } catch (error) {
+        console.error("Error liking post:", error);
+        res.status(500).json({
+            error: error.message || "An error occurred while liking the post"
+        });
+    }
+});
+
+// Dislike a post
+router.post('/:id/dislike', async(req, res) => {
+    const postId = req.params.id;
+    const userId = req.body.userId;
+
+    try {
+        if (!userId) {
+            return res.status(400).json({
+                error: "User ID is required"
+            });
+        }
+
+        const post = await postdb.findById(postId);
+        if (!post) {
+            return res.status(404).json({
+                error: "Post not found"
+            });
+        }
+
+        // Check if user already disliked this post
+        const alreadyDisliked = post.dislikes.includes(userId);
+        // Check if user already liked this post
+        const alreadyLiked = post.likes.includes(userId);
+
+        // If already disliked, remove the dislike (toggle)
+        if (alreadyDisliked) {
+            await postdb.updateOne(
+                { _id: postId },
+                { $pull: { dislikes: userId } }
+            );
+            res.status(200).json({
+                message: "Dislike removed successfully"
+            });
+        } 
+        // If not disliked, add dislike and remove like if exists
+        else {
+            let updateOperation = { $addToSet: { dislikes: userId } };
+            
+            // If already liked, remove the like
+            if (alreadyLiked) {
+                updateOperation.$pull = { likes: userId };
+            }
+            
+            await postdb.updateOne(
+                { _id: postId },
+                updateOperation
+            );
+            res.status(200).json({
+                message: "Post disliked successfully"
+            });
+        }
+    } catch (error) {
+        console.error("Error disliking post:", error);
+        res.status(500).json({
+            error: error.message || "An error occurred while disliking the post"
+        });
+    }
+});
 
 module.exports = router;

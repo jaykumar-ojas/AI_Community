@@ -29,11 +29,11 @@ const forumReplySchema = new mongoose.Schema({
     ref: 'ForumReply',
     default: null
   },
-  likes: {
-    type: Number,
-    default: 0
-  },
-  likedBy: [{
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users'
+  }],
+  dislikes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'
   }]
@@ -41,4 +41,4 @@ const forumReplySchema = new mongoose.Schema({
 
 const ForumReply = mongoose.model('ForumReply', forumReplySchema);
 
-module.exports = ForumReply; 
+module.exports = ForumReply;
