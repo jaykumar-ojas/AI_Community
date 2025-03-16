@@ -41,9 +41,11 @@ export const LogOutUser = () => {
         console.log("Waiting for localStorage to clear...");
         await sleep(500); // Wait 500ms and check again
       }
+
       setTimeout(() => {
         setLoginData(null);
       }, 3000); 
+
     //   alert("user successfully logout");
     }
   }

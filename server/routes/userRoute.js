@@ -63,7 +63,7 @@ router.post("/register",async(req,res)=>{
                     token
                 }
        
-        res.status(201).json(result);
+        res.status(201).json({status:201,token:token,validuserone:storedata});
        }
     }
     catch(errr){
@@ -105,7 +105,7 @@ router.post("/login",async(req,res)=>{
                 //     uservalid,
                 //     token
                 // }
-                res.status(201).json({status:201,token:token,uservalidone:uservalid});
+                res.status(201).json({status:201,token:token,validuserone:uservalid});
             }
         }
     }
