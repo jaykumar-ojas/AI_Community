@@ -115,7 +115,9 @@ router.post('/topics', authenticate, async (req, res) => {
       content,
       userId: actualUserId,
       userName: actualUserName,
-      tags: tags || []
+      tags: tags || [],
+      likes: [],
+      dislikes: []
     });
     
     const savedTopic = await newTopic.save();
@@ -163,21 +165,25 @@ router.put('/topics/:id', authenticate, async (req, res) => {
 });
 
 // Delete a topic
-router.delete('/topics/:id', authenticate, async (req, res) => {
+router.delete('/topics/:id', authenticate ,  async (req, res) => {
   try {
+    console.log(req.params.id);
     const topic = await ForumTopic.findById(req.params.id);
-    
+    console.log(topic);
     if (!topic) {
       return res.status(404).json({ status: 404, error: 'Topic not found' });
     }
     
     // Check if user is the owner of the topic
-    if (topic.userId.toString() !== req.userId && req.userRole !== 'admin') {
+    console.log(topic.userId);
+    console.log(req.userId);
+    if (topic.userId.toString() !== req.userId.toString() ) {
+      console.log("Not authorized to delete this topic");
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this topic' });
     }
-    
+    console.log("---------------------------");
     // Delete all replies to this topic
-    await ForumReply.deleteMany({ topicId: req.params.id });
+   // await ForumReply.deleteMany({ topicId: req.params.id });
     
     // Delete the topic
     await ForumTopic.findByIdAndDelete(req.params.id);
@@ -242,7 +248,9 @@ router.post('/replies', authenticate, async (req, res) => {
       topicId,
       userId: actualUserId,
       userName: actualUserName,
-      parentReplyId: parentReplyId || null
+      parentReplyId: parentReplyId || null,
+      likes: [],
+      dislikes: []
     });
     
     const savedReply = await newReply.save();
@@ -303,10 +311,12 @@ router.delete('/replies/:id', authenticate, async (req, res) => {
     }
     
     // Check if user is the owner of the reply
-    if (reply.userId.toString() !== req.userId && req.userRole !== 'admin') {
+    console.log(reply.userId);
+    console.log(req.userId);
+    if (reply.userId.toString() !== req.userId.toString()) {
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this reply' });
     }
-    
+    console.log("---------------------------");
     // Delete the reply
     await ForumReply.findByIdAndDelete(req.params.id);
     
@@ -324,37 +334,220 @@ router.delete('/replies/:id', authenticate, async (req, res) => {
   }
 });
 
+// Like/unlike a topic
+router.post('/topics/:id/like', authenticate, async (req, res) => {
+  try {
+    const topic = await ForumTopic.findById(req.params.id);
+    
+    if (!topic) {
+      return res.status(404).json({ status: 404, error: 'Topic not found' });
+    }
+    
+    const userId = req.userId;
+    
+    // Check if user already liked this topic
+    const alreadyLiked = topic.likes.includes(userId);
+    // Check if user already disliked this topic
+    const alreadyDisliked = topic.dislikes.includes(userId);
+
+    // If already liked, remove the like (toggle)
+    if (alreadyLiked) {
+      await ForumTopic.updateOne(
+        { _id: req.params.id },
+        { $pull: { likes: userId } }
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Like removed successfully",
+        liked: false
+      });
+    } 
+    // If not liked, add like and remove dislike if exists
+    else {
+      let updateOperation = { $addToSet: { likes: userId } };
+      
+      // If already disliked, remove the dislike
+      if (alreadyDisliked) {
+        updateOperation.$pull = { dislikes: userId };
+      }
+      
+      await ForumTopic.updateOne(
+        { _id: req.params.id },
+        updateOperation
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Topic liked successfully",
+        liked: true
+      });
+    }
+  } catch (error) {
+    console.error('Error liking/unliking topic:', error);
+    res.status(500).json({ status: 500, error: 'Server error' });
+  }
+});
+
+// Dislike/undislike a topic
+router.post('/topics/:id/dislike', authenticate, async (req, res) => {
+  try {
+    const topic = await ForumTopic.findById(req.params.id);
+    
+    if (!topic) {
+      return res.status(404).json({ status: 404, error: 'Topic not found' });
+    }
+    
+    const userId = req.userId;
+    
+    // Check if user already disliked this topic
+    const alreadyDisliked = topic.dislikes.includes(userId);
+    // Check if user already liked this topic
+    const alreadyLiked = topic.likes.includes(userId);
+
+    // If already disliked, remove the dislike (toggle)
+    if (alreadyDisliked) {
+      await ForumTopic.updateOne(
+        { _id: req.params.id },
+        { $pull: { dislikes: userId } }
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Dislike removed successfully",
+        disliked: false
+      });
+    } 
+    // If not disliked, add dislike and remove like if exists
+    else {
+      let updateOperation = { $addToSet: { dislikes: userId } };
+      
+      // If already liked, remove the like
+      if (alreadyLiked) {
+        updateOperation.$pull = { likes: userId };
+      }
+      
+      await ForumTopic.updateOne(
+        { _id: req.params.id },
+        updateOperation
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Topic disliked successfully",
+        disliked: true
+      });
+    }
+  } catch (error) {
+    console.error('Error disliking/undisliking topic:', error);
+    res.status(500).json({ status: 500, error: 'Server error' });
+  }
+});
+
 // Like/unlike a reply
 router.post('/replies/:id/like', authenticate, async (req, res) => {
   try {
     const reply = await ForumReply.findById(req.params.id);
     
     if (!reply) {
-      return res.status(404).json({ status: 404, error: 'Reply not found' });
+      return res.status(404).json({
+        status: 404,
+        error: "Reply not found"
+      });
     }
     
     const userId = req.userId;
-    const userLikedIndex = reply.likedBy.indexOf(userId);
     
-    if (userLikedIndex === -1) {
-      // User hasn't liked this reply yet, so add like
-      reply.likedBy.push(userId);
-      reply.likes += 1;
-    } else {
-      // User already liked this reply, so remove like
-      reply.likedBy.splice(userLikedIndex, 1);
-      reply.likes = Math.max(0, reply.likes - 1);
+    // Check if user already liked this reply
+    const alreadyLiked = reply.likes.includes(userId);
+    // Check if user already disliked this reply
+    const alreadyDisliked = reply.dislikes.includes(userId);
+
+    // If already liked, remove the like (toggle)
+    if (alreadyLiked) {
+      await ForumReply.updateOne(
+        { _id: req.params.id },
+        { $pull: { likes: userId } }
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Like removed successfully",
+        liked: false
+      });
+    } 
+    // If not liked, add like and remove dislike if exists
+    else {
+      let updateOperation = { $addToSet: { likes: userId } };
+      
+      // If already disliked, remove the dislike
+      if (alreadyDisliked) {
+        updateOperation.$pull = { dislikes: userId };
+      }
+      
+      await ForumReply.updateOne(
+        { _id: req.params.id },
+        updateOperation
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Reply liked successfully",
+        liked: true
+      });
     }
-    
-    await reply.save();
-    
-    res.status(200).json({ 
-      status: 200, 
-      likes: reply.likes, 
-      liked: userLikedIndex === -1 // Returns true if the user just liked it
-    });
   } catch (error) {
     console.error('Error liking/unliking reply:', error);
+    res.status(500).json({ status: 500, error: 'Server error' });
+  }
+});
+
+// Dislike/undislike a reply
+router.post('/replies/:id/dislike', authenticate, async (req, res) => {
+  try {
+    const reply = await ForumReply.findById(req.params.id);
+    
+    if (!reply) {
+      return res.status(404).json({
+        status: 404,
+        error: "Reply not found"
+      });
+    }
+    
+    const userId = req.userId;
+    
+    // Check if user already disliked this reply
+    const alreadyDisliked = reply.dislikes.includes(userId);
+    // Check if user already liked this reply
+    const alreadyLiked = reply.likes.includes(userId);
+
+    // If already disliked, remove the dislike (toggle)
+    if (alreadyDisliked) {
+      await ForumReply.updateOne(
+        { _id: req.params.id },
+        { $pull: { dislikes: userId } }
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Dislike removed successfully",
+        disliked: false
+      });
+    } 
+    // If not disliked, add dislike and remove like if exists
+    else {
+      let updateOperation = { $addToSet: { dislikes: userId } };
+      
+      // If already liked, remove the like
+      if (alreadyLiked) {
+        updateOperation.$pull = { likes: userId };
+      }
+      
+      await ForumReply.updateOne(
+        { _id: req.params.id },
+        updateOperation
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Reply disliked successfully",
+        disliked: true
+      });
+    }
+  } catch (error) {
+    console.error('Error disliking/undisliking reply:', error);
     res.status(500).json({ status: 500, error: 'Server error' });
   }
 });

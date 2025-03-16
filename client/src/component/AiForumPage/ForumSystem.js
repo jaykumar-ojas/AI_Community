@@ -20,6 +20,9 @@ const ForumSystem = () => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState('');
 
+  // Add new state for tracking loading states of like/dislike actions
+  const [actionLoading, setActionLoading] = useState({});
+
   // API endpoints
   const API_BASE_URL = 'http://localhost:8099';
   const TOPICS_URL = `${API_BASE_URL}/forum/topics`;
@@ -276,6 +279,231 @@ const ForumSystem = () => {
     return topLevelReplies;
   };
 
+  // Add new handlers for topic likes/dislikes
+  const handleTopicLike = async (topicId, e) => {
+    e?.stopPropagation();
+    if (!loginData?.validuserone) {
+      alert('Please log in to like topics');
+      return;
+    }
+
+    setActionLoading(prev => ({ ...prev, [`topic_like_${topicId}`]: true }));
+    try {
+      const response = await axios.post(`${API_BASE_URL}/forum/topics/${topicId}/like`, {}, {
+        headers: getAuthHeaders()
+      });
+
+      // Update topics list
+      setTopics(prevTopics => prevTopics.map(topic => {
+        if (topic._id === topicId) {
+          const userId = loginData.validuserone._id;
+          const likes = topic.likes || [];
+          const dislikes = topic.dislikes || [];
+          
+          if (response.data.liked) {
+            return {
+              ...topic,
+              likes: [...likes, userId],
+              dislikes: dislikes.filter(id => id !== userId)
+            };
+          } else {
+            return {
+              ...topic,
+              likes: likes.filter(id => id !== userId)
+            };
+          }
+        }
+        return topic;
+      }));
+
+      // Update selected topic if it's the one being liked
+      if (selectedTopic?._id === topicId) {
+        setSelectedTopic(prevTopic => {
+          const userId = loginData.validuserone._id;
+          const likes = prevTopic.likes || [];
+          const dislikes = prevTopic.dislikes || [];
+          
+          if (response.data.liked) {
+            return {
+              ...prevTopic,
+              likes: [...likes, userId],
+              dislikes: dislikes.filter(id => id !== userId)
+            };
+          } else {
+            return {
+              ...prevTopic,
+              likes: likes.filter(id => id !== userId)
+            };
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error liking topic:', error);
+      alert('Failed to like topic. Please try again.');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`topic_like_${topicId}`]: false }));
+    }
+  };
+
+  const handleTopicDislike = async (topicId, e) => {
+    e?.stopPropagation();
+    if (!loginData?.validuserone) {
+      alert('Please log in to dislike topics');
+      return;
+    }
+
+    setActionLoading(prev => ({ ...prev, [`topic_dislike_${topicId}`]: true }));
+    try {
+      const response = await axios.post(`${API_BASE_URL}/forum/topics/${topicId}/dislike`, {}, {
+        headers: getAuthHeaders()
+      });
+
+      // Update topics list
+      setTopics(prevTopics => prevTopics.map(topic => {
+        if (topic._id === topicId) {
+          const userId = loginData.validuserone._id;
+          const likes = topic.likes || [];
+          const dislikes = topic.dislikes || [];
+          
+          if (response.data.disliked) {
+            return {
+              ...topic,
+              dislikes: [...dislikes, userId],
+              likes: likes.filter(id => id !== userId)
+            };
+          } else {
+            return {
+              ...topic,
+              dislikes: dislikes.filter(id => id !== userId)
+            };
+          }
+        }
+        return topic;
+      }));
+
+      // Update selected topic if it's the one being disliked
+      if (selectedTopic?._id === topicId) {
+        setSelectedTopic(prevTopic => {
+          const userId = loginData.validuserone._id;
+          const likes = prevTopic.likes || [];
+          const dislikes = prevTopic.dislikes || [];
+          
+          if (response.data.disliked) {
+            return {
+              ...prevTopic,
+              dislikes: [...dislikes, userId],
+              likes: likes.filter(id => id !== userId)
+            };
+          } else {
+            return {
+              ...prevTopic,
+              dislikes: dislikes.filter(id => id !== userId)
+            };
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error disliking topic:', error);
+      alert('Failed to dislike topic. Please try again.');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`topic_dislike_${topicId}`]: false }));
+    }
+  };
+
+  // Add handlers for reply likes/dislikes
+  const handleReplyLike = async (replyId) => {
+    if (!loginData?.validuserone) {
+      alert('Please log in to like replies');
+      return;
+    }
+
+    setActionLoading(prev => ({ ...prev, [`reply_like_${replyId}`]: true }));
+    try {
+      const response = await axios.post(`${API_BASE_URL}/forum/replies/${replyId}/like`, {}, {
+        headers: getAuthHeaders()
+      });
+
+      // Update replies list
+      setReplies(prevReplies => prevReplies.map(reply => {
+        if (reply._id === replyId) {
+          const userId = loginData.validuserone._id;
+          const likes = reply.likes || [];
+          const dislikes = reply.dislikes || [];
+          
+          if (response.data.liked) {
+            return {
+              ...reply,
+              likes: [...likes, userId],
+              dislikes: dislikes.filter(id => id !== userId)
+            };
+          } else {
+            return {
+              ...reply,
+              likes: likes.filter(id => id !== userId)
+            };
+          }
+        }
+        return reply;
+      }));
+    } catch (error) {
+      console.error('Error liking reply:', error);
+      alert('Failed to like reply. Please try again.');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`reply_like_${replyId}`]: false }));
+    }
+  };
+
+  const handleReplyDislike = async (replyId) => {
+    if (!loginData?.validuserone) {
+      alert('Please log in to dislike replies');
+      return;
+    }
+
+    setActionLoading(prev => ({ ...prev, [`reply_dislike_${replyId}`]: true }));
+    try {
+      const response = await axios.post(`${API_BASE_URL}/forum/replies/${replyId}/dislike`, {}, {
+        headers: getAuthHeaders()
+      });
+
+      // Update replies list
+      setReplies(prevReplies => prevReplies.map(reply => {
+        if (reply._id === replyId) {
+          const userId = loginData.validuserone._id;
+          const likes = reply.likes || [];
+          const dislikes = reply.dislikes || [];
+          
+          if (response.data.disliked) {
+            return {
+              ...reply,
+              dislikes: [...dislikes, userId],
+              likes: likes.filter(id => id !== userId)
+            };
+          } else {
+            return {
+              ...reply,
+              dislikes: dislikes.filter(id => id !== userId)
+            };
+          }
+        }
+        return reply;
+      }));
+    } catch (error) {
+      console.error('Error disliking reply:', error);
+      alert('Failed to dislike reply. Please try again.');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`reply_dislike_${replyId}`]: false }));
+    }
+  };
+
+  // Add helper function to check if user has liked/disliked
+  const hasUserLiked = (item) => {
+    return loginData?.validuserone && item.likes?.includes(loginData.validuserone._id);
+  };
+
+  const hasUserDisliked = (item) => {
+    return loginData?.validuserone && item.dislikes?.includes(loginData.validuserone._id);
+  };
+
   // Render a single reply and its children recursively
   const renderReply = (reply, depth = 0) => {
     const isReplying = replyingTo === reply._id;
@@ -291,11 +519,35 @@ const ForumSystem = () => {
               <span className="font-medium text-blue-600">{reply.userName}</span>
               <span className="text-gray-400 text-sm ml-2">{formatDate(reply.createdAt)}</span>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
+              {/* Like button */}
+              <button
+                onClick={() => handleReplyLike(reply._id)}
+                disabled={actionLoading[`reply_like_${reply._id}`]}
+                className={`flex items-center space-x-1 ${hasUserLiked(reply) ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}
+              >
+                <svg className="w-5 h-5" fill={hasUserLiked(reply) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                </svg>
+                <span>{reply.likes?.length || 0}</span>
+              </button>
+              
+              {/* Dislike button */}
+              <button
+                onClick={() => handleReplyDislike(reply._id)}
+                disabled={actionLoading[`reply_dislike_${reply._id}`]}
+                className={`flex items-center space-x-1 ${hasUserDisliked(reply) ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+              >
+                <svg className="w-5 h-5" fill={hasUserDisliked(reply) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
+                </svg>
+                <span>{reply.dislikes?.length || 0}</span>
+              </button>
+
               {canDelete && (
                 <button
                   onClick={() => handleDeleteReply(reply._id)}
-                  className="text-red-500 hover:text-red-700 mr-3"
+                  className="text-red-500 hover:text-red-700"
                   title="Delete reply"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -303,6 +555,7 @@ const ForumSystem = () => {
                   </svg>
                 </button>
               )}
+              
               <button
                 onClick={() => {
                   if (isReplying) {
@@ -370,7 +623,7 @@ const ForumSystem = () => {
 
   // Handle deleting a topic
   const handleDeleteTopic = async (topicId) => {
-    if (!loginData || !loginData.validuserone) {
+    if (!loginData?.validuserone) {
       setError('You must be logged in to delete a topic');
       return;
     }
@@ -383,8 +636,23 @@ const ForumSystem = () => {
     try {
       setIsLoading(true);
       
-      const response = await axios.delete(`${TOPICS_URL}/${topicId}`, {
-        headers: getAuthHeaders()
+      const userId = loginData.validuserone._id;
+      const userRole = loginData.validuserone.role;
+      
+      // const response = await axios.delete(
+      //   `${TOPICS_URL}/${topicId}?userId=${userId}&userRole=${userRole}`,
+      //   { headers: getAuthHeaders() }
+      // );
+      const token = localStorage.getItem("userdatatoken");
+      const response = await fetch(`http://localhost:8099/forum/topics/${topicId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          userId: loginData.validuserone._id,
+        })
       });
 
       if (response.status === 200) {
@@ -416,7 +684,8 @@ const ForumSystem = () => {
 
   // Handle deleting a reply
   const handleDeleteReply = async (replyId) => {
-    if (!loginData || !loginData.validuserone) {
+    console.log(replyId);
+    if (!loginData?.validuserone) {
       setError('You must be logged in to delete a reply');
       return;
     }
@@ -429,8 +698,19 @@ const ForumSystem = () => {
     try {
       setIsLoading(true);
       
-      const response = await axios.delete(`${REPLIES_URL}/${replyId}`, {
-        headers: getAuthHeaders()
+      const userId = loginData.validuserone._id;
+      const userRole = loginData.validuserone.role;
+      
+      const token = localStorage.getItem("userdatatoken");
+      const response = await fetch(`http://localhost:8099/forum/replies/${replyId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          userId: loginData.validuserone._id,
+        })
       });
 
       if (response.status === 200) {
@@ -455,6 +735,86 @@ const ForumSystem = () => {
       setIsLoading(false);
     }
   };
+
+  // Update the topic rendering in the topics list
+  const renderTopicsList = () => (
+    <div className="divide-y">
+      {topics.length > 0 ? (
+        topics.map(topic => (
+          <div
+            key={topic._id}
+            className="p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1 cursor-pointer" onClick={() => handleSelectTopic(topic)}>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">{topic.title}</h3>
+                <p className="text-gray-600 text-sm line-clamp-2">{topic.content}</p>
+                <div className="flex items-center mt-2 text-sm text-gray-500">
+                  <span className="font-medium text-blue-600 mr-2">{topic.userName}</span>
+                  <span className="mr-4">{formatDate(topic.createdAt)}</span>
+                  <div className="flex items-center space-x-4">
+                    {/* Like button */}
+                    <button
+                      onClick={(e) => handleTopicLike(topic._id, e)}
+                      disabled={actionLoading[`topic_like_${topic._id}`]}
+                      className={`flex items-center space-x-1 ${hasUserLiked(topic) ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}
+                    >
+                      <svg className="w-5 h-5" fill={hasUserLiked(topic) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                      </svg>
+                      <span>{topic.likes?.length || 0}</span>
+                    </button>
+                    
+                    {/* Dislike button */}
+                    <button
+                      onClick={(e) => handleTopicDislike(topic._id, e)}
+                      disabled={actionLoading[`topic_dislike_${topic._id}`]}
+                      className={`flex items-center space-x-1 ${hasUserDisliked(topic) ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+                    >
+                      <svg className="w-5 h-5" fill={hasUserDisliked(topic) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
+                      </svg>
+                      <span>{topic.dislikes?.length || 0}</span>
+                    </button>
+                    
+                    {/* Reply count */}
+                    <span className="flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      {topic.replyCount || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Delete button */}
+              {(loginData?.validuserone?._id === topic.userId || loginData?.validuserone?.role === 'admin') && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTopic(topic._id);
+                  }}
+                  className="text-red-500 hover:text-red-700 ml-4"
+                  title="Delete topic"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="text-center text-gray-500 py-8">
+          {currentTab === 'my' 
+            ? "You haven't created any topics yet"
+            : "No topics available"}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="bg-white rounded-lg overflow-hidden flex flex-col h-full">
@@ -578,55 +938,7 @@ const ForumSystem = () => {
           </div>
         ) : (
           // Topics List View
-          <div className="divide-y">
-            {topics.length > 0 ? (
-              topics.map(topic => (
-                <div
-                  key={topic._id}
-                  className="p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 cursor-pointer" onClick={() => handleSelectTopic(topic)}>
-                      <h3 className="text-lg font-medium text-gray-900 mb-1">{topic.title}</h3>
-                      <p className="text-gray-600 text-sm line-clamp-2">{topic.content}</p>
-                      <div className="flex items-center mt-2 text-sm text-gray-500">
-                        <span className="font-medium text-blue-600 mr-2">{topic.userName}</span>
-                        <span className="mr-4">{formatDate(topic.createdAt)}</span>
-                        <span className="flex items-center">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                          </svg>
-                          {topic.replyCount || 0}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Add delete button for topic owner or admin */}
-                    {(loginData?.validuserone?._id === topic.userId || loginData?.validuserone?.role === 'admin') && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteTopic(topic._id);
-                        }}
-                        className="text-red-500 hover:text-red-700 ml-4"
-                        title="Delete topic"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center text-gray-500 py-8">
-                {currentTab === 'my' 
-                  ? "You haven't created any topics yet"
-                  : "No topics available"}
-              </div>
-            )}
-          </div>
+          renderTopicsList()
         )}
       </div>
 

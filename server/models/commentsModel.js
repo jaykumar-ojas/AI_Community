@@ -20,7 +20,15 @@ var commentSchema = mongoose.Schema({
     commentText: {
         type: String,
         required: true
-    }
+    },
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    dislikes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 }, {timestamps: true});
 
 module.exports = mongoose.model('Comments', commentSchema);

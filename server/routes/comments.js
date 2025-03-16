@@ -10,7 +10,9 @@ const addComment = (req, res) => {
             name: req.body.name
         },
         commentText: req.body.commentText,
-        postId: req.body.postId
+        postId: req.body.postId,
+        likes: [], // Initialize empty arrays for likes and dislikes
+        dislikes: []
     }
     if ('parentId' in req.body) {
         data.parentId = req.body.parentId
@@ -118,10 +120,128 @@ const getComments = (req, res) => {
     .catch(err => res.status(500).json({error: err}))
 }
 
+// New function to handle liking a comment
+const likeComment = (req, res) => {
+    const commentId = req.params.id;
+    const userId = req.body.userId;
+
+    Comment.findById(commentId)
+    .exec()
+    .then(comment => {
+        if (!comment) {
+            return res.status(404).json({
+                error: "Comment not found"
+            });
+        }
+
+        // Check if user already liked this comment
+        const alreadyLiked = comment.likes.includes(userId);
+        // Check if user already disliked this comment
+        const alreadyDisliked = comment.dislikes.includes(userId);
+
+        // If already liked, remove the like (toggle)
+        if (alreadyLiked) {
+            Comment.updateOne(
+                { _id: commentId },
+                { $pull: { likes: userId } }
+            )
+            .exec()
+            .then(() => {
+                res.status(200).json({
+                    message: "Like removed successfully"
+                });
+            })
+            .catch(err => res.status(500).json({error: err}));
+        } 
+        // If not liked, add like and remove dislike if exists
+        else {
+            let updateOperation = { $addToSet: { likes: userId } };
+            
+            // If already disliked, remove the dislike
+            if (alreadyDisliked) {
+                updateOperation.$pull = { dislikes: userId };
+            }
+            
+            Comment.updateOne(
+                { _id: commentId },
+                updateOperation
+            )
+            .exec()
+            .then(() => {
+                res.status(200).json({
+                    message: "Comment liked successfully"
+                });
+            })
+            .catch(err => res.status(500).json({error: err}));
+        }
+    })
+    .catch(err => res.status(500).json({error: err}));
+}
+
+// New function to handle disliking a comment
+const dislikeComment = (req, res) => {
+    const commentId = req.params.id;
+    const userId = req.body.userId;
+
+    Comment.findById(commentId)
+    .exec()
+    .then(comment => {
+        if (!comment) {
+            return res.status(404).json({
+                error: "Comment not found"
+            });
+        }
+
+        // Check if user already disliked this comment
+        const alreadyDisliked = comment.dislikes.includes(userId);
+        // Check if user already liked this comment
+        const alreadyLiked = comment.likes.includes(userId);
+
+        // If already disliked, remove the dislike (toggle)
+        if (alreadyDisliked) {
+            Comment.updateOne(
+                { _id: commentId },
+                { $pull: { dislikes: userId } }
+            )
+            .exec()
+            .then(() => {
+                res.status(200).json({
+                    message: "Dislike removed successfully"
+                });
+            })
+            .catch(err => res.status(500).json({error: err}));
+        } 
+        // If not disliked, add dislike and remove like if exists
+        else {
+            let updateOperation = { $addToSet: { dislikes: userId } };
+            
+            // If already liked, remove the like
+            if (alreadyLiked) {
+                updateOperation.$pull = { likes: userId };
+            }
+            
+            Comment.updateOne(
+                { _id: commentId },
+                updateOperation
+            )
+            .exec()
+            .then(() => {
+                res.status(200).json({
+                    message: "Comment disliked successfully"
+                });
+            })
+            .catch(err => res.status(500).json({error: err}));
+        }
+    })
+    .catch(err => res.status(500).json({error: err}));
+}
+
 // Routes
 router.get('/', getComments);
 router.post('/edit', updateComment);
 router.post('/', addComment);
 router.delete('/:id', deleteComment);
+router.post('/:id/like', likeComment);
+router.post('/:id/dislike', dislikeComment);
 
 module.exports = router;
