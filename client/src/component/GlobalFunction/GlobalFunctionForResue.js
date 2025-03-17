@@ -38,10 +38,12 @@ export const ValidUserForPage = () => {
         removeData();
         setLoginData(null);
       } else {
+        localStorage.setItem("userData",JSON.stringify(res));
         setLoginData(res); // No need for await here
         return true;
       }
     } catch (error) {
+      console.log("i am coming to error in validate page and remove data");
       removeData();
     }
   };
