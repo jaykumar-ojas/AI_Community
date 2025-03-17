@@ -5,7 +5,7 @@ import DashBoardPage from "./pages/DashBoardPage/DashBoardPage";
 import Login from "./component/Auth/Login";
 import Register from "./component/Auth/Register";
 import UserProfile2 from "./component/UserProfile/userProfile2";
-import UserProfile from "./component/UserProfile/userProfile";
+//import UserProfile from "./component/UserProfile/userProfile";
 import Error from "./component/Error/error";
 import UpdatePassword from "./component/Auth/updatePassword";
 import { createBrowserRouter, RouterProvider, useNavigate } from "react-router-dom";
