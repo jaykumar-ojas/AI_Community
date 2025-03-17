@@ -5,11 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { LoginContext } from "../../component/ContextProvider/context";
 import ForumSystem from "../../component/AiForumPage/ForumSystem";
 import { ValidUserForPage } from "../../component/GlobalFunction/GlobalFunctionForResue";
+import Loader from "../../component/Loader/Loader";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const Page = () => {
-  const { loginData, setLoginData } = useContext(LoginContext);
   const [postdata, setPostData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore,setHasMore] = useState(true);
+  const [page,setPage] = useState(1);
   const validate = ValidUserForPage();
   const history = useNavigate();
   
@@ -34,7 +37,7 @@ const Page = () => {
 
   const dataFetch = async () => {
     try {
-      const res = await fetch("http://localhost:8099/allget", {
+      const res = await fetch("http://localhost:8099/allget?page=1&limit=9", {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -42,6 +45,8 @@ const Page = () => {
       });
       const data = await res.json();
       if (data && data.userposts) {
+        setHasMore(data.hasMore);
+        setPage(2); // 
         setPostData(data.userposts);
         setLoading(false);
       }
@@ -49,6 +54,32 @@ const Page = () => {
       console.error("Error fetching posts:", error);
     }
   }
+
+  const fetchMorePosts = async () => {
+    // this will remove in produciton 
+    setTimeout(async() => {
+      
+    if (!hasMore) return;
+    try {
+      const res = await fetch(`http://localhost:8099/allget?page=${page}&limit=9`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if(data){
+        setPostData(prevPosts => [...prevPosts, ...data.userposts]);
+        setHasMore(data.hasMore);
+        setPage(prev => prev + 1); 
+      }
+    } catch (error) {
+      console.error("Error fetching more posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, 2500);
+  };
 
   useEffect(() => {
     googleLog();
@@ -65,17 +96,32 @@ const Page = () => {
               {/* Main content area with grid layout */}
               <div className="flex-1">
                 {loading ? (
-                  <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                  </div>
+                 <Loader></Loader>
                 ) : postdata && postdata.length > 0 ? (
+                  <InfiniteScroll
+                      dataLength={postdata.length}
+                      next={fetchMorePosts}
+                      hasMore={hasMore}
+                      loader={
+                        <div className="flex justify-center my-4">
+                        <Loader /> {/* Centered Loader */}
+                      </div>
+                      }
+                      endMessage={
+                        <p className="end-message">
+                          You've seen all posts!
+                        </p>
+                      }
+                    >
                   <div className=" grid grid-cols-1 md:grid-cols-3">
                     {postdata.map((post) => (
                       <div key={post._id} className="flex justify-center">
                         <Card post={post} />
                       </div>
                     ))}
+                    
                   </div>
+                  </InfiniteScroll>
                 ) : (
                   <div className=" text-center text-gray-500">No posts available</div>
                 )}
