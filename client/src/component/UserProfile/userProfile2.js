@@ -5,6 +5,7 @@ import { ValidUserForPage } from "../GlobalFunction/GlobalFunctionForResue";
 import ProfileHeader from "./components/ProfileHeader";
 import ProfileFilters from "./components/ProfileFilters";
 import ProfileContent from "./components/ProfileContent";
+import Login from "../Auth/Login";
 
 const Uploader = () => {
   const {loginData, setLoginData} = useContext(LoginContext);
@@ -20,6 +21,8 @@ const Uploader = () => {
   const navigate = useNavigate();
   const validatePage = ValidUserForPage();
 
+ 
+
   useEffect(() => {
     console.log("i m coming after refresh");
     validateUser();
@@ -32,14 +35,7 @@ const Uploader = () => {
 
   const validateUser = () => {
     if (!loginData) {
-      const userData = validatePage();
-      if (userData) {
-        setLoginData({ validuserone: userData });
-        console.log("i am already login");
-      } else {
-        console.log("i am come here after checking");
-        setShowLogin(true);
-      }
+      validatePage();
     }
   };
   
@@ -196,6 +192,10 @@ const Uploader = () => {
       setUploadingBackground(false);
     }
   };
+  console.log("this si ==is long data",loginData);
+  if(loginData==null || loginData === undefined){
+    return(<Login></Login>)
+  }
 
   const renderMedia = (post) => {
     if (!post.signedUrl) return null;

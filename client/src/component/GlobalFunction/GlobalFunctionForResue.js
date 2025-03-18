@@ -16,7 +16,7 @@ export const ValidUserForPage = () => {
 
     if (!token) {
       removeData();
-      return ;
+      return false;
     }
 
     try {
@@ -37,6 +37,7 @@ export const ValidUserForPage = () => {
       if (!res || res.status === 401) {
         removeData();
         setLoginData(null);
+        return false;
       } else {
         localStorage.setItem("userData",JSON.stringify(res));
         setLoginData(res); // No need for await here
@@ -45,8 +46,11 @@ export const ValidUserForPage = () => {
     } catch (error) {
       console.log("i am coming to error in validate page and remove data");
       removeData();
+      return false;
     }
   };
 
   return validateUser;
 };
+
+
