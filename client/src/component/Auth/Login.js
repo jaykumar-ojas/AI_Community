@@ -67,6 +67,7 @@ const Login = () => {
   const islogin=async()=>{
     const token=localStorage.getItem("userdatatoken");
 
+    try{
     const data = await fetch("http://localhost:8099/validuser",{
       method:"GET",
       headers:{
@@ -83,10 +84,14 @@ const Login = () => {
       console.log("invalid user");
     }
     else{
-      setLoginData(res.validuserone);
+      setLoginData(res);
       console.log("user login already",res);
       history("/");
     }
+  }
+  catch(error){
+    console.log("this si error",error);
+  }
   }
 
   useEffect(()=>{
