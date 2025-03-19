@@ -275,7 +275,7 @@ const RenderUserPosts = () => {
                     title={userLiked ? "Remove like" : "Like this post"}
                   >
                     <HeartIcon filled={userLiked} />
-                    <span className="text-sm">{post.likes ? post.likes.length : 0}</span>
+                    <span className="text-sm">{post?.likes ? post?.likes.length : 0}</span>
                   </button>
                   
                   {/* Dislike button */}
@@ -285,7 +285,7 @@ const RenderUserPosts = () => {
                     title={userDisliked ? "Remove dislike" : "Dislike this post"}
                   >
                     <ThumbsDownIcon filled={userDisliked} />
-                    <span className="text-sm">{post.dislikes ? post.dislikes.length : 0}</span>
+                    <span className="text-sm">{post?.dislikes ? post?.dislikes.length : 0}</span>
                   </button>
                 </div>
                 <p className="text-xs text-gray-500">Type: {post.fileType}</p>
