@@ -34,13 +34,13 @@ const PopularTopics = ({ onSelectTopic }) => {
     setError(null);
     
     try {
-      const response = await axios.get(`${TOPICS_URL}?sort=popular`, { headers: getAuthHeaders() });
+      const response = await axios.get(TOPICS_URL, { headers: getAuthHeaders() });
       setTopics(response.data.topics || []);
     } catch (err) {
       if (handleAuthError(err, setError)) {
         return;
       }
-      console.error('Error fetching popular topics:', err);
+      console.error('Error fetching topics:', err);
       setError('Failed to load topics. Please try again later.');
     } finally {
       setIsLoading(false);

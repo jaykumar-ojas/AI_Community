@@ -40,6 +40,16 @@ const forumTopicSchema = new mongoose.Schema({
     type: String,
     trim: true
   }],
+  mediaAttachments: [{
+    fileName: String,
+    fileType: String,
+    fileUrl: String,
+    fileSize: Number,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'

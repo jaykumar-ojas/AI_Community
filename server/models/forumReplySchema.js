@@ -29,6 +29,16 @@ const forumReplySchema = new mongoose.Schema({
     ref: 'ForumReply',
     default: null
   },
+  mediaAttachments: [{
+    fileName: String,
+    fileType: String,
+    fileUrl: String,
+    fileSize: Number,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'
