@@ -12,6 +12,8 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
   const [newReply, setNewReply] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [replySelectedFiles, setReplySelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [topicLikes, setTopicLikes] = useState(topic?.likes || []);
@@ -72,6 +74,15 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
     }
   };
 
+  const handleFileSelect = (e, isReply = false) => {
+    const files = Array.from(e.target.files);
+    if (isReply) {
+      setReplySelectedFiles(files);
+    } else {
+      setSelectedFiles(files);
+    }
+  };
+
   // Handle posting a reply
   const handlePostReply = async (parentReplyId = null) => {
     if (!loginData || !loginData.validuserone) {
@@ -80,6 +91,7 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
     }
 
     const content = parentReplyId ? replyContent : newReply;
+    const files = parentReplyId ? replySelectedFiles : selectedFiles;
 
     if (!content.trim() || !topic) {
       alert('Please enter a reply');
@@ -90,13 +102,26 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
     setError(null);
     
     try {
-      const response = await axios.post(REPLIES_URL, {
-        content: content,
-        topicId: topic._id,
-        userId: loginData.validuserone._id,
-        userName: loginData.validuserone.userName,
-        parentReplyId: parentReplyId
-      }, { headers: getAuthHeaders() });
+      const formData = new FormData();
+      formData.append('content', content);
+      formData.append('topicId', topic._id);
+      formData.append('userId', loginData.validuserone._id);
+      formData.append('userName', loginData.validuserone.userName);
+      if (parentReplyId) {
+        formData.append('parentReplyId', parentReplyId);
+      }
+
+      // Append media files if any
+      files.forEach(file => {
+        formData.append('media', file);
+      });
+
+      const response = await axios.post(REPLIES_URL, formData, { 
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
       // Emit socket event for new reply
       emitNewReply(response.data.reply);
@@ -104,9 +129,11 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
       // Reset form
       if (parentReplyId) {
         setReplyContent('');
+        setReplySelectedFiles([]);
         setReplyingTo(null);
       } else {
         setNewReply('');
+        setSelectedFiles([]);
       }
     } catch (err) {
       if (handleAuthError(err, setError)) {
@@ -337,9 +364,11 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
                   if (isReplying) {
                     setReplyingTo(null);
                     setReplyContent('');
+                    setReplySelectedFiles([]);
                   } else {
                     setReplyingTo(reply._id);
                     setReplyContent('');
+                    setReplySelectedFiles([]);
                   }
                 }}
                 className="text-sm text-blue-600 hover:text-blue-800"
@@ -351,6 +380,58 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
           
           <div className="text-gray-700 whitespace-pre-wrap">{reply.content}</div>
           
+          {/* Display media attachments */}
+          {reply.mediaAttachments && reply.mediaAttachments.length > 0 && (
+            <div className="mt-4 space-y-2">
+              {reply.mediaAttachments.map((attachment, index) => (
+                <div key={index} className="relative">
+                  {attachment.fileType.startsWith('image/') ? (
+                    <img
+                      src={attachment.fileUrl}
+                      alt={attachment.fileName}
+                      className="max-w-full h-auto rounded-lg"
+                      onError={(e) => {
+                        console.error('Error loading image:', attachment.fileUrl);
+                        e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                      }}
+                    />
+                  ) : attachment.fileType.startsWith('video/') ? (
+                    <video
+                      controls
+                      className="max-w-full rounded-lg"
+                      src={attachment.fileUrl}
+                      onError={(e) => {
+                        console.error('Error loading video:', attachment.fileUrl);
+                      }}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : attachment.fileType.startsWith('audio/') ? (
+                    <audio
+                      controls
+                      className="w-full"
+                      src={attachment.fileUrl}
+                      onError={(e) => {
+                        console.error('Error loading audio:', attachment.fileUrl);
+                      }}
+                    >
+                      Your browser does not support the audio tag.
+                    </audio>
+                  ) : (
+                    <a
+                      href={attachment.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      Download {attachment.fileName}
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          
           {isReplying && (
             <div className="mt-4 pl-4 border-l-2 border-blue-100">
               <textarea
@@ -360,6 +441,27 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
               />
+              <div className="mt-2">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,video/*,audio/*"
+                  onChange={(e) => handleFileSelect(e, true)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {replySelectedFiles.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-600">Selected files:</p>
+                    <ul className="mt-1 space-y-1">
+                      {replySelectedFiles.map((file, index) => (
+                        <li key={index} className="text-sm text-gray-500">
+                          {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
               <div className="flex justify-end mt-2">
                 <button
                   className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50"
@@ -394,62 +496,99 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
   return (
     <div className="space-y-4">
       {/* Topic Header */}
-      <div className="bg-white rounded-lg border p-4">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">{topic.title}</h2>
-            <div className="flex items-center mt-2">
-              <span className="text-gray-600">Posted by {topic.userName}</span>
-              <span className="text-gray-400 mx-2">•</span>
-              <span className="text-gray-600">{formatDate(topic.createdAt)}</span>
-            </div>
-          </div>
-          <div className="flex items-center">
-            <div className="flex items-center mr-4">
-              <button
-                onClick={handleTopicLike}
-                className={`flex items-center text-sm ${isTopicLiked ? 'text-blue-600' : 'text-gray-500'} hover:text-blue-600`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill={isTopicLiked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                </svg>
-                {topicLikes.length}
-              </button>
-              <button
-                onClick={handleTopicDislike}
-                className={`flex items-center text-sm ml-2 ${isTopicDisliked ? 'text-red-600' : 'text-gray-500'} hover:text-red-600`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill={isTopicDisliked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 5v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 5h2m5 0v2a2 2 0 01-2 2h-2.5" />
-                </svg>
-                {topicDislikes.length}
-              </button>
-            </div>
-            <button
-              onClick={onBack}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+      <div className="bg-white rounded-lg border p-4 mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={onBack}
+            className="flex items-center text-blue-600 hover:text-blue-800"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Topics
+          </button>
         </div>
+        <h2 className="text-xl font-bold mb-2">{topic.title}</h2>
+        <div className="flex items-center text-sm text-gray-500 mb-4">
+          <span>Posted by {topic.userName}</span>
+          <span className="mx-2">•</span>
+          <span>{formatDate(topic.createdAt)}</span>
+        </div>
+        <div className="text-gray-700 whitespace-pre-wrap mb-4">{topic.content}</div>
         
-        <div className="text-gray-700 whitespace-pre-wrap">{topic.content}</div>
-        
-        {topic.tags && topic.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {topic.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-              >
-                {tag}
-              </span>
+        {/* Display topic media attachments */}
+        {topic.mediaAttachments && topic.mediaAttachments.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {topic.mediaAttachments.map((attachment, index) => (
+              <div key={index} className="relative">
+                {attachment.fileType.startsWith('image/') ? (
+                  <img
+                    src={attachment.fileUrl}
+                    alt={attachment.fileName}
+                    className="max-w-full h-auto rounded-lg"
+                    onError={(e) => {
+                      console.error('Error loading image:', attachment.fileUrl);
+                      e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                    }}
+                  />
+                ) : attachment.fileType.startsWith('video/') ? (
+                  <video
+                    controls
+                    className="max-w-full rounded-lg"
+                    src={attachment.fileUrl}
+                    onError={(e) => {
+                      console.error('Error loading video:', attachment.fileUrl);
+                    }}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : attachment.fileType.startsWith('audio/') ? (
+                  <audio
+                    controls
+                    className="w-full"
+                    src={attachment.fileUrl}
+                    onError={(e) => {
+                      console.error('Error loading audio:', attachment.fileUrl);
+                    }}
+                  >
+                    Your browser does not support the audio tag.
+                  </audio>
+                ) : (
+                  <a
+                    href={attachment.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    Download {attachment.fileName}
+                  </a>
+                )}
+              </div>
             ))}
           </div>
         )}
+
+        {/* Topic Actions */}
+        <div className="flex items-center mt-4">
+          <button
+            onClick={handleTopicLike}
+            className={`flex items-center text-sm ${isTopicLiked ? 'text-blue-600' : 'text-gray-500'} hover:text-blue-600`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill={isTopicLiked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+            </svg>
+            {topicLikes.length}
+          </button>
+          <button
+            onClick={handleTopicDislike}
+            className={`flex items-center text-sm ml-4 ${isTopicDisliked ? 'text-red-600' : 'text-gray-500'} hover:text-red-600`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill={isTopicDisliked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 5v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 5h2m5 0v2a2 2 0 01-2 2h-2.5" />
+            </svg>
+            {topicDislikes.length}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -484,6 +623,28 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
           onChange={(e) => setNewReply(e.target.value)}
           disabled={!loginData}
         />
+        <div className="mt-2">
+          <input
+            type="file"
+            multiple
+            accept="image/*,video/*,audio/*"
+            onChange={(e) => handleFileSelect(e)}
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={!loginData}
+          />
+          {selectedFiles.length > 0 && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-600">Selected files:</p>
+              <ul className="mt-1 space-y-1">
+                {selectedFiles.map((file, index) => (
+                  <li key={index} className="text-sm text-gray-500">
+                    {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
         <div className="flex justify-end mt-2">
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"

@@ -3,6 +3,9 @@ const router = express.Router();
 const ForumTopic = require('../models/forumTopicSchema');
 const ForumReply = require('../models/forumReplySchema');
 const authenticate = require('../middleware/authenticate');
+const { awsuploadMiddleware, awsdeleteMiddleware } = require('../middleware/awsmiddleware');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Get all topics with optional filtering
 router.get('/topics', async (req, res) => {
@@ -94,7 +97,7 @@ router.get('/topics/:id', async (req, res) => {
 });
 
 // Create a new topic
-router.post('/topics', authenticate, async (req, res) => {
+router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
   try {
     const { title, content, tags, userId, userName } = req.body;
     
@@ -109,6 +112,9 @@ router.post('/topics', authenticate, async (req, res) => {
     if (!actualUserId || !actualUserName) {
       return res.status(400).json({ status: 400, error: 'User information is required' });
     }
+
+    // Handle media attachments if any
+    const mediaAttachments = req.uploadedFiles || [];
     
     const newTopic = new ForumTopic({
       title,
@@ -116,6 +122,7 @@ router.post('/topics', authenticate, async (req, res) => {
       userId: actualUserId,
       userName: actualUserName,
       tags: tags || [],
+      mediaAttachments,
       likes: [],
       dislikes: []
     });
@@ -165,25 +172,36 @@ router.put('/topics/:id', authenticate, async (req, res) => {
 });
 
 // Delete a topic
-router.delete('/topics/:id', authenticate ,  async (req, res) => {
+router.delete('/topics/:id', authenticate, async (req, res) => {
   try {
-    console.log(req.params.id);
     const topic = await ForumTopic.findById(req.params.id);
-    console.log(topic);
+    
     if (!topic) {
       return res.status(404).json({ status: 404, error: 'Topic not found' });
     }
     
     // Check if user is the owner of the topic
-    console.log(topic.userId);
-    console.log(req.userId);
-    if (topic.userId.toString() !== req.userId.toString() ) {
-      console.log("Not authorized to delete this topic");
+    if (topic.userId.toString() !== req.userId.toString()) {
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this topic' });
     }
-    console.log("---------------------------");
+
+    // Delete media attachments from S3
+    if (topic.mediaAttachments && topic.mediaAttachments.length > 0) {
+      for (const attachment of topic.mediaAttachments) {
+        await awsdeleteMiddleware(attachment.fileName);
+      }
+    }
+    
     // Delete all replies to this topic
-   // await ForumReply.deleteMany({ topicId: req.params.id });
+    const replies = await ForumReply.find({ topicId: req.params.id });
+    for (const reply of replies) {
+      if (reply.mediaAttachments && reply.mediaAttachments.length > 0) {
+        for (const attachment of reply.mediaAttachments) {
+          await awsdeleteMiddleware(attachment.fileName);
+        }
+      }
+    }
+    await ForumReply.deleteMany({ topicId: req.params.id });
     
     // Delete the topic
     await ForumTopic.findByIdAndDelete(req.params.id);
@@ -215,7 +233,7 @@ router.get('/replies', async (req, res) => {
 });
 
 // Create a new reply
-router.post('/replies', authenticate, async (req, res) => {
+router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
   try {
     const { content, topicId, parentReplyId, userId, userName } = req.body;
     
@@ -241,6 +259,9 @@ router.post('/replies', authenticate, async (req, res) => {
     if (!actualUserId || !actualUserName) {
       return res.status(400).json({ status: 400, error: 'User information is required' });
     }
+
+    // Handle media attachments if any
+    const mediaAttachments = req.uploadedFiles || [];
     
     // Create new reply
     const newReply = new ForumReply({
@@ -249,6 +270,7 @@ router.post('/replies', authenticate, async (req, res) => {
       userId: actualUserId,
       userName: actualUserName,
       parentReplyId: parentReplyId || null,
+      mediaAttachments,
       likes: [],
       dislikes: []
     });
@@ -311,12 +333,17 @@ router.delete('/replies/:id', authenticate, async (req, res) => {
     }
     
     // Check if user is the owner of the reply
-    console.log(reply.userId);
-    console.log(req.userId);
     if (reply.userId.toString() !== req.userId.toString()) {
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this reply' });
     }
-    console.log("---------------------------");
+
+    // Delete media attachments from S3
+    if (reply.mediaAttachments && reply.mediaAttachments.length > 0) {
+      for (const attachment of reply.mediaAttachments) {
+        await awsdeleteMiddleware(attachment.fileName);
+      }
+    }
+    
     // Delete the reply
     await ForumReply.findByIdAndDelete(req.params.id);
     

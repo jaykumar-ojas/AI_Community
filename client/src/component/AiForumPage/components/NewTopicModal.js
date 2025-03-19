@@ -9,8 +9,14 @@ const NewTopicModal = ({ isOpen, onClose, onTopicCreated }) => {
   const { emitNewTopic } = useWebSocket();
   
   const [newTopic, setNewTopic] = useState({ title: '', content: '' });
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(files);
+  };
 
   const handleCreateTopic = async () => {
     if (!loginData || !loginData.validuserone) {
@@ -27,18 +33,30 @@ const NewTopicModal = ({ isOpen, onClose, onTopicCreated }) => {
     setError(null);
     
     try {
-      const response = await axios.post(TOPICS_URL, {
-        title: newTopic.title,
-        content: newTopic.content,
-        userId: loginData.validuserone._id,
-        userName: loginData.validuserone.userName
-      }, { headers: getAuthHeaders() });
+      const formData = new FormData();
+      formData.append('title', newTopic.title);
+      formData.append('content', newTopic.content);
+      formData.append('userId', loginData.validuserone._id);
+      formData.append('userName', loginData.validuserone.userName);
+      
+      // Append media files if any
+      selectedFiles.forEach(file => {
+        formData.append('media', file);
+      });
+
+      const response = await axios.post(TOPICS_URL, formData, { 
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
       // Emit socket event for new topic
       emitNewTopic(response.data.topic);
       
       // Reset form and close modal
       setNewTopic({ title: '', content: '' });
+      setSelectedFiles([]);
       onClose();
       
       // Notify parent component
@@ -100,6 +118,28 @@ const NewTopicModal = ({ isOpen, onClose, onTopicCreated }) => {
                 value={newTopic.content}
                 onChange={(e) => setNewTopic({...newTopic, content: e.target.value})}
               />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Media Attachments</label>
+              <input
+                type="file"
+                multiple
+                accept="image/*,video/*,audio/*"
+                onChange={handleFileSelect}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {selectedFiles.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600">Selected files:</p>
+                  <ul className="mt-1 space-y-1">
+                    {selectedFiles.map((file, index) => (
+                      <li key={index} className="text-sm text-gray-500">
+                        {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-2 p-4 border-t">

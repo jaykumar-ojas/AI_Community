@@ -65,45 +65,60 @@ const upload = multer({
 const awsuploadMiddleware = async (req, res, next) => {
     console.log("Processing file upload");
     try {
-        if (!req.file) {
-            return res.status(400).json({ status: 400, error: "No file uploaded" });
+        if (!req.files || req.files.length === 0) {
+            return next(); // No files to process, continue to next middleware
         }
 
-        const fileType = req.file.mimetype.split('/')[0]; // 'image', 'video', or 'audio'
-        let buffer;
+        req.uploadedFiles = []; // Array to store processed file information
 
-        // Process images with sharp, leave videos and audio as is
-        if (fileType === 'image') {
-            try {
-                buffer = await sharp(req.file.buffer)
-                    .resize({ height: 1920, width: 1080, fit: "contain" })
-                    .toBuffer();
-            } catch (sharpError) {
-                console.error("Error processing image with sharp:", sharpError);
-                // Fallback to original buffer if sharp fails
-                buffer = req.file.buffer;
+        for (const file of req.files) {
+            const fileType = file.mimetype.split('/')[0]; // 'image', 'video', or 'audio'
+            let buffer;
+
+            // Process images with sharp, leave videos and audio as is
+            if (fileType === 'image') {
+                try {
+                    buffer = await sharp(file.buffer)
+                        .resize({ height: 1920, width: 1080, fit: "contain" })
+                        .toBuffer();
+                } catch (sharpError) {
+                    console.error("Error processing image with sharp:", sharpError);
+                    // Fallback to original buffer if sharp fails
+                    buffer = file.buffer;
+                }
+            } else {
+                buffer = file.buffer; // For videos and audio, use the original buffer
             }
-        } else {
-            buffer = req.file.buffer; // For videos and audio, use the original buffer
+
+            const fileName = randomFileName();
+            console.log("Generated file name:", fileName);
+            
+            const params = {
+                Bucket: bucketName,
+                Key: fileName,
+                Body: buffer,
+                ContentType: file.mimetype,
+            };
+            console.log("Uploading to S3 bucket");
+
+            const command = new PutObjectCommand(params);
+            await s3.send(command);
+            console.log("File uploaded successfully");
+
+            // Generate signed URL for the uploaded file
+            const fileUrl = await generateSignedUrl(fileName);
+            console.log("Generated signed URL:", fileUrl);
+
+            // Store file information
+            req.uploadedFiles.push({
+                fileName,
+                fileType: file.mimetype,
+                fileUrl,
+                fileSize: file.size,
+                uploadedAt: new Date()
+            });
         }
 
-        const fileName = randomFileName();
-        console.log("Generated file name:", fileName);
-        
-        const params = {
-            Bucket: bucketName,
-            Key: fileName,
-            Body: buffer,
-            ContentType: req.file.mimetype,
-        };
-        console.log("Uploading to S3 bucket");
-
-        const command = new PutObjectCommand(params);
-        await s3.send(command);
-        console.log("File uploaded successfully");
-
-        req.fileName = fileName; // Store the file name in the request object
-        req.fileType = fileType; // Store the file type in the request object
         next();
     } catch (error) {
         console.error("Error uploading file:", error);
@@ -118,7 +133,7 @@ const generateSignedUrl = async(keys)=>{
             Key: keys,
         }
         const command = new GetObjectCommand(getObjectParams);
-        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 * 24 * 7 }); // URL valid for 7 days
         return url;
     }catch (error) {
         console.error("Error generating signed URL:", error);
