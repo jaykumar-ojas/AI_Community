@@ -51,7 +51,7 @@ const RenderUserPosts = () => {
     }
     
     fetchUserPosts();
-  }, []); // Remove the loginData dependency to ensure it only runs on mount/remount
+  }, [loginData]); // Remove the loginData dependency to ensure it only runs on mount/remount
 
   const handleDeletePost = async (postId, imgKey) => {
     if (!window.confirm("Are you sure you want to delete this post?")) {
@@ -200,10 +200,7 @@ const RenderUserPosts = () => {
                   src={post.signedUrl}
                   alt="Post"
                   className="h-full w-full object-contain"
-                  onError={(e) => {
-                    e.target.src =
-                      "https://via.placeholder.com/400x280?text=Image+Not+Available";
-                  }}
+                  
                 />
               )}
               {post.fileType === "video" && (

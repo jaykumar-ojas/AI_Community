@@ -23,8 +23,12 @@ const Uploader = () => {
   useEffect(() => {
     console.log("useEffect triggered, loginData:", loginData);
     validateUser();
-    }
-  };
+    },[]);
+
+  const validateUser =()=>{
+    return validatePage();
+  }
+
 
   if(!validateUser){
     return (<Login></Login>)
