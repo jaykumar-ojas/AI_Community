@@ -21,15 +21,21 @@ const Uploader = () => {
   const navigate = useNavigate();
   const validatePage = ValidUserForPage();
 
- 
-
   useEffect(() => {
-    console.log("i m coming after refresh");
+    console.log("useEffect triggered, loginData:", loginData);
     validateUser();
     
-    const userId = loginData?.validuserone?._id || loginData?.validateUser?._id;
-    if (userId) {
-      fetchUserPosts(userId);
+    if (loginData) {
+      const userId = loginData?.validuserone?._id || loginData?.validateUser?._id;
+      console.log("User ID extracted from loginData:", userId);
+      
+      if (userId) {
+        fetchUserPosts(userId);
+      } else {
+        console.error("Could not extract user ID from loginData:", loginData);
+        setUserPosts([]);
+        setFilteredContent([]);
+      }
     }
   }, [loginData]);
 
@@ -55,12 +61,18 @@ const Uploader = () => {
       const data = await response.json();
       console.log("User posts:", data);
       
-      if (data.status === 200) {
+      if (data.status === 200 && Array.isArray(data.userposts)) {
         setUserPosts(data.userposts);
         setFilteredContent(data.userposts);
+      } else {
+        console.error("Invalid data format received:", data);
+        setUserPosts([]);
+        setFilteredContent([]);
       }
     } catch (error) {
       console.error("Error fetching user posts:", error);
+      setUserPosts([]);
+      setFilteredContent([]);
     } finally {
       setIsLoading(false);
     }
@@ -198,9 +210,17 @@ const Uploader = () => {
   }
 
   const renderMedia = (post) => {
-    if (!post.signedUrl) return null;
+    if (!post || !post.signedUrl) {
+      return (
+        <div className="flex items-center justify-center h-full bg-gray-200">
+          <p className="text-gray-500">Media Not Available</p>
+        </div>
+      );
+    }
     
-    switch (post.fileType) {
+    const fileType = post.fileType || 'image'; // Default to image if no fileType
+    
+    switch (fileType) {
       case 'image':
         return (
           <img 

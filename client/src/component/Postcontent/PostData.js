@@ -9,6 +9,7 @@ const PostData = () => {
   const [desc, setDesc] = useState("");
   const [fileType, setFileType] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   
   // Fetch user posts when component mounts or after successful upload
   useEffect(() => {
@@ -31,15 +32,31 @@ const PostData = () => {
       }
       
       setIsUploading(true);
+      console.log("Starting upload for file:", file?.name);
+      console.log("File type:", file?.type);
+      console.log("User ID:", loginData.validuserone?._id || loginData.validateUser?._id);
+      
       const formData = new FormData();
-        formData.append("file", file);
-        formData.append("userId", loginData.validuserone._id);
-        formData.append("desc", desc);
+      formData.append("file", file);
+      formData.append("userId", loginData.validuserone?._id || loginData.validateUser?._id);
+      formData.append("desc", desc);
+      
+      // Log form data for debugging
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+      }
       
       const data = await fetch('http://localhost:8099/upload', {
         method: 'POST',
         body: formData
       });
+      
+      // Check if the response is valid
+      if (!data.ok) {
+        const errorText = await data.text();
+        console.error("Server error:", data.status, errorText);
+        throw new Error(`Server error: ${data.status} - ${errorText}`);
+      }
       
       const res = await data.json();
       console.log("Upload response:", res);
@@ -53,17 +70,18 @@ const PostData = () => {
         setDesc("");
         setPreviewUrl(null);
         setFileType(null);
-        alert("Post uploaded successfully!");
         
-        // Refresh the user's posts
-        // fetchUserPosts();
+        // Trigger refresh of posts list
+        setRefreshKey(oldKey => oldKey + 1);
+        
+        alert("Post uploaded successfully!");
       } else {
         console.error("Upload failed:", res);
-        alert("Failed to upload post. Please try again.");
+        alert(`Failed to upload post: ${res.error || "Unknown error"}`);
       }
     } catch(error) {
       console.error("Error during upload:", error);
-      alert("An error occurred during upload.");
+      alert(`Upload error: ${error.message || "Unknown error occurred"}`);
     } finally {
       setIsUploading(false);
     }
@@ -223,7 +241,7 @@ const PostData = () => {
 
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Your Posts</h2>
-        <RenderUserPosts></RenderUserPosts>
+        <RenderUserPosts key={refreshKey} />
       </div>
     </div>
   );
