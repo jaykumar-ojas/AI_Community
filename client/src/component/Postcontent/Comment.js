@@ -5,6 +5,7 @@ import { LoginContext } from '../ContextProvider/context';
 // Reply form component with focus management
 const ReplyForm = ({ commentId, initialContent = '', onSubmit, onCancel }) => {
   const [content, setContent] = useState(initialContent);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const textareaRef = useRef(null);
   
   // Focus the textarea when the component mounts
@@ -17,11 +18,17 @@ const ReplyForm = ({ commentId, initialContent = '', onSubmit, onCancel }) => {
   const handleChange = (e) => {
     setContent(e.target.value);
   };
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(files);
+  };
   
   const handleSubmit = () => {
-    if (content.trim()) {
-      onSubmit(commentId, content);
+    if (content.trim() || selectedFiles.length > 0) {
+      onSubmit(commentId, content, selectedFiles);
       setContent('');
+      setSelectedFiles([]);
     }
   };
   
@@ -34,7 +41,28 @@ const ReplyForm = ({ commentId, initialContent = '', onSubmit, onCancel }) => {
         value={content}
         onChange={handleChange}
       ></textarea>
-      <div className="flex justify-end mt-1">
+      <div className="mt-2">
+        <input
+          type="file"
+          multiple
+          accept="image/*,video/*,audio/*"
+          onChange={handleFileSelect}
+          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        {selectedFiles.length > 0 && (
+          <div className="mt-2">
+            <p className="text-sm text-gray-600">Selected files:</p>
+            <ul className="mt-1 space-y-1">
+              {selectedFiles.map((file, index) => (
+                <li key={index} className="text-sm text-gray-500">
+                  {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+      <div className="flex justify-end mt-2">
         <button
           className="px-2 py-1 rounded-md text-white bg-blue-500 text-sm mr-2"
           onClick={handleSubmit}
@@ -56,6 +84,7 @@ const Discussion = ({ postId }) => {
   const { loginData } = useContext(LoginContext);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [replyStates, setReplyStates] = useState({});
   const [replyContent, setReplyContent] = useState({});
   const [loading, setLoading] = useState(true);
@@ -68,11 +97,21 @@ const Discussion = ({ postId }) => {
 
   // Set current user from login data
   useEffect(() => {
-    if (loginData && loginData.validuserone) {
-      setCurrentUser({
-        id: loginData.validuserone._id,
-        name: loginData.validuserone.userName
-      });
+    console.log("Setting current user from loginData:", loginData);
+    if (loginData) {
+      // Extract user ID and name from loginData
+      const userId = loginData.validuserone?._id || loginData.validateUser?._id;
+      const userName = loginData.validuserone?.userName || loginData.validateUser?.userName;
+      
+      console.log("Extracted userId:", userId);
+      console.log("Extracted userName:", userName);
+      
+      if (userId && userName) {
+        setCurrentUser({
+          id: userId,
+          name: userName
+        });
+      }
     }
   }, [loginData]);
 
@@ -121,6 +160,7 @@ const Discussion = ({ postId }) => {
         parentId: comment.parentId,
         likes: comment.likes || [],
         dislikes: comment.dislikes || [],
+        mediaAttachments: comment.mediaAttachments || [],
         replies: []
       };
       
@@ -135,15 +175,52 @@ const Discussion = ({ postId }) => {
     return result;
   };
 
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(files);
+  };
+
   // Handle posting new comments
   const handlePostComment = async () => {
-    if (newComment.trim() && postId && currentUser.id) {
+    if (!currentUser.id) {
+      if (!loginData) {
+        alert("Please log in to post a comment");
+      } else {
+        // User is logged in but the currentUser state hasn't been updated yet
+        console.error("User is logged in but currentUser state is not set properly");
+        // Try to use loginData directly
+        const userId = loginData.validuserone?._id || loginData.validateUser?._id;
+        const userName = loginData.validuserone?.userName || loginData.validateUser?.userName;
+        
+        if (userId && userName) {
+          setCurrentUser({
+            id: userId,
+            name: userName
+          });
+        } else {
+          alert("Unable to identify user. Please try refreshing the page.");
+        }
+      }
+      return;
+    }
+    
+    if ((newComment.trim() || selectedFiles.length > 0) && postId) {
       try {
-        const response = await axios.post(API_URL, {
-          id: currentUser.id,
-          name: currentUser.name,
-          commentText: newComment,
-          postId: postId
+        const formData = new FormData();
+        formData.append('id', currentUser.id);
+        formData.append('name', currentUser.name);
+        formData.append('commentText', newComment);
+        formData.append('postId', postId);
+
+        // Append media files if any
+        selectedFiles.forEach(file => {
+          formData.append('media', file);
+        });
+
+        const response = await axios.post(API_URL, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         });
         
         if (response.data && response.data.comment) {
@@ -155,16 +232,18 @@ const Discussion = ({ postId }) => {
           }
         }
         setNewComment('');
+        setSelectedFiles([]);
       } catch (error) {
         console.error('Error posting comment:', error);
       }
-    } else if (!currentUser.id) {
-      alert("Please log in to post a comment");
     }
   };
 
   // Handle deleting a comment
   const handleDeleteComment = async (commentId) => {
+    console.log("Delete comment triggered for ID:", commentId);
+    console.log("Current user:", currentUser);
+    
     if (!currentUser.id) {
       alert("Please log in to delete comments");
       return;
@@ -176,9 +255,12 @@ const Discussion = ({ postId }) => {
     }
 
     try {
+      console.log("Sending delete request with userId:", currentUser.id);
       const response = await axios.delete(`${API_URL}/${commentId}`, {
         data: { userId: currentUser.id }
       });
+      
+      console.log("Delete response:", response);
       
       if (response.status === 200) {
         // Refresh comments after deletion
@@ -275,8 +357,8 @@ const Discussion = ({ postId }) => {
   }, []);
 
   // Submit reply to a comment
-  const handleSubmitReply = async (commentId, replyText) => {
-    if (replyText.trim() && currentUser.id) {
+  const handleSubmitReply = async (commentId, replyText, files) => {
+    if ((replyText.trim() || files.length > 0) && currentUser.id) {
       try {
         // Find the parent comment to get its depth
         const findComment = (comments, id) => {
@@ -295,13 +377,23 @@ const Discussion = ({ postId }) => {
         const parentComment = findComment(comments, commentId);
         if (!parentComment) return;
         
-        const response = await axios.post(API_URL, {
-          id: currentUser.id,
-          name: currentUser.name,
-          commentText: replyText,
-          parentId: commentId,
-          depth: parentComment.depth + 1,
-          postId: postId
+        const formData = new FormData();
+        formData.append('id', currentUser.id);
+        formData.append('name', currentUser.name);
+        formData.append('commentText', replyText);
+        formData.append('parentId', commentId);
+        formData.append('depth', parentComment.depth + 1);
+        formData.append('postId', postId);
+
+        // Append media files if any
+        files.forEach(file => {
+          formData.append('media', file);
+        });
+        
+        const response = await axios.post(API_URL, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         });
         
         if (response.data && response.data.comment) {
@@ -356,53 +448,98 @@ const Discussion = ({ postId }) => {
 
   // Recursive component to render comments and their replies
   const CommentComponent = ({ comment, level = 0 }) => {
-    // Check if the current user is the author of this comment
-    const isAuthor = currentUser.id === comment.author.id;
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyContent, setReplyContent] = useState('');
     const userLiked = hasUserLiked(comment.likes);
     const userDisliked = hasUserDisliked(comment.dislikes);
-    
+
+    // Check if current user is author of this comment, comparing as strings to ensure proper matching
+    const isAuthor = currentUser && currentUser.id && 
+                     comment.author && comment.author.id && 
+                     String(currentUser.id) === String(comment.author.id);
+
+    console.log("Comment author ID:", comment.author.id, "type:", typeof comment.author.id);
+    console.log("Current user ID:", currentUser.id, "type:", typeof currentUser.id);
+    console.log("Is author?", isAuthor);
+
     return (
-      <div key={comment._id} className={`mt-${level > 0 ? 2 : 0}`}>
-        <div className={`flex w-full justify-between border rounded-md ${level > 0 ? 'ml-5' : ''}`}>
-          <div className="p-3 w-full">
-            <div className="flex gap-3 items-center justify-between">
-              <div className="flex gap-3 items-center">
-                <img
-                  src="https://avatars.githubusercontent.com/u/22263436?v=4"
-                  alt="avatar"
-                  className="object-cover w-10 h-10 rounded-full border-2 border-emerald-400 shadow-emerald-400"
-                />
-                <div className="flex flex-col">
-                  <h3 className="font-bold">{comment.author.name}</h3>
-                  <span className="text-xs text-gray-400">{formatDate(comment.postedDate)}</span>
-                </div>
+      <div className="flex flex-col">
+        <div className={`flex flex-col ${level > 0 ? 'ml-4' : ''}`}>
+          <div className="flex items-start gap-2">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                <span className="text-gray-600 text-sm">
+                  {comment.author.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <div className="flex-grow">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-sm">{comment.author.name}</span>
+                <span className="text-xs text-gray-500">
+                  {formatDate(comment.postedDate)}
+                </span>
+                {isAuthor && (
+                  <button
+                    onClick={() => handleDeleteComment(comment._id)}
+                    className="ml-auto bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded-md text-xs"
+                    title="Delete comment"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+              <div className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">
+                {comment.commentText}
               </div>
               
-              {/* Delete button - only visible to the author */}
-              {isAuthor && (
-                <button 
-                  className="text-red-500 hover:text-red-700 text-sm"
-                  onClick={() => handleDeleteComment(comment._id)}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+              {/* Display media attachments */}
+              {comment.mediaAttachments && comment.mediaAttachments.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {comment.mediaAttachments.map((attachment, index) => (
+                    <div key={index} className="relative">
+                      {attachment.fileType.startsWith('image/') ? (
+                        <img
+                          src={attachment.fileUrl}
+                          alt={attachment.fileName}
+                          className="max-w-full h-auto rounded-lg"
+                          onError={(e) => {
+                            console.error('Error loading image:', attachment.fileUrl);
+                            e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                          }}
+                        />
+                      ) : attachment.fileType.startsWith('video/') ? (
+                        <video
+                          controls
+                          className="max-w-full rounded-lg"
+                          src={attachment.fileUrl}
+                          onError={(e) => {
+                            console.error('Error loading video:', attachment.fileUrl);
+                          }}
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : attachment.fileType.startsWith('audio/') ? (
+                        <div className="flex flex-col items-center justify-center bg-gray-100 p-4 rounded-lg">
+                          <div className="text-center mb-2">Audio File</div>
+                          <audio
+                            controls
+                            className="w-full"
+                            src={attachment.fileUrl}
+                            onError={(e) => {
+                              console.error('Error loading audio:', attachment.fileUrl);
+                            }}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
               )}
-            </div>
-            <p className="text-gray-600 mt-2">{comment.commentText}</p>
-            <div className="flex justify-between items-center mt-2">
-              <div className="flex items-center gap-4">
-                <button 
-                  className="text-blue-500 text-sm"
-                  onClick={() => toggleReplyForm(comment._id)}
-                >
-                  Reply
-                </button>
-                
-                {/* Like button */}
-                <button 
-                  className={`flex items-center gap-1 text-sm ${userLiked ? 'text-green-600' : 'text-gray-500'}`}
+
+              <div className="flex items-center gap-4 mt-2">
+                <button
+                  className={`flex items-center gap-1 text-sm ${userLiked ? 'text-blue-600' : 'text-gray-500'}`}
                   onClick={() => handleLikeComment(comment._id)}
                   title={userLiked ? "Remove like" : "Like this comment"}
                 >
@@ -411,9 +548,7 @@ const Discussion = ({ postId }) => {
                   </svg>
                   <span>{comment.likes ? comment.likes.length : 0}</span>
                 </button>
-                
-                {/* Dislike button */}
-                <button 
+                <button
                   className={`flex items-center gap-1 text-sm ${userDisliked ? 'text-red-600' : 'text-gray-500'}`}
                   onClick={() => handleDislikeComment(comment._id)}
                   title={userDisliked ? "Remove dislike" : "Dislike this comment"}
@@ -423,19 +558,25 @@ const Discussion = ({ postId }) => {
                   </svg>
                   <span>{comment.dislikes ? comment.dislikes.length : 0}</span>
                 </button>
+                <button
+                  onClick={() => setIsReplying(!isReplying)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  {isReplying ? 'Cancel' : 'Reply'}
+                </button>
               </div>
               <span className="text-xs text-gray-400">Depth: {comment.depth}</span>
             </div>
-            
-            {/* Reply form */}
-            {replyStates[comment._id] && (
-              <ReplyForm
-                commentId={comment._id}
-                onSubmit={handleSubmitReply}
-                onCancel={handleCancelReply}
-              />
-            )}
           </div>
+          
+          {/* Reply form */}
+          {isReplying && (
+            <ReplyForm
+              commentId={comment._id}
+              onSubmit={handleSubmitReply}
+              onCancel={() => setIsReplying(false)}
+            />
+          )}
         </div>
 
         {/* Render replies */}
@@ -478,15 +619,38 @@ const Discussion = ({ postId }) => {
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
         ></textarea>
+        <div className="mt-2">
+          <input
+            type="file"
+            multiple
+            accept="image/*,video/*,audio/*"
+            onChange={handleFileSelect}
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {selectedFiles.length > 0 && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-600">Selected files:</p>
+              <ul className="mt-1 space-y-1">
+                {selectedFiles.map((file, index) => (
+                  <li key={index} className="text-sm text-gray-500">
+                    {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="w-full flex justify-end px-3 my-3">
         <button
           className="px-2.5 py-1.5 rounded-md text-white text-sm bg-indigo-500"
           onClick={handlePostComment}
-          disabled={!currentUser.id}
+          disabled={!currentUser.id && !loginData}
         >
-          {currentUser.id ? "Post Comment" : "Login to Comment"}
+          {currentUser.id || (loginData && (loginData.validuserone || loginData.validateUser)) 
+            ? "Post Comment" 
+            : "Login to Comment"}
         </button>
       </div>
     </div>

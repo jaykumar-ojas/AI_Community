@@ -21,6 +21,16 @@ var commentSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    mediaAttachments: [{
+        fileName: String,
+        fileType: String,
+        fileUrl: String,
+        fileSize: Number,
+        uploadedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

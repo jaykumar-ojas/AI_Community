@@ -17,30 +17,19 @@ const Uploader = () => {
   const navigate = useNavigate();
   const validatePage = ValidUserForPage();
 
-  // Fetch user posts when component mounts
-  useEffect(() => {
-    console.log("i m coming after refresh");
-    validateUser();
-  },[]);
 
-  const validateUser = () => {
-    if (!loginData) {
-      return validatePage();
+  // Fetch user posts when component mounts
+
+  useEffect(() => {
+    console.log("useEffect triggered, loginData:", loginData);
+    validateUser();
     }
   };
 
   if(!validateUser){
     return (<Login></Login>)
   }
-  
-  
-  
-
-  // Handle filtering content
  
-
-  // Handle delete post
-
 
   
   return (

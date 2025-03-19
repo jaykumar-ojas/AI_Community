@@ -65,7 +65,65 @@ const upload = multer({
 const awsuploadMiddleware = async (req, res, next) => {
     console.log("Processing file upload");
     try {
+        // Handle single file upload from multer.single()
+        if (req.file) {
+            console.log("Processing single file upload");
+            const file = req.file;
+            const fileType = file.mimetype.split('/')[0]; // 'image', 'video', or 'audio'
+            let buffer;
+
+            // Process images with sharp, leave videos and audio as is
+            if (fileType === 'image') {
+                try {
+                    buffer = await sharp(file.buffer)
+                        .resize({ height: 1920, width: 1080, fit: "contain" })
+                        .toBuffer();
+                } catch (sharpError) {
+                    console.error("Error processing image with sharp:", sharpError);
+                    // Fallback to original buffer if sharp fails
+                    buffer = file.buffer;
+                }
+            } else {
+                buffer = file.buffer; // For videos and audio, use the original buffer
+            }
+
+            const fileName = randomFileName();
+            console.log("Generated file name:", fileName);
+            
+            const params = {
+                Bucket: bucketName,
+                Key: fileName,
+                Body: buffer,
+                ContentType: file.mimetype,
+            };
+            console.log("Uploading to S3 bucket");
+
+            const command = new PutObjectCommand(params);
+            await s3.send(command);
+            console.log("File uploaded successfully");
+
+            // Generate signed URL for the uploaded file
+            const fileUrl = await generateSignedUrl(fileName);
+            console.log("Generated signed URL:", fileUrl);
+
+            // Add the fileName directly to the request object for single file uploads
+            req.fileName = fileName;
+            
+            // Also maintain backward compatibility with the uploadedFiles array
+            req.uploadedFiles = [{
+                fileName,
+                fileType: file.mimetype,
+                fileUrl,
+                fileSize: file.size,
+                uploadedAt: new Date()
+            }];
+            
+            return next();
+        }
+        
+        // Handle multiple file upload from multer.array()
         if (!req.files || req.files.length === 0) {
+            console.log("No files to process");
             return next(); // No files to process, continue to next middleware
         }
 
@@ -128,6 +186,12 @@ const awsuploadMiddleware = async (req, res, next) => {
 
 const generateSignedUrl = async(keys)=>{
     try{
+        // Return a placeholder URL if keys is undefined or null
+        if (!keys) {
+            console.warn("Warning: Attempted to generate signed URL with empty key");
+            return "https://via.placeholder.com/300?text=No+Image+Available";
+        }
+        
         const getObjectParams = {
             Bucket: bucketName,
             Key: keys,
@@ -137,7 +201,8 @@ const generateSignedUrl = async(keys)=>{
         return url;
     }catch (error) {
         console.error("Error generating signed URL:", error);
-        throw new Error("failed to generate signed url");
+        // Return a placeholder URL instead of throwing an error
+        return "https://via.placeholder.com/300?text=Image+Error";
     }
 }
 

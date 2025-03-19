@@ -44,41 +44,47 @@ const Page = () => {
         }
       });
       const data = await res.json();
-      if (data && data.userposts) {
+      if (data && Array.isArray(data.userposts)) {
         setHasMore(data.hasMore);
-        setPage(2); // 
+        setPage(2);
         setPostData(data.userposts);
+        setLoading(false);
+      } else {
+        console.error("Invalid data format received:", data);
+        setPostData([]);
         setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
+      setPostData([]);
+      setLoading(false);
     }
   }
 
   const fetchMorePosts = async () => {
-    // this will remove in produciton 
     setTimeout(async() => {
-      
-    if (!hasMore) return;
-    try {
-      const res = await fetch(`http://localhost:8099/allget?page=${page}&limit=9`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+      if (!hasMore) return;
+      try {
+        const res = await fetch(`http://localhost:8099/allget?page=${page}&limit=9`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await res.json();
+        if (data && Array.isArray(data.userposts)) {
+          setPostData(prevPosts => [...prevPosts, ...data.userposts]);
+          setHasMore(data.hasMore);
+          setPage(prev => prev + 1);
+        } else {
+          console.error("Invalid data format received:", data);
         }
-      });
-      const data = await res.json();
-      if(data){
-        setPostData(prevPosts => [...prevPosts, ...data.userposts]);
-        setHasMore(data.hasMore);
-        setPage(prev => prev + 1); 
+      } catch (error) {
+        console.error("Error fetching more posts:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching more posts:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, 2500);
+    }, 2500);
   };
 
   useEffect(() => {

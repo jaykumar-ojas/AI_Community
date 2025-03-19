@@ -33,14 +33,34 @@ const {awsuploadMiddleware,generateSignedUrl,awsdeleteMiddleware} = require("../
 // for uploading the file from user when login
 router.post('/upload', upload.single('file'), awsuploadMiddleware, async(req, res) => {
    try{
-    const {userId,desc}=req.body;
-    if(!userId){
-        throw new Error("user not login");
+    console.log("Upload route hit with:", {
+        body: req.body,
+        file: req.file ? {
+            originalname: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size
+        } : 'No file',
+        fileName: req.fileName,
+    });
+    
+    const {userId, desc} = req.body;
+    
+    if (!userId) {
+        throw new Error("User not logged in");
+    }
+    
+    if (!req.file) {
+        throw new Error("No file uploaded");
+    }
+    
+    if (!req.fileName) {
+        throw new Error("File processing failed - no file name generated");
     }
     
     console.log("File upload request received:");
-    console.log("- File:", req.file ? req.file.originalname : "No file");
-    console.log("- MIME type:", req.file ? req.file.mimetype : "No file");
+    console.log("- File:", req.file.originalname);
+    console.log("- MIME type:", req.file.mimetype);
+    console.log("- File size:", req.file.size);
     
     // Get the file type from the mimetype
     const fileType = req.file.mimetype.split('/')[0]; // 'image', 'video', or 'audio'
@@ -65,10 +85,13 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async(req, re
 
     const storePost = await finalpost.save();
     console.log("Post saved successfully:", storePost);
-    res.status(201).json({status:201,storePost});
-   }catch(error){
+    res.status(201).json({status: 201, storePost});
+   } catch(error) {
     console.error("Error in upload route:", error);
-    res.status(422).json({status:422,error: error.message || "Unknown error"});
+    res.status(422).json({
+        status: 422,
+        error: error.message || "Unknown error"
+    });
    }
 });
 
@@ -80,22 +103,40 @@ router.post('/get',async(req,res)=>{
         if(!userId){
             throw new Error("user not logged in");
         }
+        console.log("Fetching posts for user ID:", userId);
         const userposts = await postdb.find({userId:userId});
+        console.log("Found user posts:", userposts.length);
+        
+        if (!userposts || userposts.length === 0) {
+            console.log("No posts found for user, returning empty array");
+            return res.status(200).json({ status: 200, userposts: [] });
+        }
+        
         const userpostsWithUrls = await Promise.all(
             userposts.map(async (post) => {
-                console.log(post.imgKey,"this is key");
-                if(!post.imgKey){
-                    return null;
+                try {
+                    // Check if imgKey exists before trying to generate a signed URL
+                    const signedUrl = post.imgKey 
+                        ? await generateSignedUrl(post.imgKey)
+                        : "https://via.placeholder.com/300?text=No+Image+Available";
+                    
+                    return {
+                        ...post.toObject(), 
+                        signedUrl,
+                        fileType: post.fileType || 'image' // Include fileType, default to 'image' for backward compatibility
+                    };
+                } catch (error) {
+                    console.error(`Error processing post ${post._id}:`, error);
+                    // Return the post with a placeholder image
+                    return {
+                        ...post.toObject(),
+                        signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Image",
+                        fileType: post.fileType || 'image'
+                    };
                 }
-                
-                const signedUrl = await generateSignedUrl(post.imgKey);
-                return {
-                    ...post.toObject(), 
-                    signedUrl,
-                    fileType: post.fileType || 'image' // Include fileType, default to 'image' for backward compatibility
-                };
             })
         );
+        console.log("Returning posts with signed URLs:", userpostsWithUrls.length);
         res.status(200).json({ status: 200, userposts:userpostsWithUrls});
     }
     catch(error){
@@ -173,19 +214,43 @@ router.get('/allget', async(req, res) => {
         
         const userpostsWithUrls = await Promise.all(
             postsToReturn.map(async (post) => {
-                console.log("this is my imagKey", post.imgKey); 
-                const signedUrl = await generateSignedUrl(post.imgKey);
-                const userData = await userdb.findOne({_id: post.userId}) || await googledb.findOne({_id: post.userId});
-                const userName = userData.userName;
-                const image = userData.image;
-                console.log("i am coming to fetch the url");
-                return {
-                    ...post.toObject(), 
-                    signedUrl,
-                    userName,
-                    image,
-                    fileType: post.fileType || 'image'
-                };
+                try {
+                    console.log("Processing post:", post._id, "imgKey:", post.imgKey);
+                    // Check if imgKey exists
+                    const signedUrl = post.imgKey 
+                        ? await generateSignedUrl(post.imgKey) 
+                        : "https://via.placeholder.com/300?text=No+Image+Available";
+                    
+                    // Get user data
+                    let userData, userName = "Unknown User", image = null;
+                    try {
+                        userData = await userdb.findOne({_id: post.userId}) || await googledb.findOne({_id: post.userId});
+                        if (userData) {
+                            userName = userData.userName || "Unknown User";
+                            image = userData.image;
+                        }
+                    } catch (userError) {
+                        console.error("Error fetching user data:", userError);
+                    }
+                    
+                    return {
+                        ...post.toObject(), 
+                        signedUrl,
+                        userName,
+                        image,
+                        fileType: post.fileType || 'image'
+                    };
+                } catch (error) {
+                    console.error(`Error processing post ${post._id}:`, error);
+                    // Return the post with placeholder values
+                    return {
+                        ...post.toObject(),
+                        signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Image",
+                        userName: "Unknown User",
+                        image: null,
+                        fileType: post.fileType || 'image'
+                    };
+                }
             })
         );
         
@@ -210,23 +275,48 @@ router.post('/getPostById',async(req,res)=>{
             throw new Error("post didn't exist");
         }
         const post = await postdb.findOne({_id:postId});
-        const signedUrl = await generateSignedUrl(post.imgKey);
-        const userData = await userdb.findOne({_id:post.userId}) || await googledb.findOne({_id:post.userId});
-        const userName = userData.userName;
-        const image = userData.image;
+        if (!post) {
+            return res.status(404).json({status:404, error: "Post not found"});
+        }
+        
+        // Handle the case when imgKey might be null or undefined
+        let signedUrl = "https://via.placeholder.com/300?text=No+Image+Available";
+        if (post.imgKey) {
+            try {
+                signedUrl = await generateSignedUrl(post.imgKey);
+            } catch (urlError) {
+                console.error("Error generating signed URL:", urlError);
+                signedUrl = "https://via.placeholder.com/300?text=Error+Loading+Image";
+            }
+        }
+        
+        // Handle the case when user might not exist
+        let userName = "Unknown User";
+        let image = null;
+        try {
+            const userData = await userdb.findOne({_id:post.userId}) || await googledb.findOne({_id:post.userId});
+            if (userData) {
+                userName = userData.userName || "Unknown User";
+                image = userData.image;
+            }
+        } catch (userError) {
+            console.error("Error fetching user data:", userError);
+        }
+        
         const updatedPost = {
-            ...post.toObject(), // Ensure mutability by converting to a plain object
+            ...post.toObject(),
             signedUrl,
             userName,
             image,
-            fileType: post.fileType || 'image' // Include fileType, default to 'image' for backward compatibility
-          };
-          console.log("Post data retrieved successfully:", updatedPost);
-        res.status(201).json({status:201,postdata:updatedPost});
+            fileType: post.fileType || 'image'
+        };
+        
+        console.log("Post data retrieved successfully:", updatedPost);
+        res.status(201).json({status:201, postdata:updatedPost});
     }
     catch(error){
         console.error("Error retrieving post:", error);
-        res.status(422).json({status:422,error:error});
+        res.status(422).json({status:422, error:error.message});
     }
 })
 

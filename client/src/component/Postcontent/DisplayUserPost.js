@@ -40,8 +40,8 @@ const RenderUserPosts = () => {
   });
   
   useEffect(() => {
-    console.log("i ma here in useEffect");
-    console.log("this is my login data",loginData);
+    console.log("RenderUserPosts component mounted/refreshed");
+    console.log("Login data:", loginData);
     
     if (loginData && loginData.validuserone) {
       setCurrentUser({
@@ -51,7 +51,7 @@ const RenderUserPosts = () => {
     }
     
     fetchUserPosts();
-  },[loginData]);
+  }, []); // Remove the loginData dependency to ensure it only runs on mount/remount
 
   const handleDeletePost = async (postId, imgKey) => {
     if (!window.confirm("Are you sure you want to delete this post?")) {

@@ -1,6 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const Comment = require('../models/commentsModel');
+const multer = require('multer');
+
+// Setup multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        // Accept images, videos, and audio files
+        if (
+            file.mimetype.startsWith('image/') || 
+            file.mimetype.startsWith('video/') || 
+            file.mimetype.startsWith('audio/')
+        ) {
+            cb(null, true);
+        } else {
+            cb(new Error('Unsupported file type. Only images, videos, and audio files are allowed.'), false);
+        }
+    },
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB limit
+    }
+});
+
+// Import AWS middleware for file uploads
+const { awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware } = require('../middleware/awsmiddleware');
 
 // Comment Controller Functions
 const addComment = (req, res) => {
@@ -20,6 +45,12 @@ const addComment = (req, res) => {
     if ('depth' in req.body) {
         data.depth = req.body.depth
     }
+    
+    // Handle media attachments if any
+    if (req.uploadedFiles && req.uploadedFiles.length > 0) {
+        data.mediaAttachments = req.uploadedFiles;
+    }
+    
     const comment = new Comment(data);
     comment.save()
     .then(comment => res.json({
@@ -30,7 +61,15 @@ const addComment = (req, res) => {
 
 const updateComment = (req, res) => {
     let comment = req.body;
-    Comment.updateOne({_id: comment.id}, {$set: {commentText: comment.commentText}})
+    Comment.updateOne(
+        {_id: comment.id}, 
+        {
+            $set: {
+                commentText: comment.commentText,
+                mediaAttachments: comment.mediaAttachments || []
+            }
+        }
+    )
     .exec()
     .then(result => res.status(200).json({
         message: "Comment Updated",
@@ -60,21 +99,32 @@ const deleteComment = (req, res) => {
             });
         }
 
+        // Delete media attachments from S3 if any
+        if (comment.mediaAttachments && comment.mediaAttachments.length > 0) {
+            const deletePromises = comment.mediaAttachments.map(attachment => 
+                awsdeleteMiddleware(attachment.fileName)
+            );
+            return Promise.all(deletePromises)
+                .then(() => comment);
+        }
+        return comment;
+    })
+    .then(comment => {
         // If this is a parent comment, delete all its replies (comments with this parentId)
-        Comment.deleteMany({ parentId: commentId })
-        .exec()
-        .then(() => {
-            // Now delete the comment itself
-            Comment.deleteOne({ _id: commentId })
+        return Comment.deleteMany({ parentId: commentId })
             .exec()
             .then(() => {
-                res.status(200).json({
-                    message: "Comment and its replies deleted successfully"
-                });
+                // Now delete the comment itself
+                return Comment.deleteOne({ _id: commentId })
+                    .exec()
+                    .then(() => {
+                        res.status(200).json({
+                            message: "Comment and its replies deleted successfully"
+                        });
+                    })
+                    .catch(err => res.status(500).json({error: err}));
             })
             .catch(err => res.status(500).json({error: err}));
-        })
-        .catch(err => res.status(500).json({error: err}));
     })
     .catch(err => res.status(500).json({error: err}));
 }
@@ -239,7 +289,7 @@ const dislikeComment = (req, res) => {
 // Routes
 router.get('/', getComments);
 router.post('/edit', updateComment);
-router.post('/', addComment);
+router.post('/', upload.array('media', 5), awsuploadMiddleware, addComment);
 router.delete('/:id', deleteComment);
 router.post('/:id/like', likeComment);
 router.post('/:id/dislike', dislikeComment);

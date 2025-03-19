@@ -28,6 +28,8 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }]
+}, {
+    timestamps: true // Adds createdAt and updatedAt fields automatically
 });
 
 const postdb = new mongoose.model("userPosts",postSchema);
