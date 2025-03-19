@@ -83,6 +83,11 @@ router.post('/get',async(req,res)=>{
         const userposts = await postdb.find({userId:userId});
         const userpostsWithUrls = await Promise.all(
             userposts.map(async (post) => {
+                console.log(post.imgKey,"this is key");
+                if(!post.imgKey){
+                    return null;
+                }
+                
                 const signedUrl = await generateSignedUrl(post.imgKey);
                 return {
                     ...post.toObject(), 
