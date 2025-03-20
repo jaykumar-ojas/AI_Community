@@ -18,7 +18,6 @@ const Uploader = () => {
   const validatePage = ValidUserForPage();
 
   const validateUser = () =>{
-
     if(!loginData){
       return validatePage() ;
     }
@@ -28,6 +27,7 @@ const Uploader = () => {
     console.log("useEffect triggered, loginData:", loginData);
     validateUser();
   });
+
 
   if(!validateUser){
     return (<Login></Login>)

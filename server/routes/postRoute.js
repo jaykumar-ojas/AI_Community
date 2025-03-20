@@ -216,7 +216,6 @@ router.get('/allget', async(req, res) => {
             postsToReturn.map(async (post) => {
                 try {
                     console.log("Processing post:", post._id, "imgKey:", post.imgKey);
-                    // Check if imgKey exists
                     const signedUrl = post.imgKey 
                         ? await generateSignedUrl(post.imgKey) 
                         : "https://via.placeholder.com/300?text=No+Image+Available";
@@ -227,7 +226,7 @@ router.get('/allget', async(req, res) => {
                         userData = await userdb.findOne({_id: post.userId}) || await googledb.findOne({_id: post.userId});
                         if (userData) {
                             userName = userData.userName || "Unknown User";
-                            image = userData.image;
+                            image = userData.profilePictureUrl || userData.image;
                         }
                     } catch (userError) {
                         console.error("Error fetching user data:", userError);
@@ -297,7 +296,7 @@ router.post('/getPostById',async(req,res)=>{
             const userData = await userdb.findOne({_id:post.userId}) || await googledb.findOne({_id:post.userId});
             if (userData) {
                 userName = userData.userName || "Unknown User";
-                image = userData.image;
+                image = userData.profilePictureUrl || userData.image;
             }
         } catch (userError) {
             console.error("Error fetching user data:", userError);

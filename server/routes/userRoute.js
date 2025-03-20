@@ -28,7 +28,6 @@ router.post("/register",async(req,res)=>{
     try{
 
        const preuser= await userdb.findOne({email:email});
-        console.log(preuser);
        if(preuser){
         res.status(422).json({error:"user already exist"});
        }
@@ -36,9 +35,7 @@ router.post("/register",async(req,res)=>{
         res.status(422).json({error:"password is not matched"});
        }
        else {
-        console.log("i m going to get otp");
         const otpUser = await otpdb.findOne({email:email});
-        console.log(otpUser);
         if(!otpUser){
             res.status(422).json({status:422,message:"otp is not fill"});
         }
@@ -46,7 +43,7 @@ router.post("/register",async(req,res)=>{
             res.status(422).json({status:422,message:"otp is incorrect"});
         }
 
-        const finaluser=new userdb({
+        const finaluser = new userdb({
             userName,email,password,confirmPassword
         })
 
@@ -101,10 +98,7 @@ router.post("/login",async(req,res)=>{
                     expires : new Date(Date.now()+9000000),
                     httpOnly : true
                 })
-                // const result={
-                //     uservalid,
-                //     token
-                // }
+
                 res.status(201).json({status:201,token:token,validuserone:uservalid});
             }
         }
@@ -165,7 +159,6 @@ router.get("/logout", authenticate, async (req, res) => {
   
       res.status(200).json({ status:200,message: "Logged out successfully", tokens: req.rootuser });
     } catch (error) {
-      console.error("Logout error:", error);
       res.status(401).json({ status: 401, error });
     }
   });
@@ -177,42 +170,38 @@ router.post("/upload-profile-picture", authenticate, upload.single('file'), awsu
         if (!req.userId) {
             return res.status(401).json({status: 401, error: "User not logged in"});
         }
-
-        console.log("Profile picture upload request received");
-        console.log("- File:", req.file ? req.file.originalname : "No file");
         console.log("- File name from middleware:", req.fileName);
-        
         if (!req.fileName) {
             return res.status(400).json({status: 400, error: "File upload failed - no filename received"});
         }
-        
-        // Find user
         const user = await userdb.findOne({_id: req.userId}) || await googledb.findOne({_id: req.userId});
-        
         if (!user) {
             return res.status(404).json({status: 404, error: "User not found"});
         }
-        
         // Delete old profile picture if exists
         if (user.profilePicture) {
             try {
                 await awsdeleteMiddleware(user.profilePicture);
             } catch (deleteError) {
                 console.error("Error deleting old profile picture:", deleteError);
-                // Continue with update even if delete fails
             }
-        }
-        
+        } 
         // Update user with new profile picture
         try {
-            if (user.constructor.modelName === "users") {
-                await userdb.updateOne({_id: req.userId}, {profilePicture: req.fileName});
-            } else {
-                await googledb.updateOne({_id: req.userId}, {profilePicture: req.fileName});
-            }
-            
+            const updateUser = await userdb.findByIdAndUpdate(
+                req.userId,
+                { profilePicture: req.fileName, profilePictureUrl: req.fileUrl },
+                { new: true }
+            ) || await googledb.findByIdAndUpdate(
+                req.userId,
+                { profilePicture: req.fileName, profilePictureUrl: req.fileUrl },
+                { new: true }
+            );
+            if (!updateUser) {
+                return res.status(500).json({ status: 500, error: "Failed to update user profile picture" });
+            }            
             console.log("Profile picture updated successfully");
-            return res.status(200).json({status: 200, message: "Profile picture updated successfully", fileName: req.fileName});
+            return res.status(200).json({status: 200,validuserone:updateUser});
         } catch (updateError) {
             console.error("Error updating user profile picture:", updateError);
             return res.status(500).json({status: 500, error: "Failed to update user profile picture"});
@@ -258,13 +247,25 @@ router.post("/upload-background-image", authenticate, upload.single('file'), aws
         // Update user with new background image
         try {
             if (user.constructor.modelName === "users") {
-                await userdb.updateOne({_id: req.userId}, {backgroundImage: req.fileName});
+                await userdb.updateOne({_id: req.userId}, {});
             } else {
                 await googledb.updateOne({_id: req.userId}, {backgroundImage: req.fileName});
             }
-            
-            console.log("Background image updated successfully");
-            return res.status(200).json({status: 200, message: "Background image updated successfully", fileName: req.fileName});
+
+            const updateUser = await userdb.findByIdAndUpdate(
+                req.userId,
+                { backgroundImage: req.fileName, backgroundImageUrl: req.fileUrl },
+                { new: true }
+            ) || await googledb.findByIdAndUpdate(
+                req.userId,
+                { backgroundImage: req.fileName, backgroundImageUr: req.fileUrl },
+                { new: true }
+            );
+            if (!updateUser) {
+                return res.status(500).json({ status: 500, error: "Failed to update user profile picture" });
+            }            
+            console.log("background image updated successfully");
+            return res.status(200).json({status: 200,validuserone:updateUser});
         } catch (updateError) {
             console.error("Error updating user background image:", updateError);
             return res.status(500).json({status: 500, error: "Failed to update user background image"});
