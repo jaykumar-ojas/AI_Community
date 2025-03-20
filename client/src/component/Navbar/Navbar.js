@@ -105,7 +105,7 @@ import { LogOutUser } from "./NavBarFunc";
                 (<Menu as="div" className="relative z-10">
                   <MenuButton className="flex items-center focus:outline-none">
                     <img
-                      src={loginData?.validuserone?.image}
+                      src={loginData?.validuserone?.profilePictureUrl || loginData?.validuserone?.image}
                       alt="Profile"
                       className="h-8 w-8 rounded-full"
                       referrerPolicy="no-referrer"

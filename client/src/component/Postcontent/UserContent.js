@@ -96,6 +96,8 @@ const UserContent = ({ post }) => {
       if (response.ok) {
         console.log("Post deleted successfully:", result);
         alert("Post deleted successfully");
+        history('/');
+
         // Refresh the page or redirect
         window.location.reload();
       } else {
