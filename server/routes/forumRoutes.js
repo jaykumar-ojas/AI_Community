@@ -9,7 +9,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // Get all topics with optional filtering
 router.get('/topics', async (req, res) => {
+ // console.log(req.body);
   try {
+  //  console.log("in try", req.body);
     const { sort, userId, search, tag } = req.query;
     let query = {};
     
@@ -78,9 +80,9 @@ router.get('/topics', async (req, res) => {
 
 // Get a single topic by ID
 router.get('/topics/:id', async (req, res) => {
+ console.log("by id", req,body);
   try {
     const topic = await ForumTopic.findById(req.params.id);
-    
     if (!topic) {
       return res.status(404).json({ status: 404, error: 'Topic not found' });
     }
@@ -215,7 +217,9 @@ router.delete('/topics/:id', authenticate, async (req, res) => {
 
 // Get replies for a topic
 router.get('/replies', async (req, res) => {
+
   try {
+    console.log(req.body);
     const { topicId } = req.query;
     
     if (!topicId) {
