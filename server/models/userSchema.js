@@ -6,38 +6,19 @@ const jwt = require("jsonwebtoken");
 const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
 
 const userSchema = new mongoose.Schema({
-    userName:{
-        type:String,
-        required:true,
-        trim:true
-    },
-    email:{
-        type:String,
-        required:true,
-        unique:true,
+    userName:{ type:String, required:true,trim:true},
+    password:{ type:String, required:true, minlength:8 },
+    confirmPassword:{ type:String, required:true,minlength:8  },
+    profilePicture:{ type:String, default:""},
+    profilePictureUrl :{ type: String, default:""},
+    backgroundImage:{ type:String, default:""},
+    backgroundImageUrl:{ type: String, default:""},
+    email:{ type:String, required:true,unique:true,
         validate(value){
             if(!validator.isEmail(value)){
                 throw new Error("email is not valid");
             }
         }
-    },
-    password:{
-        type:String,
-        required:true,
-        minlength:8  
-    },
-    confirmPassword:{
-        type:String,
-        required:true,
-        minlength:8  
-    },
-    profilePicture:{
-        type:String,
-        default:""
-    },
-    backgroundImage:{
-        type:String,
-        default:""
     },
     tokens:[
         {

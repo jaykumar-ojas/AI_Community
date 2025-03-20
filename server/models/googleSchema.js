@@ -3,20 +3,29 @@ const jwt = require("jsonwebtoken");
 const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
 
 const googleSchema = new mongoose.Schema({
-    googleId : String,
-    userName : String,
-    email : String,
-    image : String,
-    backgroundImage : {
-        type: String,
-        default: ""
-    },
-    tokens:[{
+    googleId: { type: String, default: "" }, 
+    userName: { type: String, default: "" },
+    email: { type: String, required: true }, // Ensures email is always provided
+    image: { type: String, default: "" },
+    profilePicture: { type: String, default: "" },
+    profilePictureUrl: { type: String, default: "" },
+    backgroundImage: { type: String, default: "" },
+    backgroundImageUrl: { type: String, default: "" },
+    tokens :[
+        {
         token:{
-            type:String
+            type:String,
+            required: true
         }
-    }]
-},{timestamps : true});
+    }
+    ], // Ensures tokens is always an empty array
+}, { timestamps: true });
+
+
+
+
+
+
 
 googleSchema.methods.generateAuthToken = async function() {
     try{
