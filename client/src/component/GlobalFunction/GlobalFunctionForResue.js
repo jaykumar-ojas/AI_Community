@@ -1,17 +1,29 @@
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 
+// Add debounce utility
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
 export const ValidUserForPage = () => {
-    
   const { setLoginData } = useContext(LoginContext);
-  const removeData =()=>{
-      localStorage.removeItem("userdatatoken"); // Clear invalid token
-      localStorage.removeItem("userData");
-      setLoginData(null);
+  
+  const removeData = () => {
+    localStorage.removeItem("userdatatoken");
+    localStorage.removeItem("userData");
+    setLoginData(null);
   }
 
   const validateUser = async () => {
-    
     let token = localStorage.getItem("userdatatoken");
 
     if (!token) {
@@ -29,28 +41,34 @@ export const ValidUserForPage = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        // Only remove data if we get a 401 or 403 status
+        if (response.status === 401 || response.status === 403) {
+          removeData();
+          return false;
+        }
+        // For other errors, just return false but don't remove data
+        return false;
       }
 
       const res = await response.json();
 
       if (!res || res.status === 401) {
         removeData();
-        setLoginData(null);
         return false;
       } else {
-        localStorage.setItem("userData",JSON.stringify(res));
-        setLoginData(res); // No need for await here
+        localStorage.setItem("userData", JSON.stringify(res));
+        setLoginData(res);
         return true;
       }
     } catch (error) {
-      console.log("i am coming to error in validate page and remove data");
-      removeData();
+      console.log("Error in validate page:", error);
+      // Don't remove data on network errors
       return false;
     }
   };
 
-  return validateUser;
+  // Debounce the validation function to prevent rapid calls
+  return debounce(validateUser, 1000);
 };
 
 

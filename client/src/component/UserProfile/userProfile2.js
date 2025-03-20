@@ -17,17 +17,16 @@ const Uploader = () => {
   const navigate = useNavigate();
   const validatePage = ValidUserForPage();
 
-
-  // Fetch user posts when component mounts
+  const validateUser = () =>{
+    if(!loginData){
+      return validatePage() ;
+    }
+}
 
   useEffect(() => {
     console.log("useEffect triggered, loginData:", loginData);
     validateUser();
-    },[]);
-
-  const validateUser =()=>{
-    return validatePage();
-  }
+  });
 
 
   if(!validateUser){
