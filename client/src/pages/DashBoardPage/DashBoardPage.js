@@ -11,30 +11,36 @@ import InfiniteScroll from "react-infinite-scroll-component";
 const Page = () => {
   const [postdata, setPostData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hasMore,setHasMore] = useState(true);
-  const [page,setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [isValidating, setIsValidating] = useState(false);
   const validate = ValidUserForPage();
   const history = useNavigate();
+  const { loginData } = useContext(LoginContext);
   
   const googleLog = () => {
-
-    // when we use google login we are redirecting to this page
-    // that's why we get token from url and set the usertoken to our localstorage
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     
     if (token) {
-      console.log("i m coming to save data");
-      localStorage.setItem("userdatatoken", token); // Save the token in localStorage
-      // Optionally, remove the token from the URL for a cleaner experience
+      localStorage.setItem("userdatatoken", token);
       window.history.replaceState({}, document.title, "/");
     }
   }    
 
   const validateUser = async () => {
-    validate();
+    if (isValidating) return;
+    setIsValidating(true);
+    
+    try {
+      const isValid = await validate();
+      if (!isValid && !loginData) {
+        history("/");
+      }
+    } finally {
+      setIsValidating(false);
+    }
   };
-
 
   const dataFetch = async () => {
     try {

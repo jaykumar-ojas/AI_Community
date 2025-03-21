@@ -16,6 +16,7 @@ import VerfiyOtp from "./component/Auth/verifyOtp";
 import PostContent from "./component/Postcontent/postcontent";
 import PostData from "./component/Postcontent/PostData";
 import AnotherUser from "./component/UserProfile/AnotherUser";
+import AIAggregator from "./component/AIchatbot/chatbot";
 
 const router = createBrowserRouter([
   {
@@ -61,6 +62,9 @@ const router = createBrowserRouter([
   {
     path:'/userProfile/:userId',
     element:<AnotherUser></AnotherUser>
+  },
+    path:'/ai-aggregator',
+    element:<AIAggregator></AIAggregator>
   }
 ]);
 
