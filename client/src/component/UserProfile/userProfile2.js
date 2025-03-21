@@ -12,21 +12,22 @@ const Uploader = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showLogin,setShowLogin]= useState(false);
   
-  
-  
-  const navigate = useNavigate();
   const validatePage = ValidUserForPage();
 
 
   // Fetch user posts when component mounts
 
   useEffect(() => {
+    console.log(localStorage.getItem("userdatatoken"),"this is user data token");
     console.log("useEffect triggered, loginData:", loginData);
     validateUser();
+    console.log("i am calling user data");
     },[]);
 
   const validateUser =()=>{
+    if(!loginData){
     return validatePage();
+    }
   }
 
 

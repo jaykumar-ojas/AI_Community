@@ -24,6 +24,7 @@ const Page = () => {
     const token = urlParams.get("token");
     
     if (token) {
+      console.log("i m coming to save data");
       localStorage.setItem("userdatatoken", token); // Save the token in localStorage
       // Optionally, remove the token from the URL for a cleaner experience
       window.history.replaceState({}, document.title, "/");
@@ -88,10 +89,29 @@ const Page = () => {
   };
 
   useEffect(() => {
-    googleLog();
-    validateUser();
+    const checkTokenAndValidate = async () => {
+      googleLog();  // This sets the token if present
+  
+      // Wait until the token is set before calling validateUser
+      const checkToken = () => localStorage.getItem("userdatatoken");
+  
+      let attempts = 0;
+      const maxAttempts = 10; // Limit attempts to avoid infinite loop
+  
+      while (!checkToken() && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms
+        attempts++;
+      }
+  
+      if (checkToken()) {
+        validateUser(); // Only call if token is available
+      }
+    };
+  
+    checkTokenAndValidate();
     dataFetch();
   }, []);
+  
 
   return (
     <>

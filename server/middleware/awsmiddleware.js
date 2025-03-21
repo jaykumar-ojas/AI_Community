@@ -190,9 +190,9 @@ const generateSignedUrl = async(keys)=>{
         // Return a placeholder URL if keys is undefined or null
         if (!keys) {
             console.warn("Warning: Attempted to generate signed URL with empty key");
-            return "https://via.placeholder.com/300?text=No+Image+Available";
+            return "";
         }
-        
+
         const getObjectParams = {
             Bucket: bucketName,
             Key: keys,

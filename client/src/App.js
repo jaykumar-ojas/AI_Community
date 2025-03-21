@@ -15,6 +15,7 @@ import ForgotPassword from "./component/Auth/ForgotPassword";
 import VerfiyOtp from "./component/Auth/verifyOtp";
 import PostContent from "./component/Postcontent/postcontent";
 import PostData from "./component/Postcontent/PostData";
+import AnotherUser from "./component/UserProfile/AnotherUser";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
   {
     path:'/test2',
     element:<PostData></PostData>
+  },
+  {
+    path:'/userProfile/:userId',
+    element:<AnotherUser></AnotherUser>
   }
 ]);
 
