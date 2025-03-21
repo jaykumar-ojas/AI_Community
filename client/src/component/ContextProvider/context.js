@@ -14,15 +14,6 @@ const Context=({children})=>{
         }
         
       }, []);
-
-
-      useEffect(() => {
-        if (loginData) {
-            localStorage.setItem("userData", JSON.stringify(loginData));
-        } else {
-            localStorage.removeItem("userData");
-        }
-    }, [loginData]);
       console.log("this is set loginData,",loginData);
     
     return (

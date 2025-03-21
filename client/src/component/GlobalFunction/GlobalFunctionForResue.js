@@ -16,7 +16,6 @@ const debounce = (func, wait) => {
 
 export const ValidUserForPage = () => {
   const { setLoginData } = useContext(LoginContext);
-  
   const removeData = () => {
     localStorage.removeItem("userdatatoken");
     localStorage.removeItem("userData");
@@ -27,6 +26,7 @@ export const ValidUserForPage = () => {
     let token = localStorage.getItem("userdatatoken");
 
     if (!token) {
+      console.log("i didnt recive any token taht y i delete all data");
       removeData();
       return false;
     }
@@ -53,6 +53,7 @@ export const ValidUserForPage = () => {
       const res = await response.json();
 
       if (!res || res.status === 401) {
+        console.log("i didnt recive any good status taht y i delete all data");
         removeData();
         return false;
       } else {

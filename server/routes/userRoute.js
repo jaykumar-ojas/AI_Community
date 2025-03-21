@@ -108,6 +108,31 @@ router.post("/login",async(req,res)=>{
     }
 })
 
+// getUserById
+
+router.get("/getUserById/:userId",async(req,res)=>{
+    console.log("i am coming to backend");
+    try{
+        const {userId} = req.params.userId;
+        console.log(userId,"this is userId");
+        if(userId){ throw new Error("userId is required"); }
+
+        const user = await userdb.findById(userId) || await googledb.findById(userId);
+        if(!user){  throw new Error("user not exist");}
+
+        const profUrl = await generateSignedUrl(user.profilePicture);
+        const backgroundUrl = await generateSignedUrl(user.backgroundImage);
+
+        user.profilePictureUrl = profUrl || user.image;
+        user.backgroundImageUr = backgroundUrl;
+
+        res.status(200).json({status:200, user :user});
+    }
+    catch(error){
+        res.status(422).json({status:422,error:error});
+    }
+})
+
 // for token validation
 
 router.get("/validuser",authenticate,async(req,res)=>{
