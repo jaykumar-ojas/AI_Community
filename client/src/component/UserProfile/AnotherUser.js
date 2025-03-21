@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { LoginContext } from "../ContextProvider/context";
 import { ValidUserForPage } from "../GlobalFunction/GlobalFunctionForResue";
 import AnotherUserBanner from "./AnotherComponent/AnotherUserBanner";
+import AnotherUserContent from "./AnotherComponent/AnotherUserContent";
 import UserContent from "./Components/UserContent";
 import Login from "../Auth/Login";
 
@@ -15,10 +16,7 @@ const AnotherUser = () => {
   
     // Fetch user posts when component mounts
   
-    useEffect(() => {
-      console.log("useEffect triggered, loginData:", loginData);
-      validateUser();
-      },[loginData]);
+    console.log(loginData);
   
     const validateUser =()=>{
         if(!loginData)
@@ -34,7 +32,7 @@ const AnotherUser = () => {
         <AnotherUserBanner></AnotherUserBanner>
           {/* Filter Tabs */}
         <div className="container mx-auto px-6 py-8">
-          {/* <UserContent></UserContent> */}
+          <AnotherUserContent></AnotherUserContent>
         </div>
       </div>
     );

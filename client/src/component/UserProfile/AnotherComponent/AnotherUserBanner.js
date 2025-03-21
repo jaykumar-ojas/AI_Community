@@ -8,28 +8,42 @@ const UserBanner = () => {
   const [user,setUser] = useState();
   const navigate = useNavigate();   
 
-
-  useEffect(()=>{
-    console.log(userId,"this is userId");
-    getUser();
-  },[loginData]);
+  console.log("this is logindata in another user",loginData);
+  // useEffect(()=>{
+  //   console.log(userId,"this is userId");
+  //   getUser();
+  // },[loginData]);
 
   // Handle profile picture change
+
+  useEffect(() => {
+    if (loginData) {  // Ensure loginData is available before calling getUser
+      console.log(userId, "this is userId");
+      getUser();
+    }
+  }, [loginData]);
+
+
   const getUser = async()=>{
     if(!userId){
         navigate('*');
     }
     try{
+      console.log("i am going to get user");
     const data = await fetch(`http://localhost:8099/getUserById/${userId}`,{
         method:'GET',
-        headers:"applicatin/json"
+        headers: {
+          "Content-Type": "application/json"
+        }
+
     });
 
     const res = await data.json();
     setUser(res.user);
    }
    catch(error){
-    alert("this user doesn't exist");
+    // alert("this user doesn't exist");
+    console.log("i am coming to eror");
    }
 
 

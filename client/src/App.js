@@ -63,6 +63,7 @@ const router = createBrowserRouter([
     path:'/userProfile/:userId',
     element:<AnotherUser></AnotherUser>
   },
+  {
     path:'/ai-aggregator',
     element:<AIAggregator></AIAggregator>
   }
