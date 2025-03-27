@@ -5,7 +5,7 @@ import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import TopicList from './TopicList';
 
-const PopularTopics = ({ onSelectTopic }) => {
+const PopularTopics = () => {
   const { loginData } = useContext(LoginContext);
   const { emitDeleteTopic, subscribeToEvent } = useWebSocket();
   
@@ -34,7 +34,7 @@ const PopularTopics = ({ onSelectTopic }) => {
     setError(null);
     
     try {
-      const response = await axios.get(TOPICS_URL, { headers: getAuthHeaders() });
+      const response = await axios.get(`${TOPICS_URL}?sort=popular`, { headers: getAuthHeaders() });
       setTopics(response.data.topics || []);
     } catch (err) {
       if (handleAuthError(err, setError)) {
@@ -103,7 +103,6 @@ const PopularTopics = ({ onSelectTopic }) => {
   return (
     <TopicList 
       topics={topics} 
-      onSelectTopic={onSelectTopic} 
       onDeleteTopic={handleDeleteTopic}
       emptyMessage="No popular topics available"
     />

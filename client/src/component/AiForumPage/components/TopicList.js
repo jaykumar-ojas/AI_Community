@@ -1,17 +1,24 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { formatDate, getAuthHeaders, handleAuthError, API_BASE_URL } from './ForumUtils';
 
-const TopicList = ({ topics: initialTopics, onSelectTopic, onDeleteTopic, emptyMessage }) => {
+const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   const { loginData } = useContext(LoginContext);
+  const navigate = useNavigate();
   const [topics, setTopics] = useState(initialTopics);
 
   // Update topics when initialTopics changes
   useEffect(() => {
     setTopics(initialTopics);
   }, [initialTopics]);
+
+  // Handle topic click
+  const handleTopicClick = (topic) => {
+    navigate(`/forum/topic/${topic._id}`);
+  };
 
   // Handle topic like
   const handleTopicLike = async (topicId, e) => {
@@ -98,67 +105,68 @@ const TopicList = ({ topics: initialTopics, onSelectTopic, onDeleteTopic, emptyM
           return (
             <div
               key={topic._id}
-              className="p-4 hover:bg-gray-50 transition-colors"
+              className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+              onClick={() => handleTopicClick(topic)}
             >
               <div className="flex items-start justify-between">
-                <div className="flex-1 cursor-pointer" onClick={() => onSelectTopic(topic)}>
+                <div className="flex-1">
                   <h3 className="text-lg font-medium text-gray-900 mb-1">{topic.title}</h3>
                   <p className="text-gray-600 text-sm line-clamp-2">{topic.content}</p>
-                  <div className="flex items-center mt-2 text-sm text-gray-500">
-                    <span className="font-medium text-blue-600 mr-2">{topic.userName}</span>
-                    <span className="mr-4">{formatDate(topic.createdAt)}</span>
-                    <span className="flex items-center mr-4">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                      {topic.replyCount || 0}
-                    </span>
-                    <div className="flex items-center">
-                      <button
-                        onClick={(e) => handleTopicLike(topic._id, e)}
-                        className={`flex items-center text-sm ${isLiked ? 'text-blue-600' : 'text-gray-500'} hover:text-blue-600 mr-2`}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill={isLiked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                        </svg>
-                        {topic.likes?.length || 0}
-                      </button>
-                      <button
-                        onClick={(e) => handleTopicDislike(topic._id, e)}
-                        className={`flex items-center text-sm ${isDisliked ? 'text-red-600' : 'text-gray-500'} hover:text-red-600`}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill={isDisliked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 5v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 5h2m5 0v2a2 2 0 01-2 2h-2.5" />
-                        </svg>
-                        {topic.dislikes?.length || 0}
-                      </button>
-                    </div>
+                  <div className="mt-2 flex items-center text-sm text-gray-500">
+                    <span>Posted by {topic.userName}</span>
+                    <span className="mx-2">•</span>
+                    <span>{formatDate(topic.createdAt)}</span>
+                    <span className="mx-2">•</span>
+                    <span>{topic.replyCount} replies</span>
+                    <span className="mx-2">•</span>
+                    <span>{topic.viewCount/2} views</span>
                   </div>
                 </div>
-                
-                {/* Delete button for topic owner or admin */}
-                {canDelete && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteTopic(topic._id);
-                    }}
-                    className="text-red-500 hover:text-red-700 ml-4"
-                    title="Delete topic"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                )}
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={(e) => handleTopicLike(topic._id, e)}
+                      className={`p-1 rounded-full hover:bg-gray-100 ${
+                        isLiked ? 'text-blue-500' : 'text-gray-500'
+                      }`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                      </svg>
+                    </button>
+                    <span className="text-sm text-gray-500">{topic.likes?.length || 0}</span>
+                    <button
+                      onClick={(e) => handleTopicDislike(topic._id, e)}
+                      className={`p-1 rounded-full hover:bg-gray-100 ${
+                        isDisliked ? 'text-red-500' : 'text-gray-500'
+                      }`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.105-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l1.4-1.866a4 4 0 00.8-2.4z" />
+                      </svg>
+                    </button>
+                    <span className="text-sm text-gray-500">{topic.dislikes?.length || 0}</span>
+                  </div>
+                  {canDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteTopic(topic._id);
+                      }}
+                      className="p-1 text-red-500 hover:bg-red-50 rounded-full"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );
         })
       ) : (
-        <div className="text-center text-gray-500 py-8">
-          {emptyMessage || "No topics available"}
-        </div>
+        <div className="p-4 text-center text-gray-500">{emptyMessage}</div>
       )}
     </div>
   );

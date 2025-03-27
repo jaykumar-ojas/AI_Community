@@ -1,14 +1,17 @@
 import React, { useContext, useState } from "react";
 import { LoginContext } from "../../ContextProvider/context";
 
-const UserBanner = () => {
-  const { loginData , setLoginData } = useContext(LoginContext);
+const UserBanner = ({ userData }) => {
+  const { loginData, setLoginData } = useContext(LoginContext);
   const [backgroundFile, setBackgroundFile] = useState(null);
   const [profilePreview, setProfilePreview] = useState("");
   const [profileFile, setProfileFile] = useState(null);
   const [backgroundPreview, setBackgroundPreview] = useState("");
   const [uploadingProfile, setUploadingProfile] = useState(false);
   const [uploadingBackground, setUploadingBackground] = useState(false);
+
+  // Check if this is the user's own profile
+  const isOwnProfile = !userData || userData._id === loginData?.validuserone?._id;
 
   // Handle profile picture change
   const handleProfilePictureChange = (e) => {
@@ -79,9 +82,6 @@ const UserBanner = () => {
       if (data.status === 200) {
         alert("Profile picture updated successfully");
         setLoginData(data);
-        console.log("updated profile data",data);
-        // Refresh user data
-        // window.location.reload();
       } else {
         alert("Failed to update profile picture");
       }
@@ -118,9 +118,6 @@ const UserBanner = () => {
       if (data.status === 200) {
         alert("Background image updated successfully");
         setLoginData(data);
-        console.log("this is image uploaded data");
-        // Refresh user data
-        // window.location.reload();
       } else {
         alert("Failed to update background image");
       }
@@ -132,27 +129,31 @@ const UserBanner = () => {
     }
   };
 
+  const displayUser = userData || loginData?.validuserone;
+
   return (
     <div className="relative">
       <div className="relative h-64 overflow-hidden group">
         <img
-          src={loginData?.validuserone?.backgroundImageUrl}
+          src={displayUser?.backgroundImageUrl}
           alt="User Banner"
           className="w-full h-64 object-cover"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all duration-300">
-          <label className="hidden group-hover:block cursor-pointer bg-white text-gray-800 px-4 py-2 rounded-lg shadow-md">
-            <span>Change Cover</span>
-            <input
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={handleBackgroundImageChange}
-            />
-          </label>
-        </div>
+        {isOwnProfile && (
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all duration-300">
+            <label className="hidden group-hover:block cursor-pointer bg-white text-gray-800 px-4 py-2 rounded-lg shadow-md">
+              <span>Change Cover</span>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleBackgroundImageChange}
+              />
+            </label>
+          </div>
+        )}
       </div>
-      {backgroundFile && (
+      {isOwnProfile && backgroundFile && (
         <div className="absolute bottom-0 left-0 right-0 bg-gray-800 bg-opacity-70 p-2 flex justify-between items-center">
           <span className="text-sm text-white">New cover selected</span>
           <button
@@ -164,16 +165,14 @@ const UserBanner = () => {
           </button>
         </div>
       )}
-      <div className="absolute bottom-4 left-6 flex items-center">
-        <div className="relative group">
-          <img
-            src={
-              loginData?.validuserone?.profilePictureUrl ||
-              loginData?.validuserone?.image
-            }
-            alt="User Avatar"
-            className="w-24 h-24 rounded-full border-4 border-white object-cover"
-          />
+      
+      <div className="relative group">
+        <img
+          src={displayUser?.profilePictureUrl || displayUser?.image}
+          alt="User Avatar"
+          className="w-24 h-24 rounded-full border-4 border-white object-cover"
+        />
+        {isOwnProfile && (
           <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all duration-300">
             <label className="hidden group-hover:block cursor-pointer bg-white text-gray-800 px-2 py-1 rounded-lg shadow-md text-xs">
               <span>Change</span>
@@ -185,22 +184,22 @@ const UserBanner = () => {
               />
             </label>
           </div>
-        </div>
-        <div className="ml-4">
-          <h1 className="text-3xl font-bold text-white">
-            {loginData?.validuserone?.userName}
-          </h1>
-          <p className="text-gray-200">{loginData?.validuserone?.email}</p>
-          {profileFile && (
-            <button
-              className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm mt-2"
-              onClick={uploadProfilePicture}
-              disabled={uploadingProfile}
-            >
-              {uploadingProfile ? "Uploading..." : "Save Profile Picture"}
-            </button>
-          )}
-        </div>
+        )}
+      </div>
+      <div className="ml-4">
+        <h1 className="text-3xl font-bold text-white">
+          {displayUser?.userName}
+        </h1>
+        <p className="text-gray-200">{displayUser?.email}</p>
+        {isOwnProfile && profileFile && (
+          <button
+            className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm mt-2"
+            onClick={uploadProfilePicture}
+            disabled={uploadingProfile}
+          >
+            {uploadingProfile ? "Uploading..." : "Save Profile Picture"}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import TopicList from './TopicList';
 
-const MyTopics = ({ onSelectTopic }) => {
+const MyTopics = () => {
   const { loginData } = useContext(LoginContext);
   const { emitDeleteTopic, subscribeToEvent } = useWebSocket();
   
@@ -13,36 +13,21 @@ const MyTopics = ({ onSelectTopic }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch my topics when loginData changes
+  // Fetch my topics on mount
   useEffect(() => {
-    if (loginData?.validuserone) {
-      fetchTopics();
-    } else {
-      setTopics([]);
-    }
+    fetchTopics();
   }, [loginData]);
 
-  // Listen for new topics and topic deletion
+  // Listen for topic deletion
   useEffect(() => {
-    if (!loginData?.validuserone) return;
-    
-    const userId = loginData.validuserone._id;
-    
-    const unsubscribeNew = subscribeToEvent('topic_created', (newTopic) => {
-      if (newTopic.userId === userId) {
-        setTopics(prevTopics => [newTopic, ...prevTopics]);
-      }
-    });
-    
-    const unsubscribeDelete = subscribeToEvent('topic_deleted', (deletedTopicId) => {
+    const unsubscribe = subscribeToEvent('topic_deleted', (deletedTopicId) => {
       setTopics(prevTopics => prevTopics.filter(topic => topic._id !== deletedTopicId));
     });
     
     return () => {
-      unsubscribeNew();
-      unsubscribeDelete();
+      unsubscribe();
     };
-  }, [loginData]);
+  }, []);
 
   const fetchTopics = async () => {
     if (!loginData?.validuserone) {
@@ -128,7 +113,6 @@ const MyTopics = ({ onSelectTopic }) => {
   return (
     <TopicList 
       topics={topics} 
-      onSelectTopic={onSelectTopic} 
       onDeleteTopic={handleDeleteTopic}
       emptyMessage="You haven't created any topics yet"
     />
