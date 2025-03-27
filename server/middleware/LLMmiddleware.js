@@ -15,12 +15,15 @@ function fileToGenerativePart(fileBuffer, mimeType) {
 
 const promptEnhancer =async(req,res,next)=>{
     try {
+        // when call from frontend make sure prompt send 
+        // in this format :- prompt : "iahgajdg";
+        const userPrompt = req.body.prompt;
         const  description  = req.description;
         if (!description) {
           return res.status(400).json({ error: "Prompt is required" });
         }
         const CONSTANT_PROMPT = "As a professional prompt engineer give prompt to generate image by this descirption and strict limit of 100 words: ";
-        const final_prompt = CONSTANT_PROMPT + description;
+        const final_prompt = CONSTANT_PROMPT + description + userPrompt;
     
         const result = await model.generateContent(final_prompt);
         const responseText = result.response.text();
