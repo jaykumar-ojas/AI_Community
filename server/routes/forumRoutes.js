@@ -128,6 +128,7 @@ router.get('/topics/:id', async (req, res) => {
     // Increment view count
     topic.viewCount += 1;
     await topic.save();
+
     
     // Process media attachments to generate signed URLs
     const topicObj = topic.toObject();
@@ -157,6 +158,7 @@ router.get('/topics/:id', async (req, res) => {
     }
     
     res.status(200).json({ status: 200, topic: topicObj });
+
   } catch (error) {
     console.error('Error fetching topic:', error);
     res.status(500).json({ status: 500, error: 'Server error' });
@@ -321,6 +323,7 @@ router.get('/replies', async (req, res) => {
     const replies = await ForumReply.find({ topicId })
       .sort({ isAnswer: -1, createdAt: 1 });
     
+
     // Process media attachments to generate signed URLs
     const repliesWithSignedUrls = await Promise.all(
       replies.map(async (reply) => {
@@ -354,6 +357,7 @@ router.get('/replies', async (req, res) => {
     );
     
     res.status(200).json({ status: 200, replies: repliesWithSignedUrls });
+
   } catch (error) {
     console.error('Error fetching replies:', error);
     res.status(500).json({ status: 500, error: 'Server error' });

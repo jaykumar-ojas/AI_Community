@@ -108,6 +108,7 @@ const awsuploadMiddleware = async (req, res, next) => {
 
             // Add the fileName directly to the request object for single file uploads
             req.fileName = fileName;
+            req.mimetype = file.mimetype;
             req.fileUrl = fileUrl;
             
             // Also maintain backward compatibility with the uploadedFiles array
@@ -190,9 +191,9 @@ const generateSignedUrl = async(keys)=>{
         // Return a placeholder URL if keys is undefined or null
         if (!keys) {
             console.warn("Warning: Attempted to generate signed URL with empty key");
-            return "https://via.placeholder.com/300?text=No+Image+Available";
+            return "";
         }
-        
+
         const getObjectParams = {
             Bucket: bucketName,
             Key: keys,

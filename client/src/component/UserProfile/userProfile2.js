@@ -10,10 +10,12 @@ const Uploader = () => {
   const { loginData, setLoginData } = useContext(LoginContext);
   const [userPosts, setUserPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
   const [showLogin, setShowLogin] = useState(false);
   const [profileUser, setProfileUser] = useState(null);
   const { userId } = useParams();
   const navigate = useNavigate();
+
   const validatePage = ValidUserForPage();
 
   const validateUser = () => {
@@ -23,6 +25,7 @@ const Uploader = () => {
   };
 
   useEffect(() => {
+    console.log(localStorage.getItem("userdatatoken"),"this is user data token");
     console.log("useEffect triggered, loginData:", loginData);
     validateUser();
     

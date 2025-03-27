@@ -22,6 +22,7 @@ const otpRouter = require("./routes/otpRoute");
 const forgetOtpRoute = require("./routes/forgetOtpRoute");
 const commentsRouter = require("./routes/comments"); 
 const forumRoutes = require("./routes/forumRoutes");
+const llmRoutes = require("./routes/llmRoute");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -60,6 +61,7 @@ app.use("/",otpRouter);
 app.use("/",forgetOtpRoute);
 app.use("/comments", commentsRouter);
 app.use("/forum", forumRoutes);
+app.use("/",llmRoutes);
 
 // WebSocket event handlers
 io.on('connection', (socket) => {
