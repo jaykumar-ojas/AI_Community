@@ -30,6 +30,7 @@ const upload = multer({
 
 
 // there no uploading feature
+// for prompt check promptEnhancer
 router.post('/enhancedPrompt',upload.single("image"),imageToText,promptEnhancer,async(req,res)=>{
  try{
     if(!req.file){
