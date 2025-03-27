@@ -108,6 +108,7 @@ const awsuploadMiddleware = async (req, res, next) => {
 
             // Add the fileName directly to the request object for single file uploads
             req.fileName = fileName;
+            req.mimetype = file.mimetype;
             req.fileUrl = fileUrl;
             
             // Also maintain backward compatibility with the uploadedFiles array

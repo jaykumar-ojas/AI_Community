@@ -90,7 +90,7 @@ router.get('/topics/:id', async (req, res) => {
     // Increment view count
     topic.viewCount += 1;
     await topic.save();
-    
+    console.log("this is my topic",topic);
     res.status(200).json({ status: 200, topic });
   } catch (error) {
     console.error('Error fetching topic:', error);
@@ -229,6 +229,7 @@ router.get('/replies', async (req, res) => {
     const replies = await ForumReply.find({ topicId })
       .sort({ isAnswer: -1, createdAt: 1 });
     
+    console.log("repiles",replies.mediaAttachments);
     res.status(200).json({ status: 200, replies });
   } catch (error) {
     console.error('Error fetching replies:', error);

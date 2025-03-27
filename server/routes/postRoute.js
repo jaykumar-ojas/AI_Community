@@ -1,11 +1,13 @@
 const express = require("express");
 const router = new express.Router();
-const multer = require('multer')
+const multer = require('multer');
 const postdb = require("../models/postSchema");
 const userdb = require("../models/userSchema");
 const googledb = require("../models/googleSchema");
+const {awsuploadMiddleware,generateSignedUrl,awsdeleteMiddleware} = require("../middleware/awsmiddleware");
 
 const storage = multer.memoryStorage();
+
 // Define allowed file types
 const fileFilter = (req, file, cb) => {
   // Accept images, videos, and audio files
@@ -27,8 +29,6 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024, // 50MB limit
   }
 });
-
-const {awsuploadMiddleware,generateSignedUrl,awsdeleteMiddleware} = require("../middleware/awsmiddleware");
 
 // for uploading the file from user when login
 router.post('/upload', upload.single('file'), awsuploadMiddleware, async(req, res) => {
