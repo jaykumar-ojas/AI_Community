@@ -298,9 +298,9 @@ const UserContent = ({ post }) => {
   return (
     <div className="w-full border rounded-lg bg-white shadow-lg flex flex-col gap-0">
       {/* user header */}
-      <div className=" flex justify-between items-center w-full h-full">
+      <div className="flex justify-between items-center w-full h-full">
         <div className="flex jsutify-between">
-          <div className="w-12 h-12  m-2 ">
+          <Link to={`/userprofile/${postData?.userId}`} className="w-12 h-12 m-2">
             <img
               src={postData?.image}
               className="w-full h-full rounded-full"
@@ -309,12 +309,12 @@ const UserContent = ({ post }) => {
                 console.error("Error loading user image:", e);
                 e.target.src = "https://via.placeholder.com/40";
               }}
-            ></img>
-          </div>
-          {/* user name remiand */}
-          <div className="font-bold text-red-700 m-2 flex items-center">
+            />
+          </Link>
+          {/* user name remain */}
+          <Link to={`/userprofile/${postData?.userId}`} className="font-bold text-red-700 m-2 flex items-center hover:text-red-900">
             {postData?.userName || "Unknown User"}
-          </div>
+          </Link>
         </div>
 
         {/* this is for openpanel */}

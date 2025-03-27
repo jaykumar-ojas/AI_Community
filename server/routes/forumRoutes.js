@@ -3,15 +3,21 @@ const router = express.Router();
 const ForumTopic = require('../models/forumTopicSchema');
 const ForumReply = require('../models/forumReplySchema');
 const authenticate = require('../middleware/authenticate');
-const { awsuploadMiddleware, awsdeleteMiddleware } = require('../middleware/awsmiddleware');
+const { awsuploadMiddleware, awsdeleteMiddleware, generateSignedUrl } = require('../middleware/awsmiddleware');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
+const AWS = require('aws-sdk');
+
+// Configure AWS
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
+});
 
 // Get all topics with optional filtering
 router.get('/topics', async (req, res) => {
- // console.log(req.body);
   try {
-  //  console.log("in try", req.body);
     const { sort, userId, search, tag } = req.query;
     let query = {};
     
@@ -60,12 +66,44 @@ router.get('/topics', async (req, res) => {
     
     topics = [...topics, ...regularTopics];
     
+    // Process media attachments to generate signed URLs
+    const topicsWithSignedUrls = await Promise.all(
+      topics.map(async (topic) => {
+        const topicObj = topic.toObject();
+        if (topicObj.mediaAttachments && topicObj.mediaAttachments.length > 0) {
+          topicObj.mediaAttachments = await Promise.all(
+            topicObj.mediaAttachments.map(async (attachment) => {
+              try {
+                const signedUrl = attachment.fileName 
+                  ? await generateSignedUrl(attachment.fileName)
+                  : "https://via.placeholder.com/300?text=No+Image+Available";
+                
+                return {
+                  ...attachment,
+                  signedUrl,
+                  fileType: attachment.fileType || 'image'
+                };
+              } catch (error) {
+                console.error(`Error processing media attachment ${attachment.fileName}:`, error);
+                return {
+                  ...attachment,
+                  signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media",
+                  fileType: attachment.fileType || 'image'
+                };
+              }
+            })
+          );
+        }
+        return topicObj;
+      })
+    );
+    
     // Get total count for pagination
     const totalTopics = await ForumTopic.countDocuments(query);
     
     res.status(200).json({
       status: 200,
-      topics,
+      topics: topicsWithSignedUrls,
       pagination: {
         total: totalTopics,
         page,
@@ -80,9 +118,9 @@ router.get('/topics', async (req, res) => {
 
 // Get a single topic by ID
 router.get('/topics/:id', async (req, res) => {
- console.log("by id", req,body);
   try {
     const topic = await ForumTopic.findById(req.params.id);
+    
     if (!topic) {
       return res.status(404).json({ status: 404, error: 'Topic not found' });
     }
@@ -90,8 +128,37 @@ router.get('/topics/:id', async (req, res) => {
     // Increment view count
     topic.viewCount += 1;
     await topic.save();
-    console.log("this is my topic",topic);
-    res.status(200).json({ status: 200, topic });
+
+    
+    // Process media attachments to generate signed URLs
+    const topicObj = topic.toObject();
+    if (topicObj.mediaAttachments && topicObj.mediaAttachments.length > 0) {
+      topicObj.mediaAttachments = await Promise.all(
+        topicObj.mediaAttachments.map(async (attachment) => {
+          try {
+            const signedUrl = attachment.fileName 
+              ? await generateSignedUrl(attachment.fileName)
+              : "https://via.placeholder.com/300?text=No+Image+Available";
+            
+            return {
+              ...attachment,
+              signedUrl,
+              fileType: attachment.fileType || 'image'
+            };
+          } catch (error) {
+            console.error(`Error processing media attachment ${attachment.fileName}:`, error);
+            return {
+              ...attachment,
+              signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media",
+              fileType: attachment.fileType || 'image'
+            };
+          }
+        })
+      );
+    }
+    
+    res.status(200).json({ status: 200, topic: topicObj });
+
   } catch (error) {
     console.error('Error fetching topic:', error);
     res.status(500).json({ status: 500, error: 'Server error' });
@@ -131,10 +198,39 @@ router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddlewa
     
     const savedTopic = await newTopic.save();
     
-    res.status(201).json({ status: 201, topic: savedTopic });
+    // If media uploads were successful, return the topic with signed URLs
+    if (mediaAttachments.length > 0) {
+      const topicWithSignedUrls = {
+        ...savedTopic.toObject(),
+        mediaAttachments: await Promise.all(
+          mediaAttachments.map(async (attachment) => {
+            try {
+              const signedUrl = await generateSignedUrl(attachment.fileName);
+              return {
+                ...attachment,
+                signedUrl
+              };
+            } catch (error) {
+              console.error(`Error generating signed URL for ${attachment.fileName}:`, error);
+              return {
+                ...attachment,
+                signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
+              };
+            }
+          })
+        )
+      };
+      res.status(201).json({ status: 201, topic: topicWithSignedUrls });
+    } else {
+      res.status(201).json({ status: 201, topic: savedTopic });
+    }
   } catch (error) {
     console.error('Error creating topic:', error);
-    res.status(500).json({ status: 500, error: 'Server error' });
+    res.status(500).json({ 
+      status: 500, 
+      error: 'Server error',
+      message: error.message 
+    });
   }
 });
 
@@ -217,9 +313,7 @@ router.delete('/topics/:id', authenticate, async (req, res) => {
 
 // Get replies for a topic
 router.get('/replies', async (req, res) => {
-
   try {
-    console.log(req.body);
     const { topicId } = req.query;
     
     if (!topicId) {
@@ -229,8 +323,41 @@ router.get('/replies', async (req, res) => {
     const replies = await ForumReply.find({ topicId })
       .sort({ isAnswer: -1, createdAt: 1 });
     
-    console.log("repiles",replies.mediaAttachments);
-    res.status(200).json({ status: 200, replies });
+
+    // Process media attachments to generate signed URLs
+    const repliesWithSignedUrls = await Promise.all(
+      replies.map(async (reply) => {
+        const replyObj = reply.toObject();
+        if (replyObj.mediaAttachments && replyObj.mediaAttachments.length > 0) {
+          replyObj.mediaAttachments = await Promise.all(
+            replyObj.mediaAttachments.map(async (attachment) => {
+              try {
+                const signedUrl = attachment.fileName 
+                  ? await generateSignedUrl(attachment.fileName)
+                  : "https://via.placeholder.com/300?text=No+Image+Available";
+                
+                return {
+                  ...attachment,
+                  signedUrl,
+                  fileType: attachment.fileType || 'image'
+                };
+              } catch (error) {
+                console.error(`Error processing media attachment ${attachment.fileName}:`, error);
+                return {
+                  ...attachment,
+                  signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media",
+                  fileType: attachment.fileType || 'image'
+                };
+              }
+            })
+          );
+        }
+        return replyObj;
+      })
+    );
+    
+    res.status(200).json({ status: 200, replies: repliesWithSignedUrls });
+
   } catch (error) {
     console.error('Error fetching replies:', error);
     res.status(500).json({ status: 500, error: 'Server error' });
@@ -286,10 +413,39 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
     topic.replyCount += 1;
     await topic.save();
     
-    res.status(201).json({ status: 201, reply: savedReply });
+    // If media uploads were successful, return the reply with signed URLs
+    if (mediaAttachments.length > 0) {
+      const replyWithSignedUrls = {
+        ...savedReply.toObject(),
+        mediaAttachments: await Promise.all(
+          mediaAttachments.map(async (attachment) => {
+            try {
+              const signedUrl = await generateSignedUrl(attachment.fileName);
+              return {
+                ...attachment,
+                signedUrl
+              };
+            } catch (error) {
+              console.error(`Error generating signed URL for ${attachment.fileName}:`, error);
+              return {
+                ...attachment,
+                signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
+              };
+            }
+          })
+        )
+      };
+      res.status(201).json({ status: 201, reply: replyWithSignedUrls });
+    } else {
+      res.status(201).json({ status: 201, reply: savedReply });
+    }
   } catch (error) {
     console.error('Error creating reply:', error);
-    res.status(500).json({ status: 500, error: 'Server error' });
+    res.status(500).json({ 
+      status: 500, 
+      error: 'Server error',
+      message: error.message 
+    });
   }
 });
 
@@ -580,6 +736,54 @@ router.post('/replies/:id/dislike', authenticate, async (req, res) => {
     }
   } catch (error) {
     console.error('Error disliking/undisliking reply:', error);
+    res.status(500).json({ status: 500, error: 'Server error' });
+  }
+});
+
+// Get media posts from forum replies
+router.get('/media-posts', async (req, res) => {
+  try {
+    const { page = 1, limit = 9 } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Find replies with media attachments
+    const replies = await ForumReply.find({
+      'mediaAttachments.0': { $exists: true }
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parseInt(limit) + 1);
+
+    // Check if there are more posts
+    const hasMore = replies.length > limit;
+    // Remove the extra item if it exists
+    const postsToReturn = hasMore ? replies.slice(0, limit) : replies;
+
+    // Transform replies into post format
+    const mediaPosts = postsToReturn.map(reply => ({
+      _id: reply._id,
+      userId: reply.userId,
+      userName: reply.userName,
+      image: reply.userImage || "https://via.placeholder.com/40",
+      desc: reply.content,
+      createdAt: reply.createdAt,
+      likes: reply.likes,
+      dislikes: reply.dislikes,
+      topicId: reply.topicId,
+      mediaAttachments: reply.mediaAttachments.map(attachment => ({
+        fileType: attachment.fileType.split('/')[0], // Convert 'image/jpeg' to 'image'
+        signedUrl: attachment.fileUrl
+      }))
+    }));
+
+    res.status(200).json({
+      status: 200,
+      userposts: mediaPosts,
+      hasMore,
+      page: parseInt(page)
+    });
+  } catch (error) {
+    console.error('Error fetching media posts:', error);
     res.status(500).json({ status: 500, error: 'Server error' });
   }
 });

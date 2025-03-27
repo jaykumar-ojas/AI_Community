@@ -5,7 +5,7 @@ import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import TopicList from './TopicList';
 
-const RecentTopics = ({ onSelectTopic }) => {
+const RecentTopics = () => {
   const { loginData } = useContext(LoginContext);
   const { emitDeleteTopic, subscribeToEvent } = useWebSocket();
   
@@ -105,7 +105,6 @@ const RecentTopics = ({ onSelectTopic }) => {
   return (
     <TopicList 
       topics={topics} 
-      onSelectTopic={onSelectTopic} 
       onDeleteTopic={handleDeleteTopic}
       emptyMessage="No recent topics available"
     />

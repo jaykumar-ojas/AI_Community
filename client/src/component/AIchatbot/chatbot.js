@@ -1,244 +1,350 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { LoginContext } from '../ContextProvider/context';
+import { formatDate, getAuthHeaders, handleAuthError, API_BASE_URL } from '../AiForumPage/components/ForumUtils';
 
-// Component for model items in the sidebar
-function ModelItem({ icon, name, rating, active = false }) {
+// Component for AI models in the sidebar
+function ModelItem({ name, active = false, onClick }) {
   return (
-    <li className={`flex items-center px-2 py-2 rounded-md cursor-pointer transition-colors ${active ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'}`}>
-      <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center text-xs mr-2">
-        {icon}
-      </div>
+    <li 
+      className={`px-2 py-2 rounded-md cursor-pointer transition-colors ${active ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'}`}
+      onClick={() => onClick(name)}
+    >
       <div>{name}</div>
-      <div className="ml-auto text-xs text-gray-500">{rating.includes('.') ? '★ ' : ''}{rating}</div>
     </li>
   );
 }
 
-// Component for topic tags
-function TopicTag({ name }) {
+// Component for forum messages
+function ForumMessage({ message, isCommand = false, isAI = false, userName = '', timestamp = null }) {
   return (
-    <span className="inline-block px-2 py-1 bg-gray-100 rounded text-xs text-gray-500 mr-1 mb-1">
-      {name}
-    </span>
-  );
-}
-
-// Component for AI chips in the header
-function AIChip({ icon, name }) {
-  return (
-    <span className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-full text-xs">
-      <span className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-xs mr-1">
-        {icon}
-      </span>
-      {name}
-      <span className="ml-1 cursor-pointer text-gray-500">×</span>
-    </span>
-  );
-}
-
-// Component for tabs
-function Tab({ name, active, onClick }) {
-  return (
-    <div 
-      className={`px-4 py-3 text-sm font-medium cursor-pointer ${active ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-      onClick={onClick}
-    >
-      {name}
-    </div>
-  );
-}
-
-// Component for messages
-function Message({ avatar, name, isUser, model, content, likes, hasVariations, hasEdit }) {
-  return (
-    <div className="mb-5">
-      <div className="flex items-center mb-1">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${isUser ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}`}>
-          {avatar}
-        </div>
-        <div className="font-medium mr-2">{name}</div>
-        {model && <div className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-500">{model}</div>}
-      </div>
-      <div className="bg-white p-4 rounded-lg shadow-sm ml-10 text-sm leading-relaxed">
-        {typeof content === 'string' ? content : content}
-      </div>
-      {!isUser && (
-        <div className="flex mt-2 ml-10">
-          <button className="px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 rounded flex items-center mr-2">
-            👍 {likes}
-          </button>
-          <button className="px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 rounded flex items-center mr-2">
-            💡 Enhance
-          </button>
-          <button className="px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 rounded flex items-center">
-            {hasVariations ? '🎨 Variations' : hasEdit ? '📝 Edit' : '🔄 Regenerate'}
-          </button>
+    <div className={`mb-4 ${isAI ? 'bg-blue-50' : 'bg-white'} p-4 rounded-lg shadow-sm`}>
+      {userName && (
+        <div className="flex items-center mb-2">
+          <span className="font-medium text-blue-600 mr-2">{userName}</span>
+          {timestamp && <span className="text-xs text-gray-500">{formatDate(timestamp)}</span>}
         </div>
       )}
+      <div className="text-sm leading-relaxed">
+        {isCommand ? (
+          <div className="text-gray-500">{message}</div>
+        ) : (
+          <div>{message}</div>
+        )}
+      </div>
     </div>
   );
 }
 
-const AIAggregator = () => {
-  const [activeTab, setActiveTab] = useState('Chat');
+const ChatBotForum = ({ topicId = null, onBack }) => {
+  const { loginData } = useContext(LoginContext);
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [topic, setTopic] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedModel, setSelectedModel] = useState('GPT-4');
+  
+  // Fetch topic and replies when topicId changes
+  useEffect(() => {
+    if (topicId) {
+      fetchTopic(topicId);
+      fetchReplies(topicId);
+    } else {
+      // Default messages for new chat
+      setMessages([
+        { content: "Welcome to the AI chatbot. How can I help you today?", isAI: true }
+      ]);
+    }
+  }, [topicId]);
+
+  // Fetch topic details
+  const fetchTopic = async (id) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.get(`${API_BASE_URL}/forum/topics/${id}`, {
+        headers: getAuthHeaders()
+      });
+      
+      setTopic(response.data.topic);
+      
+      // Add topic as first message
+      setMessages([
+        {
+          content: response.data.topic.content,
+          userName: response.data.topic.userName,
+          timestamp: response.data.topic.createdAt,
+          isAI: false
+        }
+      ]);
+    } catch (err) {
+      if (handleAuthError(err, setError)) {
+        return;
+      }
+      console.error('Error fetching topic:', err);
+      setError('Failed to load topic. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch replies for a topic
+  const fetchReplies = async (id) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.get(`${API_BASE_URL}/forum/replies?topicId=${id}`, {
+        headers: getAuthHeaders()
+      });
+      
+      // Add replies to messages
+      if (response.data.replies && response.data.replies.length > 0) {
+        setMessages(prevMessages => [
+          ...prevMessages,
+          ...response.data.replies.map(reply => ({
+            content: reply.content,
+            userName: reply.userName,
+            timestamp: reply.createdAt,
+            isAI: reply.isAI || false,
+            replyId: reply._id
+          }))
+        ]);
+      }
+    } catch (err) {
+      if (handleAuthError(err, setError)) {
+        return;
+      }
+      console.error('Error fetching replies:', err);
+      setError('Failed to load replies. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle posting a reply
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const isCommand = inputValue.startsWith('/');
+    
+    // Add user message to chat
+    setMessages([...messages, { 
+      content: inputValue, 
+      isCommand,
+      userName: loginData?.validuserone?.userName || 'You',
+      timestamp: new Date(),
+      isAI: false
+    }]);
+    
+    // Clear input
+    setInputValue('');
+    
+    // If this is a topic view, post reply to backend
+    if (topicId && !isCommand) {
+      await postReply(inputValue);
+    }
+    
+    // If it's a command or not a topic view, simulate AI response
+    if (isCommand || !topicId) {
+      // Simulate AI thinking
+      setTimeout(() => {
+        let aiResponse = "I'm processing your request...";
+        
+        if (isCommand) {
+          if (inputValue.startsWith('/dalle')) {
+            aiResponse = "DALL-E is generating an image based on your prompt: " + inputValue.substring(7);
+          } else if (inputValue.startsWith('/gpt')) {
+            aiResponse = "GPT is thinking about your question: " + inputValue.substring(5);
+          } else {
+            aiResponse = "Unknown command. Available commands: /dalle, /gpt";
+          }
+        } else {
+          aiResponse = `As ${selectedModel}, I'd be happy to help with that! What specific information are you looking for?`;
+        }
+        
+        // Add AI response
+        setMessages(prevMessages => [...prevMessages, { 
+          content: aiResponse, 
+          isAI: true,
+          userName: selectedModel,
+          timestamp: new Date()
+        }]);
+      }, 1000);
+    }
+  };
+
+  // Post reply to backend
+  const postReply = async (content) => {
+    if (!loginData || !loginData.validuserone) {
+      setError('Please log in to reply');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const formData = new FormData();
+      formData.append('content', content);
+      formData.append('topicId', topicId);
+      formData.append('userId', loginData.validuserone._id);
+      formData.append('userName', loginData.validuserone.userName);
+      formData.append('isAI', false);
+
+      await axios.post(`${API_BASE_URL}/forum/replies`, formData, { 
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      // Simulate AI response for topic replies
+      setTimeout(() => {
+        const aiResponse = `As ${selectedModel}, I've analyzed your message. Would you like me to elaborate on any specific aspect?`;
+        
+        // Add AI response and post to backend
+        setMessages(prevMessages => [...prevMessages, { 
+          content: aiResponse, 
+          isAI: true,
+          userName: selectedModel,
+          timestamp: new Date()
+        }]);
+        
+        // Post AI reply to backend
+        postAIReply(aiResponse);
+      }, 1500);
+      
+    } catch (err) {
+      if (handleAuthError(err, setError)) {
+        return;
+      }
+      console.error('Error posting reply:', err);
+      setError('Failed to post reply. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Post AI reply to backend
+  const postAIReply = async (content) => {
+    try {
+      const formData = new FormData();
+      formData.append('content', content);
+      formData.append('topicId', topicId);
+      formData.append('userId', 'ai-system');
+      formData.append('userName', selectedModel);
+      formData.append('isAI', true);
+
+      await axios.post(`${API_BASE_URL}/forum/replies`, formData, { 
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+    } catch (err) {
+      console.error('Error posting AI reply:', err);
+    }
+  };
+
+  // Handle model selection
+  const handleModelSelect = (modelName) => {
+    setSelectedModel(modelName);
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <div className="w-60 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-5 font-semibold text-lg border-b border-gray-200">
-          AI Aggregator
+          chat bot forum
         </div>
         
         {/* AI Models Section */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="font-semibold mb-2 text-sm text-gray-500">AI MODELS</div>
+        <div className="p-4">
+          <div className="font-semibold mb-2 text-sm">all ai's</div>
           <ul className="space-y-1">
-            <ModelItem icon="C" name="Claude 3.7" rating="4.9" />
-            <ModelItem icon="G" name="GPT-4o" rating="4.8" active={true} />
-            <ModelItem icon="D" name="DALL-E 3" rating="4.7" />
-            <ModelItem icon="L" name="Llama 3" rating="4.6" />
-            <ModelItem icon="M" name="Midjourney" rating="4.9" />
-            <ModelItem icon="S" name="Stable Diffusion" rating="4.5" />
-            <ModelItem icon="V" name="VideoLLM" rating="4.3" />
-            <ModelItem icon="+" name="Add Models" rating="" />
-          </ul>
-        </div>
-        
-        {/* Trending Topics Section */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="font-semibold mb-2 text-sm text-gray-500">TRENDING TOPICS</div>
-          <div className="flex flex-wrap gap-1">
-            <TopicTag name="AI Research" />
-            <TopicTag name="Code Generation" />
-            <TopicTag name="Creative Writing" />
-            <TopicTag name="Data Analysis" />
-            <TopicTag name="UI Design" />
-          </div>
-        </div>
-        
-        {/* Recommended Section */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="font-semibold mb-2 text-sm text-gray-500">RECOMMENDED FOR YOU</div>
-          <ul className="space-y-1">
-            <ModelItem icon="C" name="Claude 3.7" rating="Text" />
-            <ModelItem icon="M" name="Midjourney" rating="Images" />
+            <ModelItem name="GPT-4" active={selectedModel === "GPT-4"} onClick={handleModelSelect} />
+            <ModelItem name="DALL-E" active={selectedModel === "DALL-E"} onClick={handleModelSelect} />
+            <ModelItem name="Claude" active={selectedModel === "Claude"} onClick={handleModelSelect} />
+            <ModelItem name="Stable Diffusion" active={selectedModel === "Stable Diffusion"} onClick={handleModelSelect} />
+            <ModelItem name="Midjourney" active={selectedModel === "Midjourney"} onClick={handleModelSelect} />
           </ul>
         </div>
       </div>
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="h-15 border-b border-gray-200 flex items-center justify-between px-5 bg-white">
-          <div className="font-medium">Marketing Campaign Brainstorm</div>
-          <div className="flex space-x-2">
-            <AIChip icon="G" name="GPT-4o" />
-            <AIChip icon="D" name="DALL-E 3" />
+        {/* Header with back button for topic view */}
+        {topicId && (
+          <div className="bg-white border-b border-gray-200 p-4 flex items-center">
+            <button 
+              onClick={onBack} 
+              className="mr-3 text-gray-500 hover:text-gray-700"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <h2 className="font-semibold text-lg">{topic?.title || 'Topic Discussion'}</h2>
           </div>
-        </div>
-        
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 bg-white">
-          <Tab name="Chat" active={activeTab === 'Chat'} onClick={() => setActiveTab('Chat')} />
-          <Tab name="Collaborators (3)" active={activeTab === 'Collaborators'} onClick={() => setActiveTab('Collaborators')} />
-          <Tab name="Generated Content" active={activeTab === 'Content'} onClick={() => setActiveTab('Content')} />
-        </div>
-        
-        {/* Toolbar */}
-        <div className="flex px-5 py-2 bg-white border-b border-gray-200">
-          <TopicTag name="Marketing" />
-          <TopicTag name="Brainstorming" />
-          <TopicTag name="+ Add Tag" />
-        </div>
+        )}
         
         {/* Chat Container */}
         <div className="flex-1 p-5 overflow-y-auto bg-gray-50">
-          {/* User Message */}
-          <Message 
-            avatar="S" 
-            name="Sarah" 
-            isUser={true} 
-            content="We need to create a marketing campaign for our new eco-friendly product line. I'm thinking we should have both visual and text content. Any ideas?" 
-          />
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
           
-          {/* AI Message */}
-          <Message 
-            avatar="G" 
-            name="GPT-4o" 
-            isUser={false} 
-            model="Used by Sarah"
-            content="For an eco-friendly product line, I suggest a &quot;Nature's Revival&quot; campaign theme. We could focus on before/after imagery showing environmental impact, use earthy color palettes, and emphasize sustainability metrics like &quot;X tons of plastic saved.&quot; Testimonials from environmental experts would add credibility. For messaging, emphasize both environmental benefits and product effectiveness - people want products that work well AND are sustainable."
-            likes={14}
-          />
-          
-          {/* User Message */}
-          <Message 
-            avatar="M" 
-            name="Michael" 
-            isUser={true} 
-            content="I like the &quot;Nature's Revival&quot; concept. Let's visualize what this campaign could look like with some image mockups." 
-          />
-          
-          {/* AI Message with Image */}
-          <Message 
-            avatar="D" 
-            name="DALL-E 3" 
-            isUser={false} 
-            model="Used by Michael"
-            content={
-              <div className="bg-gray-100 p-5 rounded-lg text-center">
-                <div className="text-gray-500 italic mb-2">[Image: Split-screen mockup showing polluted water on left, clean water with eco-product on right]</div>
-                <div className="text-gray-500 italic">[Image: Eco-friendly packaging with earthy tones and "Nature's Revival" logo]</div>
-              </div>
-            }
-            likes={8}
-            hasVariations={true}
-          />
-          
-          {/* User Message */}
-          <Message 
-            avatar="A" 
-            name="Alex" 
-            isUser={true} 
-            content="The images look great! Now we need some compelling copy for social media posts to go with these visuals. Can we get some taglines that highlight both environmental benefits and product effectiveness?" 
-          />
-          
-          {/* AI Message */}
-          <Message 
-            avatar="C" 
-            name="Claude 3.7" 
-            isUser={false} 
-            model="Used by Alex"
-            content={
-              <div>
-                <strong>Tagline Options:</strong><br/><br/>
-                1. "Powerful for your home. Gentle on our planet."<br/>
-                2. "Clean doesn't have to be dirty. Nature's Revival."<br/>
-                3. "The future is clean. The future is green."<br/>
-                4. "Effective by design. Sustainable by choice."<br/><br/>
-                
-                <strong>Social Post Draft:</strong><br/>
-                "Introducing Nature's Revival – where effectiveness meets ecology. Our new product line delivers powerful results while reducing plastic waste by 94%. See the difference in your home without leaving a trace on our planet. #NaturesRevival #CleanAndGreen"
-              </div>
-            }
-            likes={10}
-            hasEdit={true}
-          />
+          {isLoading && messages.length === 0 ? (
+            <div className="flex justify-center items-center h-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            messages.map((msg, index) => (
+              <ForumMessage 
+                key={index} 
+                message={msg.content} 
+                isCommand={msg.isCommand} 
+                isAI={msg.isAI}
+                userName={msg.userName}
+                timestamp={msg.timestamp}
+              />
+            ))
+          )}
         </div>
         
         {/* Input Container */}
-        <div className="p-4 bg-white border-t border-gray-200 flex">
-          <textarea 
-            className="flex-1 border border-gray-200 rounded-md p-3 mr-2 text-sm resize-none h-10"
-            placeholder="Message..."
-          />
-          <button className="bg-blue-600 text-white font-medium rounded-md px-4 py-2">
-            Send
-          </button>
-        </div>
+        <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-200">
+          <div className="flex">
+            <input 
+              type="text"
+              className="flex-1 border border-gray-200 rounded-md p-3 mr-2 text-sm"
+              placeholder={`Type a message${topicId ? '' : ' or command (e.g. /dalle)'}...`}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+            />
+            <button 
+              type="submit"
+              className="bg-blue-600 text-white font-medium rounded-md px-4 py-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                'Send'
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 }
 
-export default AIAggregator;
+export default ChatBotForum;

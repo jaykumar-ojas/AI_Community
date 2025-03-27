@@ -422,4 +422,50 @@ router.get("/get-background-image", authenticate, async(req, res) => {
     }
 });
 
+// Get user profile by ID
+router.get("/get-user-profile/:userId", async(req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) {
+      return res.status(400).json({ status: 400, error: "User ID is required" });
+    }
+
+    const user = await userdb.findOne({ _id: userId }) || await googledb.findOne({ _id: userId });
+    
+    if (!user) {
+      return res.status(404).json({ status: 404, error: "User not found" });
+    }
+
+    // Generate URLs for profile picture and background image if they exist
+    let profilePictureUrl = "";
+    let backgroundImageUrl = "";
+    
+    if (user.constructor.modelName === "users" && user.profilePicture) {
+      profilePictureUrl = await generateSignedUrl(user.profilePicture);
+    } else if (user.constructor.modelName === "googleAuth") {
+      if (user.profilePicture) {
+        profilePictureUrl = await generateSignedUrl(user.profilePicture);
+      } else {
+        profilePictureUrl = user.image; // Use Google profile image
+      }
+    }
+    
+    if (user.backgroundImage) {
+      backgroundImageUrl = await generateSignedUrl(user.backgroundImage);
+    }
+    
+    // Add URLs to the response
+    const userResponse = {
+      ...user._doc,
+      profilePictureUrl,
+      backgroundImageUrl
+    };
+    
+    res.status(200).json({ status: 200, user: userResponse });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ status: 500, error: "Failed to fetch user profile" });
+  }
+});
+
 module.exports=router;
