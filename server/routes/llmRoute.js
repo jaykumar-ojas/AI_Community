@@ -1,6 +1,6 @@
 const express = require("express");
 const router = new express.Router();
-const {imageToText,promptEnhancer} = require('../middleware/LLMmiddleware');
+const {imageToText,promptEnhancer,imageGenerator,promptEnhancerAI} = require('../middleware/LLMmiddleware');
 
 
 // for uploading image 
@@ -42,6 +42,20 @@ router.post('/enhancedPrompt',upload.single("image"),imageToText,promptEnhancer,
     res.status(422).json({status: 422 ,message:"this is message",error :error});
  }
 });
+
+router.post("/aitest",async (req, res) => {
+  try {
+    let {prompt} = req.body;
+    prompt = await promptEnhancerAI(prompt);
+    console.log(prompt);
+    const url =await imageGenerator(prompt);
+    res.status(200).json({ status: 200, updatedPrompt: url });
+  } catch (error) {
+    console.error("Error in route handler:", error);
+    res.status(500).json({ status: 500, error: "Internal server error" });
+  }
+});
+
 
 
 module.exports = router;
