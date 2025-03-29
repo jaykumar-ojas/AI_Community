@@ -31,6 +31,7 @@ const storage = multer.memoryStorage();
 const allowedMimeTypes = [
     // Images
     'image/jpeg',
+    'image/jpg',
     'image/png',
     'image/gif',
     'image/webp',
@@ -231,6 +232,39 @@ const awsdeleteMiddleware = async(key) => {
         return false;
     }
 };
+
+const uploadImageFromUrl = async (imageUrl) => {
+    try {
+        // Fetch the image from the provided URL
+        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        
+        // Determine the file type (MIME type) from response headers
+        const contentType = response.headers['content-type'];
+        if (!allowedMimeTypes.includes(contentType)) {
+            throw new Error("Unsupported file type.");
+        }
+        
+        // Generate a unique file name
+        const fileName = `${randomFileName(16)}.${contentType.split('/')[1]}`;
+        
+        // Upload to S3
+        const uploadParams = {
+            Bucket: bucketName,
+            Key: fileName,
+            Body: response.data,
+            ContentType: contentType,
+        };
+        
+        await s3.send(new PutObjectCommand(uploadParams));
+        
+        console.log(`Image uploaded successfully: ${fileName}`);
+        return fileName;
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        throw error;
+    }
+};
+
 
 module.exports={
     generateSignedUrl,

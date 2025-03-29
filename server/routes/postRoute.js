@@ -84,7 +84,6 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async(req, re
     });
 
     const storePost = await finalpost.save();
-    console.log("Post saved successfully:", storePost);
     res.status(201).json({status: 201, storePost});
    } catch(error) {
     console.error("Error in upload route:", error);
@@ -103,12 +102,9 @@ router.post('/get',async(req,res)=>{
         if(!userId){
             throw new Error("user not logged in");
         }
-        console.log("Fetching posts for user ID:", userId);
         const userposts = await postdb.find({userId:userId});
-        console.log("Found user posts:", userposts.length);
         
         if (!userposts || userposts.length === 0) {
-            console.log("No posts found for user, returning empty array");
             return res.status(200).json({ status: 200, userposts: [] });
         }
         
@@ -136,7 +132,6 @@ router.post('/get',async(req,res)=>{
                 }
             })
         );
-        console.log("Returning posts with signed URLs:", userpostsWithUrls.length);
         res.status(200).json({ status: 200, userposts:userpostsWithUrls});
     }
     catch(error){
@@ -152,8 +147,6 @@ router.delete('/delete/:id',async(req,res)=>{
         const {imgKey} = req.body;
         const {id} = req.params;
         
-        console.log("Delete request received for post:", id, "with imgKey:", imgKey);
-        
         // First check if the post exists
         const post = await postdb.findOne({_id: id});
         if (!post) {
@@ -161,14 +154,11 @@ router.delete('/delete/:id',async(req,res)=>{
             return res.status(404).json({status: 404, error: "Post not found"});
         }
         
-        console.log("Found post to delete:", post);
-        
         // Delete the file from S3
         const check = await awsdeleteMiddleware(imgKey);
         if(check){
             // Delete the post from MongoDB
             const deletedPost = await postdb.findOneAndDelete({_id: id});
-            console.log("Post deleted successfully:", deletedPost);
             
             return res.status(200).json({
                 status: 200, 
@@ -194,13 +184,11 @@ router.delete('/delete/:id',async(req,res)=>{
 
 // getting all the post user login or not
 router.get('/allget', async(req, res) => {
-    console.log("i am coming here for getting data");
     try {
         // Get page and limit from query parameters
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 9;
         const skip = (page - 1) * limit;
-        console.log("page:",page,"limit:",limit,"skip:",skip);
         
         // Find posts with pagination - only fetch the posts for the requested page
         const userposts = await postdb.find()
@@ -215,7 +203,7 @@ router.get('/allget', async(req, res) => {
         const userpostsWithUrls = await Promise.all(
             postsToReturn.map(async (post) => {
                 try {
-                    console.log("Processing post:", post._id, "imgKey:", post.imgKey);
+
                     const signedUrl = post.imgKey 
                         ? await generateSignedUrl(post.imgKey) 
                         : "https://via.placeholder.com/300?text=No+Image+Available";
@@ -309,8 +297,6 @@ router.post('/getPostById',async(req,res)=>{
             image,
             fileType: post.fileType || 'image'
         };
-        
-        console.log("Post data retrieved successfully:", updatedPost);
         res.status(201).json({status:201, postdata:updatedPost});
     }
     catch(error){
