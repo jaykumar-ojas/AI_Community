@@ -1,10 +1,10 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 
-const NewTopicModal = ({ isOpen, onClose, onTopicCreated }) => {
+const NewTopicModal = ({ isOpen, onClose, onTopicCreated, onAiGenerate, aiGeneratedContent }) => {
   const { loginData } = useContext(LoginContext);
   const { emitNewTopic } = useWebSocket();
   
@@ -12,6 +12,16 @@ const NewTopicModal = ({ isOpen, onClose, onTopicCreated }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Update form when AI-generated content is provided
+  useEffect(() => {
+    if (aiGeneratedContent && aiGeneratedContent.title && aiGeneratedContent.content) {
+      setNewTopic({
+        title: aiGeneratedContent.title,
+        content: aiGeneratedContent.content
+      });
+    }
+  }, [aiGeneratedContent]);
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
@@ -141,6 +151,23 @@ const NewTopicModal = ({ isOpen, onClose, onTopicCreated }) => {
                 </div>
               )}
             </div>
+            
+            {/* AI Content Generation Button */}
+            <div className="mb-4 border-t pt-4">
+              <button
+                onClick={onAiGenerate}
+                className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
+                disabled={isLoading}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Generate Content with AI
+              </button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Let AI help you create engaging content for your topic
+              </p>
+            </div>
           </div>
           <div className="flex justify-end gap-2 p-4 border-t">
             <button
@@ -171,4 +198,4 @@ const NewTopicModal = ({ isOpen, onClose, onTopicCreated }) => {
   );
 };
 
-export default NewTopicModal; 
+export default NewTopicModal;

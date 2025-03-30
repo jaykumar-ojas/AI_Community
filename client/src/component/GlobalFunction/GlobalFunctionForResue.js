@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
+import Login from "../Auth/Login";
 
 // Add debounce utility
 const debounce = (func, wait) => {
@@ -12,6 +13,14 @@ const debounce = (func, wait) => {
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
+};
+
+export const ShowBox = () => {
+  return (
+    <div>
+        <Login></Login>
+    </div>
+  );
 };
 
 export const ValidUserForPage = () => {

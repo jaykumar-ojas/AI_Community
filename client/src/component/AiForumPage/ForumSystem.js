@@ -7,6 +7,7 @@ import MyTopics from '../AiForumPage/components/MyTopics';
 import TopicDetail from '../AiForumPage/components/TopicDetail';
 import NewTopicModal from '../AiForumPage/components/NewTopicModal';
 import ChatBotForum from '../AIchatbot/chatbot';
+import AiContentGenerator from './components/AiContentGenerator';
 
 const ForumSystem = () => {
   const { loginData } = useContext(LoginContext);
@@ -14,6 +15,8 @@ const ForumSystem = () => {
   const [currentTab, setCurrentTab] = useState('popular'); // 'popular', 'recent', 'my'
   const [isNewTopicModalOpen, setIsNewTopicModalOpen] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
+  const [showAiContentGenerator, setShowAiContentGenerator] = useState(false);
+  const [aiGeneratedContent, setAiGeneratedContent] = useState(null);
 
   // Handle topic selection
   const handleSelectTopic = (topic) => {
@@ -48,11 +51,24 @@ const ForumSystem = () => {
     setShowChatbot(true);
   };
 
+  // Handle opening AI content generator
+  const handleOpenAiContentGenerator = () => {
+    setIsNewTopicModalOpen(false);
+    setShowAiContentGenerator(true);
+  };
+
+  // Handle AI generated content
+  const handleAiGeneratedContent = (generatedContent) => {
+    setAiGeneratedContent(generatedContent);
+    setShowAiContentGenerator(false);
+    setIsNewTopicModalOpen(true);
+  };
+
   return (
     <WebSocketProvider>
       <div className="bg-white rounded-lg overflow-hidden flex flex-col h-full">
         {/* Header with search - only show if not in chatbot view */}
-        {!showChatbot && (
+        {!showChatbot && !showAiContentGenerator && (
           <div className="p-4 border-b sticky top-0 bg-white z-10">
             <h2 className="text-xl font-bold mb-4">AI Forum</h2>
             <div className="relative">
@@ -71,7 +87,7 @@ const ForumSystem = () => {
         )}
 
         {/* Navigation Tabs - Only show if not viewing a topic and not in chatbot view */}
-        {!selectedTopic && !showChatbot && (
+        {!selectedTopic && !showChatbot && !showAiContentGenerator && (
           <div className="flex border-b bg-white sticky top-[88px] z-10">
             <button
               className={`flex-1 px-4 py-3 text-sm font-medium ${currentTab === 'popular' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -96,7 +112,12 @@ const ForumSystem = () => {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto">
-          {showChatbot ? (
+          {showAiContentGenerator ? (
+            <AiContentGenerator 
+              onClose={() => setShowAiContentGenerator(false)} 
+              onContentGenerated={handleAiGeneratedContent} 
+            />
+          ) : showChatbot ? (
             <ChatBotForum topicId={selectedTopic?._id} onBack={handleBack} />
           ) : selectedTopic ? (
             <div>
@@ -134,7 +155,7 @@ const ForumSystem = () => {
         </div>
 
         {/* Create Topic Button - Only show if not viewing a topic and not in chatbot view */}
-        {!selectedTopic && !showChatbot && (
+        {!selectedTopic && !showChatbot && !showAiContentGenerator && (
           <div className="p-4 border-t sticky bottom-0 bg-white">
             <button
               onClick={() => setIsNewTopicModalOpen(true)}
@@ -152,8 +173,13 @@ const ForumSystem = () => {
         {/* New Topic Modal */}
         <NewTopicModal 
           isOpen={isNewTopicModalOpen} 
-          onClose={() => setIsNewTopicModalOpen(false)} 
+          onClose={() => {
+            setIsNewTopicModalOpen(false);
+            setAiGeneratedContent(null);
+          }} 
           onTopicCreated={handleTopicCreated}
+          onAiGenerate={handleOpenAiContentGenerator}
+          aiGeneratedContent={aiGeneratedContent}
         />
       </div>
     </WebSocketProvider>

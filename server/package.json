@@ -14,6 +14,7 @@
     "@aws-sdk/s3-request-presigner": "^3.716.0",
     "@google/generative-ai": "^0.24.0",
     "aws-sdk": "^2.1692.0",
+    "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",

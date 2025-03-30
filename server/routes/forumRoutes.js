@@ -392,8 +392,28 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
       return res.status(400).json({ status: 400, error: 'User information is required' });
     }
 
-    // Handle media attachments if any
-    const mediaAttachments = req.uploadedFiles || [];
+    // Handle media attachments
+    let mediaAttachments = [];
+    
+    // Process uploaded files
+    if (req.uploadedFiles && req.uploadedFiles.length > 0) {
+      mediaAttachments = [...req.uploadedFiles];
+    }
+    
+    // Process S3 URLs if any
+    if (req.body.mediaUrls) {
+      const mediaUrls = Array.isArray(req.body.mediaUrls) ? req.body.mediaUrls : [req.body.mediaUrls];
+      mediaAttachments = [
+        ...mediaAttachments,
+        ...mediaUrls.map(url => ({
+          fileName: url.split('/').pop(),
+          fileType: 'image/jpeg', // Default to image/jpeg for S3 URLs
+          fileUrl: url,
+          fileSize: 0, // Size not available for S3 URLs
+          uploadedAt: new Date()
+        }))
+      ];
+    }
     
     // Create new reply
     const newReply = new ForumReply({
@@ -413,20 +433,28 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
     topic.replyCount += 1;
     await topic.save();
     
-    // If media uploads were successful, return the reply with signed URLs
+    // If media attachments exist, return the reply with signed URLs
     if (mediaAttachments.length > 0) {
       const replyWithSignedUrls = {
         ...savedReply.toObject(),
         mediaAttachments: await Promise.all(
           mediaAttachments.map(async (attachment) => {
             try {
+              // If it's an S3 URL, use it directly
+              if (attachment.fileUrl && attachment.fileUrl.startsWith('https://')) {
+                return {
+                  ...attachment,
+                  signedUrl: attachment.fileUrl
+                };
+              }
+              // Otherwise generate a signed URL
               const signedUrl = await generateSignedUrl(attachment.fileName);
               return {
                 ...attachment,
                 signedUrl
               };
             } catch (error) {
-              console.error(`Error generating signed URL for ${attachment.fileName}:`, error);
+              console.error(`Error processing media attachment ${attachment.fileName}:`, error);
               return {
                 ...attachment,
                 signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
