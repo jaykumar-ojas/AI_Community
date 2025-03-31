@@ -11,7 +11,7 @@ import AiContentGenerator from './components/AiContentGenerator';
 
 const ForumSystem = () => {
   const { loginData } = useContext(LoginContext);
-  const [selectedTopic, setSelectedTopic] = useState(null);
+ const [selectedTopic, setSelectedTopic] = useState(null);
   const [currentTab, setCurrentTab] = useState('popular'); // 'popular', 'recent', 'my'
   const [isNewTopicModalOpen, setIsNewTopicModalOpen] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
@@ -19,9 +19,9 @@ const ForumSystem = () => {
   const [aiGeneratedContent, setAiGeneratedContent] = useState(null);
 
   // Handle topic selection
-  const handleSelectTopic = (topic) => {
-    setSelectedTopic(topic);
-  };
+  // const handleSelectTopic = (topic) => {
+  //   setSelectedTopic(topic);
+  // };
 
   // Handle back button click
   const handleBack = () => {
@@ -142,13 +142,13 @@ const ForumSystem = () => {
           ) : (
             <>
               {currentTab === 'popular' && (
-                <PopularTopics onSelectTopic={handleSelectTopic} />
+                <PopularTopics />
               )}
               {currentTab === 'recent' && (
-                <RecentTopics onSelectTopic={handleSelectTopic} />
+                <RecentTopics  />
               )}
               {currentTab === 'my' && (
-                <MyTopics onSelectTopic={handleSelectTopic} />
+                <MyTopics  />
               )}
             </>
           )}
