@@ -248,4 +248,30 @@ router.post("/generateReplyImage", async (req, res) => {
   }
 });
 
+// we can delete
+router.post("/generate-image", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Image file is required" });
+    }
+
+    const imagePath = req.file.path; // This is the file path
+    console.log("Uploaded file path:", imagePath);
+    
+    // Read the image file
+    const imageBuffer = fs.readFileSync(imagePath);
+
+    // Process the image with OpenAI
+    // ...
+
+    // Delete the file after processing
+    fs.unlinkSync(imagePath);
+
+    res.json({ message: "Image processed successfully" });
+  } catch (error) {
+    console.error("Error processing image:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 module.exports = router;

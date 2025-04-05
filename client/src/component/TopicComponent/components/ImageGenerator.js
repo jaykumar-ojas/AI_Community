@@ -1,28 +1,20 @@
-import React from 'react';
-import axios from 'axios';
-import { getAuthHeaders, handleAuthError, API_BASE_URL } from './ForumUtils';
+import React, { useState } from "react";
+import { API_BASE_URL, getAuthHeaders, handleAuthError } from "../../AiForumPage/components/ForumUtils";
+import axios from "axios";
 
-const ImageGenerator = ({
-  showImageGenerator,
-  setShowImageGenerator,
-  imagePrompt,
-  setImagePrompt,
-  generatedImageUrl,
-  setGeneratedImageUrl,
-  setError,
-  setSelectedFiles,
-  setReplySelectedFiles,
-  setNewReply,
-  setReplyContent,
-  isInReplyImageGenerator,
-  replyingTo
-}) => {
-  const handleGenerateImage = async () => {
+const ImageGenerator = ({ onClose, setNewReply, setSelectedFiles}) => {
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [generatedImageUrl,setGeneratedImageUrl] = useState();
+  const [generatingImage,setGeneratingImage] = useState(false);
+  const [error,setError] = useState();
+
+  const handleGenerateImage = async (forReply = false) => {
     if (!imagePrompt.trim()) {
       alert('Please enter a prompt for the image');
       return;
     }
-    
+    setError(null);
+    setGeneratingImage(true);
     try {
       // Show a loading message
       setGeneratedImageUrl('https://via.placeholder.com/400x300?text=Generating+Image...');
@@ -40,35 +32,21 @@ const ImageGenerator = ({
           const fileName = `ai-generated-image-${Date.now()}.png`;
           
           // Add the file to the selected files
-          if (isInReplyImageGenerator && replyingTo) {
-            setReplySelectedFiles(prev => [...prev, {
-              name: fileName,
-              url: response.data.imageUrl,
-              type: 'image/png'
-            }]);
-            // Add the prompt to the reply content
-            setReplyContent(prev => {
-              const promptText = `[Generated image prompt: ${imagePrompt}]\n\n`;
-              return prev ? prev + '\n\n' + promptText : promptText;
-            });
-          } else {
             setSelectedFiles(prev => [...prev, {
               name: fileName,
               url: response.data.imageUrl,
               type: 'image/png'
             }]);
-            // Add the prompt to the main reply content
             setNewReply(prev => {
               const promptText = `[Generated image prompt: ${imagePrompt}]\n\n`;
               return prev ? prev + '\n\n' + promptText : promptText;
             });
-          }
-          
           // Close the generator after successful attachment
           setTimeout(() => {
-            setShowImageGenerator(false);
             setImagePrompt('');
             setGeneratedImageUrl('');
+            setGeneratingImage('');
+            onClose(false);
           }, 1500);
         } catch (fileError) {
           console.error('Error attaching image:', fileError);
@@ -93,11 +71,11 @@ const ImageGenerator = ({
           setError('Failed to generate image. Please try a different prompt or check your internet connection.');
         }
       }
+    } finally {
+      setGeneratingImage(false);
     }
   };
 
-  if (!showImageGenerator) return null;
-  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
@@ -105,68 +83,98 @@ const ImageGenerator = ({
           <h3 className="text-lg font-semibold">Generate Image with AI</h3>
           <button
             onClick={() => {
-              setShowImageGenerator(false);
-              setImagePrompt('');
-              setGeneratedImageUrl('');
+              setImagePrompt("");
+              onClose(false);
             }}
             className="text-gray-400 hover:text-gray-600"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <CrossIcon />
           </button>
         </div>
-        
+
         <div className="p-4">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Describe the image you want</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Describe the image you want
+            </label>
             <textarea
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               rows="3"
               placeholder="E.g., A serene mountain landscape with a lake at sunset..."
               value={imagePrompt}
               onChange={(e) => setImagePrompt(e.target.value)}
+              disabled={generatingImage}
             />
           </div>
-          
+
           {generatedImageUrl && (
             <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-1">Generated Image:</p>
+              <p className="text-sm font-medium text-gray-700 mb-1">
+                Generated Image:
+              </p>
               <div className="border rounded-lg overflow-hidden">
-                <img 
-                  src={generatedImageUrl} 
-                  alt="AI Generated" 
+                <img
+                  src={generatedImageUrl}
+                  alt="AI Generated"
                   className="w-full h-auto"
                   onError={(e) => {
-                    console.error('Error loading generated image');
-                    e.target.src = 'https://via.placeholder.com/400x300?text=Image+Generation+Failed';
+                    console.error("Error loading generated image");
+                    e.target.src =
+                      "https://via.placeholder.com/400x300?text=Image+Generation+Failed";
                   }}
                 />
               </div>
             </div>
           )}
+
+          {error && (
+            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
         </div>
-        
+
         <div className="flex justify-end gap-2 p-4 border-t">
           <button
             onClick={() => {
-              setShowImageGenerator(false);
-              setImagePrompt('');
-              setGeneratedImageUrl('');
+              onClose(false);
+              setImagePrompt("");
+              setGeneratedImageUrl("");
             }}
             className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            disabled={generatingImage}
           >
             Cancel
           </button>
           <button
-            onClick={handleGenerateImage}
+            onClick={() => handleGenerateImage()}
             className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center"
-            disabled={!imagePrompt.trim()}
+            disabled={!imagePrompt.trim() || generatingImage}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Generate Image
+            {generatingImage ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                Generating...
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                Generate Image
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -174,4 +182,22 @@ const ImageGenerator = ({
   );
 };
 
-export default ImageGenerator; 
+export default ImageGenerator;
+
+const CrossIcon = () => {
+  return (
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M6 18L18 6M6 6l12 12"
+      />
+    </svg>
+  );
+};

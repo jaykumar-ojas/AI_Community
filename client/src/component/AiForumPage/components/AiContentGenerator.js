@@ -19,7 +19,7 @@ function AiMessage({ message, isUser = false }) {
   );
 }
 
-const AiContentGenerator = ({ onClose, onContentGenerated }) => {
+const AiContentGenerator = ({ onClose}) => {
   const { loginData } = useContext(LoginContext);
   const [messages, setMessages] = useState([
     { content: "Welcome! I can help you generate content for your new topic. What would you like to discuss?", isUser: false }

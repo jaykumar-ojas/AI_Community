@@ -19,6 +19,8 @@ import AnotherUser from "./component/UserProfile/AnotherUser";
 import AIAggregator from "./component/AIchatbot/chatbot";
 import ForumTopicPage from "./pages/ForumTopicPage/ForumTopicPage";
 import { WebSocketProvider } from "./component/AiForumPage/components/WebSocketContext";
+import NewTopicModal from "./component/AiForumPage/components/NewTopicModal";
+import TopicContent from "./component/TopicComponent/TopicContent";
 
 const router = createBrowserRouter([
   {
@@ -76,6 +78,10 @@ const router = createBrowserRouter([
   {
     path: '/forum/topic/:topicId',
     element: <ForumTopicPage></ForumTopicPage>
+  },
+  {
+    path: '/t/:topicId',
+    element: <TopicContent></TopicContent>
   }
 ]);
 

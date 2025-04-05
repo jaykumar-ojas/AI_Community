@@ -13,8 +13,8 @@ import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOutUser } from "./NavBarFunc";
-import { ShowBox } from "../GlobalFunction/GlobalFunctionForResue";
-  
+
+
   const navigation = [
     { name: "Dashboard", href: "#", current: true },
     { name: "Team", href: "/test2", current: false },
@@ -30,14 +30,9 @@ import { ShowBox } from "../GlobalFunction/GlobalFunctionForResue";
     const {loginData,setLoginData} = useContext(LoginContext);
     const history = useNavigate();
     const logout = LogOutUser();
-    const show = ShowBox();
 
     const logoutUser =async()=>{
       logout();
-    }
-    const handelShowBox =()=>{
-      show();
-      console.log("aaaow");
     }
 
     return (
@@ -78,7 +73,6 @@ import { ShowBox } from "../GlobalFunction/GlobalFunctionForResue";
               </div>
             </div>
 
-            <button onClick={()=> handelShowBox()}>ShowBox</button>
   
             {/* Search Bar */}
             <div className="flex items-center space-x-4">

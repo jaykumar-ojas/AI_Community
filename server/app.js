@@ -79,6 +79,7 @@ io.on('connection', (socket) => {
 
   // New topic created
   socket.on('new_topic', (topic) => {
+    console.log("i ma going to emit new topic");
     io.emit('topic_created', topic);
   });
 

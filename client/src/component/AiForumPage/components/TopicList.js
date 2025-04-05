@@ -3,12 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
-import { formatDate, getAuthHeaders, handleAuthError, API_BASE_URL } from './ForumUtils';
+import { formatDate, getAuthHeaders, handleAuthError, API_BASE_URL, TOPICS_URL } from './ForumUtils';
 
 const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   const { loginData } = useContext(LoginContext);
+  const {emitDeleteTopic,subscribeToEvent} = useWebSocket();
   const navigate = useNavigate();
+  //  const [topics, setTopics] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
   const [topics, setTopics] = useState(initialTopics);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToEvent('topic_deleted', (deletedTopicId) => {
+      setTopics(prevTopics => prevTopics.filter(topic => topic._id !== deletedTopicId));
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
 
   // Update topics when initialTopics changes
   useEffect(() => {
@@ -92,6 +107,43 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
     }
   };
 
+
+  const handleDeleteTopic = async (topicId) => {
+    if (!loginData || !loginData.validuserone) {
+      setError('You must be logged in to delete a topic');
+      return;
+    }
+
+    // Ask for confirmation before deleting
+    if (!window.confirm("Are you sure you want to delete this topic? This will also delete all replies. This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      const response = await axios.delete(`${TOPICS_URL}/${topicId}`, {
+        headers: getAuthHeaders()
+      });
+
+      if (response.status === 200) {
+        // Emit socket event for topic deletion
+        emitDeleteTopic(topicId);
+      }
+    } catch (error) {
+      console.error('Error deleting topic:', error);
+      if (!handleAuthError(error, setError)) {
+        if (error.response && error.response.status === 403) {
+          setError('You are not authorized to delete this topic');
+        } else {
+          setError('Failed to delete topic. Please try again.');
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="divide-y">
       {topics.length > 0 ? (
@@ -151,7 +203,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDeleteTopic(topic._id);
+                        handleDeleteTopic(topic._id)
                       }}
                       className="p-1 text-red-500 hover:bg-red-50 rounded-full"
                     >

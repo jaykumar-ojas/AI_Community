@@ -187,6 +187,45 @@ const imageGenerator = async(text)=>{
   }
 }
 
+const encodeImage = (imagePath) => {
+  const image = fs.readFileSync(imagePath);
+  return image.toString("base64");
+};
+
+const imageToImage = async (imagePath, prompt) => {
+  try {
+    if (!imagePath || !prompt) {
+      console.error("Image path and prompt are required");
+      return null;
+    }
+
+    console.log("Processing image-to-image transformation...");
+
+    // Convert image to Base64
+    const base64Image = encodeImage(imagePath);
+
+    // Call OpenAI API for image-to-image generation
+    const response = await openai.images.edit({
+      image: base64Image,
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024", // You can change the size as needed
+    });
+
+    if (response && response.data && response.data[0].url) {
+      console.log("Generated Image URL:", response.data[0].url);
+      return response.data[0].url;
+    } else {
+      console.error("Invalid response structure from OpenAI");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in imageToImage function:", error.message);
+    return null;
+  }
+};
+
+
 module.exports ={
     promptEnhancer,
     imageToText,

@@ -19,15 +19,6 @@ const MyTopics = () => {
   }, [loginData]);
 
   // Listen for topic deletion
-  useEffect(() => {
-    const unsubscribe = subscribeToEvent('topic_deleted', (deletedTopicId) => {
-      setTopics(prevTopics => prevTopics.filter(topic => topic._id !== deletedTopicId));
-    });
-    
-    return () => {
-      unsubscribe();
-    };
-  }, []);
 
   const fetchTopics = async () => {
     if (!loginData?.validuserone) {
@@ -52,41 +43,6 @@ const MyTopics = () => {
     }
   };
 
-  const handleDeleteTopic = async (topicId) => {
-    if (!loginData || !loginData.validuserone) {
-      setError('You must be logged in to delete a topic');
-      return;
-    }
-
-    // Ask for confirmation before deleting
-    if (!window.confirm("Are you sure you want to delete this topic? This will also delete all replies. This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      
-      const response = await axios.delete(`${TOPICS_URL}/${topicId}`, {
-        headers: getAuthHeaders()
-      });
-
-      if (response.status === 200) {
-        // Emit socket event for topic deletion
-        emitDeleteTopic(topicId);
-      }
-    } catch (error) {
-      console.error('Error deleting topic:', error);
-      if (!handleAuthError(error, setError)) {
-        if (error.response && error.response.status === 403) {
-          setError('You are not authorized to delete this topic');
-        } else {
-          setError('Failed to delete topic. Please try again.');
-        }
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (!loginData?.validuserone) {
     return (
@@ -113,7 +69,6 @@ const MyTopics = () => {
   return (
     <TopicList 
       topics={topics} 
-      onDeleteTopic={handleDeleteTopic}
       emptyMessage="You haven't created any topics yet"
     />
   );
