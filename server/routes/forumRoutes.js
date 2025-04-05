@@ -515,6 +515,8 @@ router.put('/replies/:id', authenticate, async (req, res) => {
 // Delete a reply
 router.delete('/replies/:id', authenticate, async (req, res) => {
   try {
+    const {id} = req.params;
+    console.log("i m pringting ",id);
     const reply = await ForumReply.findById(req.params.id);
     
     if (!reply) {

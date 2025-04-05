@@ -1,5 +1,6 @@
-import React from 'react';
-import { formatDate } from './ForumUtils';
+import React from "react";
+import { formatDate } from "./ForumUtils";
+
 
 const Message = ({ 
   content, 
@@ -186,4 +187,4 @@ const Message = ({
   );
 };
 
-export default Message; 
+export default Message;
