@@ -72,12 +72,12 @@ const router = createBrowserRouter([
     element:<AnotherUser></AnotherUser>
   },
   {
-    path:'/ai-aggregator',
+    path:'/ai-aggregator/:topicId',
     element:<AIAggregator></AIAggregator>
   },
   {
     path: '/forum/topic/:topicId',
-    element: <ForumTopicPage></ForumTopicPage>
+    element: <AIAggregator></AIAggregator>
   },
   {
     path: '/t/:topicId',

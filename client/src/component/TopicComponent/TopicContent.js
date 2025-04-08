@@ -12,6 +12,8 @@ import {
 import ShowMedia from "./components/ShowMedia";
 import HeaderContent from "./components/HeaderContent";
 import ReplyContent from "./ReplyComponent/ReplyContent";
+import bgPattern from '../../asset/backGroundImage.png'
+
 
 const TopicContent = () => {
   const { topicId } = useParams();
@@ -57,14 +59,14 @@ const TopicContent = () => {
 
   return (
     <>
-    <div className="bg-white border-b border-gray-200 p-4 flex items-center sticky top-0 z-10">
+    <div className="bg-white border-b outline-white border-gray-200 h-[68px] p-4 flex items-center sticky top-0 z-10">
         <button
         //   onClick={threadView ? handleBackFromThread : onBack}
           className="mr-3 text-gray-500 hover:text-gray-700"
         >
           <BackArrow/>
         </button>
-        <h2 className="font-semibold text-lg flex-1">{threadView ? 'Thread' : topic.title}</h2>
+        <h2 className="font-semibold  text-lg flex-1">{threadView ? 'Thread' : topic.title}</h2>
         {!threadView && (
           <div className="flex items-center space-x-2">
             <button
@@ -83,9 +85,16 @@ const TopicContent = () => {
         )}
       </div>
 
-      <HeaderContent topic = {topic}></HeaderContent>
 
+      <div className=" relative w-80% z-0"
+      // style={{
+      //   opacity:1,
+      //   backgroundImage:`url(${bgPattern})`
+      // }}
+      >
+      <HeaderContent topic = {topic}></HeaderContent>
       <ReplyContent></ReplyContent>
+      </div>
 
     </>
   );

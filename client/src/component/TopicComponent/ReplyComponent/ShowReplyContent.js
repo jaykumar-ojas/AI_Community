@@ -10,7 +10,10 @@ import ReplyCommentBox from "./ReplyCommentBox";
 
 
 
-const ShowReplyContent = ({reply,showViewMore,onViewMore}) => {
+const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
+  show,
+  showReply,
+  setShowReply}) => {
     const {topicId} = useParams();
     const {emitDeleteReply} = useWebSocket();
     const {loginData} = useContext(LoginContext);
@@ -22,9 +25,11 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore}) => {
     const [error,setError] = useState();
     const [showReplyBox,setShowReplyBox] = useState(false);
     const [isLoading,setIsLoading]= useState(false);
-    console.log("this is topicI",topicId);
-  
-   console.log(reply?._id,"here i am showing my reply data");
+    const [showFullContent, setShowFullContent] = useState(false);
+    const getTrimmedContent = (text) => {
+      const words = text.split(/\s+/);
+      return words.slice(0, 100).join(" ");
+    };
   
       useEffect(() => {
           if (reply && loginData) {
@@ -134,80 +139,110 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore}) => {
     }
   };  
     return (
-      <>
-      <div key={reply?._id} className={`rounded-lg shadow-sm p-3 ${isAuthor ? "bg-blue-50" : "bg-white"}`}>
+      <div
+        key={reply?._id}
+        className={`relative rounded-xl p-4 shadow-md border border-gray-200 transition-all duration-200 ${
+          isAuthor ? "bg-blue-50" : "bg-white"
+        }`}
+      >
         {/* user timestapm an d name is author or not */}
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            <span className="font-medium text-blue-600 text-sm">
-              {reply?.userName}
-            </span>
-            <span className="text-gray-400 text-xs ml-2">
-              {formatDate(reply?.createdAt)}
-            </span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
+            <span className="text-blue-600">{reply?.userName}</span>
+            <span className="text-gray-400 text-xs">{formatDate(reply?.createdAt)}</span>
           </div>
           {isAuthor && (
             <button
               onClick={handleDeleteReply}
-              className="text-red-500 hover:text-red-700 ml-2"
+              className="text-red-500 hover:text-red-700 transition"
               title="Delete"
             >
-              <DeleteIcon></DeleteIcon>
+              <DeleteIcon />
             </button>
           )}
         </div>
+
   
         {/* reply content where details show */}
-        <div className="text-gray-700 whitespace-pre-wrap text-sm">
-          {reply?.content}
+        <div className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+          {showFullContent ? reply?.content : getTrimmedContent(reply?.content)}
+          {reply?.content?.split(/\s+/).length > 100 && (
+            <button
+              onClick={() => setShowFullContent(!showFullContent)}
+              className="ml-2 text-blue-600 hover:underline font-medium"
+            >
+              {showFullContent ? "View Less" : "View More"}
+            </button>
+          )}
         </div>
+
   
         {/* Display media attachments */}
         {reply?.mediaAttachments?.length > 0 && (
-          <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {reply?.mediaAttachments.map((attachment, index) => (
-                <div
-                  key={index}
-                  className="relative overflow-hidden rounded-md shadow-sm border border-gray-200 bg-gray-50"
-                  style={{ maxWidth: "120px", height: "auto" }}
-                >
-                  <ShowMedia attachment={attachment} />
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {reply?.mediaAttachments.map((attachment, index) => (
+              <div
+                key={index}
+                className="rounded-md overflow-hidden border border-gray-200 shadow-sm"
+              >
+                <ShowMedia attachment={attachment} />
+              </div>
+            ))}
+          </div>
+        )}
+
   
         {/* lower button section */}
-        <div className="flex items-center mt-2 text-xs">
-  
-          <button onClick={handleReplyLike} className={`flex items-center mr-3 ${ isLiked ? "text-blue-600" : "text-gray-500"} hover:text-blue-600`}>
-            <LikeIcon isLiked={isLiked} />
-            {replyLikes?.length || 0}
-          </button>
-  
-          <button onClick={handleReplyDislike} className={`flex items-center mr-3 ${ isDisliked ? "text-red-600" : "text-gray-500"} hover:text-red-600`}>
-            <DisLikeIcon isDisliked={isDisliked} />
-            {replyDislikes?.length || 0}
-          </button>
-  
-          <button
-              onClick={() => setShowReplyBox(true)}
-            className="flex items-center text-blue-600 hover:text-blue-800">
-            <ReplyIcon></ReplyIcon>
-            Reply
-          </button>
-        </div>
-  
-        {showReplyBox && <ReplyCommentBox replyId={reply?._id}/>}
+        <div className="flex items-center gap-4 text-xs mt-3 text-gray-500">
+        <button
+          onClick={handleReplyLike}
+          className={`flex items-center gap-1 hover:text-blue-600 transition ${
+            isLiked && "text-blue-600"
+          }`}
+        >
+          <LikeIcon isLiked={isLiked} />
+          {replyLikes?.length || 0}
+        </button>
+
+        <button
+          onClick={handleReplyDislike}
+          className={`flex items-center gap-1 hover:text-red-600 transition ${
+            isDisliked && "text-red-600"
+          }`}
+        >
+          <DisLikeIcon isDisliked={isDisliked} />
+          {replyDislikes?.length || 0}
+        </button>
+
+        <button
+          onClick={() => setShowReplyBox(true)}
+          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
+        >
+          <ReplyIcon />
+          Reply
+        </button>
       </div>
-     {showViewMore &&  <div>
-        <button onClick={onViewMore}>show view more</button>
-      </div>}
-      </>
-    );
+
+      {hasChildren && show && !showReply && (
+        <button onClick={() => setShowReply(!showReply)} className="text-sm text-blue-500 hover:underline" >view more replies...</button>
+      )}   
+      {showReplyBox && <ReplyCommentBox replyId={reply?._id}/>}
+      {showViewMore && (
+      <div className="mt-2">
+        <button
+          onClick={onViewMore}
+          className="text-sm text-blue-500 hover:underline"
+        >
+          View more replies...
+        </button>
+        </div>
+      )}
+      </div>
+    )
   };
+
   
-  export default ShowReplyContent;
+export default ShowReplyContent;
   
   const DeleteIcon = () => {
     return (
