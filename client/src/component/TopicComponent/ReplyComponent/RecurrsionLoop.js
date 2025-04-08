@@ -17,11 +17,37 @@ const RecurrsionLoop = ({
   const [threadView, setThreadView] = useState();
 
   const isExpanded = expandedThreads[reply?._id];
-  const isDeep = depth >= MAX_VISIBLE_DEPTH;
+  const isDeep = depth >= MAX_VISIBLE_DEPTH; 
   const showViewMore = hasChildren && isDeep && !isExpanded;
+  const [showReply,setShowReply] = useState(false);
+  const show = (depth===2);
+
+  const threadColor = [
+    "bg-red-300",
+    "bg-blue-300",
+    "bg-green-300",
+    "bg-yellow-300",
+    "bg-purple-300",
+  ][depth % 5];
+
+  const borderColor = [
+    "border-red-300",
+    "border-blue-300",
+    "border-green-300",
+    "border-yellow-300",
+    "border-purple-300",
+  ][depth % 5];
 
   return (
-    <React.Fragment key={reply?._id}>
+    <div key={reply?._id} className={`relative my-2 ${depth > 0 ? `pl-4 border-l-2 ${borderColor}` : ""}`}>
+       {/* Thread connector dot */}
+       {depth > 0 && (
+        <>
+          <div className={`absolute left-[-1px] top-16 w-4 h-0.5 ${threadColor}`}></div>
+
+          <div className="absolute top-16 bg-white"></div>
+          </>
+      )}
       {reply && (
         <ShowReplyContent
           reply={reply}
@@ -31,12 +57,16 @@ const RecurrsionLoop = ({
               ? handleViewThread(reply?._id)
               : toggleThreadExpansion(reply?._id)
           }
+          hasChildren={hasChildren}
+        show={show}
+        showReply={showReply}
+        setShowReply={setShowReply}
         />
       )}
       {/* Show reply form if replying to this message */}
 
       {/* Render children if expanded or not too deep */}
-      {hasChildren && (!isDeep || isExpanded) && (
+      {hasChildren && (!show || showReply)&& (!isDeep || isExpanded) && (
         <div className="ml-4">
           {reply?.children.map((childReply) => (
             <div key={childReply._id}>
@@ -52,7 +82,7 @@ const RecurrsionLoop = ({
           ))}
         </div>
       )}
-    </React.Fragment>
+    </div>
   );
 };
 

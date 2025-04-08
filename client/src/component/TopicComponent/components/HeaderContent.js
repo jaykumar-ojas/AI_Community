@@ -1,162 +1,200 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { API_BASE_URL, formatDate, getAuthHeaders, handleAuthError } from "../../AiForumPage/components/ForumUtils";
 import ShowMedia from "./ShowMedia";
 import { LoginContext } from "../../ContextProvider/context";
 import axios from "axios";
 import ReplyPostContent from "./ReplyPostContent";
+import RightSidebarLayout from "../../AIchatbot/ReplyComponent/RightSideBarLayout";
 
-const HeaderContent = ({ topic, onDelete}) => {
-  const {loginData} = useContext(LoginContext);
-  const [isLiked,setIsLiked] = useState();
-  const [isDisliked,setIsDisLiked] = useState();
-  const [isAuthor,setIsAuthor] = useState(false);
-  const [topicLikes,setTopicLikes] = useState();
-  const [topicDislikes,setTopicDislikes] = useState();
-  const [error,setError] = useState();
-  const [showReplyBox,setShowReplyBox] = useState(false);
+const HeaderContent = ({ topic, onDelete }) => {
+  const { loginData } = useContext(LoginContext);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisLiked] = useState(false);
+  const [isAuthor, setIsAuthor] = useState(false);
+  const [topicLikes, setTopicLikes] = useState([]);
+  const [topicDislikes, setTopicDislikes] = useState([]);
+  const [error, setError] = useState(null);
+  const [showReplyBox, setShowReplyBox] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [showToggle, setShowToggle] = useState(false);
+  const contentRef = useRef();
 
-  console.log(isLiked,"this is rpint");
+  useEffect(() => {
+    const el = contentRef.current;
+    if (el.scrollHeight > el.clientHeight) {
+      setShowToggle(true);
+    }
+  }, []);
 
-    useEffect(() => {
-        if (topic && loginData) {
-            console.log("Setting data dynamically...");
-            setTopicLikes(topic?.likes);
-            setTopicDislikes(topic?.dislikes);
-            setIsAuthor(topic?.userId=== loginData?.validuserone._id);
-        }
-    }, [topic, loginData]);
+  useEffect(() => {
+    if (topic && loginData) {
+      setTopicLikes(topic?.likes || []);
+      setTopicDislikes(topic?.dislikes || []);
+      setIsAuthor(topic?.userId === loginData?.validuserone._id);
+    }
+  }, [topic, loginData]);
 
-    useEffect(() => {
-        console.log(topicDislikes,"thsi si my dislike");
-        if (loginData?.validuserone?._id) {
-            setIsLiked(topicLikes?.includes(loginData.validuserone._id));
-            setIsDisLiked(topicDislikes?.includes(loginData.validuserone._id));
-        }
-    }, [topicLikes, topicDislikes, loginData]);
+  useEffect(() => {
+    if (loginData?.validuserone?._id) {
+      setIsLiked(topicLikes.includes(loginData.validuserone._id));
+      setIsDisLiked(topicDislikes.includes(loginData.validuserone._id));
+    }
+  }, [topicLikes, topicDislikes, loginData]);
 
   const handleTopicLike = async () => {
-      if (!loginData || !loginData.validuserone) {
-        alert('Please log in to like topics');
-        return;
-      }
+    if (!loginData?.validuserone) {
+      alert('Please log in to like topics');
+      return;
+    }
 
-      try {
-        const response = await axios.post(`${API_BASE_URL}/forum/topics/${topic._id}/like`, {}, {
-          headers: getAuthHeaders()
-        });
-        
-        if (response.status === 200) {
-          setTopicLikes(response.data.liked ? [...topicLikes, loginData.validuserone._id] : 
-            topicLikes.filter(id => id !== loginData.validuserone._id));
-          setTopicDislikes(topicDislikes.filter(id => id !== loginData.validuserone._id));
-          setIsLiked(!isLiked);
-          setIsDisLiked(!isDisliked);
-        }
-      } catch (error) {
-        console.error('Error liking topic:', error);
-        if (!handleAuthError(error, setError)) {
-          setError('Failed to like topic. Please try again.');
-        }
+    try {
+      const response = await axios.post(`${API_BASE_URL}/forum/topics/${topic._id}/like`, {}, {
+        headers: getAuthHeaders()
+      });
+
+      if (response.status === 200) {
+        const userId = loginData.validuserone._id;
+        const liked = response.data.liked;
+
+        setTopicLikes(liked ? [...topicLikes, userId] : topicLikes.filter(id => id !== userId));
+        setTopicDislikes(topicDislikes.filter(id => id !== userId));
+        setIsLiked(liked);
+        setIsDisLiked(false);
       }
-    };
-  
-    // Handle topic dislike
-    const handleTopicDislike = async () => {
-      if (!loginData || !loginData.validuserone) {
-        alert('Please log in to dislike topics');
-        return;
+    } catch (error) {
+      console.error('Error liking topic:', error);
+      if (!handleAuthError(error, setError)) {
+        setError('Failed to like topic. Please try again.');
       }
-  
-      try {
-        const response = await axios.post(`${API_BASE_URL}/forum/topics/${topic._id}/dislike`, {}, {
-          headers: getAuthHeaders()
-        });
-        
-        if (response.status === 200) {
-          setTopicDislikes(response.data.disliked ? [...topicDislikes, loginData.validuserone._id] : 
-            topicDislikes.filter(id => id !== loginData.validuserone._id));
-          setTopicLikes(topicLikes.filter(id => id !== loginData?.validuserone._id));
-          setIsDisLiked(!isDisliked);
-          setIsLiked(!isLiked);
-        }
-      } catch (error) {
-        console.error('Error disliking topic:', error);
-        if (!handleAuthError(error, setError)) {
-          setError('Failed to dislike topic. Please try again.');
-        }
+    }
+  };
+
+  const handleTopicDislike = async () => {
+    if (!loginData?.validuserone) {
+      alert('Please log in to dislike topics');
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/forum/topics/${topic._id}/dislike`, {}, {
+        headers: getAuthHeaders()
+      });
+
+      if (response.status === 200) {
+        const userId = loginData.validuserone._id;
+        const disliked = response.data.disliked;
+
+        setTopicDislikes(disliked ? [...topicDislikes, userId] : topicDislikes.filter(id => id !== userId));
+        setTopicLikes(topicLikes.filter(id => id !== userId));
+        setIsDisLiked(disliked);
+        setIsLiked(false);
       }
-    };
+    } catch (error) {
+      console.error('Error disliking topic:', error);
+      if (!handleAuthError(error, setError)) {
+        setError('Failed to dislike topic. Please try again.');
+      }
+    }
+  };
 
   return (
-    <div className={`rounded-lg shadow-sm p-3 ${isAuthor ? "bg-blue-50" : "bg-white"}`}>
-      {/* user timestapm an d name is author or not */}
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center">
-          <span className="font-medium text-blue-600 text-sm">
-            {topic.userName}
-          </span>
-          <span className="text-gray-400 text-xs ml-2">
-            {formatDate(topic?.createdAt)}
-          </span>
+    <div className={`sticky top-10 rounded-xl  border shadow-sm p-4 mb-4 ${
+      isAuthor ? "bg-blue-50" : "bg-white"
+      // isAuthor ? "bg-transparent" : "bg-transparent"
+      }`}>
+      {/* Header: User Info */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-sm text-gray-600">
+          <span className="font-semibold text-blue-700">{topic.userName}</span>
+          <span className="ml-2 text-gray-400">{formatDate(topic?.createdAt)}</span>
         </div>
         {isAuthor && (
           <button
             onClick={onDelete}
-            className="text-red-500 hover:text-red-700 ml-2"
-            title="Delete"
+            className="text-red-500 hover:text-red-700 transition-colors duration-200"
+            title="Delete post"
           >
-            <DeleteIcon></DeleteIcon>
+            <DeleteIcon />
           </button>
         )}
       </div>
 
-      {/* topic content where details show */}
-      <div className="text-gray-700 whitespace-pre-wrap text-sm">
+      {/* Content */}
+      <div>
+      <div
+        ref={contentRef}
+        className={`text-base transition-all duration-300 ${
+          expanded ? "" : "line-clamp-4"
+        }`}
+      >
         {topic?.content}
       </div>
 
-      {/* Display media attachments */}
-      {topic?.mediaAttachments?.length > 0 && (
-        <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {topic?.mediaAttachments.map((attachment, index) => (
-              <div
-                key={index}
-                className="relative overflow-hidden rounded-md shadow-sm border border-gray-200 bg-gray-50"
-                style={{ maxWidth: "120px", height: "auto" }}
-              >
-                <ShowMedia attachment={attachment} />
-              </div>
-            ))}
-          </div>
-        )}
-
-      {/* lower button section */}
-      <div className="flex items-center mt-2 text-xs">
-
-        <button onClick={handleTopicLike} className={`flex items-center mr-3 ${ isLiked ? "text-blue-600" : "text-gray-500"} hover:text-blue-600`}>
-          <LikeIcon isLiked={isLiked} />
-          {topicLikes?.length || 0}
+      {showToggle && (
+        <button
+          onClick={() => setExpanded((prev) => !prev)}
+          className="text-blue-500 mt-2 hover:underline"
+        >
+          {expanded ? "View less" : "View more"}
         </button>
+      )}
+    </div>
 
-        <button onClick={handleTopicDislike} className={`flex items-center mr-3 ${ isDisliked ? "text-red-600" : "text-gray-500"} hover:text-red-600`}>
-          <DisLikeIcon isDisliked={isDisliked} />
-          {topicDislikes?.length || 0}
+      {/* Media */}
+      {topic?.mediaAttachments?.length > 0 && (
+        <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {topic.mediaAttachments.map((attachment, index) => (
+            <div
+              key={index}
+              className="overflow-hidden rounded-lg border border-gray-200 shadow-sm bg-white"
+              style={{ maxWidth: "160px" }}
+            >
+              <ShowMedia attachment={attachment} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex items-center gap-4 mt-3 text-sm text-gray-600">
+        <button
+          onClick={handleTopicLike}
+          className={`flex items-center hover:text-blue-600 transition ${isLiked ? "text-blue-600 font-semibold" : ""}`}
+        >
+          <LikeIcon isLiked={isLiked} />
+          <span>{topicLikes?.length || 0}</span>
         </button>
 
         <button
-            onClick={() => setShowReplyBox(true)}
-          className="flex items-center text-blue-600 hover:text-blue-800">
-          <ReplyIcon></ReplyIcon>
-          Reply
+          onClick={handleTopicDislike}
+          className={`flex items-center hover:text-red-600 transition ${isDisliked ? "text-red-600 font-semibold" : ""}`}
+        >
+          <DisLikeIcon isDisliked={isDisliked} />
+          <span>{topicDislikes?.length || 0}</span>
+        </button>
+
+        <button
+          onClick={() => setShowReplyBox(true)}
+          className="flex items-center text-blue-600 hover:text-blue-800"
+        >
+          <ReplyIcon />
+          <span>Reply</span>
         </button>
       </div>
 
-      {showReplyBox && <ReplyPostContent topic_id={topic?._id}></ReplyPostContent>}
+      {/* Reply Box */}
+      {showReplyBox && (
+        <div className="mt-3">
+          {/* <RightSidebarLayout isOpen={showReplyBox} topic_id={topic?._id}/> */}
+           <ReplyPostContent topic_id={topic?._id} />
+        </div>
+      )}
     </div>
   );
 };
 
 export default HeaderContent;
+
 
 const DeleteIcon = () => {
   return (
