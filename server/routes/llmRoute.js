@@ -1,6 +1,6 @@
 const express = require("express");
 const router = new express.Router();
-const {imageToText,promptEnhancer,imageGenerator,promptEnhancerAI,textSuggestion} = require('../middleware/LLMmiddleware');
+const {model, imageToText,promptEnhancer,imageGenerator,promptEnhancerAI,textSuggestion} = require('../middleware/LLMmiddleware');
 const { OpenAI } = require('openai');
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY,
@@ -103,15 +103,27 @@ router.post('/enhancedPrompt',upload.single("image"),imageToText,promptEnhancer,
  }
 });
 
-router.post("/aitest",async (req, res) => {
-  console.log("Request body: outside try", req.body);
+router.post("/aitest", promptEnhancer, async (req, res) => {
+  console.log("Request body: outside try in after middleware", req.body);
   try {
-    console.log("Request body:", req.body);
-    let {prompt} = req.body;
-    prompt = await promptEnhancerAI(prompt);
-    console.log(prompt);
+    const prompt = req.updatedPrompt;
+
+    if(!prompt){
+      console.error("Middleware 'promptEnhancer' failed to add ''updatedprompt");
+      if(!res.headersSent){
+        return res.status(500).json({status: 500, error: "promptenhancement step failed"});
+      }
+
+      return;
+    }
+
+    console.log("recived enhanced prompt ", prompt);
     const url =await imageGenerator(prompt);
-    res.status(200).json({ status: 200, updatedPrompt: url });
+    res.status(200).json({ 
+      status: 200, 
+      prompt: prompt,
+      url: url
+    });
   } catch (error) {
     console.error("Error in route handler:", error);
     res.status(500).json({ status: 500, error: "Internal server error" });
@@ -126,18 +138,44 @@ router.post("/generateTopicContent", async (req, res) => {
       return res.status(400).json({ status: 400, error: "Prompt is required" });
     }
 
-    // Use the existing AI enhancement function
-    const enhancedPrompt = await promptEnhancerAI(
-      `Create a detailed forum post about: ${prompt}. Include a title and detailed content.`
-    );
+    final_Prompt = `Generate a forum topic based on the folowing idea: "${prompt}" .
+    
+    Please provide the output in this format:
+    Title: [Generated Title Here]
+    
+    [Generated detailed forum post content here]`;
 
+    console.log("sending prompt to AI for the topic gneration: ", final_Prompt);
+
+    const result = await model.generateContent(final_Prompt);
+    const generatedText = result.response.text();
+    console.log("Recived raw responce from AI: ", generatedText);
+
+    let title = `AI TOPIC: ${prompt.substring(0, 40)} ...`;
+    let body  = generatedText;
+
+    const lines = generatedText.split('\n');
+    const titleLineIndex = lines.findIndex(line => line.toLowerCase().startsWith('title:'));
+
+    if(titleLineIndex !== -1){
+      title = lines[titleLineIndex].substring(6).trim();
+
+      //Findstart
+      let bodyStartIndex = titleLineIndex + 1;
+      while(bodyStartIndex < lines.length && lines[bodyStartIndex].trim()===''){
+        bodyStartIndex++;
+      }
+      body = lines.slice(bodyStartIndex).join('\n').trim();
+    }else{
+      console.warn("AI response format might not contains 'Title:: useing default")
+    }
     // For demonstration, we'll return the enhanced prompt
     // In a real implementation, you might want to structure this differently
     res.status(200).json({ 
       status: 200, 
       content: {
-        title: prompt.split('.')[0] || "AI Generated Topic",
-        body: enhancedPrompt
+        title: title,
+        body: body
       }
     });
   } catch (error) {
@@ -181,12 +219,14 @@ router.post("/generateTopicResponse", async (req, res) => {
     });
   }
 });
+;
 
 // Update the generateReplyImage route
-router.post("/generateReplyImage", async (req, res) => {
+router.post("/generateReplyImage", promptEnhancer, async (req, res) => {
   try {
-    const { prompt } = req.body;
-    
+        console.log("is it here");
+        const prompt = req.updatedPrompt;
+        console.log(prompt);
     if (!prompt) {
       return res.status(400).json({ status: 400, error: "Image prompt is required" });
     }
@@ -194,12 +234,8 @@ router.post("/generateReplyImage", async (req, res) => {
     console.log("Starting image generation process for prompt:", prompt);
     
     try {
-      // First enhance the prompt for better image generation
-      const enhancedPrompt = await promptEnhancerAI(prompt);
-      console.log("Enhanced prompt:", enhancedPrompt);
-      
       // Generate the image using OpenAI
-      const imageUrl = await imageGenerator(enhancedPrompt);
+      const imageUrl = await imageGenerator(prompt);
       console.log("Generated image URL:", imageUrl);
       
       if (!imageUrl) {
@@ -220,7 +256,7 @@ router.post("/generateReplyImage", async (req, res) => {
       return res.status(200).json({ 
         status: 200, 
         imageUrl: s3Url,
-        prompt: enhancedPrompt
+        prompt: prompt
       });
     } catch (innerError) {
       console.error("Detailed error in image generation process:", {
