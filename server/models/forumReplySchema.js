@@ -46,8 +46,13 @@ const forumReplySchema = new mongoose.Schema({
   dislikes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'
+  }],
+  children: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ForumReply',
   }]
-}, { timestamps: true });
+}, 
+{ timestamps: true });
 
 const ForumReply = mongoose.model('ForumReply', forumReplySchema);
 

@@ -23,15 +23,17 @@ function fileToGenerativePart(fileBuffer, mimeType) {
 
 const promptEnhancer =async(req,res,next)=>{
     try {
+
+        console.log("is user is comming");
         // when call from frontend make sure prompt send 
         // in this format :- prompt : "iahgajdg";
         const userPrompt = req.body.prompt;
-        const  description  = req.description;
-        if (!description) {
-          return res.status(400).json({ error: "Prompt is required" });
-        }
+      //  const  description  = req.description || " ";
+        // if (!description) {
+        //   return res.status(400).json({ error: "Prompt is required" });
+        // }
         const CONSTANT_PROMPT = "As a professional prompt engineer give prompt to generate image by this descirption and strict limit of 100 words: ";
-        const final_prompt = CONSTANT_PROMPT + description + userPrompt;
+        const final_prompt = CONSTANT_PROMPT +  userPrompt;
     
         const result = await model.generateContent(final_prompt);
         const responseText = result.response.text();
@@ -65,64 +67,7 @@ const imageToText = async(req,res,next)=>{
 };
 
 
-// text-to-text for prompt modification
-const promptEnhancerAI = async (prompt) => {
-  try {
-    if (!prompt) {
-      console.error("No prompt provided for enhancement");
-      return prompt; // Return the original prompt if empty
-    }
 
-    console.log("Enhancing prompt:", prompt);
-
-    // Check if OpenAI API key is available
-    if (!process.env.OPEN_AI_KEY) {
-      console.error("OpenAI API key is not configured");
-      return prompt; // Return the original prompt if API key is missing
-    }
-
-    // For image generation, add specific instructions to avoid copyright issues
-    let userPrompt = "Craft a refined, high-quality prompt that precisely conveys the intended request, ensuring clarity, specificity, and optimal AI output. ";
-    
-    // Add specific instructions for DALL-E image generation
-    if (prompt.toLowerCase().includes("harry potter") || 
-        prompt.toLowerCase().includes("voldemort") || 
-        prompt.toLowerCase().includes("woldomort")) {
-      userPrompt += "Create a fantasy-inspired magical scene with a young wizard facing a dark sorcerer in an epic battle. Avoid using any copyrighted character names or specific franchise references. ";
-      console.log("Detected potential copyright content, adding safeguards to prompt");
-    }
-    
-    userPrompt += "Structure it effectively to maximize relevance and depth while maintaining conciseness and coherence within the 50 to 100 word limit: ";
-    const final_prompt = userPrompt + prompt;
-
-    try {
-      // Call OpenAI API
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o", // You can use "gpt-3.5-turbo" if needed
-        messages: [{ role: "user", content: final_prompt }],
-      });
-
-      // Store response in req object for next middleware
-      const AI_Response = response.choices[0].message.content;
-      console.log("Enhanced prompt result:", AI_Response);
-      return AI_Response;
-    } catch (apiError) {
-      console.error("OpenAI API error during prompt enhancement:", apiError.message);
-      
-      // If we're in development mode or there's an API error, return a modified version of the original prompt
-      if (prompt.toLowerCase().includes("harry potter") || 
-          prompt.toLowerCase().includes("voldemort") || 
-          prompt.toLowerCase().includes("woldomort")) {
-        return "A fantasy-inspired magical scene with a young wizard facing a dark sorcerer in an epic battle with dramatic lighting and magical effects.";
-      }
-      
-      return prompt; // Return the original prompt if API call fails
-    }
-  } catch (error) {
-    console.error("Error in promptEnhancerAI function:", error);
-    return prompt; // Return the original prompt if any error occurs
-  }
-};
 
 const textSuggestion = async(text) => {
   try {
@@ -187,49 +132,10 @@ const imageGenerator = async(text)=>{
   }
 }
 
-const encodeImage = (imagePath) => {
-  const image = fs.readFileSync(imagePath);
-  return image.toString("base64");
-};
-
-const imageToImage = async (imagePath, prompt) => {
-  try {
-    if (!imagePath || !prompt) {
-      console.error("Image path and prompt are required");
-      return null;
-    }
-
-    console.log("Processing image-to-image transformation...");
-
-    // Convert image to Base64
-    const base64Image = encodeImage(imagePath);
-
-    // Call OpenAI API for image-to-image generation
-    const response = await openai.images.edit({
-      image: base64Image,
-      prompt: prompt,
-      n: 1,
-      size: "1024x1024", // You can change the size as needed
-    });
-
-    if (response && response.data && response.data[0].url) {
-      console.log("Generated Image URL:", response.data[0].url);
-      return response.data[0].url;
-    } else {
-      console.error("Invalid response structure from OpenAI");
-      return null;
-    }
-  } catch (error) {
-    console.error("Error in imageToImage function:", error.message);
-    return null;
-  }
-};
-
-
 module.exports ={
+    model,
     promptEnhancer,
     imageToText,
-    promptEnhancerAI,
     textSuggestion,
     imageGenerator
 };

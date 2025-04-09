@@ -424,11 +424,32 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
       parentReplyId: parentReplyId || null,
       mediaAttachments,
       likes: [],
-      dislikes: []
+      dislikes: [],
+      children: []
     });
     
     const savedReply = await newReply.save();
     
+    if(parentReplyId){
+      try{
+        const updatedParent = await ForumReply.findByIdAndUpdate(
+          parentReplyId,
+          { $push: {children: savedReply._id } },
+          {new: true}
+        );
+
+        if(!updatedParent) {
+          console.warn(`Parent reply Id ${parentReplyId} not found`);
+        }else{
+          console.log(`succesecfully added reply ${savedReply._id} to parent ${parentReplyId}`);
+        }
+      }catch(parentUpdateError){
+        console.log(`Eror updating parent reply: `, parentUpdateError);
+      }
+    }
+
+
+
     // Increment reply count on the topic
     topic.replyCount += 1;
     await topic.save();
