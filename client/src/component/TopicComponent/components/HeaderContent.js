@@ -4,9 +4,11 @@ import ShowMedia from "./ShowMedia";
 import { LoginContext } from "../../ContextProvider/context";
 import axios from "axios";
 import ReplyPostContent from "./ReplyPostContent";
-import RightSidebarLayout from "../../AIchatbot/ReplyComponent/RightSideBarLayout";
+import { ForumContext } from "../../ContextProvider/ModelContext";
+
 
 const HeaderContent = ({ topic, onDelete }) => {
+  const {viewBox,setViewBox,setReplyIdForContext} = useContext(ForumContext);
   const { loginData } = useContext(LoginContext);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisLiked] = useState(false);
@@ -174,7 +176,11 @@ const HeaderContent = ({ topic, onDelete }) => {
         </button>
 
         <button
-          onClick={() => setShowReplyBox(true)}
+          // onClick={() => setShowReplyBox(true)}
+          onClick={()=>{
+            setViewBox(true);
+            setReplyIdForContext(null);
+          }}
           className="flex items-center text-blue-600 hover:text-blue-800"
         >
           <ReplyIcon />
@@ -183,12 +189,11 @@ const HeaderContent = ({ topic, onDelete }) => {
       </div>
 
       {/* Reply Box */}
-      {showReplyBox && (
+      {/* {showReplyBox && (
         <div className="mt-3">
-          {/* <RightSidebarLayout isOpen={showReplyBox} topic_id={topic?._id}/> */}
            <ReplyPostContent topic_id={topic?._id} />
         </div>
-      )}
+      )} */}
     </div>
   );
 };
