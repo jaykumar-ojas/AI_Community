@@ -132,6 +132,62 @@ const imageGenerator = async(text)=>{
   }
 }
 
+const modelSelection = async(req,res,next)=>{
+    try{
+      console.log("i m jay");
+    }
+    catch(error){
+      console.log("error in model selection middleware in llmRoutes");
+      res.status(400).json({status:422,error:"causing some error"});
+    }
+}
+
+const responseFromDalle = (prompt)=>{
+  try{
+    if(!prompt){
+      console.log("i m jay");
+    }
+
+    return "this is reponse from dalle";
+
+  }
+  catch(error){
+    console.log("error in response from Dalle");
+    res.status(400).json({status:422,error:"causing some error"});
+  }
+}
+
+const responseFromGpt4 = (prompt)=>{
+  try{
+    if(!prompt){
+      console.log("i m jay");
+    }
+
+    return "this is reponse from response from gpt4";
+
+  }
+  catch(error){
+    console.log("error in response from gpt4");
+    res.status(400).json({status:422,error:"causing some error"});
+  }
+}
+
+const responseFromClaude  = (prompt)=>{
+  try{
+    if(!prompt){
+      console.log("i m jay");
+    }
+
+    return "this is reponse from response from gpt4";
+
+  }
+  catch(error){
+    console.log("error in response from gpt4");
+    res.status(400).json({status:422,error:"causing some error"});
+  }
+}
+
+
 module.exports ={
     model,
     promptEnhancer,
