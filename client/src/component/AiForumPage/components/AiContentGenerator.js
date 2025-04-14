@@ -19,7 +19,8 @@ function AiMessage({ message, isUser = false }) {
   );
 }
 
-const AiContentGenerator = ({ onClose,onContentGenerated}) => {
+
+const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
   const { loginData } = useContext(LoginContext);
   const [messages, setMessages] = useState([
     { content: "Welcome! I can help you generate content for your new topic. What would you like to discuss?", isUser: false }
@@ -41,7 +42,7 @@ const AiContentGenerator = ({ onClose,onContentGenerated}) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-
+  
     // Add user message
     setMessages(prev => [...prev, { content: inputValue, isUser: true }]);
     
@@ -49,41 +50,58 @@ const AiContentGenerator = ({ onClose,onContentGenerated}) => {
     const userPrompt = inputValue;
     setInputValue('');
     setIsLoading(true);
-
+  
     try {
-      // First, add a "thinking" message
+      // Add a "thinking" message
       setMessages(prev => [...prev, { 
         content: "Thinking...", 
         isUser: false,
         isThinking: true 
       }]);
-
-      // Use a simple AI response for now instead of calling the endpoint
-      // This avoids potential API key issues
-      setTimeout(() => {
-        // Remove the "thinking" message
-        setMessages(prev => prev.filter(msg => !msg.isThinking));
-        
-        // Generate a contextual response based on the user's input
-        let aiResponse;
-        if (userPrompt.toLowerCase().includes('star wars')) {
-          aiResponse = `I'd be happy to help you create a topic about Star Wars! This iconic space opera franchise created by George Lucas has captivated audiences since 1977. Would you like to focus on:\n\n- The original trilogy (Episodes IV-VI)\n- The prequel trilogy (Episodes I-III)\n- The sequel trilogy (Episodes VII-IX)\n- TV shows like The Mandalorian or Clone Wars\n- Characters, planets, or specific themes\n\nLet me know what aspect interests you most, and I'll help develop content for your topic.`;
-        } else if (userPrompt.toLowerCase().includes('image') || userPrompt.toLowerCase().includes('picture')) {
-          aiResponse = `I understand you're interested in images related to "${userPrompt.replace(/images|pictures/gi, '').trim()}". While I can help you create text content for your forum topic, I can't directly generate or attach images. However, I can help you write a descriptive post that discusses this visual topic in detail. Would you like me to proceed with creating text content?`;
-        } else {
-          aiResponse = `Thanks for sharing your interest in "${userPrompt}". I can help you develop this into a comprehensive forum topic. To create the best content, could you tell me a bit more about:\n\n- What specific aspects of this topic interest you most?\n- Who is your target audience?\n- Would you like a casual discussion starter or a more in-depth analysis?\n\nThe more details you provide, the better I can tailor the content to your needs.`;
-        }
-        
-        setMessages(prev => [...prev, { content: aiResponse, isUser: false }]);
-        setIsLoading(false);
-      }, 1500);
+  
+      console.log('Sending request to API:', { prompt: userPrompt });
+      
+      // Call the local API endpoint
+      const response = await fetch('http://localhost:8099/generateTopicContent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: userPrompt }),
+      });
+  
+      console.log('API response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`API responded with status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log('API response data:', data);
+      
+      // Remove the "thinking" message
+      setMessages(prev => prev.filter(msg => !msg.isThinking));
+      
+      // Check the structure of the response data
+      if (data && data.content && data.content.title && data.content.body) {
+        setNewTopic({
+          title: data.content.title,
+          content: data.content.body
+        });
+        onClose();
+      } else {
+        console.error('Unexpected response structure:', data);
+        throw new Error('Invalid response structure from API');
+      }
+      
+      setIsLoading(false);
     } catch (error) {
-      console.error('Error in AI conversation:', error);
+      console.error('Error in API call:', error);
       // Remove any "thinking" message
       setMessages(prev => prev.filter(msg => !msg.isThinking));
       // Add error message
       setMessages(prev => [...prev, { 
-        content: "I encountered an error processing your request. Let's try a different approach. Could you provide more details about the topic you'd like to create?", 
+        content: `Error: ${error.message || 'Could not generate topic content'}. Please check the console for more details.`, 
         isUser: false 
       }]);
       setIsLoading(false);

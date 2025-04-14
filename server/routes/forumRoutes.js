@@ -193,7 +193,8 @@ router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddlewa
       tags: tags || [],
       mediaAttachments,
       likes: [],
-      dislikes: []
+      dislikes: [],
+      children: []
     });
     
     const savedTopic = await newTopic.save();
@@ -838,5 +839,68 @@ router.get('/media-posts', async (req, res) => {
     res.status(500).json({ status: 500, error: 'Server error' });
   }
 });
+
+//pagination withh reply id
+router.get('/paginated', async(req, res) => {
+    try {
+      const parentId = req.query.parentId;
+      const topicId = req.query.topicId;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 5;
+      const skip = (page - 1) * limit;
+
+      if(!parentId && !topicId){
+        return res.status(400).json({
+          success: false,
+          message: 'Either parentId or topicId is required'
+        });
+      }
+
+      let query = {};
+
+      if(topicId) {
+        query.topicId = topicId;
+      } else if(parentId) {
+        query.parentReplyId = parentId;
+      }
+
+      const immediateChildren = await ForumReply.find(query)
+        .sort({createdAt: -1})
+        .skip(skip)
+        .limit(limit);
+
+      const repliesWithChildren = immediateChildren.map(doc => doc.toObject());
+
+      for (const reply of repliesWithChildren){
+        const childReply = await ForumReply.findOne({
+          parentReplyId: reply._id
+        })
+        .sort({ createdAt: -1})
+        .lean();
+
+        reply.sampleChild = childReply || null;
+      }
+      const totalCount = await ForumReply.countDocuments(query);
+
+      res.json({
+        success: true,
+        data: repliesWithChildren,
+        pagination:{
+          currentPage: page,
+          totalPages: Math.ceil(totalCount/limit),
+          totalItems: totalCount,
+          hasNextPage: page*limit < totalCount
+        }
+      });
+    }catch (error){
+      console.error('Error fetching paginated replies:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch paginated replies',
+        error: error.message
+      });
+    }
+});
+
 
 module.exports = router; 
