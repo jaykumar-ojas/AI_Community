@@ -368,7 +368,7 @@ router.get('/replies', async (req, res) => {
 // Create a new reply
 router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
   try {
-    const { content, topicId, parentReplyId, userId, userName } = req.body;
+    const { content, topicId, parentReplyId, userId, userName, description } = req.body;
     
     if (!content || !topicId) {
       return res.status(400).json({ status: 400, error: 'Content and topic ID are required' });
@@ -426,7 +426,8 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
       mediaAttachments,
       likes: [],
       dislikes: [],
-      children: []
+      children: [],
+      description
     });
     
     const savedReply = await newReply.save();
@@ -901,6 +902,8 @@ router.get('/paginated', async(req, res) => {
       });
     }
 });
+
+
 
 
 module.exports = router; 
