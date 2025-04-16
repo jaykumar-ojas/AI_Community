@@ -12,7 +12,7 @@ const Message = ({
   mediaAttachments = [], 
   isAuthor = false, 
   onDelete = null, 
-  onLike,
+  onLike, 
   onDislike, 
   likes = [], 
   dislikes = [], 
@@ -546,7 +546,7 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
     const showViewMore = hasChildren && isDeep && !isExpanded;
     
     return (
-      <React.Fragment key={reply._id}> 
+      <React.Fragment key={reply._id}>
         <Message
           content={reply.content}
           userName={reply.userName}
@@ -573,7 +573,7 @@ const TopicDetail = ({ topic, onBack, onDeleteTopic }) => {
           parentUserName={parentReply ? parentReply.userName : null}
         />
         
-        {/* Show reply form if replying to this message */}  
+        {/* Show reply form if replying to this message */}
         {replyingTo === reply._id && (
           <div className={`mb-4 ml-${Math.min((depth + 1) * 4, 16)} relative`}>
             {/* Connecting line */}
