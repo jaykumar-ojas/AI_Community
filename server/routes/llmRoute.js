@@ -316,4 +316,12 @@ router.post("/generate-image", upload.single("image"), async (req, res) => {
 });
 
 
+// global router for model selection 
+// here we have to select model
+// router.post("/global-route",async(req,res)=>{
+
+
+
+// });
+
 module.exports = router;

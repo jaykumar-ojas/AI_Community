@@ -19,6 +19,7 @@ function AiMessage({ message, isUser = false }) {
   );
 }
 
+
 const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
   const { loginData } = useContext(LoginContext);
   const [messages, setMessages] = useState([

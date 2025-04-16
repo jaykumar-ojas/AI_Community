@@ -5,6 +5,7 @@ import { getAuthHeaders, handleAuthError, organizeReplies, REPLIES_URL } from ".
 import ShowReplyContent from "./ShowReplyContent";
 import axios from "axios";
 import RecurrsionLoop from "./RecurrsionLoop";
+import { useWebSocket } from "../../AiForumPage/components/WebSocketContext";
 
 const ReplyContent = () => {
   const {topicId} = useParams();  
@@ -16,6 +17,7 @@ const ReplyContent = () => {
   const MAX_VISIBLE_DEPTH = 3;
   const [expandedThreads,setExpandedThreads] = useState({});
   const [threadView,setThreadView] = useState();
+  const {subscribeToEvent} = useWebSocket();
 
   const findReplyById = (replies, replyId) => {
     for (const reply of replies) {
@@ -30,6 +32,31 @@ const ReplyContent = () => {
     return null;
   };
 
+  useEffect(() => {
+    //  console.log("ajlsdkgwuiedfiosfjklfdfhuvcrunigg");
+     console.log(topicId);
+      if (topicId){
+        console.log("i m come inside to check");
+      const unsubscribe = subscribeToEvent('reply_created', (newReply) => {
+        console.log("this is my newReply");
+        if (topicId === newReply?.topicId) {
+          console.log("i m here for chcke reply",newReply);
+          setReplies(prevReplies => [...prevReplies, newReply]);
+          // setStructureReply(findReplyById(replies));
+        }
+      });
+      
+      const unsubscribeDelete = subscribeToEvent('reply_deleted', (deletedReplyId) => {
+        setReplies(prevReplies => prevReplies.filter(reply => reply._id !== deletedReplyId));
+      });
+      
+      return () => {
+        unsubscribe();
+        unsubscribeDelete();
+      };
+    }
+    }, [topicId,subscribeToEvent]);
+
 
 
   useEffect(()=>{
@@ -40,6 +67,7 @@ const ReplyContent = () => {
 
   useEffect(()=>{
     if(replies){
+         console.log("now i m here");
          setStructureReply(organizeReplies(replies));
     }
   },[replies])
