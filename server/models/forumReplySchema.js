@@ -50,7 +50,12 @@ const forumReplySchema = new mongoose.Schema({
   children: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ForumReply',
-  }]
+  }],
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  }
 }, 
 { timestamps: true });
 

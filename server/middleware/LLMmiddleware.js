@@ -132,6 +132,64 @@ const imageGenerator = async(text)=>{
   }
 }
 
+
+const describeImage = async (imageBuffer) => {
+    console.log("is this describe image function even calling or not");
+  try {
+    if(!imageBuffer || !Buffer.isBuffer(imageBuffer) || imageBuffer.length === 0){
+      console.error("No valid image buffer provided for description");
+      return null;
+    }
+    console.log("describing image buffer, size: ", imageBuffer.length);
+
+    const base64Image = imageBuffer.toString('base64');
+    
+    // Detect mime type from buffer magic numbers
+    const mimeType = 'image/png'; // Default to PNG, you might want to add proper mime type detection
+
+    console.log("sending image to OPENAI for description..");
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",  // Updated to use the vision model
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "describe this image in detail. what is happening? what objects are present?",
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${mimeType};base64,${base64Image}`,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 300,
+    });
+
+    if(response && response.choices && response.choices[0] && response.choices[0].message && response.choices[0].message.content){
+      const description = response.choices[0].message.content;  // Fixed typo in 'choices'
+      console.log("success received image description");
+      return description;
+    }else{
+      console.error("invalid response structure");
+      return null;
+    }
+
+  }catch(error){
+    console.error("error in describe image function: ", error);
+    if(error.response){
+      console.error("OpenAI error details: ", error.response);
+    }
+
+    return null;
+  }
+}
+
 const modelSelection = async(req,res,next)=>{
     try{
       console.log("i m jay");
@@ -186,10 +244,9 @@ const responseFromClaude  = (prompt)=>{
     res.status(400).json({status:422,error:"causing some error"});
   }
 }
-
-
 module.exports ={
     model,
+    describeImage,
     promptEnhancer,
     imageToText,
     textSuggestion,

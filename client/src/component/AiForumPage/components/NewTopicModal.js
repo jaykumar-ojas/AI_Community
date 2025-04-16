@@ -180,7 +180,7 @@ const NewTopicModal = ({ onClose }) => {
         </div>
       </div>
 
-      {showAiContent && <AiContentGenerator onClose={() => setShowAiContent(false)} />}
+      {showAiContent && <AiContentGenerator onClose={() => setShowAiContent(false)} setNewTopic = {setNewTopic} />}
     </div>
   );
 };
