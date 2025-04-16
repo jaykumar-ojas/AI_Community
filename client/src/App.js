@@ -21,6 +21,7 @@ import ForumTopicPage from "./pages/ForumTopicPage/ForumTopicPage";
 import { WebSocketProvider } from "./component/AiForumPage/components/WebSocketContext";
 import NewTopicModal from "./component/AiForumPage/components/NewTopicModal";
 import TopicContent from "./component/TopicComponent/TopicContent";
+import  ForumContext  from "./component/ContextProvider/ModelContext";
 
 const router = createBrowserRouter([
   {
@@ -89,7 +90,9 @@ function App() {
   return (  
     <Context>
       <WebSocketProvider>
+        <ForumContext>
         <RouterProvider router={router} />
+        </ForumContext>
       </WebSocketProvider>
     </Context>
   );

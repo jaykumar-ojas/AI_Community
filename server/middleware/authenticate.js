@@ -15,6 +15,10 @@ const authenticate = async(req, res, next) => {
         try {
             const verifytoken = jwt.verify(token, keySecret);
             console.log("Token verified:", verifytoken);
+            if(!verifytoken){
+                console.log("may be token expired but unable to delete from frontend");
+               res.status(422).json({status:422,error:"May be token expired but unable to delete"});
+            }
             
             // Try to find the user in different collections
             const rootuser = await userdb.findOne({email: verifytoken.email}) || 

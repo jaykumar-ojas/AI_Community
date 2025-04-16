@@ -6,7 +6,8 @@ import ShowMedia from "../components/ShowMedia";
 import ReplyPostContent from "../components/ReplyPostContent";
 import { useWebSocket } from "../../AiForumPage/components/WebSocketContext";
 import { useParams } from "react-router-dom";
-import ReplyCommentBox from "./ReplyCommentBox";
+import ReplyCommentBox from "../../AIchatbot/Component/ReplyCommentBox";
+import { ForumContext } from "../../ContextProvider/ModelContext";
 
 
 
@@ -14,6 +15,7 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
   show,
   showReply,
   setShowReply}) => {
+    const {setReplyIdForContext,setViewBox,setUserName} = useContext(ForumContext); 
     const {topicId} = useParams();
     const {emitDeleteReply} = useWebSocket();
     const {loginData} = useContext(LoginContext);
@@ -50,6 +52,7 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
 
 
       const handleDeleteReply = async () => {
+        alert("i am goind to delete");
         if (!loginData || !loginData.validuserone) {
           setError('You must be logged in to delete a reply');
           return;
@@ -215,7 +218,12 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
         </button>
 
         <button
-          onClick={() => setShowReplyBox(true)}
+          // onClick={() => setShowReplyBox(true)}
+          onClick={()=>{
+            setReplyIdForContext(reply?._id);
+            setUserName(reply?.userName);
+            setViewBox(true);
+          }}
           className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
         >
           <ReplyIcon />
@@ -226,7 +234,7 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
       {hasChildren && show && !showReply && (
         <button onClick={() => setShowReply(!showReply)} className="text-sm text-blue-500 hover:underline" >view more replies...</button>
       )}   
-      {showReplyBox && <ReplyCommentBox replyId={reply?._id}/>}
+      {/* {showReplyBox && <ReplyCommentBox onClose={()=>setShowReplyBox(false)} replyId={reply?._id}/>} */}
       {showViewMore && (
       <div className="mt-2">
         <button

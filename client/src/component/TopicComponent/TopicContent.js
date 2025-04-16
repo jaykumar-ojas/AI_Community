@@ -13,6 +13,8 @@ import ShowMedia from "./components/ShowMedia";
 import HeaderContent from "./components/HeaderContent";
 import ReplyContent from "./ReplyComponent/ReplyContent";
 import bgPattern from '../../asset/backGroundImage.png'
+import { ForumContext} from "../ContextProvider/ModelContext";
+import ReplyCommentBox from "../AIchatbot/Component/ReplyCommentBox";
 
 
 const TopicContent = () => {
@@ -24,6 +26,7 @@ const TopicContent = () => {
   const isTopicDisliked = false;
   const isTopicLiked = true;
   const threadView = null;
+  const {viewBox,setViewBox,replyId,model,replyIdForContext} = useContext(ForumContext);
 
   useEffect(() => {
     if (topicId) {
@@ -57,11 +60,12 @@ const TopicContent = () => {
     return <div className="text-bold">Loading content .....</div>;
   }
 
+
+
   return (
     <>
     <div className="bg-white border-b outline-white border-gray-200 h-[68px] p-4 flex items-center sticky top-0 z-10">
         <button
-        //   onClick={threadView ? handleBackFromThread : onBack}
           className="mr-3 text-gray-500 hover:text-gray-700"
         >
           <BackArrow/>
@@ -95,6 +99,10 @@ const TopicContent = () => {
       <HeaderContent topic = {topic}></HeaderContent>
       <ReplyContent></ReplyContent>
       </div>
+
+      {/* <div className="relative w-full">
+        {viewBox && <ReplyCommentBox onClose={()=>setViewBox(false)} replyId={replyIdForContext} ></ReplyCommentBox>}
+        </div> */}
 
     </>
   );
