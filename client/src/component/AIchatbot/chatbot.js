@@ -58,7 +58,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
           <TopicContent/>
         </div>
         <div className="relative w-full">
-        {viewBox && <ReplyCommentBox onClose={()=>{
+        {<ReplyCommentBox onClose={()=>{
           setReplyIdForContext(null);
           setViewBox(false);
           }} />}

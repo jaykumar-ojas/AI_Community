@@ -132,17 +132,40 @@ const imageGenerator = async(text)=>{
   }
 }
 
-const modelSelection = async(req,res,next)=>{
-    try{
-      console.log("i m jay");
-    }
-    catch(error){
-      console.log("error in model selection middleware in llmRoutes");
-      res.status(400).json({status:422,error:"causing some error"});
-    }
-}
+const modelResponse = async (req, res, next) => {
+  try {
+    const { model } = req.body;
 
-const responseFromDalle = (prompt)=>{
+    // Skip if model is not provided
+    if (!model) {
+      return next();
+    }
+
+    let content = req.body.content;
+
+    if (model === "DALL-E") {
+      req.body.content = await responseFromDalle(content);
+    } else if (model === "GPT-4") {
+      req.body.content = await responseFromGpt4(content);
+    } else if (model === "Claude") {
+      console.log("Before model transformation:", req.body.content);
+      req.body.content = await responseFromClaude(req.body.content);
+      console.log("After model transformation:", req.body.content);
+    } else if (model === "Stable Diffusion") {
+      req.body.content = await responseFromStableDiffusion(content);
+    } else if (model === "Mid Journey") {
+      req.body.content = await responseFromMidJourney(content);
+    }
+
+    next();
+  } catch (error) {
+    console.log("Error in model selection middleware in llmRoutes", error);
+    res.status(400).json({ status: 422, error: "Causing some error" });
+  }
+};
+
+
+const responseFromDalle =async (prompt)=>{
   try{
     if(!prompt){
       console.log("i m jay");
@@ -157,7 +180,7 @@ const responseFromDalle = (prompt)=>{
   }
 }
 
-const responseFromGpt4 = (prompt)=>{
+const responseFromGpt4 =async (prompt)=>{
   try{
     if(!prompt){
       console.log("i m jay");
@@ -172,24 +195,54 @@ const responseFromGpt4 = (prompt)=>{
   }
 }
 
-const responseFromClaude  = (prompt)=>{
+const responseFromClaude  = async (prompt)=>{
   try{
     if(!prompt){
       console.log("i m jay");
     }
 
-    return "this is reponse from response from gpt4";
+    return "this is reponse from response from claude";
 
   }
   catch(error){
     console.log("error in response from gpt4");
+    res.status(400).json({status:422,error:"causing some error"});
+  }
+}
+
+const responseFromStableDiffusion  = async (prompt)=>{
+  try{
+    if(!prompt){
+      console.log("i m jay");
+    }
+
+    return "this is reponse from response from stableDiffusion";
+
+  }
+  catch(error){
+    console.log("error in response from stableDiffusion");
+    res.status(400).json({status:422,error:"causing some error"});
+  }
+}
+
+const responseFromMidJourney  = async (prompt)=>{
+  try{
+    if(!prompt){
+      console.log("i m jay");
+    }
+
+    return "this is reponse from response from midJourney";
+
+  }
+  catch(error){
+    console.log("error in response from midjjourney");
     res.status(400).json({status:422,error:"causing some error"});
   }
 }
 
 
 module.exports ={
-    model,
+    modelResponse,
     promptEnhancer,
     imageToText,
     textSuggestion,

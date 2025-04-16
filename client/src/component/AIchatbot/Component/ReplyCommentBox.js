@@ -45,6 +45,7 @@ const ReplyCommentBox = ({onClose}) => {
       formData.append("topicId", topicId);
       formData.append("userId", loginData.validuserone._id);
       formData.append("userName", loginData.validuserone.userName);
+      formData.append("model", model || "");
       if(replyIdForContext)
       formData.append("parentReplyId", replyIdForContext);
 
@@ -59,6 +60,7 @@ const ReplyCommentBox = ({onClose}) => {
       emitNewReply(response.data.reply);
       setReplyIdForContext(null);
       setNewReply("");
+      setModel("");
       setSelectedFiles([]);
       onClose(); // close drawer
     } catch (err) {
