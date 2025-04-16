@@ -1,6 +1,6 @@
 const express = require("express");
 const router = new express.Router();
-const {model, imageToText,promptEnhancer,imageGenerator,promptEnhancerAI,textSuggestion} = require('../middleware/LLMmiddleware');
+const {model, describeImage, imageToText,promptEnhancer,imageGenerator,promptEnhancerAI, textSuggestion} = require('../middleware/LLMmiddleware');
 const { OpenAI } = require('openai');
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY,
@@ -247,6 +247,10 @@ router.post("/generateReplyImage", promptEnhancer, async (req, res) => {
       const imageBuffer = await downloadImage(imageUrl);
       console.log("Image downloaded successfully, size:", imageBuffer.length);
       
+      console.log("About to call describeImage function...");
+      const description = await describeImage(imageBuffer);
+      console.log("describeImage function returned:", description);
+      
       // Upload to S3
       console.log("Starting S3 upload...");
       const s3Url = await uploadToS3(imageBuffer);
@@ -256,7 +260,8 @@ router.post("/generateReplyImage", promptEnhancer, async (req, res) => {
       return res.status(200).json({ 
         status: 200, 
         imageUrl: s3Url,
-        prompt: prompt
+        prompt: prompt,
+        description: description
       });
     } catch (innerError) {
       console.error("Detailed error in image generation process:", {
@@ -309,5 +314,6 @@ router.post("/generate-image", upload.single("image"), async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 module.exports = router;
