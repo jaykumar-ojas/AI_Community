@@ -33,11 +33,16 @@ const ReplyContent = () => {
   };
 
   useEffect(() => {
-      if (!topicId) return;
-      
+    //  console.log("ajlsdkgwuiedfiosfjklfdfhuvcrunigg");
+     console.log(topicId);
+      if (topicId){
+        console.log("i m come inside to check");
       const unsubscribe = subscribeToEvent('reply_created', (newReply) => {
+        console.log("this is my newReply");
         if (topicId === newReply?.topicId) {
+          console.log("i m here for chcke reply",newReply);
           setReplies(prevReplies => [...prevReplies, newReply]);
+          // setStructureReply(findReplyById(replies));
         }
       });
       
@@ -49,7 +54,8 @@ const ReplyContent = () => {
         unsubscribe();
         unsubscribeDelete();
       };
-    }, [topicId]);
+    }
+    }, [topicId,subscribeToEvent]);
 
 
 
@@ -61,6 +67,7 @@ const ReplyContent = () => {
 
   useEffect(()=>{
     if(replies){
+         console.log("now i m here");
          setStructureReply(organizeReplies(replies));
     }
   },[replies])

@@ -85,6 +85,7 @@ io.on('connection', (socket) => {
 
   // New reply added
   socket.on('new_reply', (reply) => {
+    console.log("i m sending to frontend",reply);
     io.to(`topic_${reply.topicId}`).emit('reply_created', reply);
   });
 

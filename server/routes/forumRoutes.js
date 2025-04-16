@@ -7,6 +7,7 @@ const { awsuploadMiddleware, awsdeleteMiddleware, generateSignedUrl } = require(
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const AWS = require('aws-sdk');
+const { modelResponse } = require('../middleware/LLMmiddleware');
 
 // Configure AWS
 AWS.config.update({
@@ -366,138 +367,138 @@ router.get('/replies', async (req, res) => {
 });
 
 // Create a new reply
-router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
-  try {
-    const { content, topicId, parentReplyId, userId, userName } = req.body;
+// router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
+//   try {
+//     const { content, topicId, parentReplyId, userId, userName } = req.body;
     
-    if (!content || !topicId) {
-      return res.status(400).json({ status: 400, error: 'Content and topic ID are required' });
-    }
+//     if (!content || !topicId) {
+//       return res.status(400).json({ status: 400, error: 'Content and topic ID are required' });
+//     }
     
-    // Check if topic exists and is not locked
-    const topic = await ForumTopic.findById(topicId);
+//     // Check if topic exists and is not locked
+//     const topic = await ForumTopic.findById(topicId);
     
-    if (!topic) {
-      return res.status(404).json({ status: 404, error: 'Topic not found' });
-    }
+//     if (!topic) {
+//       return res.status(404).json({ status: 404, error: 'Topic not found' });
+//     }
     
-    if (topic.isLocked && req.userRole !== 'admin') {
-      return res.status(403).json({ status: 403, error: 'This topic is locked' });
-    }
+//     if (topic.isLocked && req.userRole !== 'admin') {
+//       return res.status(403).json({ status: 403, error: 'This topic is locked' });
+//     }
     
-    // Use the authenticated user ID from the request if available
-    const actualUserId = req.userId || userId;
-    const actualUserName = req.rootuser?.userName || userName;
+//     // Use the authenticated user ID from the request if available
+//     const actualUserId = req.userId || userId;
+//     const actualUserName = req.rootuser?.userName || userName;
     
-    if (!actualUserId || !actualUserName) {
-      return res.status(400).json({ status: 400, error: 'User information is required' });
-    }
+//     if (!actualUserId || !actualUserName) {
+//       return res.status(400).json({ status: 400, error: 'User information is required' });
+//     }
 
-    // Handle media attachments
-    let mediaAttachments = [];
+//     // Handle media attachments
+//     let mediaAttachments = [];
     
-    // Process uploaded files
-    if (req.uploadedFiles && req.uploadedFiles.length > 0) {
-      mediaAttachments = [...req.uploadedFiles];
-    }
+//     // Process uploaded files
+//     if (req.uploadedFiles && req.uploadedFiles.length > 0) {
+//       mediaAttachments = [...req.uploadedFiles];
+//     }
     
-    // Process S3 URLs if any
-    if (req.body.mediaUrls) {
-      const mediaUrls = Array.isArray(req.body.mediaUrls) ? req.body.mediaUrls : [req.body.mediaUrls];
-      mediaAttachments = [
-        ...mediaAttachments,
-        ...mediaUrls.map(url => ({
-          fileName: url.split('/').pop(),
-          fileType: 'image/jpeg', // Default to image/jpeg for S3 URLs
-          fileUrl: url,
-          fileSize: 0, // Size not available for S3 URLs
-          uploadedAt: new Date()
-        }))
-      ];
-    }
+//     // Process S3 URLs if any
+//     if (req.body.mediaUrls) {
+//       const mediaUrls = Array.isArray(req.body.mediaUrls) ? req.body.mediaUrls : [req.body.mediaUrls];
+//       mediaAttachments = [
+//         ...mediaAttachments,
+//         ...mediaUrls.map(url => ({
+//           fileName: url.split('/').pop(),
+//           fileType: 'image/jpeg', // Default to image/jpeg for S3 URLs
+//           fileUrl: url,
+//           fileSize: 0, // Size not available for S3 URLs
+//           uploadedAt: new Date()
+//         }))
+//       ];
+//     }
     
-    // Create new reply
-    const newReply = new ForumReply({
-      content,
-      topicId,
-      userId: actualUserId,
-      userName: actualUserName,
-      parentReplyId: parentReplyId || null,
-      mediaAttachments,
-      likes: [],
-      dislikes: [],
-      children: []
-    });
+//     // Create new reply
+//     const newReply = new ForumReply({
+//       content,
+//       topicId,
+//       userId: actualUserId,
+//       userName: actualUserName,
+//       parentReplyId: parentReplyId || null,
+//       mediaAttachments,
+//       likes: [],
+//       dislikes: [],
+//       children: []
+//     });
     
-    const savedReply = await newReply.save();
+//     const savedReply = await newReply.save();
     
-    if(parentReplyId){
-      try{
-        const updatedParent = await ForumReply.findByIdAndUpdate(
-          parentReplyId,
-          { $push: {children: savedReply._id } },
-          {new: true}
-        );
+//     if(parentReplyId){
+//       try{
+//         const updatedParent = await ForumReply.findByIdAndUpdate(
+//           parentReplyId,
+//           { $push: {children: savedReply._id } },
+//           {new: true}
+//         );
 
-        if(!updatedParent) {
-          console.warn(`Parent reply Id ${parentReplyId} not found`);
-        }else{
-          console.log(`succesecfully added reply ${savedReply._id} to parent ${parentReplyId}`);
-        }
-      }catch(parentUpdateError){
-        console.log(`Eror updating parent reply: `, parentUpdateError);
-      }
-    }
+//         if(!updatedParent) {
+//           console.warn(`Parent reply Id ${parentReplyId} not found`);
+//         }else{
+//           console.log(`succesecfully added reply ${savedReply._id} to parent ${parentReplyId}`);
+//         }
+//       }catch(parentUpdateError){
+//         console.log(`Eror updating parent reply: `, parentUpdateError);
+//       }
+//     }
 
 
 
-    // Increment reply count on the topic
-    topic.replyCount += 1;
-    await topic.save();
+//     // Increment reply count on the topic
+//     topic.replyCount += 1;
+//     await topic.save();
     
-    // If media attachments exist, return the reply with signed URLs
-    if (mediaAttachments.length > 0) {
-      const replyWithSignedUrls = {
-        ...savedReply.toObject(),
-        mediaAttachments: await Promise.all(
-          mediaAttachments.map(async (attachment) => {
-            try {
-              // If it's an S3 URL, use it directly
-              if (attachment.fileUrl && attachment.fileUrl.startsWith('https://')) {
-                return {
-                  ...attachment,
-                  signedUrl: attachment.fileUrl
-                };
-              }
-              // Otherwise generate a signed URL
-              const signedUrl = await generateSignedUrl(attachment.fileName);
-              return {
-                ...attachment,
-                signedUrl
-              };
-            } catch (error) {
-              console.error(`Error processing media attachment ${attachment.fileName}:`, error);
-              return {
-                ...attachment,
-                signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
-              };
-            }
-          })
-        )
-      };
-      res.status(201).json({ status: 201, reply: replyWithSignedUrls });
-    } else {
-      res.status(201).json({ status: 201, reply: savedReply });
-    }
-  } catch (error) {
-    console.error('Error creating reply:', error);
-    res.status(500).json({ 
-      status: 500, 
-      error: 'Server error',
-      message: error.message 
-    });
-  }
-});
+//     // If media attachments exist, return the reply with signed URLs
+//     if (mediaAttachments.length > 0) {
+//       const replyWithSignedUrls = {
+//         ...savedReply.toObject(),
+//         mediaAttachments: await Promise.all(
+//           mediaAttachments.map(async (attachment) => {
+//             try {
+//               // If it's an S3 URL, use it directly
+//               if (attachment.fileUrl && attachment.fileUrl.startsWith('https://')) {
+//                 return {
+//                   ...attachment,
+//                   signedUrl: attachment.fileUrl
+//                 };
+//               }
+//               // Otherwise generate a signed URL
+//               const signedUrl = await generateSignedUrl(attachment.fileName);
+//               return {
+//                 ...attachment,
+//                 signedUrl
+//               };
+//             } catch (error) {
+//               console.error(`Error processing media attachment ${attachment.fileName}:`, error);
+//               return {
+//                 ...attachment,
+//                 signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
+//               };
+//             }
+//           })
+//         )
+//       };
+//       res.status(201).json({ status: 201, reply: replyWithSignedUrls });
+//     } else {
+//       res.status(201).json({ status: 201, reply: savedReply });
+//     }
+//   } catch (error) {
+//     console.error('Error creating reply:', error);
+//     res.status(500).json({ 
+//       status: 500, 
+//       error: 'Server error',
+//       message: error.message 
+//     });
+//   }
+// });
 
 // Update a reply
 router.put('/replies/:id', authenticate, async (req, res) => {
@@ -900,6 +901,141 @@ router.get('/paginated', async(req, res) => {
         error: error.message
       });
     }
+});
+
+router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware,modelResponse, async (req, res) => {
+  try {
+    const { content, topicId, parentReplyId, userId, userName } = req.body;
+    console.log(req.body.content);
+    
+    if (!content || !topicId) {
+      return res.status(400).json({ status: 400, error: 'Content and topic ID are required' });
+    }
+    
+    // Check if topic exists and is not locked
+    const topic = await ForumTopic.findById(topicId);
+    
+    if (!topic) {
+      return res.status(404).json({ status: 404, error: 'Topic not found' });
+    }
+    
+    if (topic.isLocked && req.userRole !== 'admin') {
+      return res.status(403).json({ status: 403, error: 'This topic is locked' });
+    }
+    
+    // Use the authenticated user ID from the request if available
+    const actualUserId = req.userId || userId;
+    const actualUserName = req.rootuser?.userName || userName;
+    
+    if (!actualUserId || !actualUserName) {
+      return res.status(400).json({ status: 400, error: 'User information is required' });
+    }
+
+    // Handle media attachments
+    let mediaAttachments = [];
+    
+    // Process uploaded files
+    if (req.uploadedFiles && req.uploadedFiles.length > 0) {
+      mediaAttachments = [...req.uploadedFiles];
+    }
+    
+    // Process S3 URLs if any
+    if (req.body.mediaUrls) {
+      const mediaUrls = Array.isArray(req.body.mediaUrls) ? req.body.mediaUrls : [req.body.mediaUrls];
+      mediaAttachments = [
+        ...mediaAttachments,
+        ...mediaUrls.map(url => ({
+          fileName: url.split('/').pop(),
+          fileType: 'image/jpeg', // Default to image/jpeg for S3 URLs
+          fileUrl: url,
+          fileSize: 0, // Size not available for S3 URLs
+          uploadedAt: new Date()
+        }))
+      ];
+    }
+    console.log("may be after api calling",content);
+    
+    // Create new reply
+    const newReply = new ForumReply({
+      content,
+      topicId,
+      userId: actualUserId,
+      userName: actualUserName,
+      parentReplyId: parentReplyId || null,
+      mediaAttachments,
+      likes: [],
+      dislikes: [],
+      children: []
+    });
+    
+    const savedReply = await newReply.save();
+    
+    if(parentReplyId){
+      try{
+        const updatedParent = await ForumReply.findByIdAndUpdate(
+          parentReplyId,
+          { $push: {children: savedReply._id } },
+          {new: true}
+        );
+
+        if(!updatedParent) {
+          console.warn(`Parent reply Id ${parentReplyId} not found`);
+        }else{
+          console.log(`succesecfully added reply ${savedReply._id} to parent ${parentReplyId}`);
+        }
+      }catch(parentUpdateError){
+        console.log(`Eror updating parent reply: `, parentUpdateError);
+      }
+    }
+
+
+
+    // Increment reply count on the topic
+    topic.replyCount += 1;
+    await topic.save();
+    
+    // If media attachments exist, return the reply with signed URLs
+    if (mediaAttachments.length > 0) {
+      const replyWithSignedUrls = {
+        ...savedReply.toObject(),
+        mediaAttachments: await Promise.all(
+          mediaAttachments.map(async (attachment) => {
+            try {
+              // If it's an S3 URL, use it directly
+              if (attachment.fileUrl && attachment.fileUrl.startsWith('https://')) {
+                return {
+                  ...attachment,
+                  signedUrl: attachment.fileUrl
+                };
+              }
+              // Otherwise generate a signed URL
+              const signedUrl = await generateSignedUrl(attachment.fileName);
+              return {
+                ...attachment,
+                signedUrl
+              };
+            } catch (error) {
+              console.error(`Error processing media attachment ${attachment.fileName}:`, error);
+              return {
+                ...attachment,
+                signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
+              };
+            }
+          })
+        )
+      };
+      res.status(201).json({ status: 201, reply: replyWithSignedUrls });
+    } else {
+      res.status(201).json({ status: 201, reply: savedReply });
+    }
+  } catch (error) {
+    console.error('Error creating reply:', error);
+    res.status(500).json({ 
+      status: 500, 
+      error: 'Server error',
+      message: error.message 
+    });
+  }
 });
 
 
