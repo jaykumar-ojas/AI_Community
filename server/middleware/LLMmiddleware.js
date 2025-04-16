@@ -1,6 +1,7 @@
 const {GoogleGenerativeAI} = require("@google/generative-ai");
 const { OpenAI } = require("openai");
 const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 
 dotenv.config();
 
@@ -104,10 +105,7 @@ const imageGenerator = async(text)=>{
     console.log("Generating image with prompt:", text);
 
     // Create a new OpenAI instance with the API key
-    const openai = new OpenAI({
-      apiKey: process.env.OPEN_AI_KEY,
-    });
-
+   
     // Call the OpenAI API to generate an image
     const response = await openai.images.generate({
       model: "dall-e-3", // Using dall-e-2 which has fewer content restrictions
@@ -131,7 +129,6 @@ const imageGenerator = async(text)=>{
     return null;
   }
 }
-
 
 const describeImage = async (imageBuffer) => {
     console.log("is this describe image function even calling or not");
@@ -189,115 +186,95 @@ const describeImage = async (imageBuffer) => {
     return null;
   }
 }
+function getFirstNWords(text, n){
+  if(!text || typeof text !== 'string')
+  {
+    return ' ';
+  }
 
-const modelSelection = async(req,res,next)=>{
-    try{
-      console.log("i m jay");
+  const words = text.split(/\s+/).filter(words => words.length > 0);
+
+  return words.slice(0, n).join(' ');
+}
+
+async function fetchAncestorContext(req, res, next) {
+  try {
+    const startId = req.params.id;
+    const contextType = req.body.contextType;
+
+    const maxDepth = 10;
+    const maxWords=  50;
+
+    if(!startId || !mongoose.Type.ObjectId.isValid(startId)){
+      return res.status(400).json({
+        sucess: false,
+        message: 'invalid or missing ID for context fetching'
+      })
+    }
+    if(!contextType || (contextType !== 'forumReply' && contextType !== 'comment')){
+      return res.status(400).json({
+        success: false,
+        message: "Missing or invalid context type"
+      });
+    }
+    let SelectedModel;
+    let parentId;
+    let contentField;
+
+    if(contextType === 'forumReply') {
+      SelectedModel = ForumReply;
+      parentId = 'parentReplyId';
+      contentField = 'content';
+    }else if(contextType === 'comment') {
+      SelectedModel = Comment;
+      parentId = 'parentId';
+      contentField = 'commentText';
     }
 
-    let content = req.body.content;
+    const ancestorDescriptions = [];
+    let currentId = startId;
 
-    if (model === "DALL-E") {
-      req.body.content = await responseFromDalle(content);
-    } else if (model === "GPT-4") {
-      req.body.content = await responseFromGpt4(content);
-    } else if (model === "Claude") {
-      console.log("Before model transformation:", req.body.content);
-      req.body.content = await responseFromClaude(req.body.content);
-      console.log("After model transformation:", req.body.content);
-    } else if (model === "Stable Diffusion") {
-      req.body.content = await responseFromStableDiffusion(content);
-    } else if (model === "Mid Journey") {
-      req.body.content = await responseFromMidJourney(content);
+    for(let i = 0; i<maxDepth; i++){
+      const currentNode = await SelectedModel.findById(currentId).select(parentId).lean();
+      if(!currentNode || !currentNode[parentId]){
+        break;
+      }
+
+      const parentNode = await SelectedModel.findById(currentNode[parentId]).select(`${contentField} description _id ${parentId}`).lean();
+
+      if(!parentNode){
+        break;
+      }
+
+      // Use content field based on context type
+      const textToUse = parentNode.description || parentNode[contentField];
+      const description = getFirstNWords(textToUse, maxWords);
+
+      ancestorDescriptions.push({
+        priority: i+1,
+        description: description
+      });
+
+      currentId = parentNode._id;
+
+      if(!parentNode[parentId]){
+        break;
+      }
     }
 
+    ancestorDescriptions.sort((a,b) => a.priority - b.priority);
+    const contextString = ancestorDescriptions.map(item => `P${item.priority}: ${item.description}`).join(', ');
+
+    req.ancestorContext = contextString;
     next();
-  } catch (error) {
-    console.log("Error in model selection middleware in llmRoutes", error);
-    res.status(400).json({ status: 422, error: "Causing some error" });
-  }
-};
-
-
-const responseFromDalle =async (prompt)=>{
-  try{
-    if(!prompt){
-      console.log("i m jay");
-    }
-
-    return "this is reponse from dalle";
-
-  }
-  catch(error){
-    console.log("error in response from Dalle");
-    res.status(400).json({status:422,error:"causing some error"});
-  }
-}
-
-const responseFromGpt4 =async (prompt)=>{
-  try{
-    if(!prompt){
-      console.log("i m jay");
-    }
-
-    return "this is reponse from response from gpt4";
-
-  }
-  catch(error){
-    console.log("error in response from gpt4");
-    res.status(400).json({status:422,error:"causing some error"});
-  }
-}
-
-const responseFromClaude  = async (prompt)=>{
-  try{
-    if(!prompt){
-      console.log("i m jay");
-    }
-
-    return "this is reponse from response from claude";
-
-  }
-  catch(error){
-    console.log("error in response from gpt4");
-    res.status(400).json({status:422,error:"causing some error"});
-  }
-}
-
-
-const responseFromStableDiffusion  = async (prompt)=>{
-  try{
-    if(!prompt){
-      console.log("i m jay");
-    }
-
-    return "this is reponse from response from stableDiffusion";
-
-  }
-  catch(error){
-    console.log("error in response from stableDiffusion");
-    res.status(400).json({status:422,error:"causing some error"});
-  }
-}
-
-const responseFromMidJourney  = async (prompt)=>{
-  try{
-    if(!prompt){
-      console.log("i m jay");
-    }
-
-    return "this is reponse from response from midJourney";
-
-  }
-  catch(error){
-    console.log("error in response from midjjourney");
-    res.status(400).json({status:422,error:"causing some error"});
+  }catch (error){
+    console.error('Error in fetch ancestor');
+    next(error);
   }
 }
 
 
 module.exports ={
-    modelResponse,
     model,
     describeImage,
     promptEnhancer,

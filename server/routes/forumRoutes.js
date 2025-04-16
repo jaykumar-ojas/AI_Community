@@ -769,7 +769,7 @@ router.get('/paginated', async(req, res) => {
     }
 });
 
-router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware,modelResponse, async (req, res) => {
+router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
   try {
     const { content, topicId, parentReplyId, userId, userName } = req.body;
     console.log(req.body.content);
