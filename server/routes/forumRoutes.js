@@ -7,7 +7,7 @@ const { awsuploadMiddleware, awsdeleteMiddleware, generateSignedUrl } = require(
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const AWS = require('aws-sdk');
-const { modelResponse } = require('../middleware/LLMmiddleware');
+const { modelSelection } = require('../middleware/LLMmiddleware');
 
 // Configure AWS
 AWS.config.update({
@@ -769,7 +769,7 @@ router.get('/paginated', async(req, res) => {
     }
 });
 
-router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware,modelResponse, async (req, res) => {
+router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware,modelSelection, async (req, res) => {
   try {
     const { content, topicId, parentReplyId, userId, userName } = req.body;
     console.log(req.body.content);
