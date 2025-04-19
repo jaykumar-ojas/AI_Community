@@ -81,10 +81,13 @@ const ReplyCommentBox = ({onClose}) => {
         transition={{ duration: 0.4 }}
         className="absolute bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 p-4"
       >
-        {replyIdForContext && (
           <div className="pb-4 text-sm text-gray-700 flex justify-between items-center">
             <span>
-              Replying to <span className="font-medium text-blue-600">@{userName}</span>
+            {replyIdForContext && (
+                <span>
+                  Replying to <span className="font-medium text-blue-600">@{userName}</span>
+                </span>
+              )}
               {model && <span className="inline-flex items-center font-medium  ml-4 rounded-lg text-green-600 bg-gray-200 border border-gray-400">
                 @{model}
                 <button
@@ -97,7 +100,6 @@ const ReplyCommentBox = ({onClose}) => {
               </span>}
             </span>
           </div>
-        )}
         <form onSubmit={(e) => {
           e.preventDefault();
           handlePostReply();
@@ -116,7 +118,7 @@ const ReplyCommentBox = ({onClose}) => {
               className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
               disabled={isLoading || !newReply.trim()}
             >
-              {isUploading ? "Posting..." : "PostRender"}
+              {isUploading ? "Posting..." : "Post"}
             </button>
           </div>
 

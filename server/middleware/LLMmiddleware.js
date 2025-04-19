@@ -193,10 +193,11 @@ const describeImage = async (imageBuffer) => {
 const modelSelection = async(req,res,next)=>{
     try{
       console.log("i m jay");
-    }
-
     let content = req.body.content;
-
+    const model = req.body.model || "";
+      if(model===""){
+        return;
+      }
     if (model === "DALL-E") {
       req.body.content = await responseFromDalle(content);
     } else if (model === "GPT-4") {
@@ -297,7 +298,7 @@ const responseFromMidJourney  = async (prompt)=>{
 
 
 module.exports ={
-    modelResponse,
+    modelSelection,
     model,
     describeImage,
     promptEnhancer,

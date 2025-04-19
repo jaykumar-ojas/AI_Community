@@ -3,6 +3,7 @@ import axios from 'axios';
 import { LoginContext } from '../ContextProvider/context';
 
 // Reply form component with focus management
+// onsubmit call after making reply and required commentId also
 const ReplyForm = ({ commentId, initialContent = '', onSubmit, onCancel }) => {
   const [content, setContent] = useState(initialContent);
   const [selectedFiles, setSelectedFiles] = useState([]);
