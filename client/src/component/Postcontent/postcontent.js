@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Comment from "./Comment";
 import UserContent from "./UserContent";
-import Card from "../Card/Card";
 import { useNavigate, useParams } from "react-router-dom";
+import CommentReview from "./CommentReview";
+import ReplyCommentBox from "./CommentComponent/ReplyForComment";
 
 const PostContent = () => {
   const history = useNavigate();
@@ -97,15 +97,23 @@ const PostContent = () => {
           </div>
         </div>
 
-        <div className="border border-black flex basis-[30%] m-2">
-      <div className="h-full w-full">
-        {post ? <Comment postId={post._id} /> : (
-          <div className="h-full w-full flex items-center justify-center">
-            Loading comments...
-          </div>
-        )}
-      </div>
-    </div>
+        <div className="flex flex-col basis-[30%] m-2">
+          {post ? (
+            <>
+              <div className="h-full w-full">
+                <CommentReview />
+              </div>
+              <div >
+                <ReplyCommentBox />
+              </div>
+            </>
+          ) : (
+            <div className="h-full w-full flex items-center justify-center">
+              Loading comments...
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

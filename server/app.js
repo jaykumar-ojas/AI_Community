@@ -59,7 +59,7 @@ app.use("/",postRoute);
 app.use("/",googleRoute);
 app.use("/",otpRouter);
 app.use("/",forgetOtpRoute);
-app.use("/comments", commentsRouter);
+app.use("/", commentsRouter);
 app.use("/forum", forumRoutes);
 app.use("/",llmRoutes);
 
