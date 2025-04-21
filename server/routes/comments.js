@@ -1,297 +1,345 @@
 const express = require('express');
 const router = express.Router();
 const Comment = require('../models/commentsModel');
+const postdb = require('../models/postSchema');
 const multer = require('multer');
+const authenticate = require('../middleware/authenticate');
 
 // Setup multer for file uploads
 const storage = multer.memoryStorage();
-const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        // Accept images, videos, and audio files
-        if (
-            file.mimetype.startsWith('image/') || 
-            file.mimetype.startsWith('video/') || 
-            file.mimetype.startsWith('audio/')
-        ) {
-            cb(null, true);
-        } else {
-            cb(new Error('Unsupported file type. Only images, videos, and audio files are allowed.'), false);
-        }
-    },
-    limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB limit
-    }
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Import AWS middleware for file uploads
 const { awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware } = require('../middleware/awsmiddleware');
 
-// Comment Controller Functions
-const addComment = (req, res) => {
-    let data = {
-        author: {
-            id: req.body.id,
-            name: req.body.name
-        },
-        commentText: req.body.commentText,
-        postId: req.body.postId,
-        likes: [], // Initialize empty arrays for likes and dislikes
-        dislikes: []
-    }
-    if ('parentId' in req.body) {
-        data.parentId = req.body.parentId
-    }
-    if ('depth' in req.body) {
-        data.depth = req.body.depth
-    }
-    
-    // Handle media attachments if any
-    if (req.uploadedFiles && req.uploadedFiles.length > 0) {
-        data.mediaAttachments = req.uploadedFiles;
-    }
-    
-    const comment = new Comment(data);
-    comment.save()
-    .then(comment => res.json({
-        comment: comment
-    }))
-    .catch(err => res.status(500).json({error: err}))
-}
-
-const updateComment = (req, res) => {
-    let comment = req.body;
-    Comment.updateOne(
-        {_id: comment.id}, 
-        {
-            $set: {
-                commentText: comment.commentText,
-                mediaAttachments: comment.mediaAttachments || []
-            }
-        }
-    )
-    .exec()
-    .then(result => res.status(200).json({
-        message: "Comment Updated",
-        comment: comment
-    }))
-    .catch(err => res.status(500).json({error: err}))
-}
-
-const deleteComment = (req, res) => {
-    const commentId = req.params.id;
-    const userId = req.body.userId;
-
-    // First find the comment to check ownership
-    Comment.findById(commentId)
-    .exec()
-    .then(comment => {
-        if (!comment) {
-            return res.status(404).json({
-                error: "Comment not found"
-            });
-        }
-
-        // Check if the user is the author of the comment
-        if (comment.author.id.toString() !== userId) {
-            return res.status(403).json({
-                error: "Not authorized to delete this comment"
-            });
-        }
-
-        // Delete media attachments from S3 if any
-        if (comment.mediaAttachments && comment.mediaAttachments.length > 0) {
-            const deletePromises = comment.mediaAttachments.map(attachment => 
-                awsdeleteMiddleware(attachment.fileName)
-            );
-            return Promise.all(deletePromises)
-                .then(() => comment);
-        }
-        return comment;
-    })
-    .then(comment => {
-        // If this is a parent comment, delete all its replies (comments with this parentId)
-        return Comment.deleteMany({ parentId: commentId })
-            .exec()
-            .then(() => {
-                // Now delete the comment itself
-                return Comment.deleteOne({ _id: commentId })
-                    .exec()
-                    .then(() => {
-                        res.status(200).json({
-                            message: "Comment and its replies deleted successfully"
-                        });
-                    })
-                    .catch(err => res.status(500).json({error: err}));
-            })
-            .catch(err => res.status(500).json({error: err}));
-    })
-    .catch(err => res.status(500).json({error: err}));
-}
-
-const getComments = (req, res) => {
-    const postId = req.query.postId;
+//  get all comments related to topic
+router.get('/comments/replies', async (req, res) => {
+  try {
+    const { postId } = req.query;
+    console.log("this is my postId", postId);
     if (!postId) {
-        return res.status(400).json({ error: 'Post ID is required' });
+      return res.status(400).json({ status: 400, error: 'Topic ID is required' });
+    }
+    console.log("i m coming here to get reply");
+    
+    const replies = await Comment.find({ postId })
+      .sort({createdAt: 1 });
+
+    console.log("this is my replies array",replies);
+    
+
+    // Process media attachments to generate signed URLs
+    const repliesWithSignedUrls = await Promise.all(
+      replies.map(async (reply) => {
+        const replyObj = reply.toObject();
+        if (replyObj.mediaAttachments && replyObj.mediaAttachments.length > 0) {
+          replyObj.mediaAttachments = await Promise.all(
+            replyObj.mediaAttachments.map(async (attachment) => {
+              try {
+                const signedUrl = attachment.fileName 
+                  ? await generateSignedUrl(attachment.fileName)
+                  : "https://via.placeholder.com/300?text=No+Image+Available";
+                
+                return {
+                  ...attachment,
+                  signedUrl,
+                  fileType: attachment.fileType || 'image'
+                };
+              } catch (error) {
+                console.error(`Error processing media attachment ${attachment.fileName}:`, error);
+                return {
+                  ...attachment,
+                  signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media",
+                  fileType: attachment.fileType || 'image'
+                };
+              }
+            })
+          );
+        }
+        return replyObj;
+      })
+    );
+    
+    res.status(200).json({ status: 200, comments: repliesWithSignedUrls });
+
+  } catch (error) {
+    console.error('Error fetching replies:', error);
+    res.status(500).json({ status: 500, error: 'Server error' });
+  }
+});
+
+// comment a new post
+router.post('/comments/post',upload.array('media',5),awsuploadMiddleware,async(req,res)=>{
+    try{
+        console.log("i am here");
+        const {content,postId,parentReplyId,userId,userName} = req.body;
+        console.log("this is my postId",postId);
+        console.log("this is my content",content);
+        if(!content || !postId){
+           return res.status(400).json({ status: 400, error: 'Content and post ID are required' });  
+        }
+        
+        //check post exist or not
+        console.log("i am goind to get a post",postId);
+        const post = await postdb.findById(postId);
+        console.log("i m getting post by postdb",post);
+
+        if(!post){
+            return res.status(404).json({status: 404, error : "post is not found"});
+        }
+        const actualUserId = userId;
+        const actualUserName = userName;
+        console.log("i m getting my ----");
+        console.log("userId ",userId);
+        console.log("actualUserName ",userName);
+        if(!actualUserId || !actualUserName){
+            return res.status(400).json({status:400, error : "user not found"});
+        }
+
+        let mediaAttachments = [];
+
+        if(req.uploadedFiles && req.uploadedFiles.length>0){
+            mediaAttachments = [...req.uploadedFiles];
+        }
+
+        if(req.body.mediaUrls){
+            const mediaUrls = Array.isArray(req.body.mediaUrls) ? req.body.mediaUrls : [req.body.mediaUrls];
+            mediaAttachments = [
+                ...mediaAttachments,
+                ...mediaUrls.map(url => ({
+                fileName: url.split('/').pop(),
+                fileType: 'image/jpeg', // Default to image/jpeg for S3 URLs
+                fileUrl: url,
+                fileSize: 0, // Size not available for S3 URLs
+                uploadedAt: new Date()
+                }))
+            ];
+        }
+
+        const newComment = new Comment({
+            content,
+            postId,
+            userId: actualUserId,
+            userName: actualUserName,
+            parentReplyId: parentReplyId || null,
+            mediaAttachments,
+            likes:[],
+            dislikes:[],
+            children:[]
+        })
+
+        const savedReply = await newComment.save();
+        console.log(savedReply);
+        if(parentReplyId){
+            try{
+                const parentComment = await postdb.findByIdAndUpdate(
+                    parentReplyId,
+                    { $push: {children: savedReply._id}},
+                    {new : true}
+                );
+                if(!updatedParent) {
+                    console.warn(`Parent reply Id ${parentReplyId} not found`);
+                }else{
+                    console.log(`succesecfully added reply ${savedReply._id} to parent ${parentReplyId}`);
+                }
+
+            }
+            catch(parentUpdateError){
+                console.log(`Eror updating parent reply: `, parentUpdateError);
+            }
+        }
+        if(mediaAttachments.length>0){
+            const replyWithSignedUrls ={
+                ...savedReply.toObject(),
+                mediaAttachments: await promise.all(
+                    mediaAttachments.map(async (attachments)=>{
+                        try {
+                            // If it's an S3 URL, use it directly
+                            if (attachment.fileUrl && attachment.fileUrl.startsWith('https://')) {
+                              return {
+                                ...attachment,
+                                signedUrl: attachment.fileUrl
+                              };
+                            }
+                            // Otherwise generate a signed URL
+                            const signedUrl = await generateSignedUrl(attachment.fileName);
+                            return {
+                              ...attachment,
+                              signedUrl
+                            };
+                          } catch (error) {
+                            console.error(`Error processing media attachment ${attachment.fileName}:`, error);
+                            return {
+                              ...attachment,
+                              signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
+                            };
+                          }
+                    })
+                )
+            };
+
+          
+            res.status(201).json({status:201,reply: replyWithSignedUrls});
+        }
+        else{
+            res.status(201).json({ status: 201, reply: savedReply });
+        }
+            
+    }
+    catch(error){
+        console.error('Error creating reply:', error);
+        res.status(500).json({ 
+        status: 500, 
+        error: 'Server error',
+        message: error.message 
+        });
+    }
+});
+
+// delete a reply on post
+router.delete('/comments/:id', authenticate, async (req, res) => {
+  try {
+    const {id} = req.params;
+    console.log("i m pringting ",id);
+    const reply = await Comment.findById(id);
+    
+    if (!reply) {
+      return res.status(404).json({ status: 404, error: 'Reply not found' });
+    }
+    
+    // Check if user is the owner of the reply
+    if (reply.userId.toString() !== req.userId.toString()) {
+      return res.status(403).json({ status: 403, error: 'Not authorized to delete this reply' });
     }
 
-    Comment.find({postId: postId}).sort({postedDate: 1}).lean().exec()
-    .then(comments => {
-        let rec = (comment, threads) => {
-            for (var thread in threads) {
-                value = threads[thread];
+    // Delete media attachments from S3
+    if (reply.mediaAttachments && reply.mediaAttachments.length > 0) {
+      for (const attachment of reply.mediaAttachments) {
+        await awsdeleteMiddleware(attachment.fileName);
+      }
+    }
+    
+    await Comment.findByIdAndDelete(req.params.id);
+    console.log("delete succefully");
+    res.status(200).json({ status: 200, message: 'Reply deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting reply:', error);
+    res.status(500).json({ status: 500, error: 'Server error' });
+  }
+});
 
-                if (thread.toString() === comment.parentId.toString()) {
-                    value.children[comment._id] = comment;
-                    return;
-                }
+// like dislike the comment reply
+router.post('/comments/:id/like', authenticate, async (req, res) => {
+  try {
+    const reply = await Comment.findById(req.params.id);
+    
+    if (!reply) {
+      return res.status(404).json({
+        status: 404,
+        error: "Reply not found"
+      });
+    }
+    
+    const userId = req.userId;
+    
+    // Check if user already liked this reply
+    const alreadyLiked = reply.likes.includes(userId);
+    // Check if user already disliked this reply
+    const alreadyDisliked = reply.dislikes.includes(userId);
 
-                if (value.children) {
-                    rec(comment, value.children)
-                }
-            }
-        }
-        let threads = {}, comment
-        for (let i=0; i<comments.length; i++) {
-            comment = comments[i]
-            comment['children'] = {}
-            let parentId = comment.parentId
-            if (!parentId) {
-                threads[comment._id] = comment
-                continue
-            }
-            rec(comment, threads)
-        }
-        res.json({
-            'count': comments.length,
-            'comments': threads
-        })
-    })
-    .catch(err => res.status(500).json({error: err}))
-}
+    // If already liked, remove the like (toggle)
+    if (alreadyLiked) {
+      await Comment.updateOne(
+        { _id: req.params.id },
+        { $pull: { likes: userId } }
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Like removed successfully",
+        liked: false
+      });
+    } 
+    // If not liked, add like and remove dislike if exists
+    else {
+      let updateOperation = { $addToSet: { likes: userId } };
+      
+      // If already disliked, remove the dislike
+      if (alreadyDisliked) {
+        updateOperation.$pull = { dislikes: userId };
+      }
+      
+      await Comment.updateOne(
+        { _id: req.params.id },
+        updateOperation
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Reply liked successfully",
+        liked: true
+      });
+    }
+  } catch (error) {
+    console.error('Error liking/unliking reply:', error);
+    res.status(500).json({ status: 500, error: 'Server error' });
+  }
+});
 
-// New function to handle liking a comment
-const likeComment = (req, res) => {
-    const commentId = req.params.id;
-    const userId = req.body.userId;
+// Dislike/undislike a comment reply
+router.post('/comments/:id/dislike', authenticate, async (req, res) => {
+  try {
+    const reply = await Comment.findById(req.params.id);
+    
+    if (!reply) {
+      return res.status(404).json({
+        status: 404,
+        error: "Reply not found"
+      });
+    }
+    
+    const userId = req.userId;
+    
+    // Check if user already disliked this reply
+    const alreadyDisliked = reply.dislikes.includes(userId);
+    // Check if user already liked this reply
+    const alreadyLiked = reply.likes.includes(userId);
 
-    Comment.findById(commentId)
-    .exec()
-    .then(comment => {
-        if (!comment) {
-            return res.status(404).json({
-                error: "Comment not found"
-            });
-        }
+    // If already disliked, remove the dislike (toggle)
+    if (alreadyDisliked) {
+      await Comment.updateOne(
+        { _id: req.params.id },
+        { $pull: { dislikes: userId } }
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Dislike removed successfully",
+        disliked: false
+      });
+    } 
+    // If not disliked, add dislike and remove like if exists
+    else {
+      let updateOperation = { $addToSet: { dislikes: userId } };
+      
+      // If already liked, remove the like
+      if (alreadyLiked) {
+        updateOperation.$pull = { likes: userId };
+      }
+      
+      await Comment.updateOne(
+        { _id: req.params.id },
+        updateOperation
+      );
+      res.status(200).json({
+        status: 200,
+        message: "Reply disliked successfully",
+        disliked: true
+      });
+    }
+  } catch (error) {
+    console.error('Error disliking/undisliking reply:', error);
+    res.status(500).json({ status: 500, error: 'Server error' });
+  }
+});
 
-        // Check if user already liked this comment
-        const alreadyLiked = comment.likes.includes(userId);
-        // Check if user already disliked this comment
-        const alreadyDisliked = comment.dislikes.includes(userId);
 
-        // If already liked, remove the like (toggle)
-        if (alreadyLiked) {
-            Comment.updateOne(
-                { _id: commentId },
-                { $pull: { likes: userId } }
-            )
-            .exec()
-            .then(() => {
-                res.status(200).json({
-                    message: "Like removed successfully"
-                });
-            })
-            .catch(err => res.status(500).json({error: err}));
-        } 
-        // If not liked, add like and remove dislike if exists
-        else {
-            let updateOperation = { $addToSet: { likes: userId } };
-            
-            // If already disliked, remove the dislike
-            if (alreadyDisliked) {
-                updateOperation.$pull = { dislikes: userId };
-            }
-            
-            Comment.updateOne(
-                { _id: commentId },
-                updateOperation
-            )
-            .exec()
-            .then(() => {
-                res.status(200).json({
-                    message: "Comment liked successfully"
-                });
-            })
-            .catch(err => res.status(500).json({error: err}));
-        }
-    })
-    .catch(err => res.status(500).json({error: err}));
-}
-
-// New function to handle disliking a comment
-const dislikeComment = (req, res) => {
-    const commentId = req.params.id;
-    const userId = req.body.userId;
-
-    Comment.findById(commentId)
-    .exec()
-    .then(comment => {
-        if (!comment) {
-            return res.status(404).json({
-                error: "Comment not found"
-            });
-        }
-
-        // Check if user already disliked this comment
-        const alreadyDisliked = comment.dislikes.includes(userId);
-        // Check if user already liked this comment
-        const alreadyLiked = comment.likes.includes(userId);
-
-        // If already disliked, remove the dislike (toggle)
-        if (alreadyDisliked) {
-            Comment.updateOne(
-                { _id: commentId },
-                { $pull: { dislikes: userId } }
-            )
-            .exec()
-            .then(() => {
-                res.status(200).json({
-                    message: "Dislike removed successfully"
-                });
-            })
-            .catch(err => res.status(500).json({error: err}));
-        } 
-        // If not disliked, add dislike and remove like if exists
-        else {
-            let updateOperation = { $addToSet: { dislikes: userId } };
-            
-            // If already liked, remove the like
-            if (alreadyLiked) {
-                updateOperation.$pull = { likes: userId };
-            }
-            
-            Comment.updateOne(
-                { _id: commentId },
-                updateOperation
-            )
-            .exec()
-            .then(() => {
-                res.status(200).json({
-                    message: "Comment disliked successfully"
-                });
-            })
-            .catch(err => res.status(500).json({error: err}));
-        }
-    })
-    .catch(err => res.status(500).json({error: err}));
-}
-
-// Routes
-router.get('/', getComments);
-router.post('/edit', updateComment);
-router.post('/', upload.array('media', 5), awsuploadMiddleware, addComment);
-router.delete('/:id', deleteComment);
-router.post('/:id/like', likeComment);
-router.post('/:id/dislike', dislikeComment);
 
 module.exports = router;

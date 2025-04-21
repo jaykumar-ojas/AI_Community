@@ -1,25 +1,27 @@
 var mongoose = require('mongoose');
 var commentSchema = mongoose.Schema({
-    postId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-    },
-    depth: {
-        type: Number,
-        default: 1
-    },
-    parentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        default: null
-    },
-    postedDate: {type: Date, default: Date.now},
-    author: {
-        id: mongoose.Schema.Types.ObjectId,
-        name: String,
-    },
-    commentText: {
+    content: {
         type: String,
         required: true
+    },
+    postId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref : 'userposts'
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'users'
+    },
+    userName: {
+    type: String,
+    required: true
+    },
+    parentReplyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PostComments',
+        default: null
     },
     mediaAttachments: [{
         fileName: String,
@@ -38,7 +40,11 @@ var commentSchema = mongoose.Schema({
     dislikes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }]
+    }],
+    children: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PostComments',
+      }],
 }, {timestamps: true});
 
-module.exports = mongoose.model('Comments', commentSchema);
+module.exports = mongoose.model('PostComments', commentSchema);
