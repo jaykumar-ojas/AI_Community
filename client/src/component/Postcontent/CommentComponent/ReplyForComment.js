@@ -13,7 +13,8 @@ import { ForumContext } from "../../ContextProvider/ModelContext";
 
 const ReplyCommentBox = ({onClose}) => {
   const {setReplyIdForContext,model,setModel} = useContext(ForumContext);
-  const { topicId } = useParams();
+  const { id } = useParams();
+  const postId = id;
   const { loginData } = useContext(LoginContext);
   const { emitNewReply } = useWebSocket();
 
@@ -42,7 +43,7 @@ const ReplyCommentBox = ({onClose}) => {
     try {
       const formData = new FormData();
       formData.append("content", newReply);
-      formData.append("topicId", topicId);
+      formData.append("postId", id);
       formData.append("userId", loginData.validuserone._id);
       formData.append("userName", loginData.validuserone.userName);
       formData.append("model", model || "");
@@ -51,7 +52,7 @@ const ReplyCommentBox = ({onClose}) => {
 
       selectedFiles.forEach(file => formData.append("media", file));
 
-      const response = await axios.post(REPLIES_URL, formData, {
+      const response = await axios.post('http://localhost:8099/comments/post', formData, {
         headers: {
           ...getAuthHeaders(),
           "Content-Type": "multipart/form-data",
@@ -79,7 +80,7 @@ const ReplyCommentBox = ({onClose}) => {
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ duration: 0.4 }}
-        className="absolute bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 p-4"
+        className="relative bottom-0 left-0 right-0 w-full bg-white shadow-lg border-t border-gray-200 z-50 p-4"
       >
           <div className="pb-4 text-sm text-gray-700 flex justify-between items-center">
             <span>

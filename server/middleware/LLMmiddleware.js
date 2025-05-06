@@ -189,6 +189,7 @@ const describeImage = async (imageBuffer) => {
   }
 }
 
+
 async function extractImageDescription(context, userPrompt) {
   try {
     const response = await openai.chat.completions.create({
@@ -209,6 +210,30 @@ async function extractImageDescription(context, userPrompt) {
     });
     
     return response.choices[0].message.content;
+=======
+const modelSelection = async(req,res,next)=>{
+    try{
+      console.log("i m jay");
+    let content = req.body.content;
+    const model = req.body.model || "";
+      if(model===""){
+        return;
+      }
+    if (model === "DALL-E") {
+      req.body.content = await responseFromDalle(content);
+    } else if (model === "GPT-4") {
+      req.body.content = await responseFromGpt4(content);
+    } else if (model === "Claude") {
+      console.log("Before model transformation:", req.body.content);
+      req.body.content = await responseFromClaude(req.body.content);
+      console.log("After model transformation:", req.body.content);
+    } else if (model === "Stable Diffusion") {
+      req.body.content = await responseFromStableDiffusion(content);
+    } else if (model === "Mid Journey") {
+      req.body.content = await responseFromMidJourney(content);
+    }
+
+    next();
   } catch (error) {
     console.error("Error extracting image description:", error);
     return null;
@@ -536,6 +561,7 @@ const promptEnhancerAI = async (prompt) => {
 };
 
 module.exports ={
+    modelSelection,
     model,
     describeImage,
     promptEnhancer,

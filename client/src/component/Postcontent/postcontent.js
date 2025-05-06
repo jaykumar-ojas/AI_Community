@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Comment from "./Comment";
 import UserContent from "./UserContent";
-import Card from "../Card/Card";
 import { useNavigate, useParams } from "react-router-dom";
+import CommentReview from "./CommentReview";
+import ReplyCommentBox from "./CommentComponent/ReplyForComment";
 
 const PostContent = () => {
   const history = useNavigate();
@@ -74,34 +74,52 @@ const PostContent = () => {
 
   return (
     <div className="min-h-screen bg- max-w-screen mx-auto">
-      <div className="relative w-full h-full flex flex-col p-4 px-16 gap-2">
-        {/* this is user post content */}
-        <div className="flex justify-between gap-2 h-full w-full ">
+      <div className="relative w-full min-h-screen flex  p-4 px-16 gap-2">
+        
+        <div className="flex flex-col justify-between gap-2 h-full basis-[70%] ">
           {/* this is profile and image content */}
-          <div className=" h-full w-3/5 m-2">
+          <div className=" h-full w-full m-2">
             <UserContent post={post}></UserContent>
           </div>
-          {/* this is comment section */}
-          <div className=" h-full w-2/5 m-2">
-            {post ? <Comment postId={post._id}></Comment> : <div>Loading comments...</div>}
-          </div>
-        </div>
-        {/* this is user suggestion content */}
-        <div className="border border-gray-700 h-full w-full mx-auto p-2">
-          <div className="p-4 w-full bg-white border rounded-lg">
-            more related content
-            </div>
-          <div className="grid grid-cols-3 w-full p-2 gap-2 ">
-            {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="flex justify-center">
-               i am here
+
+          {/* this is suggestion section */}
+          <div className="flex flex-col border border-gray-700 h-full w-full mx-auto p-2">
+            <div className="p-4 w-full bg-white border rounded-lg">
+              more related content
               </div>
-            ))}
+            <div className="grid grid-cols-3 w-full p-2 gap-2 ">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="flex justify-center">
+                i am here
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+        <div className="flex flex-col basis-[30%] m-2">
+          {post ? (
+            <>
+              <div className="h-full w-full">
+                <CommentReview />
+              </div>
+              <div >
+                <ReplyCommentBox />
+              </div>
+            </>
+          ) : (
+            <div className="h-full w-full flex items-center justify-center">
+              Loading comments...
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
 };
 
 export default PostContent;
+
+
+

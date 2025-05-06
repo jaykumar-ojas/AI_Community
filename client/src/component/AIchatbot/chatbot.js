@@ -51,7 +51,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
       <ModelList></ModelList>
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 min-h-screen flex flex-col">
         
         {/* Chat Container */}
         <div className="flex-1 overflow-y-auto bg-gray-50">
