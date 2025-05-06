@@ -2,6 +2,8 @@ const {GoogleGenerativeAI} = require("@google/generative-ai");
 const { OpenAI } = require("openai");
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const ForumReply = require('../models/forumReplySchema');
+const Comment = require('../models/commentsModel');
 
 dotenv.config();
 
@@ -25,9 +27,9 @@ function fileToGenerativePart(fileBuffer, mimeType) {
 const promptEnhancer =async(req,res,next)=>{
     try {
 
-        console.log("is user is comming");
         // when call from frontend make sure prompt send 
         // in this format :- prompt : "iahgajdg";
+        
         const userPrompt = req.body.prompt;
       //  const  description  = req.description || " ";
         // if (!description) {
@@ -186,6 +188,59 @@ const describeImage = async (imageBuffer) => {
     return null;
   }
 }
+
+async function extractImageDescription(context, userPrompt) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are an assistant that extracts detailed image descriptions from conversation contexts. 
+                   Given a conversation and a request like "image of that" or "show me a picture", 
+                   determine exactly what "that" refers to and create a detailed description for image generation.`
+        },
+        {
+          role: "user",
+          content: `${context}\n\nThe user has requested: "${userPrompt}"\n\nExtract a detailed description of what the image should show, based on the conversation context.`
+        }
+      ],
+      max_tokens: 1000
+    });
+    
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error("Error extracting image description:", error);
+    return null;
+  }
+}
+
+async function generateTextResponse(context, userPrompt) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful assistant in a forum discussion. 
+                   Use the provided conversation context to understand the discussion 
+                   and give a relevant, thoughtful response.`
+        },
+        {
+          role: "user",
+          content: `${context}\n\nThe user has asked: "${userPrompt}"\n\nPlease provide a helpful response that takes the conversation context into account.`
+        }
+      ],
+      max_tokens: 1000
+    });
+    
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error("Error generating text response:", error);
+    return null;
+  }
+}
+
 function getFirstNWords(text, n){
   if(!text || typeof text !== 'string')
   {
@@ -202,16 +257,20 @@ async function fetchAncestorContext(req, res, next) {
     const startId = req.params.id;
     const contextType = req.body.contextType;
 
-    const maxDepth = 10;
-    const maxWords=  50;
+    console.log('fetchAncestorContext - Input:', { startId, contextType });
 
-    if(!startId || !mongoose.Type.ObjectId.isValid(startId)){
+    const maxDepth = 10;
+    const maxWords = 50;
+
+    if(!startId || !mongoose.Types.ObjectId.isValid(startId)){
+      console.log('Invalid ID:', startId);
       return res.status(400).json({
-        sucess: false,
+        success: false,
         message: 'invalid or missing ID for context fetching'
       })
     }
     if(!contextType || (contextType !== 'forumReply' && contextType !== 'comment')){
+      console.log('Invalid context type:', contextType);
       return res.status(400).json({
         success: false,
         message: "Missing or invalid context type"
@@ -231,18 +290,53 @@ async function fetchAncestorContext(req, res, next) {
       contentField = 'commentText';
     }
 
+    console.log('Selected model configuration:', { 
+      modelName: SelectedModel.modelName,
+      parentId,
+      contentField 
+    });
+
     const ancestorDescriptions = [];
     let currentId = startId;
+    
+    // First, include the start node itself
+    const startNode = await SelectedModel.findById(startId)
+      .select(`${contentField} description _id ${parentId}`)
+      .lean();
+      
+    if (startNode) {
+      const textToUse = startNode.description || startNode[contentField];
+      const description = getFirstNWords(textToUse, maxWords);
+      
+      ancestorDescriptions.push({
+        priority: 10,
+        description: description
+      });
+      
+      console.log('Added start node:', {
+        priority: 10,
+        description: description
+      });
+    }
 
     for(let i = 0; i<maxDepth; i++){
+      console.log(`Fetching ancestor level ${i}, currentId:`, currentId);
+      
       const currentNode = await SelectedModel.findById(currentId).select(parentId).lean();
+      console.log('Current node:', currentNode);
+      
       if(!currentNode || !currentNode[parentId]){
+        console.log('No more ancestors found at level', i);
         break;
       }
 
-      const parentNode = await SelectedModel.findById(currentNode[parentId]).select(`${contentField} description _id ${parentId}`).lean();
+      const parentNode = await SelectedModel.findById(currentNode[parentId])
+        .select(`${contentField} description _id ${parentId}`)
+        .lean();
+      console.log('Parent node:', parentNode);
 
       if(!parentNode){
+        console.log('Parent node not found');
         break;
       }
 
@@ -250,37 +344,211 @@ async function fetchAncestorContext(req, res, next) {
       const textToUse = parentNode.description || parentNode[contentField];
       const description = getFirstNWords(textToUse, maxWords);
 
+      console.log('Adding ancestor:', {
+        priority: 9-i, // Reduced priority for ancestors (since start node has priority 10)
+        description: description
+      });
+
       ancestorDescriptions.push({
-        priority: i+1,
+        priority: 9-i, // Reduced priority for ancestors
         description: description
       });
 
       currentId = parentNode._id;
 
       if(!parentNode[parentId]){
+        console.log('No more parent IDs found');
         break;
       }
     }
 
+
+
     ancestorDescriptions.sort((a,b) => a.priority - b.priority);
+
     const contextString = ancestorDescriptions.map(item => `P${item.priority}: ${item.description}`).join(', ');
 
+    console.log('Final context string:', contextString);
+    
     req.ancestorContext = contextString;
     next();
   }catch (error){
-    console.error('Error in fetch ancestor');
+    console.error('Error in fetchAncestorContext:', error);
     next(error);
   }
 }
 
 
+function formatContextForAI(ancestorContext) {
+  if (!ancestorContext) return "";
+  
+  const contextItems = ancestorContext.split(', P').map(item => {
+    if (!item.startsWith('P')) {
+      item = 'P' + item;
+    }
+    return item;
+  });
+  
+  let formattedContext = "CONVERSATION CONTEXT (from earliest to latest):\n\n";
+  
+  contextItems.forEach((item, index) => {
+    // Extract priority and description
+    const matches = item.match(/P(\d+):\s*(.*)/);
+    if (matches && matches.length >= 3) {
+      const priority = matches[1];
+      const description = matches[2];
+      
+      // Calculate indentation based on reversed priority
+      // Higher priority (more recent) gets more indentation
+      const indentation = "  ".repeat(index);
+      
+      // Format each message
+      formattedContext += `${indentation}[Message ${index + 1}] A user wrote:\n`;
+      formattedContext += `${indentation}${description}\n\n`;
+    }
+  });
+  
+  return formattedContext;
+}
+
+function analyzeRequestType(userPrompt) {
+  const prompt = userPrompt.toLowerCase();
+  
+  // Check for image generation requests
+  if (
+    prompt.includes('image of') || 
+    prompt.includes('picture of') || 
+    prompt.includes('show me') || 
+    (prompt.includes('generate') && (prompt.includes('image') || prompt.includes('picture')))
+  ) {
+    return 'IMAGE_REQUEST';
+  }
+  
+  // Default to text response
+  return 'TEXT_REQUEST';
+}
+const processContextAwareRequest = async (req, res) => {
+  try {
+    // Get ancestor context from the middleware
+    const ancestorContext = req.ancestorContext;
+    if (!ancestorContext) {
+      return res.status(400).json({
+        success: false,
+        message: "Context information is missing"
+      });
+    }
+
+    // Get user prompt
+    const userPrompt = req.body.prompt;
+    if (!userPrompt) {
+      return res.status(400).json({
+        success: false,
+        message: "User prompt is required"
+      });
+    }
+
+    console.log('Processing context-aware request with context:', ancestorContext);
+    console.log('User prompt:', userPrompt);
+
+    // Format context for AI consumption
+    const formattedContext = formatContextForAI(ancestorContext);
+    
+    // Analyze request type
+    const requestType = analyzeRequestType(userPrompt);
+    
+    let result;
+    
+    if (requestType === 'IMAGE_REQUEST') {
+      // Extract what the image should be of
+      const imageDescription = await extractImageDescription(formattedContext, userPrompt);
+      if (!imageDescription) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to extract image description"
+        });
+      }
+      
+      // Use existing imageGenerator function to generate the image
+      const imageUrl = await imageGenerator(imageDescription);
+      if (!imageUrl) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to generate image"
+        });
+      }
+      
+      result = {
+        type: "image",
+        imageUrl: imageUrl,
+        description: imageDescription
+      };
+    } else {
+      // Generate text response
+      const textResponse = await generateTextResponse(formattedContext, userPrompt);
+      if (!textResponse) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to generate text response"
+        });
+      }
+      
+      result = {
+        type: "text",
+        content: textResponse
+      };
+    }
+    
+    return res.status(200).json({
+      success: true,
+      result: result
+    });
+  } catch (error) {
+    console.error("Error processing context-aware request:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to process request",
+      details: error.message
+    });
+  }
+};
+
+const promptEnhancerAI = async (prompt) => {
+  try {
+    if (!prompt) {
+      throw new Error("Prompt is required");
+    }
+
+    const userPrompt = "Improve this image generation prompt to create a more detailed, vivid, and artistic description:";
+    const final_prompt = userPrompt + "\n\n" + prompt;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4", 
+      messages: [{ role: "user", content: final_prompt }],
+      temperature: 0.7,
+      max_tokens: 500
+    });
+
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error("Error enhancing prompt:", error);
+    throw error;
+  }
+};
+
 module.exports ={
     model,
     describeImage,
     promptEnhancer,
+    promptEnhancerAI,
     imageToText,
     textSuggestion,
-    imageGenerator
+    imageGenerator,
+    fetchAncestorContext,
+    processContextAwareRequest,
+    formatContextForAI,
+    analyzeRequestType,
+    extractImageDescription,
+    generateTextResponse
 };
 
 // amazon nova
