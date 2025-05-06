@@ -7,6 +7,7 @@ const ImageGenerator = ({ onClose, setNewReply, setSelectedFiles}) => {
   const [generatedImageUrl,setGeneratedImageUrl] = useState();
   const [generatingImage,setGeneratingImage] = useState(false);
   const [error,setError] = useState();
+  const [imageDescription, setImageDescription] = useState("");
 
   const handleGenerateImage = async (forReply = false) => {
     if (!imagePrompt.trim()) {
@@ -25,6 +26,7 @@ const ImageGenerator = ({ onClose, setNewReply, setSelectedFiles}) => {
       
       if (response.data.imageUrl) {
         setGeneratedImageUrl(response.data.imageUrl);
+        setImageDescription(response.data.description || "");
         console.log("Generated Image URL:", response.data.imageUrl);
         
         try {
@@ -35,10 +37,11 @@ const ImageGenerator = ({ onClose, setNewReply, setSelectedFiles}) => {
             setSelectedFiles(prev => [...prev, {
               name: fileName,
               url: response.data.imageUrl,
-              type: 'image/png'
+              type: 'image/png',
+              description: response.data.description
             }]);
             setNewReply(prev => {
-              const promptText = `[Generated image prompt: ${imagePrompt}]\n\n`;
+              const promptText = `[Generated image prompt: ${imagePrompt}]\n[Image description: ${response.data.description || ""}]\n\n`;
               return prev ? prev + '\n\n' + promptText : promptText;
             });
           // Close the generator after successful attachment

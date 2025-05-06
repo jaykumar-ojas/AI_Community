@@ -1,6 +1,6 @@
 const express = require("express");
 const router = new express.Router();
-const {model, describeImage, imageToText,promptEnhancer,imageGenerator,promptEnhancerAI, textSuggestion} = require('../middleware/LLMmiddleware');
+const {model, describeImage, imageToText,promptEnhancer,imageGenerator,promptEnhancerAI, textSuggestion, fetchAncestorContext, processContextAwareRequest} = require('../middleware/LLMmiddleware');
 const { OpenAI } = require('openai');
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY,
@@ -219,68 +219,100 @@ router.post("/generateTopicResponse", async (req, res) => {
     });
   }
 });
-;
 
 // Update the generateReplyImage route
-router.post("/generateReplyImage", promptEnhancer, async (req, res) => {
+router.post("/generateReplyImage/:id", fetchAncestorContext, async (req, res, next) => {
   try {
-        console.log("is it here");
-        const prompt = req.updatedPrompt;
-        console.log(prompt);
-    if (!prompt) {
-      return res.status(400).json({ status: 400, error: "Image prompt is required" });
-    }
 
-    console.log("Starting image generation process for prompt:", prompt);
+    console.log('Route handler - Request params:', req.params);
+    console.log('Route handler - Request body:', req.body);
     
-    try {
-      // Generate the image using OpenAI
-      const imageUrl = await imageGenerator(prompt);
-      console.log("Generated image URL:", imageUrl);
-      
-      if (!imageUrl) {
-        throw new Error("Image generation failed - no URL returned");
-      }
-
-      // Download the image from OpenAI
-      console.log("Downloading image from OpenAI...");
-      const imageBuffer = await downloadImage(imageUrl);
-      console.log("Image downloaded successfully, size:", imageBuffer.length);
-      
-      console.log("About to call describeImage function...");
-      const description = await describeImage(imageBuffer);
-      console.log("describeImage function returned:", description);
-      
-      // Upload to S3
-      console.log("Starting S3 upload...");
-      const s3Url = await uploadToS3(imageBuffer);
-      console.log("Successfully uploaded to S3:", s3Url);
-      
-      // Return the successful response with S3 URL
-      return res.status(200).json({ 
-        status: 200, 
-        imageUrl: s3Url,
-        prompt: prompt,
-        description: description
-      });
-    } catch (innerError) {
-      console.error("Detailed error in image generation process:", {
-        message: innerError.message,
-        stack: innerError.stack,
-        code: innerError.code
-      });
-      
-      return res.status(500).json({ 
-        status: 500, 
-        error: innerError.message || "Failed to process image. Please try again.",
-        details: process.env.NODE_ENV === 'development' ? innerError.stack : undefined
-      });
-    }
-  } catch (error) {
-    console.error("Error in route handler:", {
-      message: error.message,
-      stack: error.stack
+    const { userQuery } = req.body;
+    const { contextType } = req.body;
+    const { ancestorContext } = req;
+    
+    console.log('Route handler - Extracted values:', {
+      userQuery,
+      contextType,
+      ancestorContext
     });
+    
+    if (!userQuery) {
+      return res.status(400).json({ status: 400, error: "User query is required" });
+    }
+
+    const llmPrompt = `
+Context Type: ${contextType}
+Ancestor Context (P1 is the most recent parent):
+${ancestorContext}
+
+User Query (replying to item with ID ${req.params.id}): ${userQuery}
+
+Generate the response content:
+    `;
+
+    console.log('Generated LLM prompt:', llmPrompt);
+
+      return res.status(200).json({ 
+               status: 200, 
+               LLmprommpt: llmPrompt
+          });
+    
+   // req.body.prompt = llmPrompt;
+    
+    // Call promptEnhancer middleware
+    // promptEnhancer(req, res, async () => {
+    //   try {
+    //     const prompt = req.updatedPrompt;
+    //     console.log("Enhanced prompt from middleware:", prompt);
+    //     console.log("Starting image generation process for prompt:", prompt);
+
+        
+    //     // Generate the image using OpenAI
+    //     // const imageUrl = await imageGenerator(prompt);
+    //     console.log("Generated image URL:", imageUrl);
+        
+    //     if (!imageUrl) {
+    //       throw new Error("Image generation failed - no URL returned");
+    //     }
+
+    //     // Download the image from OpenAI
+    //     console.log("Downloading image from OpenAI...");
+    //     const imageBuffer = await downloadImage(imageUrl);
+    //     console.log("Image downloaded successfully, size:", imageBuffer.length);
+        
+    //     console.log("About to call describeImage function...");
+    //     const description = await describeImage(imageBuffer);
+    //     console.log("describeImage function returned:", description);
+        
+    //     // Upload to S3
+    //     console.log("Starting S3 upload...");
+    //     const s3Url = await uploadToS3(imageBuffer);
+    //     console.log("Successfully uploaded to S3:", s3Url);
+        
+    //     // Return the successful response with S3 URL
+    //     return res.status(200).json({ 
+    //       status: 200, 
+    //       imageUrl: s3Url,
+    //       prompt: prompt,
+    //       description: description
+    //     });
+    //   } catch (innerError) {
+    //     console.error("Detailed error in image generation process:", {
+    //       message: innerError.message,
+    //       stack: innerError.stack,
+    //       code: innerError.code
+    //     });
+        
+    //     return res.status(500).json({ 
+    //       status: 500, 
+    //       error: innerError.message || "Failed to process image. Please try again.",
+    //       details: process.env.NODE_ENV === 'development' ? innerError.stack : undefined
+    //     });
+    //   }
+    // });
+  } catch (error) {
+    console.error("Error in route handler:", error);
     return res.status(500).json({ 
       status: 500, 
       error: "Server error while processing image generation request",
@@ -315,6 +347,41 @@ router.post("/generate-image", upload.single("image"), async (req, res) => {
   }
 });
 
+// New route for context-aware requests
+/**
+ * Context-Aware LLM Request Handler
+ * 
+ * This endpoint processes requests with conversation context awareness. It can handle both
+ * text responses and image generation based on the context of the conversation.
+ * 
+ * URL: POST /api/llm/contextAwareRequest/:id
+ * 
+ * Path Parameters:
+ * - id: The ID of the starting node (forum reply or comment) to build context from
+ * 
+ * Request Body:
+ * {
+ *   "contextType": "forumReply" or "comment", // Type of the context to retrieve
+ *   "prompt": "Your question or request" // User's prompt/question
+ * }
+ * 
+ * Response:
+ * {
+ *   "success": true,
+ *   "result": {
+ *     "type": "text" or "image",
+ *     // For text responses:
+ *     "content": "AI-generated response text",
+ *     // For image responses:
+ *     "imageUrl": "URL to generated image",
+ *     "description": "Description used to generate the image"
+ *   }
+ * }
+ * 
+ * The system automatically detects if the user is requesting an image based on the prompt 
+ * and responds accordingly with either text or an image.
+ */
+router.post("/contextAwareRequest/:id", fetchAncestorContext, processContextAwareRequest);
 
 // global router for model selection 
 // here we have to select model

@@ -22,6 +22,7 @@ import { WebSocketProvider } from "./component/AiForumPage/components/WebSocketC
 import NewTopicModal from "./component/AiForumPage/components/NewTopicModal";
 import TopicContent from "./component/TopicComponent/TopicContent";
 import  ForumContext  from "./component/ContextProvider/ModelContext";
+import 'react-image-crop/dist/ReactCrop.css';
 
 const router = createBrowserRouter([
   {

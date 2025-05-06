@@ -57,6 +57,10 @@ const ReplyPostContent =({topic_id})=>{
             if (file.url) {
               // If it's an S3 URL, append it directly
               formData.append('mediaUrls', file.url);
+              // If there's a description from the generated image, append it
+              if (file.description) {
+                formData.append('generatedDescription', file.description);
+              }
             } else {
               // If it's a regular file, append it as before
               formData.append('media', file);
