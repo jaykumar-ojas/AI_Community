@@ -51,6 +51,15 @@ const ReplyCommentBox = ({onClose}) => {
 
       selectedFiles.forEach(file => formData.append("media", file));
 
+      const alreadyUploadedUrls = selectedFiles
+        .filter(file => !(file instanceof File))
+        .map(file => file.url);
+
+      // Add each URL in mediaUrls[]
+      alreadyUploadedUrls.forEach(url => {
+      formData.append("mediaUrls", url);
+      });
+
       const response = await axios.post(REPLIES_URL, formData, {
         headers: {
           ...getAuthHeaders(),

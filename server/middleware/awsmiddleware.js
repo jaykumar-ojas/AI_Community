@@ -60,11 +60,12 @@ const upload = multer({
     },
     limits: {
         fileSize: 50 * 1024 * 1024, // 50MB limit
-    }
+    } 
 });
 
 const awsuploadMiddleware = async (req, res, next) => {
-    console.log("Processing file upload");
+    console.log("Processing file upload ");
+    console.log("this is after i generate an image from ai",req.file);
     try {
         // Handle single file upload from multer.single()
         if (req.file) {

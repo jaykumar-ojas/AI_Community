@@ -7,6 +7,7 @@ const Card = ({ post }) => {
   const [showLogin, setShowLogin] = useState(false);
   const { loginData } = useContext(LoginContext);
   const navigate = useNavigate();
+  console.log("this is my post inside data",post);
   
   const handleCardClick = () => {
     // Check if this is a forum media post
@@ -15,7 +16,7 @@ const Card = ({ post }) => {
       navigate(`/forum/${post.topicId}`);
     } else {
       // This is a regular post, navigate to the post view
-      navigate(`/userPost/${post._id}`);
+      navigate(`/userPost/${post?._id}`);
     }
   };
 
@@ -36,7 +37,7 @@ const Card = ({ post }) => {
     } else {
       // Regular post
       return {
-        url: post.signedUrl,
+        url: post.imgUrl,
         type: post.fileType
       };
     }
@@ -87,7 +88,7 @@ const Card = ({ post }) => {
             alt="Profile"
             referrerPolicy="no-referrer"
           />
-          <div className="text-white font-semibold hover:text-blue-200">{post.userName}</div>
+          <div className="text-white font-semibold hover:text-blue-200">{post.userName || "i have to fiexd"}</div>
         </div>
         <div className="absolute bottom-6 text-white left-4 opacity-0 transition duration-700 group-hover:opacity-100 bg-white bg-opacity-0 group-hover:bg-opacity-25 text-white font-semibold p-2 rounded-lg">
           {post.desc}

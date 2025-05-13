@@ -216,9 +216,11 @@ const modelSelection = async(req,res,next)=>{
       console.log("i m jay");
     let content = req.body.content;
     const model = req.body.model || "";
-      if(model===""){
-        return;
-      }
+    console.log("htis is my model name",model);
+    if(model===""){
+      console.log("i m returning from hree");
+      return next();
+    }
     if (model === "DALL-E") {
       req.body.content = await responseFromDalle(content);
     } else if (model === "GPT-4") {

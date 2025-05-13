@@ -4,6 +4,7 @@ const Comment = require('../models/commentsModel');
 const postdb = require('../models/postSchema');
 const multer = require('multer');
 const authenticate = require('../middleware/authenticate');
+const {deleteCommentById} = require("../middleware/DeleteMiddleware");
 
 // Setup multer for file uploads
 const storage = multer.memoryStorage();
@@ -29,38 +30,8 @@ router.get('/comments/replies', async (req, res) => {
     
 
     // Process media attachments to generate signed URLs
-    const repliesWithSignedUrls = await Promise.all(
-      replies.map(async (reply) => {
-        const replyObj = reply.toObject();
-        if (replyObj.mediaAttachments && replyObj.mediaAttachments.length > 0) {
-          replyObj.mediaAttachments = await Promise.all(
-            replyObj.mediaAttachments.map(async (attachment) => {
-              try {
-                const signedUrl = attachment.fileName 
-                  ? await generateSignedUrl(attachment.fileName)
-                  : "https://via.placeholder.com/300?text=No+Image+Available";
-                
-                return {
-                  ...attachment,
-                  signedUrl,
-                  fileType: attachment.fileType || 'image'
-                };
-              } catch (error) {
-                console.error(`Error processing media attachment ${attachment.fileName}:`, error);
-                return {
-                  ...attachment,
-                  signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media",
-                  fileType: attachment.fileType || 'image'
-                };
-              }
-            })
-          );
-        }
-        return replyObj;
-      })
-    );
     
-    res.status(200).json({ status: 200, comments: repliesWithSignedUrls });
+    res.status(200).json({ status: 200, comments: replies });
 
   } catch (error) {
     console.error('Error fetching replies:', error);
@@ -71,27 +42,22 @@ router.get('/comments/replies', async (req, res) => {
 // comment a new post
 router.post('/comments/post',upload.array('media',5),awsuploadMiddleware,async(req,res)=>{
     try{
-        console.log("i am here");
         const {content,postId,parentReplyId,userId,userName} = req.body;
-        console.log("this is my postId",postId);
-        console.log("this is my content",content);
+        
+
         if(!content || !postId){
            return res.status(400).json({ status: 400, error: 'Content and post ID are required' });  
         }
         
-        //check post exist or not
-        console.log("i am goind to get a post",postId);
         const post = await postdb.findById(postId);
-        console.log("i m getting post by postdb",post);
 
         if(!post){
             return res.status(404).json({status: 404, error : "post is not found"});
         }
+
         const actualUserId = userId;
         const actualUserName = userName;
-        console.log("i m getting my ----");
-        console.log("userId ",userId);
-        console.log("actualUserName ",userName);
+
         if(!actualUserId || !actualUserName){
             return res.status(400).json({status:400, error : "user not found"});
         }
@@ -132,7 +98,7 @@ router.post('/comments/post',upload.array('media',5),awsuploadMiddleware,async(r
         console.log(savedReply);
         if(parentReplyId){
             try{
-                const parentComment = await postdb.findByIdAndUpdate(
+                const parentComment = await Comment.findByIdAndUpdate(
                     parentReplyId,
                     { $push: {children: savedReply._id}},
                     {new : true}
@@ -148,42 +114,8 @@ router.post('/comments/post',upload.array('media',5),awsuploadMiddleware,async(r
                 console.log(`Eror updating parent reply: `, parentUpdateError);
             }
         }
-        if(mediaAttachments.length>0){
-            const replyWithSignedUrls ={
-                ...savedReply.toObject(),
-                mediaAttachments: await promise.all(
-                    mediaAttachments.map(async (attachments)=>{
-                        try {
-                            // If it's an S3 URL, use it directly
-                            if (attachment.fileUrl && attachment.fileUrl.startsWith('https://')) {
-                              return {
-                                ...attachment,
-                                signedUrl: attachment.fileUrl
-                              };
-                            }
-                            // Otherwise generate a signed URL
-                            const signedUrl = await generateSignedUrl(attachment.fileName);
-                            return {
-                              ...attachment,
-                              signedUrl
-                            };
-                          } catch (error) {
-                            console.error(`Error processing media attachment ${attachment.fileName}:`, error);
-                            return {
-                              ...attachment,
-                              signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
-                            };
-                          }
-                    })
-                )
-            };
-
-          
-            res.status(201).json({status:201,reply: replyWithSignedUrls});
-        }
-        else{
             res.status(201).json({ status: 201, reply: savedReply });
-        }
+  
             
     }
     catch(error){
@@ -213,20 +145,19 @@ router.delete('/comments/:id', authenticate, async (req, res) => {
     }
 
     // Delete media attachments from S3
-    if (reply.mediaAttachments && reply.mediaAttachments.length > 0) {
-      for (const attachment of reply.mediaAttachments) {
-        await awsdeleteMiddleware(attachment.fileName);
-      }
-    }
+    await deleteCommentById(id);
     
-    await Comment.findByIdAndDelete(req.params.id);
-    console.log("delete succefully");
+    
+    console.log("delete succefully comment associated with id");
     res.status(200).json({ status: 200, message: 'Reply deleted successfully' });
   } catch (error) {
     console.error('Error deleting reply:', error);
     res.status(500).json({ status: 500, error: 'Server error' });
   }
 });
+
+
+
 
 // like dislike the comment reply
 router.post('/comments/:id/like', authenticate, async (req, res) => {
@@ -283,6 +214,9 @@ router.post('/comments/:id/like', authenticate, async (req, res) => {
     res.status(500).json({ status: 500, error: 'Server error' });
   }
 });
+
+
+
 
 // Dislike/undislike a comment reply
 router.post('/comments/:id/dislike', authenticate, async (req, res) => {

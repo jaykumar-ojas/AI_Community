@@ -197,10 +197,10 @@ const UserContent = ({ post }) => {
   };
 
   const handleMediaClick = () => {
-    if (!postData?.signedUrl) return;
+    if (!postData?.imgUrl) return;
     
     if (postData.fileType === 'image') {
-      openInNewTab(postData.signedUrl);
+      openInNewTab(postData.imgUrl);
     }
     // For video and audio, we'll let the built-in controls handle playback
   };
@@ -215,7 +215,7 @@ const UserContent = ({ post }) => {
 
   // Render different media types
   const renderMedia = () => {
-    if (!postData.signedUrl) {
+    if (!postData.imgUrl) {
       return (
         <div className="flex items-center justify-center h-full w-full text-gray-500">
           Media not available
@@ -228,7 +228,7 @@ const UserContent = ({ post }) => {
     if (fileType === 'image') {
       return (
         <img
-          src={postData.signedUrl}
+          src={postData.imgUrl}
           className="w-full h-full object-cover"
           alt="Post content"
           onError={(e) => {
@@ -241,7 +241,7 @@ const UserContent = ({ post }) => {
       return (
         <div className="relative w-full h-full bg-gradient-to-br from-blue-900 to-purple-900">
           <video 
-            src={postData.signedUrl} 
+            src={postData.imgUrl} 
             className="w-full h-full object-contain"
             controls
             preload="metadata"
@@ -303,11 +303,11 @@ const UserContent = ({ post }) => {
           <Link to={`/userprofile/${postData?.userId}`} className="w-12 h-12 m-2">
             <img
               src={postData?.image}
+              alt="image show"
               className="w-full h-full rounded-full"
               referrerPolicy="no-referrer"
               onError={(e) => {
                 console.error("Error loading user image:", e);
-                e.target.src = "https://via.placeholder.com/40";
               }}
             />
           </Link>

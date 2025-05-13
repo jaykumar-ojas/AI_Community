@@ -68,43 +68,13 @@ router.get('/topics', async (req, res) => {
     topics = [...topics, ...regularTopics];
     
     // Process media attachments to generate signed URLs
-    const topicsWithSignedUrls = await Promise.all(
-      topics.map(async (topic) => {
-        const topicObj = topic.toObject();
-        if (topicObj.mediaAttachments && topicObj.mediaAttachments.length > 0) {
-          topicObj.mediaAttachments = await Promise.all(
-            topicObj.mediaAttachments.map(async (attachment) => {
-              try {
-                const signedUrl = attachment.fileName 
-                  ? await generateSignedUrl(attachment.fileName)
-                  : "https://via.placeholder.com/300?text=No+Image+Available";
-                
-                return {
-                  ...attachment,
-                  signedUrl,
-                  fileType: attachment.fileType || 'image'
-                };
-              } catch (error) {
-                console.error(`Error processing media attachment ${attachment.fileName}:`, error);
-                return {
-                  ...attachment,
-                  signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media",
-                  fileType: attachment.fileType || 'image'
-                };
-              }
-            })
-          );
-        }
-        return topicObj;
-      })
-    );
     
     // Get total count for pagination
     const totalTopics = await ForumTopic.countDocuments(query);
     
     res.status(200).json({
       status: 200,
-      topics: topicsWithSignedUrls,
+      topics: topics,
       pagination: {
         total: totalTopics,
         page,
@@ -132,33 +102,8 @@ router.get('/topics/:id', async (req, res) => {
 
     
     // Process media attachments to generate signed URLs
-    const topicObj = topic.toObject();
-    if (topicObj.mediaAttachments && topicObj.mediaAttachments.length > 0) {
-      topicObj.mediaAttachments = await Promise.all(
-        topicObj.mediaAttachments.map(async (attachment) => {
-          try {
-            const signedUrl = attachment.fileName 
-              ? await generateSignedUrl(attachment.fileName)
-              : "https://via.placeholder.com/300?text=No+Image+Available";
-            
-            return {
-              ...attachment,
-              signedUrl,
-              fileType: attachment.fileType || 'image'
-            };
-          } catch (error) {
-            console.error(`Error processing media attachment ${attachment.fileName}:`, error);
-            return {
-              ...attachment,
-              signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media",
-              fileType: attachment.fileType || 'image'
-            };
-          }
-        })
-      );
-    }
     
-    res.status(200).json({ status: 200, topic: topicObj });
+    res.status(200).json({ status: 200, topic: topic });
 
   } catch (error) {
     console.error('Error fetching topic:', error);
@@ -200,32 +145,7 @@ router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddlewa
     
     const savedTopic = await newTopic.save();
     
-    // If media uploads were successful, return the topic with signed URLs
-    if (mediaAttachments.length > 0) {
-      const topicWithSignedUrls = {
-        ...savedTopic.toObject(),
-        mediaAttachments: await Promise.all(
-          mediaAttachments.map(async (attachment) => {
-            try {
-              const signedUrl = await generateSignedUrl(attachment.fileName);
-              return {
-                ...attachment,
-                signedUrl
-              };
-            } catch (error) {
-              console.error(`Error generating signed URL for ${attachment.fileName}:`, error);
-              return {
-                ...attachment,
-                signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
-              };
-            }
-          })
-        )
-      };
-      res.status(201).json({ status: 201, topic: topicWithSignedUrls });
-    } else {
-      res.status(201).json({ status: 201, topic: savedTopic });
-    }
+    res.status(201).json({ status: 201, topic: savedTopic });
   } catch (error) {
     console.error('Error creating topic:', error);
     res.status(500).json({ 
@@ -236,40 +156,6 @@ router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddlewa
   }
 });
 
-// Update a topic
-router.put('/topics/:id', authenticate, async (req, res) => {
-  try {
-    const { title, content, tags, isPinned, isLocked } = req.body;
-    const topic = await ForumTopic.findById(req.params.id);
-    
-    if (!topic) {
-      return res.status(404).json({ status: 404, error: 'Topic not found' });
-    }
-    
-    // Check if user is the owner of the topic
-    if (topic.userId.toString() !== req.userId && req.userRole !== 'admin') {
-      return res.status(403).json({ status: 403, error: 'Not authorized to update this topic' });
-    }
-    
-    // Update fields
-    if (title) topic.title = title;
-    if (content) topic.content = content;
-    if (tags) topic.tags = tags;
-    
-    // Admin-only fields
-    if (req.userRole === 'admin') {
-      if (typeof isPinned !== 'undefined') topic.isPinned = isPinned;
-      if (typeof isLocked !== 'undefined') topic.isLocked = isLocked;
-    }
-    
-    const updatedTopic = await topic.save();
-    
-    res.status(200).json({ status: 200, topic: updatedTopic });
-  } catch (error) {
-    console.error('Error updating topic:', error);
-    res.status(500).json({ status: 500, error: 'Server error' });
-  }
-});
 
 // Delete a topic
 router.delete('/topics/:id', authenticate, async (req, res) => {
@@ -326,39 +212,8 @@ router.get('/replies', async (req, res) => {
       .sort({ isAnswer: -1, createdAt: 1 });
     
 
-    // Process media attachments to generate signed URLs
-    const repliesWithSignedUrls = await Promise.all(
-      replies.map(async (reply) => {
-        const replyObj = reply.toObject();
-        if (replyObj.mediaAttachments && replyObj.mediaAttachments.length > 0) {
-          replyObj.mediaAttachments = await Promise.all(
-            replyObj.mediaAttachments.map(async (attachment) => {
-              try {
-                const signedUrl = attachment.fileName 
-                  ? await generateSignedUrl(attachment.fileName)
-                  : "https://via.placeholder.com/300?text=No+Image+Available";
-                
-                return {
-                  ...attachment,
-                  signedUrl,
-                  fileType: attachment.fileType || 'image'
-                };
-              } catch (error) {
-                console.error(`Error processing media attachment ${attachment.fileName}:`, error);
-                return {
-                  ...attachment,
-                  signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media",
-                  fileType: attachment.fileType || 'image'
-                };
-              }
-            })
-          );
-        }
-        return replyObj;
-      })
-    );
     
-    res.status(200).json({ status: 200, replies: repliesWithSignedUrls });
+    res.status(200).json({ status: 200, replies: replies});
 
   } catch (error) {
     console.error('Error fetching replies:', error);
@@ -366,40 +221,7 @@ router.get('/replies', async (req, res) => {
   }
 });
 
-// Update a reply
-router.put('/replies/:id', authenticate, async (req, res) => {
-  try {
-    const { content, isAnswer } = req.body;
-    const reply = await ForumReply.findById(req.params.id);
-    
-    if (!reply) {
-      return res.status(404).json({ status: 404, error: 'Reply not found' });
-    }
-    
-    // Check if user is the owner of the reply
-    if (reply.userId.toString() !== req.userId && req.userRole !== 'admin') {
-      return res.status(403).json({ status: 403, error: 'Not authorized to update this reply' });
-    }
-    
-    // Update fields
-    if (content) reply.content = content;
-    
-    // Admin or topic owner can mark as answer
-    if (typeof isAnswer !== 'undefined') {
-      const topic = await ForumTopic.findById(reply.topicId);
-      if (topic && (req.userRole === 'admin' || topic.userId.toString() === req.userId)) {
-        reply.isAnswer = isAnswer;
-      }
-    }
-    
-    const updatedReply = await reply.save();
-    
-    res.status(200).json({ status: 200, reply: updatedReply });
-  } catch (error) {
-    console.error('Error updating reply:', error);
-    res.status(500).json({ status: 500, error: 'Server error' });
-  }
-});
+
 
 // Delete a reply
 router.delete('/replies/:id', authenticate, async (req, res) => {
@@ -417,16 +239,10 @@ router.delete('/replies/:id', authenticate, async (req, res) => {
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this reply' });
     }
 
-    // Delete media attachments from S3
-    if (reply.mediaAttachments && reply.mediaAttachments.length > 0) {
-      for (const attachment of reply.mediaAttachments) {
-        await awsdeleteMiddleware(attachment.fileName);
-      }
-    }
+    
     
     // Delete the reply
-    await ForumReply.findByIdAndDelete(req.params.id);
-    
+    await  deleteForumById(id);
     // Decrement reply count on the topic
     const topic = await ForumTopic.findById(reply.topicId);
     if (topic) {
@@ -659,53 +475,7 @@ router.post('/replies/:id/dislike', authenticate, async (req, res) => {
   }
 });
 
-// Get media posts from forum replies
-router.get('/media-posts', async (req, res) => {
-  try {
-    const { page = 1, limit = 9 } = req.query;
-    const skip = (page - 1) * limit;
 
-    // Find replies with media attachments
-    const replies = await ForumReply.find({
-      'mediaAttachments.0': { $exists: true }
-    })
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(parseInt(limit) + 1);
-
-    // Check if there are more posts
-    const hasMore = replies.length > limit;
-    // Remove the extra item if it exists
-    const postsToReturn = hasMore ? replies.slice(0, limit) : replies;
-
-    // Transform replies into post format
-    const mediaPosts = postsToReturn.map(reply => ({
-      _id: reply._id,
-      userId: reply.userId,
-      userName: reply.userName,
-      image: reply.userImage || "https://via.placeholder.com/40",
-      desc: reply.content,
-      createdAt: reply.createdAt,
-      likes: reply.likes,
-      dislikes: reply.dislikes,
-      topicId: reply.topicId,
-      mediaAttachments: reply.mediaAttachments.map(attachment => ({
-        fileType: attachment.fileType.split('/')[0], // Convert 'image/jpeg' to 'image'
-        signedUrl: attachment.fileUrl
-      }))
-    }));
-
-    res.status(200).json({
-      status: 200,
-      userposts: mediaPosts,
-      hasMore,
-      page: parseInt(page)
-    });
-  } catch (error) {
-    console.error('Error fetching media posts:', error);
-    res.status(500).json({ status: 500, error: 'Server error' });
-  }
-});
 
 //pagination withh reply id
 router.get('/paginated', async(req, res) => {
@@ -862,40 +632,8 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
     topic.replyCount += 1;
     await topic.save();
     
-    // If media attachments exist, return the reply with signed URLs
-    if (mediaAttachments.length > 0) {
-      const replyWithSignedUrls = {
-        ...savedReply.toObject(),
-        mediaAttachments: await Promise.all(
-          mediaAttachments.map(async (attachment) => {
-            try {
-              // If it's an S3 URL, use it directly
-              if (attachment.fileUrl && attachment.fileUrl.startsWith('https://')) {
-                return {
-                  ...attachment,
-                  signedUrl: attachment.fileUrl
-                };
-              }
-              // Otherwise generate a signed URL
-              const signedUrl = await generateSignedUrl(attachment.fileName);
-              return {
-                ...attachment,
-                signedUrl
-              };
-            } catch (error) {
-              console.error(`Error processing media attachment ${attachment.fileName}:`, error);
-              return {
-                ...attachment,
-                signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Media"
-              };
-            }
-          })
-        )
-      };
-      res.status(201).json({ status: 201, reply: replyWithSignedUrls });
-    } else {
-      res.status(201).json({ status: 201, reply: savedReply });
-    }
+
+    res.status(201).json({ status: 201, reply: savedReply });
   } catch (error) {
     console.error('Error creating reply:', error);
     res.status(500).json({ 

@@ -66,11 +66,13 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async(req, re
     const fileType = req.file.mimetype.split('/')[0]; // 'image', 'video', or 'audio'
     console.log("- Extracted file type:", fileType);
     console.log("- File name from middleware:", req.fileName);
+    const imgUrl = await generateSignedUrl(req.fileName);
     
     const finalpost = new postdb({
         userId: userId,
         desc: desc,
         imgKey: req.fileName,
+        imgUrl : imgUrl,
         fileType: fileType, // Store the file type
         likes: [],
         dislikes: []
@@ -108,31 +110,7 @@ router.post('/get',async(req,res)=>{
             return res.status(200).json({ status: 200, userposts: [] });
         }
         
-        const userpostsWithUrls = await Promise.all(
-            userposts.map(async (post) => {
-                try {
-                    // Check if imgKey exists before trying to generate a signed URL
-                    const signedUrl = post.imgKey 
-                        ? await generateSignedUrl(post.imgKey)
-                        : "https://via.placeholder.com/300?text=No+Image+Available";
-                    
-                    return {
-                        ...post.toObject(), 
-                        signedUrl,
-                        fileType: post.fileType || 'image' // Include fileType, default to 'image' for backward compatibility
-                    };
-                } catch (error) {
-                    console.error(`Error processing post ${post._id}:`, error);
-                    // Return the post with a placeholder image
-                    return {
-                        ...post.toObject(),
-                        signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Image",
-                        fileType: post.fileType || 'image'
-                    };
-                }
-            })
-        );
-        res.status(200).json({ status: 200, userposts:userpostsWithUrls});
+        res.status(200).json({ status: 200, userposts:userposts});
     }
     catch(error){
         console.error("Error retrieving user posts:", error);
@@ -200,50 +178,10 @@ router.get('/allget', async(req, res) => {
         // Remove the extra item if it exists
         const postsToReturn = hasMore ? userposts.slice(0, limit) : userposts;
         
-        const userpostsWithUrls = await Promise.all(
-            postsToReturn.map(async (post) => {
-                try {
-
-                    const signedUrl = post.imgKey 
-                        ? await generateSignedUrl(post.imgKey) 
-                        : "https://via.placeholder.com/300?text=No+Image+Available";
-                    
-                    // Get user data
-                    let userData, userName = "Unknown User", image = null;
-                    try {
-                        userData = await userdb.findOne({_id: post.userId}) || await googledb.findOne({_id: post.userId});
-                        if (userData) {
-                            userName = userData.userName || "Unknown User";
-                            image = userData.profilePictureUrl || userData.image;
-                        }
-                    } catch (userError) {
-                        console.error("Error fetching user data:", userError);
-                    }
-                    
-                    return {
-                        ...post.toObject(), 
-                        signedUrl,
-                        userName,
-                        image,
-                        fileType: post.fileType || 'image'
-                    };
-                } catch (error) {
-                    console.error(`Error processing post ${post._id}:`, error);
-                    // Return the post with placeholder values
-                    return {
-                        ...post.toObject(),
-                        signedUrl: "https://via.placeholder.com/300?text=Error+Loading+Image",
-                        userName: "Unknown User",
-                        image: null,
-                        fileType: post.fileType || 'image'
-                    };
-                }
-            })
-        );
         
         res.status(200).json({ 
             status: 200, 
-            userposts: userpostsWithUrls,
+            userposts: postsToReturn,
             hasMore, // Just return whether there are more posts
             page: page // Return the current page for client reference
         });
@@ -266,38 +204,8 @@ router.post('/getPostById',async(req,res)=>{
             return res.status(404).json({status:404, error: "Post not found"});
         }
         
-        // Handle the case when imgKey might be null or undefined
-        let signedUrl = "https://via.placeholder.com/300?text=No+Image+Available";
-        if (post.imgKey) {
-            try {
-                signedUrl = await generateSignedUrl(post.imgKey);
-            } catch (urlError) {
-                console.error("Error generating signed URL:", urlError);
-                signedUrl = "https://via.placeholder.com/300?text=Error+Loading+Image";
-            }
-        }
-        
-        // Handle the case when user might not exist
-        let userName = "Unknown User";
-        let image = null;
-        try {
-            const userData = await userdb.findOne({_id:post.userId}) || await googledb.findOne({_id:post.userId});
-            if (userData) {
-                userName = userData.userName || "Unknown User";
-                image = userData.profilePictureUrl || userData.image;
-            }
-        } catch (userError) {
-            console.error("Error fetching user data:", userError);
-        }
-        
-        const updatedPost = {
-            ...post.toObject(),
-            signedUrl,
-            userName,
-            image,
-            fileType: post.fileType || 'image'
-        };
-        res.status(201).json({status:201, postdata:updatedPost});
+    
+        res.status(201).json({status:201, postdata:post});
     }
     catch(error){
         console.error("Error retrieving post:", error);
