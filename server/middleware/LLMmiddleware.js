@@ -210,7 +210,12 @@ async function extractImageDescription(context, userPrompt) {
     });
     
     return response.choices[0].message.content;
-=======
+  }
+  catch(error){
+    console.log(" i m giving error");
+  }
+}
+
 const modelSelection = async(req,res,next)=>{
     try{
       console.log("i m jay");
@@ -579,4 +584,3 @@ module.exports ={
     generateTextResponse
 };
 
-// amazon nova
