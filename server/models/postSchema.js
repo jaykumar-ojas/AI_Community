@@ -15,6 +15,12 @@ const postSchema = new mongoose.Schema({
     imgKey:{
         type:String,
     },
+    imgUrl:{
+        type:String,
+    },
+    imgUrlCreatedAt:{
+        type:Date,
+    },
     fileType:{
         type:String,
         enum: ['image', 'video', 'audio'],
@@ -30,6 +36,13 @@ const postSchema = new mongoose.Schema({
     }]
 }, {
     timestamps: true // Adds createdAt and updatedAt fields automatically
+});
+
+postSchema.pre('save', function (next) {
+    if (this.isModified('imgUrl')) {
+        this.imgUrlCreatedAt = Date.now();
+    }
+    next();
 });
 
 const postdb = new mongoose.model("userPosts",postSchema);

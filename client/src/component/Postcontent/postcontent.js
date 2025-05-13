@@ -3,6 +3,7 @@ import UserContent from "./UserContent";
 import { useNavigate, useParams } from "react-router-dom";
 import CommentReview from "./CommentReview";
 import ReplyCommentBox from "./CommentComponent/ReplyForComment";
+import Card from "../Card/Card";
 
 const PostContent = () => {
   const history = useNavigate();
@@ -10,6 +11,7 @@ const PostContent = () => {
   const [post, setPost] = useState();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [relevantPost,setRelevantPost]= useState();
 
   const getPost = async () => {
     try {
@@ -46,8 +48,26 @@ const PostContent = () => {
     }
   }
 
+  const getRelevantPost=async()=>{
+    const data = await fetch(`http://localhost:8000/search/bypostid/${id}`,{
+      method:'GET',
+      headers:{
+        'Content-Type':"application/json"
+      }
+    });
+
+    const res = await data.json();
+    setRelevantPost(res.results.map(value => ({
+      ...value.metadata.data,
+      signedUrl: value.image_url
+    })));
+  }
+
+  console.log("this is relevant",relevantPost);
+
   useEffect(() => {
     getPost();
+    getRelevantPost();
   }, [id]);
 
   if (loading) {
@@ -88,9 +108,9 @@ const PostContent = () => {
               more related content
               </div>
             <div className="grid grid-cols-3 w-full p-2 gap-2 ">
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="flex justify-center">
-                i am here
+              {relevantPost && relevantPost.map((post)=>(
+                <div key={post._id} className="flex justify-center">
+                  <Card post={post} />
                 </div>
               ))}
             </div>

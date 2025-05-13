@@ -49,8 +49,19 @@ const ReplyCommentBox = ({onClose}) => {
       formData.append("model", model || "");
       if(replyIdForContext)
       formData.append("parentReplyId", replyIdForContext);
-
+      console.log("this is selected files",selectedFiles);
       selectedFiles.forEach(file => formData.append("media", file));
+
+
+      const alreadyUploadedUrls = selectedFiles
+        .filter(file => !(file instanceof File))
+        .map(file => file.url);
+
+      // Add each URL in mediaUrls[]
+      alreadyUploadedUrls.forEach(url => {
+      formData.append("mediaUrls", url);
+      });
+
 
       const response = await axios.post('http://localhost:8099/comments/post', formData, {
         headers: {
@@ -72,6 +83,8 @@ const ReplyCommentBox = ({onClose}) => {
       setIsUploading(false);
     }
   };
+
+  console.log("this is selected files",selectedFiles);
 
   return (
     <AnimatePresence>     

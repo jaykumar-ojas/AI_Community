@@ -1,7 +1,7 @@
 import React from "react";
 
 const ShowMedia = ({ attachment }) => {
-  const { fileType, signedUrl, fileName } = attachment || {};
+  const { fileType, fileUrl, fileName } = attachment || {};
 
   const isImage = fileType?.startsWith("image/");
   const isVideo = fileType?.startsWith("video/");
@@ -13,13 +13,13 @@ const ShowMedia = ({ attachment }) => {
       {isImage && (
         <div className="relative min-h-[80px] max-h-[120px]">
           <img
-            src={signedUrl}
+            src={fileUrl}
             alt={fileName}
             className="w-full h-auto object-contain hover:scale-105 transition-transform duration-300"
             style={{ maxHeight: "120px" }}
             loading="lazy"
             onError={(e) => {
-              console.error("Error loading image:", signedUrl);
+              console.error("Error loading image:", fileUrl);
               e.target.src =
                 "https://via.placeholder.com/400x300?text=Image+Not+Found";
             }}
@@ -33,10 +33,10 @@ const ShowMedia = ({ attachment }) => {
             controls
             className="w-full h-auto"
             style={{ maxHeight: "120px" }}
-            src={signedUrl}
+            src={fileUrl}
             preload="metadata"
             onError={() =>
-              console.error("Error loading video:", signedUrl)
+              console.error("Error loading video:", fileUrl)
             }
           >
             Your browser does not support the video tag.
@@ -49,10 +49,10 @@ const ShowMedia = ({ attachment }) => {
           <audio
             controls
             className="w-full"
-            src={signedUrl}
+            src={fileUrl}
             preload="metadata"
             onError={() =>
-              console.error("Error loading audio:", signedUrl)
+              console.error("Error loading audio:", fileUrl)
             }
           >
             Your browser does not support the audio tag.
@@ -63,7 +63,7 @@ const ShowMedia = ({ attachment }) => {
       {isUnknown && (
         <div className="p-2 flex items-center justify-center">
           <a
-            href={signedUrl}
+            href={fileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors duration-200 text-xs"
