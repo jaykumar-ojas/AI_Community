@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import ReplyCommentBox from "../../AIchatbot/Component/ReplyCommentBox";
 import { ForumContext } from "../../ContextProvider/ModelContext";
 import ShowMedia from "../../TopicComponent/components/ShowMedia";
+import UserIconCard from "../../Card/UserIconCard";
 
 
 
@@ -151,6 +152,9 @@ const ShowCommentContent = ({reply,showViewMore,onViewMore,hasChildren,
         {/* user timestapm an d name is author or not */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
+            <div className="flex  w-8 h-8">
+              <UserIconCard id={reply?.userId}/>
+            </div>
             <span className="text-blue-600">{reply?.userName}</span>
             <span className="text-gray-400 text-xs">{formatDate(reply?.createdAt)}</span>
           </div>

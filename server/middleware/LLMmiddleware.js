@@ -294,7 +294,7 @@ async function fetchAncestorContext(req, res, next) {
     const maxDepth = 10;
     const maxWords = 50;
 
-    if(!startId || !mongoose.Types.ObjectId.isValid(startId)){
+    if(!startId || !mongoose.Types.ObjectId.isValid(startId)){     
       console.log('Invalid ID:', startId);
       return res.status(400).json({
         success: false,
@@ -310,6 +310,7 @@ async function fetchAncestorContext(req, res, next) {
     }
     let SelectedModel;
     let parentId;
+    
     let contentField;
 
     if(contextType === 'forumReply') {
