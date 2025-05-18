@@ -221,7 +221,7 @@ router.post("/generateTopicResponse", async (req, res) => {
 });
 
 // Update the generateReplyImage route
-router.post("/generateReplyImage/:id", fetchAncestorContext, async (req, res, next) => {
+router.post("/generateReplyImage", fetchAncestorContext, async (req, res, next) => {
   try {
 
     console.log('Route handler - Request params:', req.params);
@@ -242,14 +242,14 @@ router.post("/generateReplyImage/:id", fetchAncestorContext, async (req, res, ne
     }
 
     const llmPrompt = `
-Context Type: ${contextType}
-Ancestor Context (P1 is the most recent parent):
-${ancestorContext}
+    Context Type: ${contextType}
+    Ancestor Context (P1 is the most recent parent):
+    ${ancestorContext}
 
-User Query (replying to item with ID ${req.params.id}): ${userQuery}
+    User Query (replying to item with ID ${req.params.id}): ${userQuery}
 
-Generate the response content:
-    `;
+    Generate the response content:
+        `;
 
     console.log('Generated LLM prompt:', llmPrompt);
 

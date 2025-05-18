@@ -2,6 +2,9 @@ import React, { useContext, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { LoginContext } from "../../component/ContextProvider/context";
 import Login from "../Auth/Login";
+import UserIconCard from "../Card/UserIconCard";
+import UserNameCard from "../Card/UserNameCard";
+import PixelLoader from "../Loader/PixelLoader";
 
 const Card = ({ post }) => {
   const [showLogin, setShowLogin] = useState(false);
@@ -51,11 +54,14 @@ const Card = ({ post }) => {
       className="group border rounded-lg h-72 w-96 overflow-hidden relative hover:cursor-pointer"
     >
       <div className="h-full w-full">
-        {mediaInfo.type === "image" && <img
+        {mediaInfo.type === "image" && 
+        <img
           src={mediaInfo.url}
           className="h-full w-full object-cover opacity-95 hover:opacity-100 transition duration-300"
           alt="Card Image"
-        />}
+        />
+        // <PixelLoader imgUrl={mediaInfo?.url}/>
+        }
         {mediaInfo.type === "video" && <video
           src={mediaInfo.url}
           className="h-full w-full object-cover opacity-95 hover:opacity-100 transition duration-300"
@@ -82,13 +88,10 @@ const Card = ({ post }) => {
           onClick={handleUserClick}
           className="absolute top-2 left-2 flex items-center gap-2 p-2 rounded-lg bg-white bg-opacity-0 opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-50 cursor-pointer hover:bg-opacity-75"
         >
-          <img
-            src={post.image}
-            className="h-8 w-8 rounded-full"
-            alt="Profile"
-            referrerPolicy="no-referrer"
-          />
-          <div className="text-white font-semibold hover:text-blue-200">{post.userName || "i have to fiexd"}</div>
+          <div className="relative w-12 h-12">
+            <UserIconCard id ={post?.userId}/>
+          </div>
+          <div className="text-white font-semibold hover:text-blue-200"><UserNameCard id={post?.userId}/></div>
         </div>
         <div className="absolute bottom-6 text-white left-4 opacity-0 transition duration-700 group-hover:opacity-100 bg-white bg-opacity-0 group-hover:bg-opacity-25 text-white font-semibold p-2 rounded-lg">
           {post.desc}

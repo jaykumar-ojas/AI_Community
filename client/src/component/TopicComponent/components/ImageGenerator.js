@@ -10,6 +10,7 @@ const ImageGenerator = ({ onClose, setNewReply, setSelectedFiles}) => {
   const [imageDescription, setImageDescription] = useState("");
 
   const handleGenerateImage = async (forReply = false) => {
+    console.log("i come to generatei image");
     if (!imagePrompt.trim()) {
       alert('Please enter a prompt for the image');
       return;
@@ -19,11 +20,11 @@ const ImageGenerator = ({ onClose, setNewReply, setSelectedFiles}) => {
     try {
       // Show a loading message
       setGeneratedImageUrl('https://via.placeholder.com/400x300?text=Generating+Image...');
-      
+      console.log("i m going to backend");
       const response = await axios.post(`${API_BASE_URL}/generateReplyImage`, {
         prompt: imagePrompt
       }, { headers: getAuthHeaders() });
-      
+      console.log(" i m coming back from backend");
       if (response.data.imageUrl) {
         setGeneratedImageUrl(response.data.imageUrl);
         setImageDescription(response.data.description || "");

@@ -23,6 +23,8 @@ import NewTopicModal from "./component/AiForumPage/components/NewTopicModal";
 import TopicContent from "./component/TopicComponent/TopicContent";
 import  ForumContext  from "./component/ContextProvider/ModelContext";
 import 'react-image-crop/dist/ReactCrop.css';
+import PixelLoader from "./component/Loader/PixelLoader";
+import UserProfile from "./component/userProfileView/userProfile";
 
 const router = createBrowserRouter([
   {
@@ -78,12 +80,20 @@ const router = createBrowserRouter([
     element:<AIAggregator></AIAggregator>
   },
   {
-    path: '/forum/topic/:topicId',
+    path: '/forum/topic/:topicId/:replyId?',
     element: <AIAggregator></AIAggregator>
   },
   {
     path: '/t/:topicId',
     element: <TopicContent></TopicContent>
+  },
+  {
+    path:'/loader',
+    element: <PixelLoader></PixelLoader>
+  },
+  {
+    path:'/sample-user/:id',
+    element: <UserProfile></UserProfile>
   }
 ]);
 

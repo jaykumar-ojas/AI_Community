@@ -18,6 +18,7 @@
     "react-dropzone": "^14.3.5",
     "react-image-crop": "^11.0.10",
     "react-infinite-scroll-component": "^6.1.0",
+    "react-loading-skeleton": "^3.5.0",
     "react-router-dom": "^7.0.1",
     "react-scripts": "5.0.1",
     "socket.io-client": "^4.8.1",
