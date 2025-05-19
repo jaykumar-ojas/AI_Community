@@ -210,7 +210,12 @@ async function extractImageDescription(context, userPrompt) {
     });
     
     return response.choices[0].message.content;
-=======
+  } catch (error) {
+    console.error("Error extracting image description:", error);
+    return null;
+  }
+}
+
 const modelSelection = async(req,res,next)=>{
     try{
       console.log("i m jay");
