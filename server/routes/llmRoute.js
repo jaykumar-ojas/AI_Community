@@ -136,8 +136,10 @@ router.post("/generateTopicResponse", async (req, res) => {
 });
 
 // Update the generateReplyImage route
+
 // router.post("/generateReplyImage/:id", fetchAncestorContext, async (req, res, next) => {
 //   try {
+
 
 //     console.log('Route handler - Request params:', req.params);
 //     console.log('Route handler - Request body:', req.body);
@@ -156,6 +158,7 @@ router.post("/generateTopicResponse", async (req, res) => {
 //       return res.status(400).json({ status: 400, error: "User query is required" });
 //     }
 
+
 //     const llmPrompt = `
 // Context Type: ${contextType}
 // Ancestor Context (P1 is the most recent parent):
@@ -165,6 +168,7 @@ router.post("/generateTopicResponse", async (req, res) => {
 
 // Generate the response content:
 //     `;
+
 
 //     console.log('Generated LLM prompt:', llmPrompt);
 

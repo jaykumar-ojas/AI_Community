@@ -3,30 +3,11 @@ import React, { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { LoginContext } from "../ContextProvider/context";
+import UserIconCard from "../Card/UserIconCard";
+import UserNameCard from "../Card/UserNameCard";
 
-const heartSvg = (filled = false) => {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="21" id="heart">
-      <path
-        fill={filled ? "#ff4d4d" : "none"}
-        fillRule="evenodd"
-        stroke={filled ? "#ff4d4d" : "#000"}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M20.84 2.61a5.5 5.5 0 0 0-7.78 0L12 3.67l-1.06-1.06a5.501 5.501 0 0 0-7.78 7.78l1.06 1.06L12 19.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-      ></path>
-    </svg>
-  );
-};
 
-const thumbsDownSvg = (filled = false) => {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={filled ? "#3b82f6" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" fill={filled ? "#3b82f6" : "none"}></path>
-    </svg>
-  );
-};
+
 
 const UserContent = ({ post }) => {
   const history = useNavigate();
@@ -95,7 +76,6 @@ const UserContent = ({ post }) => {
       
       if (response.ok) {
         console.log("Post deleted successfully:", result);
-        alert("Post deleted successfully");
         history('/');
 
         // Refresh the page or redirect
@@ -301,19 +281,13 @@ const UserContent = ({ post }) => {
       <div className="flex justify-between items-center w-full h-full">
         <div className="flex jsutify-between">
           <Link to={`/userprofile/${postData?.userId}`} className="w-12 h-12 m-2">
-            <img
-              src={postData?.image}
-              alt="image show"
-              className="w-full h-full rounded-full"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                console.error("Error loading user image:", e);
-              }}
-            />
+           <div className="w-full h-full">
+            <UserIconCard id ={postData?.userId}></UserIconCard>
+           </div>
           </Link>
           {/* user name remain */}
           <Link to={`/userprofile/${postData?.userId}`} className="font-bold text-red-700 m-2 flex items-center hover:text-red-900">
-            {postData?.userName || "Unknown User"}
+            <UserNameCard id={postData?.userId}></UserNameCard>
           </Link>
         </div>
 
@@ -392,3 +366,28 @@ const UserContent = ({ post }) => {
 };
 
 export default UserContent;
+
+
+const heartSvg = (filled = false) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="21" id="heart">
+      <path
+        fill={filled ? "#ff4d4d" : "none"}
+        fillRule="evenodd"
+        stroke={filled ? "#ff4d4d" : "#000"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M20.84 2.61a5.5 5.5 0 0 0-7.78 0L12 3.67l-1.06-1.06a5.501 5.501 0 0 0-7.78 7.78l1.06 1.06L12 19.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+      ></path>
+    </svg>
+  );
+};
+
+const thumbsDownSvg = (filled = false) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={filled ? "#3b82f6" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" fill={filled ? "#3b82f6" : "none"}></path>
+    </svg>
+  );
+};

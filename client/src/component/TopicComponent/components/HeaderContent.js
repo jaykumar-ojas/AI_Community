@@ -5,6 +5,8 @@ import { LoginContext } from "../../ContextProvider/context";
 import axios from "axios";
 import ReplyPostContent from "./ReplyPostContent";
 import { ForumContext } from "../../ContextProvider/ModelContext";
+import UserIconCard from "../../Card/UserIconCard";
+import UserNameCard from "../../Card/UserNameCard";
 
 
 const HeaderContent = ({ topic, onDelete }) => {
@@ -106,9 +108,15 @@ const HeaderContent = ({ topic, onDelete }) => {
       }`}>
       {/* Header: User Info */}
       <div className="flex items-center justify-between mb-2">
-        <div className="text-sm text-gray-600">
-          <span className="font-semibold text-blue-700">{topic.userName}</span>
-          <span className="ml-2 text-gray-400">{formatDate(topic?.createdAt)}</span>
+        <div className="flex   items-center text-sm text-gray-600">
+            <div className="flex  mr-4  w-12 h-12">
+              <UserIconCard id={topic?.userId}/>
+            </div>
+            <div className="flex">
+              <span className="font-semibold text-blue-700"><UserNameCard id ={topic?.userId}/></span>
+              <span className="ml-2 text-gray-400">{formatDate(topic?.createdAt)}</span>
+            </div>
+          
         </div>
         {isAuthor && (
           <button

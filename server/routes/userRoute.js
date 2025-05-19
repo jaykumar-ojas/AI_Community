@@ -136,50 +136,23 @@ router.post("/login",async(req,res)=>{
 // })
 
 router.get("/getUserById/:userId", async (req, res) => {
-    console.log("🚀 Incoming request to /getUserById/:userId");
-
     try {
         // Extract userId from params
         const { userId } = req.params;
-        console.log(`📌 Extracted userId: ${userId}`);
 
-        // Check if userId exists
         if (!userId) {  // Fixing incorrect condition
-            console.error("❌ Error: userId is required");
             throw new Error("userId is required");
         }
-
-        console.log("🔎 Searching for user in databases...");
 
         // Try to find the user in userdb or googledb
         let user = await userdb.findById(userId);
         if (!user) {
-            console.log("👤 User not found in userdb, checking googledb...");
             user = await googledb.findById(userId);
         }
 
-        // If user is not found in both databases
         if (!user) {
-            console.error("❌ Error: User does not exist");
             throw new Error("User not exist");
         }
-
-        console.log("✅ User found:", user);
-
-        // Generate signed URLs for profile and background images
-        console.log("🖼️ Generating signed URLs...");
-        const profUrl = user.profilePicture ? await generateSignedUrl(user.profilePicture) : null;
-        const backgroundUrl = user.backgroundImage ? await generateSignedUrl(user.backgroundImage) : null;
-
-        console.log("🌟 Signed URLs generated successfully");
-        console.log("Profile Picture URL:", profUrl);
-        console.log("Background Image URL:", backgroundUrl);
-
-        // Update user object with new URLs
-        user.profilePictureUrl = profUrl || user.image;
-        user.backgroundImageUrl = backgroundUrl;
-
-        console.log("📦 Final user object:", user);
 
         // Send response
         res.status(200).json({ status: 200, user });
