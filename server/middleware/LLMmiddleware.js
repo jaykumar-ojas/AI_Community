@@ -210,9 +210,10 @@ async function extractImageDescription(context, userPrompt) {
     });
     
     return response.choices[0].message.content;
-  }
-  catch(error){
-    console.log(" i m giving error");
+
+  } catch (error) {
+    console.error("Error extracting image description:", error);
+    return null;
   }
 }
 
