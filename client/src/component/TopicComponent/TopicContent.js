@@ -15,6 +15,7 @@ import ReplyContent from "./ReplyComponent/ReplyContent";
 import bgPattern from '../../asset/backGroundImage.png'
 import { ForumContext} from "../ContextProvider/ModelContext";
 import ReplyCommentBox from "../AIchatbot/Component/ReplyCommentBox";
+import StateSelection from "./StateSelection";
 
 
 const TopicContent = () => {
@@ -97,6 +98,7 @@ const TopicContent = () => {
       // }}
       >
       <HeaderContent topic = {topic}></HeaderContent>
+      <StateSelection />
       <ReplyContent></ReplyContent>
       </div>
 
