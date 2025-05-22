@@ -145,14 +145,14 @@ const ShowCommentContent = ({reply,showViewMore,onViewMore,hasChildren,
     return (
       <div
         key={reply?._id}
-        className={`relative rounded-xl p-4 shadow-md border border-gray-200 transition-all duration-200 ${
+        className={`relative rounded-xl p-4 w-full shadow-md border border-gray-200 transition-all duration-200 ${
           isAuthor ? "bg-blue-50" : "bg-white"
         }`}
       >
         {/* user timestapm an d name is author or not */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex w items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-            <div className="flex  w-8 h-8">
+            <div className="flex  w-6 h-6">
               <UserIconCard id={reply?.userId}/>
             </div>
             <span className="text-blue-600">{reply?.userName}</span>
@@ -185,7 +185,7 @@ const ShowCommentContent = ({reply,showViewMore,onViewMore,hasChildren,
 
   
         {/* Display media attachments */}
-        {reply?.mediaAttachments?.length > 0 && (
+        {/* {reply?.mediaAttachments?.length > 0 && (
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
             {reply?.mediaAttachments.map((attachment, index) => (
               <div
@@ -196,7 +196,7 @@ const ShowCommentContent = ({reply,showViewMore,onViewMore,hasChildren,
               </div>
             ))}
           </div>
-        )}
+        )} */}
 
   
         {/* lower button section */}

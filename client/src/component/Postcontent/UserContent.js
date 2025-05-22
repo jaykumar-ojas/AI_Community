@@ -23,9 +23,9 @@ const UserContent = ({ post }) => {
   useEffect(() => {
     console.log("UserContent received post:", post);
     if (post) {
-      console.log("Post file URL:", post.signedUrl);
-      console.log("Post file type:", post.fileType);
-      console.log("Post user image:", post.image);
+      console.log("Post file URL:", post?.signedUrl);
+      console.log("Post file type:", post?.fileType);
+      console.log("Post user image:", post?.image);
       setPostData(post);
       
       // Check if current user has liked or disliked this post
@@ -207,15 +207,19 @@ const UserContent = ({ post }) => {
 
     if (fileType === 'image') {
       return (
-        <img
-          src={postData.imgUrl}
-          className="w-full h-full object-cover"
-          alt="Post content"
-          onError={(e) => {
-            console.error("Error loading image:", e);
-            e.target.src = "https://via.placeholder.com/400x280?text=Image+Not+Available";
-          }}
-        />
+        <div className="w-full h-full items-center justify-center mx-auto">
+           <img
+              src={postData.imgUrl}
+              className="h-full w-full object-cover items-center justify-center"
+              alt="Post content"
+              onError={(e) => {
+                console.error("Error loading image:", e);
+                e.target.src = "https://via.placeholder.com/400x280?text=Image+Not+Available";
+              }}
+            />
+        </div>
+       
+
       );
     } else if (fileType === 'video') {
       return (
@@ -328,13 +332,16 @@ const UserContent = ({ post }) => {
         </div>
       </div>
       {/* user media content */}
-      <div
-        className={`h-81 w-full bg-gray-200 flex items-center justify-center overflow-hidden ${postData.fileType === 'image' ? 'cursor-pointer' : ''}`}
-        style={{ height: "280px" }}
+      <div className="w-full h-full justify-center items-center flex">
+                <div
+        className={`h-80 w-80 bg-gray-200 flex items-center justify-center overflow-hidden ${postData.fileType === 'image' ? 'cursor-pointer' : ''}`}
+        
         onClick={handleMediaClick}
       >
         {renderMedia()}
       </div>
+      </div>
+      
 
       {/* user description and interaction */}
       <div className="">

@@ -62,9 +62,9 @@ const RecurrsionLoopComment = ({
 
       {/* Render children if expanded or not too deep */}
       {hasChildren && (!show || showReply)&& (!isDeep || isExpanded) && (
-        <div className="ml-4">
+        <div className="">
           {reply?.children.map((childReply) => (
-            <div key={childReply._id}>
+            <div key={childReply?._id}>
               <RecurrsionLoopComment
                 reply={childReply}
                 depth={depth + 1}

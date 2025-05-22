@@ -36,7 +36,7 @@ import { LogOutUser } from "./NavBarFunc";
     }
 
     return (
-      <Disclosure as="nav" className="sticky top-0 z-50 bg-gray-100 shadow-md">
+      <Disclosure as="nav" className="sticky top-0 h-20 z-50 bg-gray-100 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Mobile Menu */}
