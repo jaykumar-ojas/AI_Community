@@ -33,16 +33,18 @@ const RecurrsionLoopComment = ({
     "border-purple-300",
   ][depth % 5];
 
+  // className={`relative my-2 ${depth > 0 ? `pl-4 border-l-2 ${borderColor}` : ""}}` this is upper div class
   return (
-    <div key={reply?._id} className={`relative my-2 ${depth > 0 ? `pl-4 border-l-2 ${borderColor}` : ""}`}>
+    <div key={reply?._id} className={`${depth > 0 ? "pl-10" : ""}`}>
+
        {/* Thread connector dot */}
-       {depth > 0 && (
+       {/* {depth > 0 && (
         <>
           <div className={`absolute left-[-1px] top-16 w-4 h-0.5 ${threadColor}`}></div>
 
           <div className="absolute top-16 bg-white"></div>
           </>
-      )}
+      )} */}
       {reply && (
         <ShowCommentContent
           reply={reply}

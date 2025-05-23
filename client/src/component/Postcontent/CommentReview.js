@@ -56,19 +56,12 @@ const CommentReview = () => {
 
   return (
     <div>
-      <div className="relative flex w-full  items-center gap-2 p-2 rounded-md  border border-gray-200 mb-2">
-        <ReplyBubbleIcon />
-        <h3 className="sticky fixed text-sm w-full font-semibold text-gray-700 tracking-wide">
-          Replies
-        </h3>
+      <div className="relative flex w-full items-center gap-2 p-2 mb-2">
+        <h1 className="sticky fixed text-2xl w-full font-semibold text-text_comment tracking-wide">
+          Comments
+        </h1>
       </div>
-      <div
-        className="replyContent w-full"
-        // style={{
-        //   maxHeight: "h-[70vh]", // or any height you want
-        //   overflowY: "auto",
-        // }}
-      >
+      <div className="replyContent w-full pt-2">
         {!threadView &&
           structureReply ?(
           structureReply.map((reply, index) => (

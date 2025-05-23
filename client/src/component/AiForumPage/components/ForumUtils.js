@@ -23,14 +23,34 @@ export const handleAuthError = (error, setError) => {
 
 // Format date for display
 export const formatDate = (dateString) => {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(dateString));
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+  const diffWeek = Math.floor(diffDay / 7);
+
+  if (diffSec < 60) {
+    return `${diffSec} second${diffSec !== 1 ? 's' : ''} ago`;
+  } else if (diffMin < 60) {
+    return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+  } else if (diffHr < 24) {
+    return `${diffHr} hour${diffHr !== 1 ? 's' : ''} ago`;
+  } else if (diffDay < 7) {
+    return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+  } else if (diffDay < 15) {
+    return `${diffWeek} week${diffWeek !== 1 ? 's' : ''} ago`;
+  } else {
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(date);
+  }
 };
+
 
 // Organize replies into a nested structure
 export const organizeReplies = (replyList) => {

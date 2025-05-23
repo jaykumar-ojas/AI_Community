@@ -107,10 +107,10 @@ const PostContent = () => {
   }
 
   return (
-    <div className="pt-4 min-h-screen bg-white">
+    <div className="pt-4 bg-bg_comment min-h-screen">
       <div className="container mx-auto px-4 xl:px-16 flex flex-col lg:flex-row gap-6">
         {/* Left Section */}
-        <div className="w-full lg:w-[60%]">
+        <div className="w-full lg:w-[35%]">
           <div className="mb-6">
             {post ? (
               <UserContent post={post} />
@@ -138,8 +138,8 @@ const PostContent = () => {
         </div>
 
         {/* Right Section - Sticky Sidebar */}
-        <div className="w-full lg:w-[40%]">
-          <div className="sticky top-24 h-[calc(100vh-6rem)] flex flex-col justify-between overflow-hidden">
+        <div className="w-full bg-bg_comment_box p-8 rounded-xl lg:w-[65%]">
+          <div className="sticky top-24 h-[calc(100vh-11rem)] flex flex-col justify-between overflow-hidden">
             <div className="overflow-y-auto pr-2  h-full">
               <CommentReview />
             </div>
