@@ -131,8 +131,7 @@ const Page = () => {
 
   return (
     <>
-      <Navbar />
-        <div className="min-h-screen bg-gray-100">
+        <div className="h-full bg-gray-100">
           <div className="container mx-auto px-4">
             <div className="flex gap-8">
               {/* Main content area with grid layout */}

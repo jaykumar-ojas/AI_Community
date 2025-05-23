@@ -93,7 +93,7 @@ const ReplyCommentBox = ({onClose}) => {
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ duration: 0.4 }}
-        className="relative bottom-0 left-0 right-0 w-full bg-white shadow-lg border-t border-gray-200 z-50 p-4"
+        className="relative bottom-0 left-0 w-full bg-white shadow-lg border-t border-gray-200 z-50 p-4"
       >
           <div className="pb-4 text-sm text-gray-700 flex justify-between items-center">
             <span>

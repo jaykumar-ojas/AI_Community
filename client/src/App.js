@@ -8,7 +8,7 @@ import UserProfile2 from "./component/UserProfile/userProfile2";
 //import UserProfile from "./component/UserProfile/userProfile";
 import Error from "./component/Error/error";
 import UpdatePassword from "./component/Auth/updatePassword";
-import { createBrowserRouter, RouterProvider, useNavigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useLocation, useNavigate,Outlet } from "react-router-dom";
 import React from "react";
 import Context from "./component/ContextProvider/context";
 import ForgotPassword from "./component/Auth/ForgotPassword";
@@ -26,75 +26,49 @@ import 'react-image-crop/dist/ReactCrop.css';
 import PixelLoader from "./component/Loader/PixelLoader";
 import UserProfile from "./component/userProfileView/userProfile";
 
+
+const Layout = () => {
+  const location = useLocation();
+  
+  // Paths where you do NOT want the Navbar to appear
+  const noNavbarPaths = ["/login", "/register", "/forgot-password"];
+  const shouldHideNavbar = noNavbarPaths.includes(location.pathname);
+
+  return (
+    <>
+      {!shouldHideNavbar && <Navbar />}
+      <main className={!shouldHideNavbar ? "min-h-screen bg-gray-100" : ""}>
+        <Outlet />
+      </main>
+    </>
+  );
+};
+
+
 const router = createBrowserRouter([
   {
-    path: "/login",
-    element:<Login></Login>
-  },
-  {
-    path: "/register",
-    element: <Register></Register>,
-  },
-  {
     path: "/",
-    element: <DashBoardPage></DashBoardPage>,
+    element: <Layout />, // Wrap layout here
+    children: [
+      { index: true, element: <DashBoardPage /> },
+      { path: "userprofile", element: <UserProfile2 /> },
+      { path: "userprofile/:userId", element: <UserProfile2 /> },
+      { path: "forgot-password", element: <ForgotPassword /> },
+      { path: "verify-otp/:id", element: <VerfiyOtp /> },
+      { path: "update-password/:id", element: <UpdatePassword /> },
+      { path: "userPost/:id", element: <PostContent /> },
+      { path: "test2", element: <PostData /> },
+      { path: "userProfile/:userId", element: <AnotherUser /> },
+      { path: "ai-aggregator/:topicId", element: <AIAggregator /> },
+      { path: "forum/topic/:topicId/:replyId?", element: <AIAggregator /> },
+      { path: "t/:topicId", element: <TopicContent /> },
+      { path: "loader", element: <PixelLoader /> },
+      { path: "sample-user/:id", element: <UserProfile /> },
+    ]
   },
-  {
-    path: "*",
-    element: <Error></Error>,
-  },
-  {
-    path: "/userprofile",
-    element: <UserProfile2></UserProfile2>,
-  },
-  {
-    path: "/userprofile/:userId",
-    element: <UserProfile2></UserProfile2>,
-  },
-  {
-    path: "/forgot-password",
-    element: <ForgotPassword></ForgotPassword>,
-  },
-  {
-    path: "/verify-otp/:id",
-    element:<VerfiyOtp></VerfiyOtp>
-  },
-  {
-    path:'/update-password/:id',
-    element:<UpdatePassword></UpdatePassword>
-  },
-  {
-    path:"/userPost/:id",
-    element:<PostContent></PostContent>
-  },
-  {
-    path:'/test2',
-    element:<PostData></PostData>
-  },
-  {
-    path:'/userProfile/:userId',
-    element:<AnotherUser></AnotherUser>
-  },
-  {
-    path:'/ai-aggregator/:topicId',
-    element:<AIAggregator></AIAggregator>
-  },
-  {
-    path: '/forum/topic/:topicId/:replyId?',
-    element: <AIAggregator></AIAggregator>
-  },
-  {
-    path: '/t/:topicId',
-    element: <TopicContent></TopicContent>
-  },
-  {
-    path:'/loader',
-    element: <PixelLoader></PixelLoader>
-  },
-  {
-    path:'/sample-user/:id',
-    element: <UserProfile></UserProfile>
-  }
+  { path: "/login", element: <Login /> },
+  { path: "/register", element: <Register /> },
+  { path: "*", element: <Error /> },
 ]);
 
 function App() {
