@@ -98,7 +98,7 @@ const TopicContent = () => {
       // }}
       >
       <HeaderContent topic = {topic}></HeaderContent>
-      <StateSelection />
+      {/* <StateSelection /> */}
       <ReplyContent></ReplyContent>
       </div>
 

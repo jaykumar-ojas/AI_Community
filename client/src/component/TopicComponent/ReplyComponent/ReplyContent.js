@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { LoginContext } from "../../ContextProvider/context";
 import { useParams } from "react-router-dom";
 import { getAuthHeaders, handleAuthError, organizeReplies, REPLIES_URL } from "../../AiForumPage/components/ForumUtils";
@@ -6,6 +6,7 @@ import ShowReplyContent from "./ShowReplyContent";
 import axios from "axios";
 import RecurrsionLoop from "./RecurrsionLoop";
 import { useWebSocket } from "../../AiForumPage/components/WebSocketContext";
+import "./ReplyContent.css";
 
 const ReplyContent = () => {
   const {topicId} = useParams();  
@@ -15,6 +16,18 @@ const ReplyContent = () => {
   const [isLoading,setIsLoading] = useState(false);
   const [expandedThreads,setExpandedThreads] = useState({});
   const [threadView,setThreadView] = useState();
+
+  const [forceRender, setForceRender] = useState(0); // Add force render trigger
+  const repliesContainerRef = useRef(null);
+  const { subscribeToEvent, joinTopic, leaveTopic } = useWebSocket();
+
+  // Join topic room when component mounts
+  useEffect(() => {
+    if (topicId) {
+      joinTopic(topicId);
+      return () => leaveTopic(topicId);
+    }
+  }, [topicId, joinTopic, leaveTopic]);
 
   const findReplyById = (replies, replyId) => {
     for (const reply of replies) {
@@ -29,7 +42,103 @@ const ReplyContent = () => {
     return null;
   };
 
+  // Helper function to update nested replies
+  const updateRepliesWithNewReply = (replies, newReply) => {
+    if (!replies) return [newReply];
+    
+    const updatedReplies = [...replies];
+    
+    if (newReply.parentReplyId) {
+      // Find and update parent reply recursively
+      const updateParentReply = (repliesArray) => {
+        for (let i = 0; i < repliesArray.length; i++) {
+          if (repliesArray[i]._id === newReply.parentReplyId) {
+            if (!repliesArray[i].children) {
+              repliesArray[i].children = [];
+            }
+            repliesArray[i].children.push(newReply);
+            return true;
+          }
+          if (repliesArray[i].children && repliesArray[i].children.length > 0) {
+            if (updateParentReply(repliesArray[i].children)) return true;
+          }
+        }
+        return false;
+      };
+      
+      const updated = updateParentReply(updatedReplies);
+      if (!updated) {
+        console.warn('Parent reply not found for nested reply:', newReply.parentReplyId);
+        // Fallback: add as root level reply if parent not found
+        updatedReplies.push(newReply);
+      }
+    } else {
+      // Root level reply
+      updatedReplies.push(newReply);
+    }
+    
+    return updatedReplies;
+  };
 
+ 
+  // useEffect(() => {
+  //   const unsubscribe = subscribeToEvent('reply_created', (newReply) => {
+  //     console.log('Received new reply:', newReply);
+      
+  //     if (newReply.topicId === topicId ) {
+  //       console.log('Processing new reply for topic:', topicId);
+        
+  //       // Update replies state with proper immutability
+  //       setReplies(prevReplies => {
+  //         const updatedReplies = updateRepliesWithNewReply(prevReplies, newReply);
+  //         console.log('Updated replies:', updatedReplies);
+  //         return updatedReplies;
+  //       });
+        
+
+  //                 // Force update structured replies after a brief delay
+  //       setTimeout(() => {
+  //         setReplies(currentReplies => {
+  //           const newStructured = organizeReplies(currentReplies);
+  //           console.log('Updating structured replies:', newStructured);
+  //           setStructureReply([...newStructured]); // Force new array reference
+  //           setForceRender(prev => prev + 1); // Force component re-render
+  //           console.log("currentreplie",currentReplies);
+  //           return currentReplies;
+  //         });
+          
+  //         // Auto-expand parent thread if nested reply
+  //         if (newReply.parentReplyId) {
+  //           setExpandedThreads(prev => ({
+  //             ...prev,
+  //             [newReply.parentReplyId]: true
+  //           }));
+  //         }
+  //       }, 10);
+  //     }
+  //   });
+
+  //   return () => unsubscribe();
+  // }, [topicId, subscribeToEvent]);
+
+  useEffect(() => {
+  const unsubscribe = subscribeToEvent('reply_created', (newReply) => {
+    console.log("this data coming from backend",newReply);
+    if (newReply.topicId === topicId) {
+      setReplies((prevReplies) => {
+        const updatedReplies = [...prevReplies, newReply];
+        setStructureReply(organizeReplies(updatedReplies));
+        console.log(structureReply,"this is printed my sturcture replies");
+        return updatedReplies;
+      });
+    }
+  });
+
+  return () => unsubscribe(); // Clean up on unmount
+}, [topicId, subscribeToEvent]);
+
+  // Scroll to new reply with retry mechanism
+ 
 
   useEffect(()=>{
     if(topicId){
@@ -37,96 +146,102 @@ const ReplyContent = () => {
     }
   },[topicId]);
 
-    useEffect(()=>{
-      if(replies){
-          console.log("now i m here");
-          setStructureReply(organizeReplies(replies));
-      }
-    },[replies])
+  // Update structured replies when replies change from API call (initial load)
+  useEffect(()=>{
+    if(replies){
+        setStructureReply(organizeReplies(replies));
+        console.log("i am comming to structure the data", replies?.length);
+    }
+  },[replies]);
 
   const fetchReplies = async (topicId) => {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const response = await axios.get(`${REPLIES_URL}?topicId=${topicId}`, { headers: getAuthHeaders() });
-        setReplies(response.data.replies || []);
-      } catch (err) {
-        if (handleAuthError(err, setError)) {
-          return;
-        }
-        console.error('Error fetching replies:', err);
-        setError('Failed to load replies. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-
-    const toggleThreadExpansion = (replyId) => {
-      setExpandedThreads((prev) => ({
-        ...prev,
-        [replyId]: !prev[replyId],
-      }));
-    };
-  
-    const handleViewThread = (replyId) => {
-      setThreadView(replyId);
-    };
-
-    if(isLoading){
-      return (
-        <h1>loaging content</h1>
-      );
-    }
-
-    if (threadView) {
-      const thread = findReplyById(structureReply, threadView);
-      return (
-        <div className="thread-view">
-          <button
-            className="text-blue-600 hover:underline mb-2 text-sm"
-            onClick={() => setThreadView(null)}
-          >
-            ← Back to main discussion
-          </button>
-          {thread && (
-            <RecurrsionLoop
-              reply={thread}
-              expandedThreads={expandedThreads}
-              toggleThreadExpansion={toggleThreadExpansion}
-              handleViewThread={setThreadView}
-            />
-          )}
-        </div>
-      );
-    }
-
+    setIsLoading(true);
+    setError(null);
     
-  return (
-    <div>
-         <div className="relative flex items-center gap-2 p-2 rounded-md  border border-gray-200 mb-2">
-          <ReplyBubbleIcon />
-          <h3 className="text-sm font-semibold text-gray-700 tracking-wide">Replies</h3>
-        </div>
-        <div className="replyContent"
-            style={{
-              maxHeight: '600px', // or any height you want
-              overflowY: 'auto',
-            }}>
-        {!threadView && structureReply && structureReply.map((reply,index)=>(
-          <div key={index}  className="ml-2">
-             <RecurrsionLoop reply={reply}  expandedThreads={expandedThreads}
+    try {
+      const response = await axios.get(`${REPLIES_URL}?topicId=${topicId}`, { headers: getAuthHeaders() });
+      setReplies(response.data.replies || []);
+    } catch (err) {
+      if (handleAuthError(err, setError)) {
+        return;
+      }
+      console.error('Error fetching replies:', err);
+      setError('Failed to load replies. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleThreadExpansion = (replyId) => {
+    setExpandedThreads((prev) => ({
+      ...prev,
+      [replyId]: !prev[replyId],
+    }));
+  };
+
+  const handleViewThread = (replyId) => {
+    setThreadView(replyId);
+  };
+
+  if(isLoading){
+    return (
+      <h1>Loading content...</h1>
+    );
+  }
+
+  if (threadView) {
+    const thread = findReplyById(structureReply, threadView);
+    return (
+      <div className="thread-view">
+        <button
+          className="text-blue-600 hover:underline mb-2 text-sm"
+          onClick={() => setThreadView(null)}
+        >
+          ← Back to main discussion
+        </button>
+        {thread && (
+          <RecurrsionLoop
+            reply={thread}
+            expandedThreads={expandedThreads}
             toggleThreadExpansion={toggleThreadExpansion}
-            handleViewThread={handleViewThread}/>
+            handleViewThread={setThreadView}
+          />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      ref={repliesContainerRef}
+      className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto"
+    >
+      {isLoading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : error ? (
+        <div className="p-4 text-center text-red-500">{error}</div>
+      ) : structureReply && structureReply.length > 0 ? (
+        structureReply.map((reply) => (
+          <div key={reply._id} id={`reply-${reply._id}`} className="reply-content">
+            <RecurrsionLoop
+              reply={reply}
+              expandedThreads={expandedThreads}
+              setExpandedThreads={setExpandedThreads}
+              threadView={threadView}
+              setThreadView={setThreadView}
+            />
           </div>
-        ))}</div>
-    </div> 
+        ))
+      ) : (
+        <div className="text-center text-gray-500 py-8">No replies yet</div>
+      )}
+    </div>
   );
 };
 
 export default ReplyContent;
-
 
 const ReplyBubbleIcon = () => (
   <svg
@@ -157,5 +272,3 @@ const findReplyById = (replies, replyId) => {
   }
   return null;
 };
-
-
