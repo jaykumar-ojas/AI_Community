@@ -30,54 +30,58 @@ const ReplyCommentBox = ({onClose}) => {
     setSelectedFiles(Array.from(e.target.files));
   };
 
-  const handlePostReply = async () => {
-    if (!loginData?.validuserone) return alert("Please log in to reply");
-
-    if (!newReply.trim()) return alert("Please enter a reply");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newReply.trim()) return;
 
     setIsLoading(true);
-    setIsUploading(true);
     setError(null);
 
     try {
       const formData = new FormData();
-      formData.append("content", newReply);
-      formData.append("topicId", topicId);
-      formData.append("userId", loginData.validuserone._id);
-      formData.append("userName", loginData.validuserone.userName);
-      formData.append("model", model || "");
-      if(replyIdForContext)
-      formData.append("parentReplyId", replyIdForContext);
+      formData.append('content', newReply);
+      formData.append('topicId', topicId);
+      formData.append('userId', loginData.validuserone._id);
+      formData.append('userName', loginData.validuserone.userName);
+      if (replyIdForContext) {
+        formData.append('parentReplyId', replyIdForContext);
+      }
 
-      selectedFiles.forEach(file => formData.append("media", file));
-
-      const alreadyUploadedUrls = selectedFiles
-        .filter(file => !(file instanceof File))
-        .map(file => file.url);
-
-      // Add each URL in mediaUrls[]
-      alreadyUploadedUrls.forEach(url => {
-      formData.append("mediaUrls", url);
+      // Append files if any
+      selectedFiles.forEach(file => {
+        formData.append('media', file);
       });
 
       const response = await axios.post(REPLIES_URL, formData, {
         headers: {
           ...getAuthHeaders(),
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data',
         },
       });
-      emitNewReply(response.data.reply);
-      setReplyIdForContext(null);
-      setNewReply("");
-      setModel("");
-      setSelectedFiles([]);
-      onClose(); // close drawer
+
+      if (response.status === 201) {
+        console.log('Emitting new reply:', response.data.reply);
+        // Emit the new reply event with the complete reply object
+        emitNewReply({
+          ...response.data.reply,
+          topicId: topicId,
+          userName: loginData.validuserone.userName,
+          userId: loginData.validuserone._id
+        });
+        
+        // Clear the form
+        setNewReply('');
+        setSelectedFiles([]);
+        if (onClose) onClose();
+      }
     } catch (err) {
-      if (handleAuthError(err, setError)) return;
-      setError("Failed to post reply.");
+      if (handleAuthError(err, setError)) {
+        return;
+      }
+      console.error('Error posting reply:', err);
+      setError('Failed to post reply. Please try again.');
     } finally {
       setIsLoading(false);
-      setIsUploading(false);
     }
   };
 
@@ -109,10 +113,7 @@ const ReplyCommentBox = ({onClose}) => {
               </span>}
             </span>
           </div>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          handlePostReply();
-        }}>
+        <form onSubmit={handleSubmit}>
           <div className="flex mb-2">
             <input
               type="text"

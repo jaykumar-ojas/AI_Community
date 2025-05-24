@@ -71,34 +71,45 @@ io.on('connection', (socket) => {
 
   // Join a topic room
   socket.on('join_topic', (topicId) => {
-    socket.join(`topic_${topicId}`);
+    const room = `topic_${topicId}`;
+    socket.join(room);
+    console.log(`User joined room: ${room}`);
   });
 
   // Leave a topic room
   socket.on('leave_topic', (topicId) => {
-    socket.leave(`topic_${topicId}`);
+    const room = `topic_${topicId}`;
+    socket.leave(room);
+    console.log(`User left room: ${room}`);
   });
 
   // New topic created
   socket.on('new_topic', (topic) => {
-    console.log("i ma going to emit new topic");
+    console.log("New topic created:", topic);
     io.emit('topic_created', topic);
   });
 
   // New reply added
   socket.on('new_reply', (reply) => {
-    console.log("i m sending to frontend",reply);
-    io.to(`topic_${reply.topicId}`).emit('reply_created', reply);
+    console.log("New reply received:", reply);
+    const room = `topic_${reply.topicId}`;
+    // Broadcast to all clients in the room except the sender
+    socket.to(room).emit('reply_created', reply);
+    // Also emit to the sender to ensure they get the update
+    socket.emit('reply_created', reply);
   });
 
   // Topic deleted
   socket.on('delete_topic', (topicId) => {
+    console.log("Topic deleted:", topicId);
     io.emit('topic_deleted', topicId);
   });
 
   // Reply deleted
   socket.on('delete_reply', (data) => {
-    io.to(`topic_${data.topicId}`).emit('reply_deleted', data.replyId);
+    console.log("Reply deleted:", data);
+    const room = `topic_${data.topicId}`;
+    io.to(room).emit('reply_deleted', data.replyId);
   });
 
   socket.on('disconnect', () => {

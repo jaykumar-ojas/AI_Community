@@ -110,10 +110,12 @@ const imageGenerator = async(text)=>{
    
     // Call the OpenAI API to generate an image
     const response = await openai.images.generate({
-      model: "dall-e-3", // Using dall-e-2 which has fewer content restrictions
+      model: "dall-e-3",
       prompt: text,
       n: 1,
       size: "1024x1024",
+      quality: "hd",
+  
     });
   
     // Extract the image URL from the response
