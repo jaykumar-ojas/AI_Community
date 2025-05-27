@@ -1,0 +1,22 @@
+.highlight-new-reply {
+  animation: highlight 2s ease-out;
+}
+
+@keyframes highlight {
+  0% {
+    background-color: rgba(59, 130, 246, 0.2);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+.reply-content {
+  transition: all 0.3s ease;
+}
+
+.reply-content:hover {
+  transform: translateX(4px);
+} 

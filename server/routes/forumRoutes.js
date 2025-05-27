@@ -10,6 +10,7 @@ const AWS = require('aws-sdk');
 const { modelSelection } = require('../middleware/LLMmiddleware');
 const {deleteForumById} = require('../middleware/DeleteMiddleware');
 
+
 // Configure AWS
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,

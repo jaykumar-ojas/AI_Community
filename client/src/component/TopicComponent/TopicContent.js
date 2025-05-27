@@ -103,9 +103,9 @@ const TopicContent = () => {
       <div className="bg-bg_comment_box rounded-xl p-4">
         <HeaderContent topic={topic} />
       </div>
-
       <div className="bg-bg_comment_box rounded-xl p-4 pt-0">
         <ReplyContent />
+
       </div>
     </div>
 
