@@ -8,7 +8,8 @@ const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const AWS = require('aws-sdk');
 const { modelSelection } = require('../middleware/LLMmiddleware');
-const { deleteForumById } = require('../middleware/DeleteMiddleware');
+const {deleteForumById} = require('../middleware/DeleteMiddleware');
+
 
 // Configure AWS
 AWS.config.update({

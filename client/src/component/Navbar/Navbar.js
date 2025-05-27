@@ -13,13 +13,12 @@ import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOutUser } from "./NavBarFunc";
+import { SearchIcon } from "../../asset/icons";
 
 
   const navigation = [
-    { name: "Dashboard", href: "#", current: true },
-    { name: "Team", href: "/test2", current: false },
-    { name: "Projects", href: "#", current: false },
-    { name: "Calendar", href: "#", current: false },
+    { name: "Home", href:'#',current: true},
+    { name: "Team", href: "/test2", current: false }
   ];
   
   function classNames(...classes) {
@@ -36,9 +35,10 @@ import { LogOutUser } from "./NavBarFunc";
     }
 
     return (
-      <Disclosure as="nav" className="sticky top-0 h-20 z-50 bg-gray-100 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
+      <>
+      <Disclosure as="nav" className="sticky top-0 z-50 backdrop-blur-md backdrop-saturate-150 bg-bg_comment/80 shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
+          <div className="flex justify-between  items-center h-14">
             {/* Mobile Menu */}
             <div className="flex items-center sm:hidden">
               <DisclosureButton className="inline-flex items-center justify-center p-2 text-gray-600 hover:bg-gray-200 hover:text-gray-800 rounded-md">
@@ -48,21 +48,25 @@ import { LogOutUser } from "./NavBarFunc";
             </div>
   
             {/* Logo and Navigation Links */}
-            <div className="flex items-center space-x-4">
-              <img
-                src={logo}
-                alt="Logo"
-                className="h-10 w-auto"
-              />
-              <div className="hidden sm:flex space-x-6">
+            <div className="relative flex h-full items-center space-x-4 overflow-hidden">
+              <div className="h-8 w-8 rounded-full overflow-hidden">
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+
+              
+              <div className="hidden sm:flex space-x-2">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
                     className={classNames(
                       item.current
-                        ? "text-indigo-600 font-semibold"
-                        : "text-gray-600 hover:text-indigo-600",
+                        ? "text-like_color font-semibold"
+                        : "text-text_header hover:text-like_color",
                       "px-3 py-2 rounded-md text-sm"
                     )}
                     aria-current={item.current ? "page" : undefined}
@@ -72,33 +76,28 @@ import { LogOutUser } from "./NavBarFunc";
                 ))}
               </div>
             </div>
-
-  
-            {/* Search Bar */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center px-4 py-2 rounded-full border border-gray-300 shadow-sm bg-white">
+              
+              {/* search icon */}
+            <div className="flex items-center w-[60%] px-4 rounded-full border border-gray-300 shadow-sm bg-bg_comment/70">
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="w-48 md:w-64 outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm"
+                  className="w-full outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm"
                 />
                 <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 192.904 192.904"
-                    width="20px"
-                    className="fill-gray-500"
-                  >
-                    <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
-                  </svg>
+                  <SearchIcon/>
                 </button>
               </div>
+
+  
+             {/* user icon bell icon */}
+            <div className="flex items-center space-x-4">
   
               {/* Notification and Profile Dropdown */}
               <div className="flex items-center space-x-4">
                 <button
                   type="button"
-                  className="p-2 text-gray-500 hover:text-gray-800"
+                  className="p-2 text-text_header hover:text-text_comment"
                 >
                   <BellIcon className="h-6 w-6" />
                 </button>
@@ -152,7 +151,7 @@ import { LogOutUser } from "./NavBarFunc";
                     </MenuItem>
                   </MenuItems>
                 </Menu>)
-                :(<button onClick={()=> history('/login')}>Sign In</button>) }
+                :(<button onClick={()=> history('/login')} className="text-text_header ">Sign In</button>) }
               </div>
             </div>
           </div>
@@ -180,6 +179,7 @@ import { LogOutUser } from "./NavBarFunc";
           </div>
         </DisclosurePanel>
       </Disclosure>
-    );
+      </>
+    )
 }
   

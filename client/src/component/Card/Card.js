@@ -10,7 +10,7 @@ const Card = ({ post }) => {
   const [showLogin, setShowLogin] = useState(false);
   const { loginData } = useContext(LoginContext);
   const navigate = useNavigate();
-  console.log("this is my post inside data",post);
+  // console.log("this is my post inside data",post);
   
   const handleCardClick = () => {
     // Check if this is a forum media post

@@ -5,7 +5,7 @@ import axios from "axios";
 import { LoginContext } from "../ContextProvider/context";
 import UserIconCard from "../Card/UserIconCard";
 import UserNameCard from "../Card/UserNameCard";
-
+import { heartSvg,thumbsDownSvg } from "../../asset/icons";
 
 
 
@@ -207,10 +207,10 @@ const UserContent = ({ post }) => {
 
     if (fileType === 'image') {
       return (
-        <div className="w-full h-full items-center justify-center mx-auto">
+        <div className="w-full h-full rounded-lg bg-black  items-center justify-center ">
            <img
               src={postData.imgUrl}
-              className="h-full w-full object-cover items-center justify-center"
+              className="h-full w-full object-contain items-center justify-center"
               alt="Post content"
               onError={(e) => {
                 console.error("Error loading image:", e);
@@ -218,8 +218,6 @@ const UserContent = ({ post }) => {
               }}
             />
         </div>
-       
-
       );
     } else if (fileType === 'video') {
       return (
@@ -280,25 +278,25 @@ const UserContent = ({ post }) => {
   };
 
   return (
-    <div className="w-full border rounded-lg bg-white shadow-lg flex flex-col gap-0">
+    <div className="w-full rounded-lg bg-bg_comment_box/40 shadow-lg flex flex-col gap-0">
       {/* user header */}
-      <div className="flex justify-between items-center w-full h-full">
+      <div className="flex justify-between items-center px-2 w-full h-full">
         <div className="flex jsutify-between">
-          <Link to={`/userprofile/${postData?.userId}`} className="w-12 h-12 m-2">
+          <Link to={`/userprofile/${postData?.userId}`} className="w-8 h-8 m-2">
            <div className="w-full h-full">
             <UserIconCard id ={postData?.userId}></UserIconCard>
            </div>
           </Link>
           {/* user name remain */}
-          <Link to={`/userprofile/${postData?.userId}`} className="font-bold text-red-700 m-2 flex items-center hover:text-red-900">
+          <Link to={`/userprofile/${postData?.userId}`} className="font-bold text-text_header m-2 flex items-center hover:text-red-900">
             <UserNameCard id={postData?.userId}></UserNameCard>
           </Link>
         </div>
 
         {/* this is for openpanel */}
-        <div className="p-3">
+        <div className="px-2">
           <Menu as="div" className="relative z-10">
-            <MenuButton className="flex gap-1 text-gray-700 font-extrabold items-center focus:outline-none">
+            <MenuButton className="flex gap-1 text-time_header font-extrabold items-center focus:outline-none">
               <p>.</p>
               <p>.</p>
               <p>.</p>
@@ -332,9 +330,9 @@ const UserContent = ({ post }) => {
         </div>
       </div>
       {/* user media content */}
-      <div className="w-full h-full justify-center items-center flex">
-                <div
-        className={`h-80 w-80 bg-gray-200 flex items-center justify-center overflow-hidden ${postData.fileType === 'image' ? 'cursor-pointer' : ''}`}
+      <div className="w-full h-full bg-black justify-center items-center flex">
+        <div
+        className={`h-full w-44  flex items-center justify-center overflow-hidden ${postData.fileType === 'image' ? 'cursor-pointer' : ''}`}
         
         onClick={handleMediaClick}
       >
@@ -344,8 +342,8 @@ const UserContent = ({ post }) => {
       
 
       {/* user description and interaction */}
-      <div className="">
-        <div className="flex items-center gap-4 m-2">
+      <div>
+        <div className="flex items-center gap-4 p-2 pb-1">
           {/* Like button */}
           <button 
             className="flex items-center gap-1"
@@ -353,7 +351,7 @@ const UserContent = ({ post }) => {
             title={userLiked ? "Remove like" : "Like this post"}
           >
             {heartSvg(userLiked)}
-            <span className="text-sm font-medium">{postData.likes ? postData.likes.length : 0}</span>
+            <span className="text-xs font-medium">{postData.likes ? postData.likes.length : 0}</span>
           </button>
           
           {/* Dislike button */}
@@ -366,7 +364,7 @@ const UserContent = ({ post }) => {
             <span className="text-sm font-medium">{postData.dislikes ? postData.dislikes.length : 0}</span>
           </button>
         </div>
-        <div className="p-2 h-16">{postData?.desc || "No description available"}</div>
+        <div className="p-2 pt-1 text-sm text-time_header">{postData?.desc || "No description available"}</div>
       </div>
     </div>
   );
@@ -375,26 +373,4 @@ const UserContent = ({ post }) => {
 export default UserContent;
 
 
-const heartSvg = (filled = false) => {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="21" id="heart">
-      <path
-        fill={filled ? "#ff4d4d" : "none"}
-        fillRule="evenodd"
-        stroke={filled ? "#ff4d4d" : "#000"}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M20.84 2.61a5.5 5.5 0 0 0-7.78 0L12 3.67l-1.06-1.06a5.501 5.501 0 0 0-7.78 7.78l1.06 1.06L12 19.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-      ></path>
-    </svg>
-  );
-};
 
-const thumbsDownSvg = (filled = false) => {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={filled ? "#3b82f6" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" fill={filled ? "#3b82f6" : "none"}></path>
-    </svg>
-  );
-};

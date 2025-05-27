@@ -46,23 +46,23 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-bg_comment">
       {/* Sidebar */}
-      <ModelList></ModelList>
+      <div className='w-[20%]'>
+        <ModelList></ModelList>
+      </div>
+      
       
       {/* Main Content */}
-      <div className="flex-1 min-h-screen flex flex-col">
+      <div className="flex-1 min-h-screen flex flex-col w-[60%]">
         
         {/* Chat Container */}
-        <div className="flex-1 overflow-y-auto bg-gray-50">
+        <div className="flex-1">
           <TopicContent/>
         </div>
-        <div className="relative w-full">
-        {<ReplyCommentBox onClose={()=>{
-          setReplyIdForContext(null);
-          setViewBox(false);
-          }} />}
-        </div>
+      </div>
+      <div className='w-[20%]'>
+        this is my forum
       </div>
     </div>
   );

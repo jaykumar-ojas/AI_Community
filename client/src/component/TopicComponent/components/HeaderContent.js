@@ -102,107 +102,109 @@ const HeaderContent = ({ topic, onDelete }) => {
   };
 
   return (
-    <div className={`sticky top-10 rounded-xl  border shadow-sm p-4 mb-4 ${
-      isAuthor ? "bg-blue-50" : "bg-white"
-      // isAuthor ? "bg-transparent" : "bg-transparent"
-      }`}>
-      {/* Header: User Info */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex   items-center text-sm text-gray-600">
-            <div className="flex  mr-4  w-12 h-12">
-              <UserIconCard id={topic?.userId}/>
-            </div>
-            <div className="flex">
-              <span className="font-semibold text-blue-700"><UserNameCard id ={topic?.userId}/></span>
-              <span className="ml-2 text-gray-400">{formatDate(topic?.createdAt)}</span>
-            </div>
-          
-        </div>
-        {isAuthor && (
-          <button
-            onClick={onDelete}
-            className="text-red-500 hover:text-red-700 transition-colors duration-200"
-            title="Delete post"
-          >
-            <DeleteIcon />
-          </button>
-        )}
+    <div className="flex justify-start mb-0">
+  {/* User Icon Outside */}
+  <div className="w-8 h-8 flex-shrink-0">
+    <UserIconCard id={topic?.userId} />
+  </div>
+
+  {/* Content Section */}
+  <div className="flex flex-col p-4 pt-0 ml-2 rounded-xl w-full">
+    {/* Header: User Info */}
+    <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center gap-2  text-gray-700">
+        <span className="font-normal text-sm text-text_header">
+          <UserNameCard id={topic?.userId} />
+        </span>
+        <div className="w-1 h-1 bg-time_header rounded-full"></div>
+        <span className="text-xs text-time_header">
+          {formatDate(topic?.createdAt)}
+        </span>
       </div>
 
-      {/* Content */}
-      <div>
-      <div
-        ref={contentRef}
-        className={`text-base transition-all duration-300 ${
-          expanded ? "" : "line-clamp-4"
-        }`}
-      >
-        {topic?.content}
-      </div>
-
-      {showToggle && (
+      {isAuthor && (
         <button
-          onClick={() => setExpanded((prev) => !prev)}
-          className="text-blue-500 mt-2 hover:underline"
+          onClick={onDelete}
+          className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
+          title="Delete post"
         >
-          {expanded ? "View less" : "View more"}
+          <DeleteIcon />
         </button>
       )}
     </div>
 
-      {/* Media */}
-      {topic?.mediaAttachments?.length > 0 && (
-        <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {topic.mediaAttachments.map((attachment, index) => (
-            <div
-              key={index}
-              className="overflow-hidden rounded-lg border border-gray-200 shadow-sm bg-white"
-              style={{ maxWidth: "160px" }}
-            >
-              <ShowMedia attachment={attachment} />
-            </div>
-          ))}
-        </div>
-      )}
+    {/* Content */}
+   <div
+  ref={contentRef}
+  className={`pt-2 text-sm text-text_content whitespace-pre-wrap leading-snug [&>p]:my-0.5 [&>ul]:my-0.5 [&>li]:my-0.5 ${
+    expanded ? "" : "line-clamp-4"
+  }`}
+>
+  {topic?.content}
+</div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-4 mt-3 text-sm text-gray-600">
+    {showToggle && (
+      <button
+        onClick={() => setExpanded((prev) => !prev)}
+        className="ml-2 text-blue-600 hover:underline font-small text-xs"
+      >
+        {expanded ? "View Less" : "View More"}
+      </button>
+    )}
+
+    {/* Media Attachments */}
+    {topic?.mediaAttachments?.length > 0 && (
+      <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {topic.mediaAttachments.map((attachment, index) => (
+          <div
+            key={index}
+            className="w-full h-full rounded-md overflow-hidden border border-gray-200 shadow-sm"
+          >
+            <ShowMedia attachment={attachment} />
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Actions Section */}
+    <div className="pt-4 flex items-center gap-2 text-xs text-gray-500">
+      <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
         <button
           onClick={handleTopicLike}
-          className={`flex items-center hover:text-blue-600 transition ${isLiked ? "text-blue-600 font-semibold" : ""}`}
+          className={`flex items-center gap-1 hover:text-like_color transition ${
+            isLiked && "text-like_color"
+          }`}
         >
           <LikeIcon isLiked={isLiked} />
-          <span>{topicLikes?.length || 0}</span>
+          {topicLikes?.length || 0}
         </button>
 
         <button
           onClick={handleTopicDislike}
-          className={`flex items-center hover:text-red-600 transition ${isDisliked ? "text-red-600 font-semibold" : ""}`}
+          className={`flex items-center gap-1 hover:text-red-600 transition ${
+            isDisliked && "text-red-600"
+          }`}
         >
           <DisLikeIcon isDisliked={isDisliked} />
-          <span>{topicDislikes?.length || 0}</span>
-        </button>
-
-        <button
-          // onClick={() => setShowReplyBox(true)}
-          onClick={()=>{
-            setViewBox(true);
-            setReplyIdForContext(null);
-          }}
-          className="flex items-center text-blue-600 hover:text-blue-800"
-        >
-          <ReplyIcon />
-          <span>Reply</span>
+          {topicDislikes?.length || 0}
         </button>
       </div>
 
-      {/* Reply Box */}
-      {/* {showReplyBox && (
-        <div className="mt-3">
-           <ReplyPostContent topic_id={topic?._id} />
-        </div>
-      )} */}
+      <button
+        onClick={() => {
+          setViewBox(true);
+          setReplyIdForContext(null);
+        }}
+        className="flex items-center gap-1 text-like_color hover:text-like_color transition"
+      >
+        <ReplyIcon />
+        <div className="text-xs">Reply</div>
+      </button>
     </div>
+  </div>
+</div>
+
+
   );
 };
 

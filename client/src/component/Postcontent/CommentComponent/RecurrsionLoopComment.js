@@ -16,35 +16,10 @@ const RecurrsionLoopComment = ({
   const showViewMore = hasChildren && isDeep && !isExpanded;
   const [showReply,setShowReply] = useState(false);
   const show = (depth===2);
+  console.log(reply,hasChildren);
 
-  const threadColor = [
-    "bg-red-300",
-    "bg-blue-300",
-    "bg-green-300",
-    "bg-yellow-300",
-    "bg-purple-300",
-  ][depth % 5];
-
-  const borderColor = [
-    "border-red-300",
-    "border-blue-300",
-    "border-green-300",
-    "border-yellow-300",
-    "border-purple-300",
-  ][depth % 5];
-
-  // className={`relative my-2 ${depth > 0 ? `pl-4 border-l-2 ${borderColor}` : ""}}` this is upper div class
   return (
-    <div key={reply?._id} className={`${depth > 0 ? "pl-10" : ""}`}>
-
-       {/* Thread connector dot */}
-       {/* {depth > 0 && (
-        <>
-          <div className={`absolute left-[-1px] top-16 w-4 h-0.5 ${threadColor}`}></div>
-
-          <div className="absolute top-16 bg-white"></div>
-          </>
-      )} */}
+    <div key={reply?._id} className={`${depth > 0 ? "pl-12 " : ""}`}>
       {reply && (
         <ShowCommentContent
           reply={reply}

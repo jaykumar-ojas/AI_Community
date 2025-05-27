@@ -9,13 +9,13 @@ import {
   handleAuthError,
   API_BASE_URL,
 } from "../../component/AiForumPage/components/ForumUtils";
-import ShowMedia from "./components/ShowMedia";
 import HeaderContent from "./components/HeaderContent";
 import ReplyContent from "./ReplyComponent/ReplyContent";
-import bgPattern from '../../asset/backGroundImage.png'
+
 import { ForumContext} from "../ContextProvider/ModelContext";
-import ReplyCommentBox from "../AIchatbot/Component/ReplyCommentBox";
 import StateSelection from "./StateSelection";
+import { LikeIcon,DisLikeIcon,BackArrow } from "../../asset/icons";
+import ReplyCommentBox from "../AIchatbot/Component/ReplyCommentBox";
 
 
 const TopicContent = () => {
@@ -27,7 +27,7 @@ const TopicContent = () => {
   const isTopicDisliked = false;
   const isTopicLiked = true;
   const threadView = null;
-  const {viewBox,setViewBox,replyId,model,replyIdForContext} = useContext(ForumContext);
+  const {viewBox,setViewBox,replyId,model,replyIdForContext,setReplyIdForContext} = useContext(ForumContext);
 
   useEffect(() => {
     if (topicId) {
@@ -64,96 +64,70 @@ const TopicContent = () => {
 
 
   return (
-    <>
-    <div className="bg-white border-b outline-white border-gray-200 h-[68px] p-4 flex items-center sticky top-0 z-10">
+    <div className="max-w-6xl w-full">
+  {/* Sticky Header */}
+  <div className="bg-bg_comment_box mx-4 rounded-lg p-2 mb-0 flex items-center sticky top-0 z-10">
+    <button className="mr-3 text-gray-500 hover:text-time_header">
+      <BackArrow />
+    </button>
+    <h2 className="font-semibold text-lg text-text_header flex-1">
+      {threadView ? "Thread" : topic.title}
+    </h2>
+    {!threadView && (
+      <div className="flex items-center space-x-2">
         <button
-          className="mr-3 text-gray-500 hover:text-gray-700"
+          className={`flex items-center ${
+            isTopicLiked ? "text-blue-600" : "text-gray-500"
+          } hover:text-blue-600`}
         >
-          <BackArrow/>
+          <LikeIcon isLiked={isTopicLiked} />
         </button>
-        <h2 className="font-semibold  text-lg flex-1">{threadView ? 'Thread' : topic.title}</h2>
-        {!threadView && (
-          <div className="flex items-center space-x-2">
-            <button
-            //   onClick={handleTopicLike}
-              className={`flex items-center ${isTopicLiked ? 'text-blue-600' : 'text-gray-500'} hover:text-blue-600`}
-            >
-             <LikeIcon isLiked={isTopicLiked}/>
-            </button>
-            <button
-            //   onClick={handleTopicDislike}
-              className={`flex items-center ${isTopicDisliked ? 'text-red-600' : 'text-gray-500'} hover:text-red-600`}
-            >
-              <DisLikeIcon isDisliked={isTopicDisliked}/>
-            </button>
-          </div>
-        )}
+        <button
+          className={`flex items-center ${
+            isTopicDisliked ? "text-red-600" : "text-gray-500"
+          } hover:text-red-600`}
+        >
+          <DisLikeIcon isDisliked={isTopicDisliked} />
+        </button>
       </div>
+    )}
+  </div>
 
-
-      <div className=" relative w-80% z-0"
-      // style={{
-      //   opacity:1,
-      //   backgroundImage:`url(${bgPattern})`
-      // }}
-      >
-      <HeaderContent topic = {topic}></HeaderContent>
-      {/* <StateSelection /> */}
-      <ReplyContent></ReplyContent>
+  {/* Main Content — Remove height and internal scrolling */}
+  <div className="bg-bg_comment rounded-xl overflow-hidden h-[calc(100vh-5.5rem)] p-4 pt-2 w-full relative z-0">
+  {/* Sticky Wrapper (like reference) */}
+  <div className="sticky rounded-xl  h-full flex flex-col justify-between overflow-hidden">
+    
+    {/* Scrollable Area for HeaderContent + ReplyContent */}
+    <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box no-scrollbar-arrows h-full ">
+      <div className="bg-bg_comment_box rounded-xl p-4">
+        <HeaderContent topic={topic} />
       </div>
+      <div className="bg-bg_comment_box rounded-xl p-4 pt-0">
+        <ReplyContent />
 
-      {/* <div className="relative w-full">
-        {viewBox && <ReplyCommentBox onClose={()=>setViewBox(false)} replyId={replyIdForContext} ></ReplyCommentBox>}
-        </div> */}
+      </div>
+    </div>
 
-    </>
+    {/* Static ReplyCommentBox */}
+    <div className="pr-1">
+      <ReplyCommentBox
+        onClose={() => {
+          setReplyIdForContext(null);
+        }}
+      />
+    </div>
+
+  </div>
+</div>
+
+</div>
+
   );
 };
 
 export default TopicContent;
 
-const LikeIcon = ({ isLiked }) => {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4 mr-1"
-      fill={isLiked ? "currentColor" : "none"}
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-      />
-    </svg>
-  );
-};
 
-const DisLikeIcon = ({ isDisliked }) => {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4 mr-1"
-      fill={isDisliked ? "currentColor" : "none"}
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 5v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 5h2m5 0v2a2 2 0 01-2 2h-2.5"
-      />
-    </svg>
-  );
-};
 
-const BackArrow = () =>{
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
-    )
-};
+

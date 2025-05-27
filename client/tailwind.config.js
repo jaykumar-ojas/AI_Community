@@ -4,6 +4,8 @@ module.exports = {
   theme: {
     extend: {
       colors:{
+        nav_color: '#585763',
+        bg_scroll : '#20232d',
         like_color : '#7b5cfe',
         btn_bg :'#272c32',
         bg_comment: 'hsl(222, 14.80%, 22.50%)',
@@ -26,6 +28,9 @@ module.exports = {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar'),
+  ], 
 }
 
+ 
