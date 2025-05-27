@@ -76,6 +76,7 @@ const Page = () => {
   }
 
   const fetchMorePosts = async () => {
+    console.log("i m calling again")
     setTimeout(async() => {
       if (!hasMore) return;
       try {
@@ -130,9 +131,8 @@ const Page = () => {
   
 
   return (
-    <>
-        <div className="h-full bg-gray-100">
-          <div className="container mx-auto px-4">
+        <div className="min-h-screen bg-gray-100">
+          <div className="mx-auto px-4">
             <div className="flex gap-8">
               {/* Main content area with grid layout */}
               <div className="flex-1">
@@ -169,7 +169,7 @@ const Page = () => {
 
               {/* Forum system on the right - sticky with scrolling */}
               <div className="w-96 relative hidden md:block">
-                <div className="sticky top-20 h-[calc(100vh-6rem)] overflow-hidden">
+                <div className="sticky top-2 max-h-[calc(100vh-3.5rem)] overflow-hidden">
                   <div className="h-full overflow-y-auto rounded-lg shadow-lg">
                     <ForumSystem />
                   </div>
@@ -178,7 +178,6 @@ const Page = () => {
             </div>
           </div>
         </div>
-    </>
   );
 };
 

@@ -332,7 +332,7 @@ const UserContent = ({ post }) => {
       {/* user media content */}
       <div className="w-full h-full bg-black justify-center items-center flex">
         <div
-        className={`h-full w-64  flex items-center justify-center overflow-hidden ${postData.fileType === 'image' ? 'cursor-pointer' : ''}`}
+        className={`h-full w-44  flex items-center justify-center overflow-hidden ${postData.fileType === 'image' ? 'cursor-pointer' : ''}`}
         
         onClick={handleMediaClick}
       >

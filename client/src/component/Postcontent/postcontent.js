@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import CommentReview from "./CommentReview";
 import ReplyCommentBox from "./CommentComponent/ReplyForComment";
 import Card from "../Card/Card";
+import RelatedCard from "../Card/RelatedCard"
 
 const PostContent = () => {
   const history = useNavigate();
@@ -138,11 +139,11 @@ const PostContent = () => {
     {/* Right Section - Sticky Sidebar */}
     <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar  bg-bg_comment_box rounded-xl lg:w-[30%]">
       <div className="border border-gray-300 rounded-lg">
-        <h3 className="text-lg font-semibold mb-4">More Related Content</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold ">More Related Content</div>
+        <div className="grid grid-cols-1 ">
           {relevantPost?.length > 0 ? (
             relevantPost.map((item, index) => (
-              <Card key={item?._id || index} post={item} />
+              <RelatedCard key={item?._id || index} post={item} />
             ))
           ) : (
             <div className="col-span-3 text-center bg-bg_comment text-gray-500">
