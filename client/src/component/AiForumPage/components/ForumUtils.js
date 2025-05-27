@@ -33,15 +33,15 @@ export const formatDate = (dateString) => {
   const diffWeek = Math.floor(diffDay / 7);
 
   if (diffSec < 60) {
-    return `${diffSec} second${diffSec !== 1 ? 's' : ''} ago`;
+    return `${diffSec}s ${diffSec !== 1 ? '' : ''} ago`;
   } else if (diffMin < 60) {
-    return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+    return `${diffMin}m ${diffMin !== 1 ? '' : ''} ago`;
   } else if (diffHr < 24) {
-    return `${diffHr} hour${diffHr !== 1 ? 's' : ''} ago`;
+    return `${diffHr}h ${diffHr !== 1 ? '' : ''} ago`;
   } else if (diffDay < 7) {
-    return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+    return `${diffDay}d${diffDay !== 1 ? '' : ''} ago`;
   } else if (diffDay < 15) {
-    return `${diffWeek} week${diffWeek !== 1 ? 's' : ''} ago`;
+    return `${diffWeek}w${diffWeek !== 1 ? '' : ''} ago`;
   } else {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',

@@ -15,6 +15,7 @@ const ReplyContent = () => {
   const [isLoading,setIsLoading] = useState(false);
   const [expandedThreads,setExpandedThreads] = useState({});
   const [threadView,setThreadView] = useState();
+  const {subscribeToEvent} = useWebSocket();
 
   const findReplyById = (replies, replyId) => {
     for (const reply of replies) {
@@ -28,6 +29,9 @@ const ReplyContent = () => {
     }
     return null;
   };
+
+
+
 
 
 
@@ -105,15 +109,12 @@ const ReplyContent = () => {
     
   return (
     <div>
-         <div className="relative flex items-center gap-2 p-2 rounded-md  border border-gray-200 mb-2">
-          <ReplyBubbleIcon />
-          <h3 className="text-sm font-semibold text-gray-700 tracking-wide">Replies</h3>
+         <div className="relative flex items-center p-2  mb-2">
+           <h1 className="sticky fixed text-xl w-full font-semibold text-text_comment tracking-wide">
+            Replies
+          </h1>
         </div>
-        <div className="replyContent"
-            style={{
-              maxHeight: '600px', // or any height you want
-              overflowY: 'auto',
-            }}>
+        <div className="replyContent">
         {!threadView && structureReply && structureReply.map((reply,index)=>(
           <div key={index}  className="ml-2">
              <RecurrsionLoop reply={reply}  expandedThreads={expandedThreads}

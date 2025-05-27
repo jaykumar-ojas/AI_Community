@@ -3,8 +3,6 @@ import { useParams } from 'react-router-dom';
 import Skeleton from "react-loading-skeleton";
 import 'react-loading-skeleton/dist/skeleton.css';
 
-import url from "../../../asset/background.jpg";
-import purl from "../../../asset/profile.jpg";
 import { LoginContext } from "../../ContextProvider/context";
 
 const bio = "A astrologer, Traveler, Enjoy Life huhu.....";

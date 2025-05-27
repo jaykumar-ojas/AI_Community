@@ -35,12 +35,12 @@ const Layout = () => {
   const shouldHideNavbar = noNavbarPaths.includes(location.pathname);
 
   return (
-    <>
-      {!shouldHideNavbar && <Navbar />}
-      <main className={!shouldHideNavbar ? "min-h-screen bg-gray-100" : ""}>
-        <Outlet />
-      </main>
-    </>
+    <div className="flex flex-col h-screen">
+  {!shouldHideNavbar && <Navbar />}
+  <main className="flex-1 overflow-auto bg-comment_box">
+    <Outlet />
+  </main>
+</div>
   );
 };
 

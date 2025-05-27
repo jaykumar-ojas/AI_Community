@@ -8,8 +8,8 @@ function ModelItem({ name, active = false, onClick }) {
         <button
           className={`w-full text-left px-3 py-2 rounded-md transition-colors duration-150 cursor-pointer ${
             active
-              ? 'bg-blue-100 text-blue-700 font-medium'
-              : 'text-gray-700 hover:bg-gray-100'
+              ? 'bg-like_color text-text_header font-medium'
+              : 'text-text_header hover:bg-like_color'
           }`}
           onClick={() => onClick(name)}
         >
@@ -23,17 +23,14 @@ function ModelItem({ name, active = false, onClick }) {
 const ModelList = () => {
 const { model, setModel } = useContext(ForumContext);
 
-const aiModels = ["GPT-4", "DALL-E", "Claude", "Stable Diffusion", "Midjourney"];
+const aiModels = ["GPT-4", "DALL-E", "Claude", "Stable Diffusion", "Midjourney","Sora","Googel-veo"];
 
 return (
-    <div className="w-60 bg-white border-r border-gray-200 flex flex-col">
-    <div className="p-5 font-semibold text-lg border-b border-gray-200">
-        chat bot forum
-    </div>
+    <div className="w-full bg-bg_comment flex flex-col">
 
     {/* AI Models Section */}
     <div className="p-4">
-        <div className="font-semibold mb-2 text-sm">all ai's</div>
+        <div className="font-semibold mb-2 text-text_header text-sm">AI MODEL</div>
         <ul className="space-y-1">
         {aiModels.map((name) => (
             <ModelItem

@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import ReplyCommentBox from "../../AIchatbot/Component/ReplyCommentBox";
 import { ForumContext } from "../../ContextProvider/ModelContext";
 import UserIconCard from "../../Card/UserIconCard"; 
+import {DeleteIcon,ReplyIcon,LikeIcon,DisLikeIcon} from "../../../asset/icons"
 
 
 
@@ -30,6 +31,7 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
     const [showReplyBox,setShowReplyBox] = useState(false);
     const [isLoading,setIsLoading]= useState(false);
     const [showFullContent, setShowFullContent] = useState(false);
+    const [isOpen,setIsOpen] = useState(false);
     const getTrimmedContent = (text) => {
       const words = text.split(/\s+/);
       return words.slice(0, 100).join(" ");
@@ -144,68 +146,82 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
     }
   };  
     return (
-      <div
-        key={reply?._id}
-        className={`relative rounded-xl p-4 shadow-md border border-gray-200 transition-all duration-200 ${
-          isAuthor ? "bg-blue-50" : "bg-white"
-        }`}
-      >
-        {/* user timestapm an d name is author or not */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-            <div className="flex  w-12 h-12">
-              <UserIconCard id={reply?.userId}/>
-            </div>
-            <span className="text-blue-600">{reply?.userName}</span>
-            <span className="text-gray-400 text-xs">{formatDate(reply?.createdAt)}</span>
-          </div>
-          {isAuthor && (
-            <button
-              onClick={handleDeleteReply}
-              className="text-red-500 hover:text-red-700 transition"
-              title="Delete"
-            >
-              <DeleteIcon />
-            </button>
-          )}
-        </div>
+     <div key={reply?._id} className="flex justify-start mb-4">
+  {/* User Icon Outside */}
+  <div className="w-8 h-8 flex-shrink-0">
+    <UserIconCard id={reply?.userId} />
+  </div>
 
-  
-        {/* reply content where details show */}
-        <div className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
-          {showFullContent ? reply?.content : getTrimmedContent(reply?.content)}
-          {reply?.content?.split(/\s+/).length > 100 && (
-            <button
-              onClick={() => setShowFullContent(!showFullContent)}
-              className="ml-2 text-blue-600 hover:underline font-medium"
-            >
-              {showFullContent ? "View Less" : "View More"}
-            </button>
-          )}
-        </div>
+  {/* Content Section */}
+  <div className="flex flex-col p-4 pt-0 ml-2 rounded-xl  w-full">
+    {/* User Info & Delete Button */}
+    <div className="flex items-center justify-between">
+      <div className="flex justify-start items-center gap-2 text-sm text-gray-700">
+        <span className="text-text_header text-sm font-normal text-base">{reply?.userName}</span>
+        <div className="w-1 h-1 bg-time_header rounded-full"></div>
+        <span className="text-time_header text-xs">{formatDate(reply?.createdAt)}</span>
+      </div>
 
-  
-        {/* Display media attachments */}
-        {reply?.mediaAttachments?.length > 0 && (
-          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {reply?.mediaAttachments.map((attachment, index) => (
-              <div
-                key={index}
-                className="rounded-md overflow-hidden border border-gray-200 shadow-sm"
+      {isAuthor && (
+        <div className="ml-2 relative">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
+          >
+            ⋯
+          </button>
+
+          {isOpen && (
+            <div className="absolute left-0 w-full bg-white shadow-lg rounded-md z-10">
+              <button
+                onClick={() => {
+                  handleDeleteReply();
+                  setIsOpen(false);
+                }}
+                className="w-full p-2 bg-bg_comment_box text-red-600 hover:bg-btn_bg"
               >
-                <ShowMedia attachment={attachment} />
-              </div>
-            ))}
-          </div>
-        )}
+                <DeleteIcon />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
 
-  
-        {/* lower button section */}
-        <div className="flex items-center gap-4 text-xs mt-3 text-gray-500">
+    {/* Reply Content */}
+    <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
+      {showFullContent ? reply?.content : getTrimmedContent(reply?.content)}
+      {reply?.content?.split(/\s+/).length > 100 && (
+        <button
+          onClick={() => setShowFullContent(!showFullContent)}
+          className="ml-2 text-blue-600 hover:underline font-medium"
+        >
+          {showFullContent ? "View Less" : "View More"}
+        </button>
+      )}
+    </div>
+
+    {/* Media Attachments */}
+    {reply?.mediaAttachments?.length > 0 && (
+      <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {reply?.mediaAttachments.map((attachment, index) => (
+          <div
+            key={index}
+            className="w-full h-full rounded-3xl overflow-hidden border border-gray-200 shadow-sm"
+          >
+            <ShowMedia attachment={attachment} />
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Actions Section */}
+    <div className="pt-4 flex items-center gap-2 text-xs text-gray-500">
+      <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
         <button
           onClick={handleReplyLike}
-          className={`flex items-center gap-1 hover:text-blue-600 transition ${
-            isLiked && "text-blue-600"
+          className={`flex items-center gap-1 hover:text-like_color transition ${
+            isLiked && "text-like_color"
           }`}
         >
           <LikeIcon isLiked={isLiked} />
@@ -221,115 +237,48 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
           <DisLikeIcon isDisliked={isDisliked} />
           {replyDislikes?.length || 0}
         </button>
-
-        <button
-          // onClick={() => setShowReplyBox(true)}
-          onClick={()=>{
-            setReplyIdForContext(reply?._id);
-            setUserName(reply?.userName);
-            setViewBox(true);
-          }}
-          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
-        >
-          <ReplyIcon />
-          Reply
-        </button>
       </div>
 
-      {hasChildren && show && !showReply && (
-        <button onClick={() => setShowReply(!showReply)} className="text-sm text-blue-500 hover:underline" >view more replies...</button>
-      )}   
-      {/* {showReplyBox && <ReplyCommentBox onClose={()=>setShowReplyBox(false)} replyId={reply?._id}/>} */}
-      {showViewMore && (
+      <button
+        onClick={() => {
+          setReplyIdForContext(reply?._id);
+          setUserName(reply?.userName);
+          setViewBox(true);
+        }}
+        className="flex items-center gap-1 text-like_color hover:text-like_color transition"
+      >
+        <ReplyIcon />
+        <div className="text-xs">Reply</div>
+      </button>
+    </div>
+
+    {/* Conditional Reply Buttons */}
+    {hasChildren && show && !showReply && (
+      <button
+        onClick={() => setShowReply(!showReply)}
+        className="text-xs text-blue-500 hover:underline mt-2"
+      >
+        view more replies...
+      </button>
+    )}
+
+    {showViewMore && (
       <div className="mt-2">
         <button
           onClick={onViewMore}
-          className="text-sm text-blue-500 hover:underline"
+          className="text-xs text-blue-500 hover:underline"
         >
           View more replies...
         </button>
-        </div>
-      )}
       </div>
+    )}
+  </div>
+</div>
+
     )
   };
 
   
 export default ShowReplyContent;
   
-  const DeleteIcon = () => {
-    return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-        />
-      </svg>
-    );
-  };
-  
-  const LikeIcon = ({ isLiked }) => {
-    return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4 mr-1"
-        fill={isLiked ? "currentColor" : "none"}
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-        />
-      </svg>
-    );
-  };
-  
-  const DisLikeIcon = ({ isDisliked }) => {
-    return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4 mr-1"
-        fill={isDisliked ? "currentColor" : "none"}
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 5v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 5h2m5 0v2a2 2 0 01-2 2h-2.5"
-        />
-      </svg>
-    );
-  };
-  
-  const ReplyIcon = () => {
-    return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4 mr-1"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-        />
-      </svg>
-    );
-  };
-  
+ 

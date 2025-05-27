@@ -107,49 +107,54 @@ const PostContent = () => {
   }
 
   return (
-    <div className="pt-4 bg-bg_comment min-h-screen">
-      <div className="container mx-auto px-4 xl:px-16 flex flex-col lg:flex-row gap-6">
-        {/* Left Section */}
-        <div className="w-full lg:w-[35%]">
-          <div className="mb-6">
-            {post ? (
-              <UserContent post={post} />
-            ) : (
-              <div className="border border-gray-300 rounded-lg p-6 text-center">
-                No post content available
-              </div>
-            )}
-          </div>
-
-          <div className="border border-gray-300 rounded-lg p-4">
-            <h3 className="text-lg font-semibold mb-4">More Related Content</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {relevantPost?.length > 0 ? (
-                relevantPost.map((item, index) => (
-                  <Card key={item?._id || index} post={item} />
-                ))
-              ) : (
-                <div className="col-span-3 text-center text-gray-500">
-                  No related content found
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="bg-bg_comment w-full overflow-x-hidden h-full">
+  <div className="w-full justify-center flex flex-col lg:flex-row">
+    {/* Left Section */}
+    <div className="relative w-full rounded-xl lg:w-[70%] h-[calc(100vh-3.5rem)] flex flex-col">
+  {/* Scrollable content that shrinks as ReplyCommentBox grows */}
+  <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box scrollbar-no-arrows px-24">
+    <div className="mb-6">
+      {post ? (
+        <UserContent post={post} />
+      ) : (
+        <div className="border border-gray-300 rounded-lg p-6 text-center">
+          No post content available lorem1000
         </div>
+      )}
+    </div>
 
-        {/* Right Section - Sticky Sidebar */}
-        <div className="w-full bg-bg_comment_box p-8 rounded-xl lg:w-[65%]">
-          <div className="sticky top-24 h-[calc(100vh-11rem)] flex flex-col justify-between overflow-hidden">
-            <div className="overflow-y-auto pr-2  h-full">
-              <CommentReview />
+    <div className="flex-1 bg-bg_comment_box p-4 rounded-xl">
+      <CommentReview />
+    </div>
+  </div>
+
+  {/* Reply box grows and pushes content upward */}
+  <div className="px-24">
+    <ReplyCommentBox />
+  </div>
+</div>
+
+
+    {/* Right Section - Sticky Sidebar */}
+    <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar  bg-bg_comment_box rounded-xl lg:w-[30%]">
+      <div className="border border-gray-300 rounded-lg">
+        <h3 className="text-lg font-semibold mb-4">More Related Content</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {relevantPost?.length > 0 ? (
+            relevantPost.map((item, index) => (
+              <Card key={item?._id || index} post={item} />
+            ))
+          ) : (
+            <div className="col-span-3 text-center bg-bg_comment text-gray-500">
+              No related content found
             </div>
-            <div className="pt-4">
-              <ReplyCommentBox />
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
+  </div>
+</div>
+
   );
 };
 
