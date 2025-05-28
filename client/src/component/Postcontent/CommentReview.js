@@ -56,10 +56,18 @@ const CommentReview = () => {
 
   return (
     <div>
-      <div className="relative flex w-full items-center gap-2 p-2 mb-2">
-        <h1 className="sticky fixed text-2xl w-full font-semibold text-text_comment tracking-wide">
-          Comments
-        </h1>
+      <div className="relative flex w-full items-center gap-2 mb-2">
+        <div className="flex gap-2 text-center justify-center">
+          <h1 className="sticky text-xl w-full font-semibold text-text_comment tracking-wide">
+            Comments
+          </h1>
+          <div className="w-4 h-4 mt-2 text-xs font-medium border border-time_header text-time_header bg-bg_scroll rounded">
+  {comments?.length}
+</div>
+
+
+        </div>
+       
       </div>
       <div className="replyContent w-full pt-2">
         {!threadView &&

@@ -178,7 +178,7 @@ const ShowCommentContent = ({
     }
   };
   return (
-    <div key={reply?._id} className="flex justify-start">
+    <div key={reply?._id} className="flex justify-start ">
       {/* user icon outside */}
       <div className="w-8 h-8 flex-shrink-0">
         <UserIconCard id={reply?.userId} />
@@ -187,13 +187,13 @@ const ShowCommentContent = ({
       <div className="flex flex-col p-4 pt-0 mb-2">
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-             <div className="text-text_header font-normal mr-2 text-lg">
+             <div className="text-text_header font-normal mr-2 text-md">
             {reply?.userName}
           </div>
           <div className="mr-2 item-center justify-center">
             <div className="w-1 h-1 rounded-full bg-time_header"></div>
           </div>
-          <div className="text-time_header font-thin text-sm">
+          <div className="text-time_header font-thin text-xs">
             {formatDate(reply?.createdAt)}
           </div>
           </div>
@@ -227,7 +227,7 @@ const ShowCommentContent = ({
         </div>
 
         <div>
-          <div className="pt-2 text-md text-text_content whitespace-pre-wrap leading-relaxed">
+          <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
             {showFullContent
               ? reply?.content
               : getTrimmedContent(reply?.content)}
@@ -243,11 +243,11 @@ const ShowCommentContent = ({
 
           {/* Display media attachments */}
           {reply?.mediaAttachments?.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
               {reply?.mediaAttachments.map((attachment, index) => (
                 <div
                   key={index}
-                  className="rounded-md overflow-hidden border border-gray-200 shadow-sm"
+                  className="w-full h-full rounded-md overflow-hidden border border-gray-200 shadow-sm"
                 >
                   <ShowMedia attachment={attachment} />
                 </div>
@@ -289,7 +289,7 @@ const ShowCommentContent = ({
           >
             <ReplyIcon />
 
-            <div className="text-sm">Reply</div>
+            <div className="text-xs">Reply</div>
           </button>
         </div>
 

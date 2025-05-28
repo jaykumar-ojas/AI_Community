@@ -157,21 +157,21 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
           return (
             <div
               key={topic._id}
-              className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="p-4 hover:bg-bg_comment_box transition-colors cursor-pointer"
               onClick={() => handleTopicClick(topic)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">{topic.title}</h3>
-                  <p className="text-gray-600 text-sm line-clamp-2">{topic.content}</p>
+                  <h3 className="text-lg font-medium text-text_comment mb-1">{topic.title}</h3>
+                  <p className="text-text_header text-sm line-clamp-2">{topic.content}</p>
                   <div className="mt-2 flex items-center text-sm text-gray-500">
-                    <span>Posted by {topic.userName}</span>
+                    <span className='text-text_header text-xs'>Posted by {topic.userName}</span>
                     <span className="mx-2">•</span>
-                    <span>{formatDate(topic.createdAt)}</span>
+                    <span className='text-time_header text-xs'>{formatDate(topic.createdAt)}</span>
                     <span className="mx-2">•</span>
-                    <span>{topic.replyCount} replies</span>
+                    <span className='text-text_header text-xs'>{topic.replyCount} replies</span>
                     <span className="mx-2">•</span>
-                    <span>{topic.viewCount/2} views</span>
+                    <span className='text-time_header text-xs'>{topic.viewCount/2} views</span>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">

@@ -1,6 +1,5 @@
 import React from "react";
 import PostCard from "./PostCard"
-import purl from "../../../asset/profile.jpg";
 
 
 

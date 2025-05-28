@@ -139,6 +139,9 @@ const ReplyContent = () => {
   // Scroll to new reply with retry mechanism
  
 
+
+
+
   useEffect(()=>{
     if(topicId){
         fetchReplies(topicId);
@@ -249,19 +252,17 @@ const ReplyContent = () => {
   }
 
   return (
-    <div 
-      ref={repliesContainerRef}
-      className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto"
-    >
-      {isLoading ? (
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      ) : error ? (
-        <div className="p-4 text-center text-red-500">{error}</div>
-      ) : structureReply && structureReply.length > 0 ? (
-        structureReply.map((reply) => (
-          <div key={reply._id} id={`reply-${reply._id}`} className="reply-content">
+  <div>
+    <div className="relative flex items-center p-2 mb-2">
+      <h1 className="sticky fixed text-xl w-full font-semibold text-text_comment tracking-wide">
+        Replies
+      </h1>
+    </div>
+
+    <div className="replyContent">
+      {!threadView && structureReply && structureReply.length > 0 ? (
+        structureReply.map((reply, index) => (
+          <div key={index} className="ml-2">
             <RecurrsionLoop
               reply={reply}
               expandedThreads={expandedThreads}
@@ -276,7 +277,9 @@ const ReplyContent = () => {
         <div className="text-center text-gray-500 py-8">No replies yet</div>
       )}
     </div>
-  );
+  </div>
+);
+
 };
 
 export default ReplyContent;

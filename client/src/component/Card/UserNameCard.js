@@ -2,7 +2,7 @@ import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 
-const UserIconCard = ({id}) =>{
+const UserNameCard = ({id}) =>{
     const [userName,setUserName] = useState();
 
     useEffect(()=>{
@@ -38,5 +38,5 @@ const UserIconCard = ({id}) =>{
     );
 }
 
-export default UserIconCard;
+export default UserNameCard;
 

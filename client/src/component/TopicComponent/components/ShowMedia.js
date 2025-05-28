@@ -10,22 +10,20 @@ const ShowMedia = ({ attachment }) => {
 
   return (
     <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
-      {isImage && (
-        <div className="relative min-h-[80px] max-h-[120px]">
-          <img
-            src={fileUrl}
-            alt={fileName}
-            className="w-full h-auto object-contain hover:scale-105 transition-transform duration-300"
-            style={{ maxHeight: "120px" }}
-            loading="lazy"
-            onError={(e) => {
-              console.error("Error loading image:", fileUrl);
-              e.target.src =
-                "https://via.placeholder.com/400x300?text=Image+Not+Found";
-            }}
-          />
-        </div>
-      )}
+       {isImage && (
+  <div className="w-full aspect-video bg-gray-100">
+    <img
+      src={fileUrl}
+      alt={fileName}
+      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+      loading="lazy"
+      onError={(e) => {
+        console.error("Error loading image:", fileUrl);
+        e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
+      }}
+    />
+  </div>
+)}
 
       {isVideo && (
         <div className="relative min-h-[80px] max-h-[120px]">

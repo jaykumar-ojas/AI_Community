@@ -41,15 +41,9 @@ const RecurrsionLoop = ({
   ][depth % 5];
 
   return (
-    <div key={reply?._id} className={`relative my-2 ${depth > 0 ? `pl-4 border-l-2 ${borderColor}` : ""}`}>
-      {/* Thread connector dot */}
-      {depth > 0 && (
-        <>
-          <div className={`absolute left-[-1px] top-16 w-4 h-0.5 ${threadColor}`}></div>
-          <div className="absolute top-16 bg-white"></div>
-        </>
-      )}
-      
+
+    <div key={reply?._id} className={`relative ${depth > 0 ? `pl-4`: ``}`}>
+       {/* Thread connector dot */}
       {reply && (
         <ShowReplyContent
           reply={reply}
