@@ -228,7 +228,6 @@ router.get('/replies', async (req, res) => {
 router.delete('/replies/:id', authenticate, async (req, res) => {
   try {
     const {id} = req.params;
-    console.log("i m pringting ",id);
     const reply = await ForumReply.findById(req.params.id);
     
     if (!reply) {
@@ -240,10 +239,36 @@ router.delete('/replies/:id', authenticate, async (req, res) => {
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this reply' });
     }
 
+    // Recursively delete all child replies
+    const deleteChildReplies = async (parentId) => {
+      const children = await ForumReply.find({ parentReplyId: parentId });
+      for (const child of children) {
+        // Delete media attachments for child reply
+        if (child.mediaAttachments && child.mediaAttachments.length > 0) {
+          for (const attachment of child.mediaAttachments) {
+            await awsdeleteMiddleware(attachment.fileName);
+          }
+        }
+        // Recursively delete children of this child
+        await deleteChildReplies(child._id);
+        // Delete the child reply
+        await ForumReply.findByIdAndDelete(child._id);
+      }
+    };
+
+    // Delete media attachments for the main reply
+    if (reply.mediaAttachments && reply.mediaAttachments.length > 0) {
+      for (const attachment of reply.mediaAttachments) {
+        await awsdeleteMiddleware(attachment.fileName);
+      }
+    }
+
+    // Delete all child replies first
+    await deleteChildReplies(id);
     
-    
-    // Delete the reply
-    await  deleteForumById(id);
+    // Delete the main reply
+    await ForumReply.findByIdAndDelete(id);
+
     // Decrement reply count on the topic
     const topic = await ForumTopic.findById(reply.topicId);
     if (topic) {
@@ -251,7 +276,7 @@ router.delete('/replies/:id', authenticate, async (req, res) => {
       await topic.save();
     }
     
-    res.status(200).json({ status: 200, message: 'Reply deleted successfully' });
+    res.status(200).json({ status: 200, message: 'Reply and its children deleted successfully' });
   } catch (error) {
     console.error('Error deleting reply:', error);
     res.status(500).json({ status: 500, error: 'Server error' });
@@ -541,14 +566,33 @@ router.get('/paginated', async(req, res) => {
 });
 
 
-router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware,modelSelection, async (req, res) => {
-
+router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, modelSelection, async (req, res) => {
   try {
     const { content, topicId, parentReplyId, userId, userName } = req.body;
-    console.log(req.body.content);
+    console.log('Request body content:', req.body.content);
     
-    if (!content || !topicId) {
-      return res.status(400).json({ status: 400, error: 'Content and topic ID are required' });
+    // Validate content object
+    if (!content || typeof content !== 'object') {
+      return res.status(400).json({ 
+        status: 400, 
+        error: 'Content object is required' 
+      });
+    }
+    
+    // Check if at least one content field is provided
+    const hasUserText = content.userText && content.userText.trim();
+    const hasPromptText = content.promptText && content.promptText.trim();
+    const hasAiText = content.aiText && content.aiText.trim();
+    
+    if (!hasUserText && !hasPromptText && !hasAiText) {
+      return res.status(400).json({ 
+        status: 400, 
+        error: 'At least one content field (userText, promptText, or aiText) must be provided' 
+      });
+    }
+    //console.log('Request body content:', req.body.content);
+    if (!topicId) {
+      return res.status(400).json({ status: 400, error: 'Topic ID is required' });
     }
     
     // Check if topic exists and is not locked
@@ -592,11 +636,22 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
         }))
       ];
     }
-    console.log("may be after api calling",content);
+    
+    // Process content object
+    const processedContent = {
+      userText: content.userText ? content.userText.trim() : '',
+      promptText: content.promptText ? content.promptText.trim() : '',
+      aiText: content.aiText ? content.aiText.trim() : '',
+      userTimestamp: content.userTimestamp || (content.userText ? new Date() : null),
+      promptTimestamp: content.promptTimestamp || (content.promptText ? new Date() : null),
+      aiTimestamp: content.aiTimestamp || (content.aiText ? new Date() : null)
+    };
+    
+    console.log("Processed content object:", processedContent);
     
     // Create new reply
     const newReply = new ForumReply({
-      content,
+      content: processedContent,
       topicId,
       userId: actualUserId,
       userName: actualUserName,
@@ -609,31 +664,28 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
     
     const savedReply = await newReply.save();
     
-    if(parentReplyId){
-      try{
+    if (parentReplyId) {
+      try {
         const updatedParent = await ForumReply.findByIdAndUpdate(
           parentReplyId,
-          { $push: {children: savedReply._id } },
-          {new: true}
+          { $push: { children: savedReply._id } },
+          { new: true }
         );
 
-        if(!updatedParent) {
-          console.warn(`Parent reply Id ${parentReplyId} not found`);
-        }else{
-          console.log(`succesecfully added reply ${savedReply._id} to parent ${parentReplyId}`);
+        if (!updatedParent) {
+          console.warn(`Parent reply ID ${parentReplyId} not found`);
+        } else {
+          console.log(`Successfully added reply ${savedReply._id} to parent ${parentReplyId}`);
         }
-      }catch(parentUpdateError){
-        console.log(`Eror updating parent reply: `, parentUpdateError);
+      } catch (parentUpdateError) {
+        console.log(`Error updating parent reply:`, parentUpdateError);
       }
     }
-
-
 
     // Increment reply count on the topic
     topic.replyCount += 1;
     await topic.save();
     
-
     res.status(201).json({ status: 201, reply: savedReply });
   } catch (error) {
     console.error('Error creating reply:', error);

@@ -80,62 +80,61 @@ const ReplyContent = () => {
     return updatedReplies;
   };
 
- 
-  // useEffect(() => {
-  //   const unsubscribe = subscribeToEvent('reply_created', (newReply) => {
-  //     console.log('Received new reply:', newReply);
-      
-  //     if (newReply.topicId === topicId ) {
-  //       console.log('Processing new reply for topic:', topicId);
-        
-  //       // Update replies state with proper immutability
-  //       setReplies(prevReplies => {
-  //         const updatedReplies = updateRepliesWithNewReply(prevReplies, newReply);
-  //         console.log('Updated replies:', updatedReplies);
-  //         return updatedReplies;
-  //       });
-        
-
-  //                 // Force update structured replies after a brief delay
-  //       setTimeout(() => {
-  //         setReplies(currentReplies => {
-  //           const newStructured = organizeReplies(currentReplies);
-  //           console.log('Updating structured replies:', newStructured);
-  //           setStructureReply([...newStructured]); // Force new array reference
-  //           setForceRender(prev => prev + 1); // Force component re-render
-  //           console.log("currentreplie",currentReplies);
-  //           return currentReplies;
-  //         });
-          
-  //         // Auto-expand parent thread if nested reply
-  //         if (newReply.parentReplyId) {
-  //           setExpandedThreads(prev => ({
-  //             ...prev,
-  //             [newReply.parentReplyId]: true
-  //           }));
-  //         }
-  //       }, 10);
-  //     }
-  //   });
-
-  //   return () => unsubscribe();
-  // }, [topicId, subscribeToEvent]);
-
   useEffect(() => {
-  const unsubscribe = subscribeToEvent('reply_created', (newReply) => {
-    console.log("this data coming from backend",newReply);
-    if (newReply.topicId === topicId) {
+    const unsubscribe = subscribeToEvent('reply_created', (newReply) => {
+      console.log("this data coming from backend",newReply);
+      if (newReply.topicId === topicId) {
+        setReplies((prevReplies) => {
+          const updatedReplies = [...prevReplies, newReply];
+          setStructureReply(organizeReplies(updatedReplies));
+          console.log(structureReply,"this is printed my sturcture replies");
+          return updatedReplies;
+        });
+      }
+    });
+
+    // Subscribe to reply deletion events
+    const unsubscribeDelete = subscribeToEvent('reply_deleted', (deletedReplyId) => {
+      console.log('Reply deleted:', deletedReplyId);
       setReplies((prevReplies) => {
-        const updatedReplies = [...prevReplies, newReply];
+        // Helper function to remove reply and its children recursively
+        const removeReplyAndChildren = (replies) => {
+          return replies.filter(reply => {
+            // If this is the reply to be deleted, remove it and all its children
+            if (reply._id === deletedReplyId) {
+              return false;
+            }
+            
+            // If this reply has children, recursively process them
+            if (reply.children && reply.children.length > 0) {
+              // First, check if any of the children are the one being deleted
+              const hasDeletedChild = reply.children.some(child => child._id === deletedReplyId);
+              if (hasDeletedChild) {
+                // Remove the deleted child from children array
+                reply.children = reply.children.filter(child => child._id !== deletedReplyId);
+              } else {
+                // Recursively process children
+                reply.children = removeReplyAndChildren(reply.children);
+              }
+            }
+            return true;
+          });
+        };
+
+        const updatedReplies = removeReplyAndChildren(prevReplies);
+        
+        // Update structured replies
         setStructureReply(organizeReplies(updatedReplies));
-        console.log(structureReply,"this is printed my sturcture replies");
+        
         return updatedReplies;
       });
-    }
-  });
+    });
 
-  return () => unsubscribe(); // Clean up on unmount
-}, [topicId, subscribeToEvent]);
+    return () => {
+      unsubscribe();
+      unsubscribeDelete();
+    };
+  }, [topicId, subscribeToEvent]);
 
   // Scroll to new reply with retry mechanism
  
@@ -171,6 +170,44 @@ const ReplyContent = () => {
       setIsLoading(false);
     }
   };
+
+  const handleReplyDeleted = (deletedReplyId) => {
+    console.log('Handling reply deletion:', deletedReplyId);
+    
+    setReplies((prevReplies) => {
+      // Helper function to remove reply and its children recursively
+      const removeReplyAndChildren = (replies) => {
+        return replies.filter(reply => {
+          // If this is the reply to be deleted, remove it and all its children
+          if (reply._id === deletedReplyId) {
+            return false;
+          }
+          
+          // If this reply has children, recursively process them
+          if (reply.children && reply.children.length > 0) {
+            // First, check if any of the children are the one being deleted
+            const hasDeletedChild = reply.children.some(child => child._id === deletedReplyId);
+            if (hasDeletedChild) {
+              // Remove the deleted child from children array
+              reply.children = reply.children.filter(child => child._id !== deletedReplyId);
+            } else {
+              // Recursively process children
+              reply.children = removeReplyAndChildren(reply.children);
+            }
+          }
+          return true;
+        });
+      };
+
+      const updatedReplies = removeReplyAndChildren(prevReplies);
+      
+      // Update structured replies
+      setStructureReply(organizeReplies(updatedReplies));
+      
+      return updatedReplies;
+    });
+  };
+  
 
   const toggleThreadExpansion = (replyId) => {
     setExpandedThreads((prev) => ({
@@ -231,6 +268,7 @@ const ReplyContent = () => {
               setExpandedThreads={setExpandedThreads}
               threadView={threadView}
               setThreadView={setThreadView}
+              onReplyDeleted={handleReplyDeleted} // Add this line
             />
           </div>
         ))
