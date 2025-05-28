@@ -43,7 +43,7 @@ const ShowCommentContent = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
   const getTrimmedContent = (text) => {
-    const words = text.split(/\s+/);
+    const words = text?.split(/\s+/);
     return words.slice(0, 100).join(" ");
   };
 

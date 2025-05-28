@@ -11,7 +11,44 @@ import { ForumContext } from "../../ContextProvider/ModelContext";
 import UserIconCard from "../../Card/UserIconCard"; 
 import {DeleteIcon,ReplyIcon,LikeIcon,DisLikeIcon} from "../../../asset/icons"
 
+const ShowReplyContent = ({
+  reply,
+  showViewMore,
+  onViewMore,
+  hasChildren,
+  show,
+  showReply,
+  setShowReply,
+  onReplyDeleted // Add this new prop
+}) => {
+  const {setReplyIdForContext,setViewBox,setUserName} = useContext(ForumContext); 
+  const {topicId} = useParams();
+  const {emitDeleteReply} = useWebSocket();
+  const {loginData} = useContext(LoginContext);
+  const [isLiked,setIsLiked] = useState();
+  const [isDisliked,setIsDisLiked] = useState();
+  const [isAuthor,setIsAuthor] = useState(false);
+  const [replyLikes,setReplyLikes] = useState([]);
+  const [replyDislikes,setReplyDislikes] = useState([]);
+  const [error,setError] = useState();
+  const [showReplyBox,setShowReplyBox] = useState(false);
+  const [isLoading,setIsLoading]= useState(false);
+  const [showFullContent, setShowFullContent] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false); // Add local deleted state
 
+  const getTrimmedContent = (text) => {
+    const words = text?.split?.(/\s+/) || [];
+    return words.slice(0, 100).join(" ");
+  };
+
+  useEffect(() => {
+    if (reply && loginData) {
+      console.log("Setting data dynamically...");
+      setReplyLikes(reply?.likes);
+      setReplyDislikes(reply?.dislikes);
+      setIsAuthor(reply?.userId=== loginData?.validuserone._id);
+    }
+  }, [reply, loginData]);
 
 
 const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
@@ -54,46 +91,65 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
           }
       }, [replyLikes, replyDislikes, loginData]);
 
+    // Ask for confirmation before deleting
+    if (!window.confirm("Are you sure you want to delete this reply? This action cannot be undone.")) {
+      return;
+    }
 
-      const handleDeleteReply = async () => {
-        alert("i am goind to delete");
-        if (!loginData || !loginData.validuserone) {
-          setError('You must be logged in to delete a reply');
-          return;
-        }
-    
-        // Ask for confirmation before deleting
-        if (!window.confirm("Are you sure you want to delete this reply? This action cannot be undone.")) {
-          return;
-        }
-    
-        try {
-          setIsLoading(true);
-          
-          const response = await axios.delete(`${REPLIES_URL}/${reply?._id}`, {
-            headers: getAuthHeaders()
-          });
-    
-          if (response.status === 200) {
-            // Emit socket event for reply deletion
-            console.log("i emitting reply"); 
-            emitDeleteReply(reply?._id, topicId);
-          }
-        } catch (error) {
-          console.error('Error deleting reply:', error);
-          if (!handleAuthError(error, setError)) {
-            if (error.response && error.response.status === 403) {
-              setError('You are not authorized to delete this reply');
-            } else {
-              setError('Failed to delete reply. Please try again.');
-            }
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      };  
+    try {
+      setIsLoading(true);
+      
+      const response = await axios.delete(`${REPLIES_URL}/${reply?._id}`, {
+        headers: getAuthHeaders()
+      });
 
-    // Handle reply like
+      if (response.status === 200) {
+        // Emit socket event for reply deletion
+        emitDeleteReply(reply?._id, topicId);
+        
+        // Immediately update UI by calling parent's delete handler
+        if (onReplyDeleted) {
+          onReplyDeleted(reply._id);
+        }
+        
+        // Set local deleted state for immediate UI feedback
+        setIsDeleted(true);
+
+        // If this reply has children, emit delete events for them as well
+        if (reply.children && reply.children.length > 0) {
+          const emitDeleteForChildren = (children) => {
+            children.forEach(child => {
+              // Emit delete event for each child
+              emitDeleteReply(child._id, topicId);
+              // Call parent's delete handler for each child
+              if (onReplyDeleted) {
+                onReplyDeleted(child._id);
+              }
+              // Recursively handle grandchildren
+              if (child.children && child.children.length > 0) {
+                emitDeleteForChildren(child.children);
+              }
+            });
+          };
+
+          emitDeleteForChildren(reply.children);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting reply:', error);
+      if (!handleAuthError(error, setError)) {
+        if (error.response && error.response.status === 403) {
+          setError('You are not authorized to delete this reply');
+        } else {
+          setError('Failed to delete reply. Please try again.');
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };  
+
+  // Handle reply like
   const handleReplyLike = async () => {
     if (!loginData || !loginData.validuserone) {
       alert('Please log in to like replies');
@@ -131,13 +187,13 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
       const response = await axios.post(`${API_BASE_URL}/forum/replies/${reply?._id}/dislike`, {}, {
         headers: getAuthHeaders()
       });
-        if (response.status === 200) {
-          setReplyDislikes(response.data.disliked ? [...replyDislikes, loginData.validuserone._id] : 
-            replyDislikes.filter(id => id !== loginData.validuserone._id));
-          setReplyLikes(replyLikes.filter(id => id !== loginData?.validuserone._id));
-          setIsDisLiked(!isDisliked);
-          setIsLiked(!isLiked);
-        }
+      if (response.status === 200) {
+        setReplyDislikes(response.data.disliked ? [...replyDislikes, loginData.validuserone._id] : 
+          replyDislikes.filter(id => id !== loginData.validuserone._id));
+        setReplyLikes(replyLikes.filter(id => id !== loginData?.validuserone._id));
+        setIsDisLiked(!isDisliked);
+        setIsLiked(!isLiked);
+      }
     } catch (error) {
       console.error('Error disliking reply:', error);
       if (!handleAuthError(error, setError)) {
@@ -145,6 +201,9 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
       }
     }
   };  
+
+  // Don't render if deleted (immediate UI feedback)
+  if (isDeleted) {
     return (
      <div key={reply?._id} className="flex justify-start mb-4">
   {/* User Icon Outside */}
@@ -237,6 +296,7 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
           <DisLikeIcon isDisliked={isDisliked} />
           {replyDislikes?.length || 0}
         </button>
+
       </div>
 
       <button
@@ -278,7 +338,14 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
     )
   };
 
-  
+      {/* Show error message if any */}
+      {error && (
+        <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded text-red-700 text-sm">
+          {error}
+        </div>
+      )}
+    </div>
+  )
+};
+
 export default ShowReplyContent;
-  
- 

@@ -255,9 +255,6 @@ const RenderUserPosts = () => {
                   <div className="w-full bg-white bg-opacity-10 p-2 rounded-lg">
                     <audio src={post.signedUrl} controls className="w-full" />
                   </div>
-                  <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                    Audio
-                  </div>
                 </div>
               )}
             </div>
