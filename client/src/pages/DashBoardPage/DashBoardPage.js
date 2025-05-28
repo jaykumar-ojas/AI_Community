@@ -131,7 +131,7 @@ const Page = () => {
   
 
   return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-bg_comment">
           <div className="mx-auto px-4">
             <div className="flex gap-8">
               {/* Main content area with grid layout */}

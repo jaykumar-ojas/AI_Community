@@ -6,6 +6,7 @@ import TopicContent from '../TopicComponent/TopicContent';
 import { ForumContext } from '../ContextProvider/ModelContext';
 import ReplyCommentBox from './Component/ReplyCommentBox';
 import ModelList from './Component/ModelList';
+import PopularTopics from '../AiForumPage/components/PopularTopics';
 
 // Component for forum messages
 function ForumMessage({ message, isCommand = false, isAI = false, userName = '', timestamp = null }) {
@@ -48,7 +49,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
   return (
     <div className="flex h-screen bg-bg_comment">
       {/* Sidebar */}
-      <div className='w-[20%]'>
+      <div className='w-[15%]'>
         <ModelList></ModelList>
       </div>
       
@@ -61,9 +62,16 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
           <TopicContent/>
         </div>
       </div>
-      <div className='w-[20%]'>
-        this is my forum
-      </div>
+      <div className="text-lg text-text_header h-[calc(100vh-3.5rem)] w-[20%] flex flex-col">
+  <div className="font-semibold text-lg mb-2">
+    Popular discussions you may like
+  </div>
+  <div className="flex-1 overflow-y-auto no-scrollbar">
+    <PopularTopics />
+  </div>
+</div>
+
+
     </div>
   );
 }
