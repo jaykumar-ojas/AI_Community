@@ -169,8 +169,8 @@ const Page = () => {
 
               {/* Forum system on the right - sticky with scrolling */}
               <div className="w-96 relative hidden md:block">
-                <div className="sticky top-2 max-h-[calc(100vh-3.5rem)] overflow-hidden">
-                  <div className="h-full overflow-y-auto rounded-lg shadow-lg">
+                <div className="sticky top-0 pt-2 h-[calc(100vh-3.5rem)] overflow-hidden">
+                  <div className="h-full rounded-lg shadow-lg">
                     <ForumSystem />
                   </div>
                 </div>

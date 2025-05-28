@@ -22,6 +22,7 @@ const ShowReplyContent = ({
   hasChildren,
   show,
   showReply,
+
   setShowReply,
   onReplyDeleted // Add this new prop
 }) => {

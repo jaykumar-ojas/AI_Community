@@ -47,7 +47,7 @@ const ForumSystem = () => {
           </div>
 
         {/* Navigation Tabs - Only show if not viewing a topic and not in chatbot view */}
-          <div className="flex border-b sticky top-[88px] z-10">
+          <div className="flex sticky top-[88px] z-10">
             <button
               className={`flex-1 px-4 py-3 text-sm font-medium ${currentTab === 'popular' ? 'text-like_color border-b-2 border-like_color' : 'text-text_header/80 hover:text-text_header'}`}
               onClick={() => setCurrentTab('popular')}
@@ -72,7 +72,7 @@ const ForumSystem = () => {
          {isNewTopicModalOpen && <NewTopicModal onClose={() => setIsNewTopicModalOpen(false)} /> }
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto no-scrollbar">
               {currentTab === 'popular' && (
                 <PopularTopics />
               )}

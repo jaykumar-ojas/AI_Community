@@ -4,6 +4,8 @@ import axios from 'axios';
 import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { formatDate, getAuthHeaders, handleAuthError, API_BASE_URL, TOPICS_URL } from './ForumUtils';
+import { DisLikeIcon, LikeIcon } from '../../../asset/icons';
+import UserIconCard from '../../Card/UserIconCard';
 
 const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   const { loginData } = useContext(LoginContext);
@@ -162,40 +164,38 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium text-text_comment mb-1">{topic.title}</h3>
-                  <p className="text-text_header text-sm line-clamp-2">{topic.content}</p>
-                  <div className="mt-2 flex items-center text-sm text-gray-500">
-                    <span className='text-text_header text-xs'>Posted by {topic.userName}</span>
-                    <span className="mx-2">•</span>
-                    <span className='text-time_header text-xs'>{formatDate(topic.createdAt)}</span>
-                    <span className="mx-2">•</span>
-                    <span className='text-text_header text-xs'>{topic.replyCount} replies</span>
-                    <span className="mx-2">•</span>
-                    <span className='text-time_header text-xs'>{topic.viewCount/2} views</span>
+                  <h3 className="text-md font-medium text-text_comment mb-1">{topic.title}</h3>
+                  <p className="text-text_header text-sm  line-clamp-2">{topic.content}</p>
+                  <div className="mt-2 flex flex-row items-center text-sm justify-between">
+                    <div className='w-6 h-6 flex-shrink-0'><UserIconCard id={topic?.userId}/></div>
+                    <div className="">•</div>
+                    <div className='text-text_header text-xs'>{topic.userName}</div>
+                    <div className="">•</div>
+                    <div className='text-time_header text-xs'>{formatDate(topic.createdAt)}</div>
+                    <div className="">•</div>
+                    <div className='text-text_header text-xs'>{topic.replyCount} replies</div>
+                    <div className="">•</div>
+                    <div className='text-time_header text-xs'>{topic.viewCount/2} views</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-4 ">
+                  <div className="flex items-center space-x-1 bg-btn_bg rounded-lg px-2 py-0.5">
                     <button
                       onClick={(e) => handleTopicLike(topic._id, e)}
-                      className={`p-1 rounded-full hover:bg-gray-100 ${
-                        isLiked ? 'text-blue-500' : 'text-gray-500'
+                      className={`rounded-full  hover:bg-bg_comment ${
+                        isLiked ? 'text-like_color' : 'none'
                       }`}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                      </svg>
+                      <LikeIcon isLiked={isLiked}/>
                     </button>
-                    <span className="text-sm text-gray-500">{topic.likes?.length || 0}</span>
+                    <span className="text-xs text-gray-500">{topic.likes?.length || 0}</span>
                     <button
                       onClick={(e) => handleTopicDislike(topic._id, e)}
                       className={`p-1 rounded-full hover:bg-gray-100 ${
                         isDisliked ? 'text-red-500' : 'text-gray-500'
                       }`}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.105-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l1.4-1.866a4 4 0 00.8-2.4z" />
-                      </svg>
+                     <DisLikeIcon isDisliked={isDisliked}/>
                     </button>
                     <span className="text-sm text-gray-500">{topic.dislikes?.length || 0}</span>
                   </div>
