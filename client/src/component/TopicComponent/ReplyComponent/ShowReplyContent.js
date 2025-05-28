@@ -10,6 +10,10 @@ import ReplyCommentBox from "../../AIchatbot/Component/ReplyCommentBox";
 import { ForumContext } from "../../ContextProvider/ModelContext";
 import UserIconCard from "../../Card/UserIconCard"; 
 import {DeleteIcon,ReplyIcon,LikeIcon,DisLikeIcon} from "../../../asset/icons"
+																			  
+
+
+
 
 const ShowReplyContent = ({
   reply,
@@ -35,11 +39,12 @@ const ShowReplyContent = ({
   const [isLoading,setIsLoading]= useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false); // Add local deleted state
+  const [isOpen, setIsOpen] = useState(false);
 
   const getTrimmedContent = (text) => {
     const words = text?.split?.(/\s+/) || [];
     return words.slice(0, 100).join(" ");
-  };
+  }; 
 
   useEffect(() => {
     if (reply && loginData) {
@@ -50,46 +55,19 @@ const ShowReplyContent = ({
     }
   }, [reply, loginData]);
 
+  useEffect(() => {
+    if (loginData?.validuserone?._id) {
+      setIsLiked(replyLikes?.includes(loginData.validuserone._id));
+      setIsDisLiked(replyDislikes?.includes(loginData.validuserone._id));
+    }
+  }, [replyLikes, replyDislikes, loginData]);
 
-const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
-  show,
-  showReply,
-  setShowReply}) => {
-    const {setReplyIdForContext,setViewBox,setUserName} = useContext(ForumContext); 
-    const {topicId} = useParams();
-    const {emitDeleteReply} = useWebSocket();
-    const {loginData} = useContext(LoginContext);
-    const [isLiked,setIsLiked] = useState();
-    const [isDisliked,setIsDisLiked] = useState();
-    const [isAuthor,setIsAuthor] = useState(false);
-    const [replyLikes,setReplyLikes] = useState([]);
-    const [replyDislikes,setReplyDislikes] = useState([]);
-    const [error,setError] = useState();
-    const [showReplyBox,setShowReplyBox] = useState(false);
-    const [isLoading,setIsLoading]= useState(false);
-    const [showFullContent, setShowFullContent] = useState(false);
-    const [isOpen,setIsOpen] = useState(false);
-    const getTrimmedContent = (text) => {
-      const words = text.split(/\s+/);
-      return words.slice(0, 100).join(" ");
-    };
-  
-      useEffect(() => {
-          if (reply && loginData) {
-              console.log("Setting data dynamically...");
-              setReplyLikes(reply?.likes);
-              setReplyDislikes(reply?.dislikes);
-              setIsAuthor(reply?.userId=== loginData?.validuserone._id);
-          }
-      }, [reply, loginData]);
-  
-      useEffect(() => {
-          
-          if (loginData?.validuserone?._id) {
-              setIsLiked(replyLikes?.includes(loginData.validuserone._id));
-              setIsDisLiked(replyDislikes?.includes(loginData.validuserone._id));
-          }
-      }, [replyLikes, replyDislikes, loginData]);
+  const handleDeleteReply = async () => {
+									  
+    if (!loginData || !loginData.validuserone) {
+      setError('You must be logged in to delete a reply');
+      return;
+    }
 
     // Ask for confirmation before deleting
     if (!window.confirm("Are you sure you want to delete this reply? This action cannot be undone.")) {
@@ -135,6 +113,7 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
           emitDeleteForChildren(reply.children);
         }
       }
+
     } catch (error) {
       console.error('Error deleting reply:', error);
       if (!handleAuthError(error, setError)) {
@@ -142,6 +121,10 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
           setError('You are not authorized to delete this reply');
         } else {
           setError('Failed to delete reply. Please try again.');
+			 
+		   
+				   
+							  
         }
       }
     } finally {
@@ -205,32 +188,68 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
   // Don't render if deleted (immediate UI feedback)
   if (isDeleted) {
     return (
+      <div className="p-4 text-center text-gray-500 bg-gray-100 rounded-xl border border-gray-200">
+						   
+        <span className="text-sm">This reply has been deleted</span>
+									   
+      </div>
+    );
+  }
+
+return (
      <div key={reply?._id} className="flex justify-start mb-4">
   {/* User Icon Outside */}
   <div className="w-8 h-8 flex-shrink-0">
     <UserIconCard id={reply?.userId} />
   </div>
+	  
+   
 
   {/* Content Section */}
   <div className="flex flex-col p-4 pt-0 ml-2 rounded-xl  w-full">
     {/* User Info & Delete Button */}
+																										 
+											
+		 
+	 
+													  
     <div className="flex items-center justify-between">
       <div className="flex justify-start items-center gap-2 text-sm text-gray-700">
         <span className="text-text_header text-sm font-normal text-base">{reply?.userName}</span>
         <div className="w-1 h-1 bg-time_header rounded-full"></div>
+				
+																  
         <span className="text-time_header text-xs">{formatDate(reply?.createdAt)}</span>
+			  
+					  
+				 
+									   
+								
+																	 
+															  
+			   
+						  
+		   
+														  
+				   
+		  
       </div>
 
       {isAuthor && (
         <div className="ml-2 relative">
+																			  
+																											
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
           >
             ⋯
           </button>
+		  
+			
 
           {isOpen && (
+											   
             <div className="absolute left-0 w-full bg-white shadow-lg rounded-md z-10">
               <button
                 onClick={() => {
@@ -296,7 +315,6 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
           <DisLikeIcon isDisliked={isDisliked} />
           {replyDislikes?.length || 0}
         </button>
-
       </div>
 
       <button
@@ -326,9 +344,14 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
       <div className="mt-2">
         <button
           onClick={onViewMore}
+											 
+										 
+							 
+			
           className="text-xs text-blue-500 hover:underline"
         >
           View more replies...
+			   
         </button>
       </div>
     )}
@@ -337,15 +360,5 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
 
     )
   };
-
-      {/* Show error message if any */}
-      {error && (
-        <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded text-red-700 text-sm">
-          {error}
-        </div>
-      )}
-    </div>
-  )
-};
 
 export default ShowReplyContent;
