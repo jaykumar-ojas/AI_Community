@@ -16,7 +16,6 @@ const ReplyContent = () => {
   const [isLoading,setIsLoading] = useState(false);
   const [expandedThreads,setExpandedThreads] = useState({});
   const [threadView,setThreadView] = useState();
-  const {subscribeToEvent} = useWebSocket();
 
   const [forceRender, setForceRender] = useState(0); // Add force render trigger
   const repliesContainerRef = useRef(null);
@@ -216,25 +215,32 @@ const ReplyContent = () => {
   }
 
   return (
-    <div>
-         <div className="relative flex items-center p-2  mb-2">
-           <h1 className="sticky fixed text-xl w-full font-semibold text-text_comment tracking-wide">
-            Replies
-          </h1>
-        </div>
-        <div className="replyContent">
-        {!threadView && structureReply && structureReply.map((reply,index)=>(
-          <div key={index}  className="ml-2">
-             <RecurrsionLoop reply={reply}  expandedThreads={expandedThreads}
-            toggleThreadExpansion={toggleThreadExpansion}
-            handleViewThread={handleViewThread}/>
+  <div>
+    <div className="relative flex items-center p-2 mb-2">
+      <h1 className="sticky fixed text-xl w-full font-semibold text-text_comment tracking-wide">
+        Replies
+      </h1>
+    </div>
+
+    <div className="replyContent">
+      {!threadView && structureReply && structureReply.length > 0 ? (
+        structureReply.map((reply, index) => (
+          <div key={index} className="ml-2">
+            <RecurrsionLoop
+              reply={reply}
+              expandedThreads={expandedThreads}
+              toggleThreadExpansion={toggleThreadExpansion}
+              handleViewThread={handleViewThread}
+            />
           </div>
         ))
       ) : (
         <div className="text-center text-gray-500 py-8">No replies yet</div>
       )}
     </div>
-  );
+  </div>
+);
+
 };
 
 export default ReplyContent;

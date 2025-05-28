@@ -28,10 +28,10 @@ const ForumSystem = () => {
   }, []);
 
   return (
-      <div className="bg-white rounded-lg overflow-hidden flex flex-col h-full">
+      <div className="bg-bg_comment_box rounded-lg overflow-hidden flex flex-col h-full">
         {/* Header with search - only show if not in chatbot view */}
-          <div className="p-4 border-b sticky top-0 bg-white ">
-            <h2 className="text-xl font-bold mb-4">AI Forum</h2>
+          <div className="p-4 border-b sticky top-0">
+            <h2 className="text-xl text-text_comment font-bold mb-4">AI Forum</h2>
             <div className="relative">
               <input
                 type="text"
@@ -47,21 +47,21 @@ const ForumSystem = () => {
           </div>
 
         {/* Navigation Tabs - Only show if not viewing a topic and not in chatbot view */}
-          <div className="flex border-b bg-white sticky top-[88px] z-10">
+          <div className="flex border-b sticky top-[88px] z-10">
             <button
-              className={`flex-1 px-4 py-3 text-sm font-medium ${currentTab === 'popular' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex-1 px-4 py-3 text-sm font-medium ${currentTab === 'popular' ? 'text-like_color border-b-2 border-like_color' : 'text-text_header/80 hover:text-text_header'}`}
               onClick={() => setCurrentTab('popular')}
             >
               Popular
             </button>
             <button
-              className={`flex-1 px-4 py-3 text-sm font-medium ${currentTab === 'recent' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex-1 px-4 py-3 text-sm font-medium ${currentTab === 'recent' ? 'text-like_color border-b-2 border-like_color' : 'text-text_header/80 hover:text-text_header'}`}
               onClick={() => setCurrentTab('recent')}
             >
               Recent
             </button>
             <button
-              className={`flex-1 px-4 py-3 text-sm font-medium ${currentTab === 'my' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex-1 px-4 py-3 text-sm font-medium ${currentTab === 'my' ? 'text-like_color border-b-2 border-like_color' : 'text-text_header/80 hover:text-text_header'}`}
               onClick={() => setCurrentTab('my')}
             >
               My Topics
