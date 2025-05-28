@@ -33,9 +33,9 @@ const ShowReplyContent = ({reply,showViewMore,onViewMore,hasChildren,
     const [showFullContent, setShowFullContent] = useState(false);
     const [isOpen,setIsOpen] = useState(false);
     const getTrimmedContent = (text) => {
-      const words = text.split(/\s+/);
-      return words.slice(0, 100).join(" ");
-    };
+    const words = text?.split?.(/\s+/) || [];
+    return words.slice(0, 100).join(" ");
+  };
   
       useEffect(() => {
           if (reply && loginData) {

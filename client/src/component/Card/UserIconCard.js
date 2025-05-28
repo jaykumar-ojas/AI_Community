@@ -1,9 +1,11 @@
 import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const UserIconCard = ({id}) =>{
     const [imageUrl,setImageUrl] = useState();
+    const navigate = useNavigate();
 
     useEffect(()=>{
         getUserImgUrl(id);
@@ -32,7 +34,7 @@ const UserIconCard = ({id}) =>{
     }
 
     return (
-        <div className="relative w-full h-full rounded-full overflow-hidden border border-gray-300">
+        <div onClick={()=>navigate(`/sample-user/${id}`)} className="relative w-full h-full rounded-full overflow-hidden border border-gray-300">
             <img
                 src={imageUrl}
                 alt="userImage"
