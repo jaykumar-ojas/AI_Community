@@ -9,18 +9,20 @@ const RecurrsionLoop = ({
   expandedThreads,
   toggleThreadExpansion,
   handleViewThread,
+  onReplyDeleted // Add this new prop
 }) => {
   const { loginData } = useContext(LoginContext);
   const MAX_VISIBLE_DEPTH = 3;
   const isAuthor = loginData?.validuserone?._id === reply?.userId;
   const hasChildren = reply?.children && reply?.children.length > 0;
-  const [threadView, setThreadView] = useState();
 
+  const [threadView, setThreadView] = useState();
   const isExpanded = expandedThreads[reply?._id];
-  const isDeep = depth >= MAX_VISIBLE_DEPTH; 
+  const isDeep = depth >= MAX_VISIBLE_DEPTH;
+
   const showViewMore = hasChildren && isDeep && !isExpanded;
-  const [showReply,setShowReply] = useState(false);
-  const show = (depth===2);
+  const [showReply, setShowReply] = useState(false);
+  const show = (depth === 2);
 
   const threadColor = [
     "bg-red-300",
@@ -39,6 +41,7 @@ const RecurrsionLoop = ({
   ][depth % 5];
 
   return (
+
     <div key={reply?._id} className={`relative ${depth > 0 ? `pl-4`: ``}`}>
        {/* Thread connector dot */}
       {reply && (
@@ -51,15 +54,15 @@ const RecurrsionLoop = ({
               : toggleThreadExpansion(reply?._id)
           }
           hasChildren={hasChildren}
-        show={show}
-        showReply={showReply}
-        setShowReply={setShowReply}
+          show={show}
+          showReply={showReply}
+          setShowReply={setShowReply}
+          onReplyDeleted={onReplyDeleted} // Pass down the delete handler
         />
       )}
-      {/* Show reply form if replying to this message */}
 
       {/* Render children if expanded or not too deep */}
-      {hasChildren && (!show || showReply)&& (!isDeep || isExpanded) && (
+      {hasChildren && (!show || showReply) && (!isDeep || isExpanded) && (
         <div className="ml-4">
           {reply?.children.map((childReply) => (
             <div key={childReply._id}>
@@ -70,6 +73,7 @@ const RecurrsionLoop = ({
                 expandedThreads={expandedThreads}
                 toggleThreadExpansion={toggleThreadExpansion}
                 handleViewThread={handleViewThread}
+                onReplyDeleted={onReplyDeleted} // Pass down the delete handler
               />
             </div>
           ))}

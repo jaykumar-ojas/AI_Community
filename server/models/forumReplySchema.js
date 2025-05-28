@@ -2,9 +2,21 @@ const mongoose = require('mongoose');
 
 const forumReplySchema = new mongoose.Schema({
   content: {
-    type: String,
-    required: true,
-    trim: true
+    userText: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    promptText: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    aiText: {
+      type: String,
+      trim: true,
+      default: ''
+    }
   },
   topicId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -61,6 +73,3 @@ const forumReplySchema = new mongoose.Schema({
 const ForumReply = mongoose.model('ForumReply', forumReplySchema);
 
 module.exports = ForumReply;
-
-
-// when i completely delete database i have to change mediaAttachment Schema
