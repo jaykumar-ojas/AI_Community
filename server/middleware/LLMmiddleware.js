@@ -110,13 +110,13 @@ const imageGenerator = async(text)=>{
    
     // Call the OpenAI API to generate an image
     const response = await openai.images.generate({
-      model: "dall-e-3",
+      model: "dall-e-2",
       prompt: text,
-      n: 1,
+      // n: 1,
       size: "1024x1024",
-      quality: "hd",
   
     });
+    console.log("i m succssfylly ocme to generate imgages");
   
     // Extract the image URL from the response
     if (response && response.data && response.data[0] && response.data[0].url) {

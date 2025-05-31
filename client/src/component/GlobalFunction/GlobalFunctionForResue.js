@@ -26,6 +26,7 @@ export const ShowBox = () => {
 export const ValidUserForPage = () => {
   const { setLoginData } = useContext(LoginContext);
   const removeData = () => {
+    console.log("i m running when you put login by google")
     localStorage.removeItem("userdatatoken");
     localStorage.removeItem("userData");
     setLoginData(null);
@@ -33,6 +34,7 @@ export const ValidUserForPage = () => {
 
   const validateUser = async () => {
     let token = localStorage.getItem("userdatatoken");
+    console.log(token,"this is i am on genral funcion");
 
     if (!token) {
       console.log("i didnt recive any token taht y i delete all data");

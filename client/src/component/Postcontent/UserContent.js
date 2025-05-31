@@ -207,17 +207,17 @@ const UserContent = ({ post }) => {
 
     if (fileType === 'image') {
       return (
-        <div className="w-full h-full rounded-lg bg-black  items-center justify-center ">
-           <img
-              src={postData.imgUrl}
-              className="h-full w-full object-contain items-center justify-center"
-              alt="Post content"
-              onError={(e) => {
-                console.error("Error loading image:", e);
-                e.target.src = "https://via.placeholder.com/400x280?text=Image+Not+Available";
-              }}
-            />
-        </div>
+        <div className="w-full max-h-[500px] rounded-lg bg-white flex items-center justify-center">
+      <img
+        src={postData.imgUrl}
+        className="max-h-[500px] w-auto object-contain"
+        alt="Post content"
+        onError={(e) => {
+          console.error("Error loading image:", e);
+          e.target.src = "https://via.placeholder.com/400x280?text=Image+Not+Available";
+        }}
+      />
+    </div>
       );
     } else if (fileType === 'video') {
       return (
@@ -330,9 +330,9 @@ const UserContent = ({ post }) => {
         </div>
       </div>
       {/* user media content */}
-      <div className="w-full h-full backdrop-blur-md bg-black/50 flex justify-center items-center">
+      <div className="w-full min-h-[300px] backdrop-blur-md bg-white flex justify-center items-center">
   <div
-    className={`h-full flex items-center justify-center overflow-hidden ${
+    className={`w-full flex items-center justify-center overflow-hidden ${
       postData.fileType === 'image' ? 'cursor-pointer' : ''
     }`}
     onClick={handleMediaClick}

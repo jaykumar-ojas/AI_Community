@@ -24,7 +24,6 @@ const UserIconCard = ({id}) =>{
 
             const res = await data.json();
             if(res.status ===200){
-                console.log(res);
                 setImageUrl(res?.user?.profilePictureUrl);
             }
         }
@@ -34,7 +33,7 @@ const UserIconCard = ({id}) =>{
     }
 
     return (
-        <div onClick={()=>navigate(`/sample-user/${id}`)} className="relative w-full h-full rounded-full overflow-hidden border border-gray-300">
+        <div onClick={()=>navigate(`/sample-user/${id}`)} className="relative w-full h-full rounded-full overflow-hidden ">
             <img
                 src={imageUrl}
                 alt="userImage"
