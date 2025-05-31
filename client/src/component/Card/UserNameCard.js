@@ -22,7 +22,6 @@ const UserNameCard = ({id}) =>{
 
             const res = await data.json();
             if(res.status ===200){
-                console.log(res);
                 setUserName(res?.user?.userName);
             }
         }

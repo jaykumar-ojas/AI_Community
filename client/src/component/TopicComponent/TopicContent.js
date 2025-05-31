@@ -13,9 +13,9 @@ import HeaderContent from "./components/HeaderContent";
 import ReplyContent from "./ReplyComponent/ReplyContent";
 
 import { ForumContext} from "../ContextProvider/ModelContext";
-import StateSelection from "./StateSelection";
 import { LikeIcon,DisLikeIcon,BackArrow } from "../../asset/icons";
-import ReplyCommentBox from "../AIchatbot/Component/ReplyCommentBox";
+import UserReply from "../UserReply/UserReply";
+
 
 
 const TopicContent = () => {
@@ -111,11 +111,7 @@ const TopicContent = () => {
 
     {/* Static ReplyCommentBox */}
     <div className="pr-1">
-      <ReplyCommentBox
-        onClose={() => {
-          setReplyIdForContext(null);
-        }}
-      />
+      <UserReply/>
     </div>
 
   </div>

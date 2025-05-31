@@ -12,7 +12,7 @@ import logo from './logo.jpg'
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOutUser } from "./NavBarFunc";
+import { isAuthenticated, logout } from "../../utils/authUtils";
 import { SearchIcon } from "../../asset/icons";
 
 
@@ -27,12 +27,13 @@ import { SearchIcon } from "../../asset/icons";
   
   export default function Navbar() {
     const {loginData,setLoginData} = useContext(LoginContext);
-    const history = useNavigate();
-    const logout = LogOutUser();
+    const navigate = useNavigate();
 
-    const logoutUser =async()=>{
+    const handleLogout = () => {
       logout();
-    }
+      setLoginData(null);
+      navigate("/");
+    };
 
     return (
       <>
@@ -101,7 +102,7 @@ import { SearchIcon } from "../../asset/icons";
                 >
                   <BellIcon className="h-6 w-6" />
                 </button>
-                {loginData ?
+                {isAuthenticated() && loginData ?
                 (<Menu as="div" className="relative z-10">
                   <MenuButton className="flex items-center focus:outline-none">
                     <img
@@ -140,7 +141,7 @@ import { SearchIcon } from "../../asset/icons";
                       {({ active }) => (
                         <a
                           href="#"
-                          onClick={logoutUser}
+                          onClick={handleLogout}
                           className={`block px-4 py-2 text-sm ${
                             active ? "bg-gray-100" : "text-gray-700"
                           }`}
@@ -151,7 +152,12 @@ import { SearchIcon } from "../../asset/icons";
                     </MenuItem>
                   </MenuItems>
                 </Menu>)
-                :(<button onClick={()=> history('/login')} className="text-text_header ">Sign In</button>) }
+                :(<Link
+                  to="/login"
+                  className=" text-white px-4 py-2"
+                >
+                  Sign In
+                </Link>)}
               </div>
             </div>
           </div>
