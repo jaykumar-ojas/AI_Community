@@ -110,17 +110,21 @@ const Page = () => {
                   </div>
                 }
                 endMessage={
-                  <p className="end-message">
+                  <p className="text-center text-gray-500 my-4">
                     You've seen all posts!
                   </p>
                 }
+                scrollThreshold="90%"
+                scrollableTarget="scrollableDiv"
               >
-                <div className="grid grid-cols-1 md:grid-cols-3">
-                  {postdata.map((post) => (
-                    <div key={post._id} className="flex justify-center">
-                      <Card post={post} />
-                    </div>
-                  ))}
+                <div id="scrollableDiv" className="h-[calc(100vh-3.5rem)] overflow-y-auto no-scrollbar">
+                  <div className="grid grid-cols-1 md:grid-cols-3">
+                    {postdata.map((post) => (
+                      <div key={post._id} className="flex justify-center">
+                        <Card post={post} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </InfiniteScroll>
             ) : (
