@@ -16,7 +16,7 @@ const ReplyCommentBox = ({onClose}) => {
   const { id } = useParams();
   const postId = id;
   const { loginData } = useContext(LoginContext);
-  const { emitNewReply } = useWebSocket();
+  const { emitNewReply, emitNewComment } = useWebSocket();
 
   const [newReply, setNewReply] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -52,16 +52,14 @@ const ReplyCommentBox = ({onClose}) => {
       console.log("this is selected files",selectedFiles);
       selectedFiles.forEach(file => formData.append("media", file));
 
-
       const alreadyUploadedUrls = selectedFiles
         .filter(file => !(file instanceof File))
         .map(file => file.url);
 
       // Add each URL in mediaUrls[]
       alreadyUploadedUrls.forEach(url => {
-      formData.append("mediaUrls", url);
+        formData.append("mediaUrls", url);
       });
-
 
       const response = await axios.post('http://localhost:8099/comments/post', formData, {
         headers: {
@@ -69,7 +67,10 @@ const ReplyCommentBox = ({onClose}) => {
           "Content-Type": "multipart/form-data",
         },
       });
-      emitNewReply(response.data.reply);
+
+      // Emit the new comment through WebSocket
+      emitNewComment(response.data.reply);
+      
       setReplyIdForContext(null);
       setNewReply("");
       setModel("");
