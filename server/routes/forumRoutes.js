@@ -3,7 +3,7 @@ const router = express.Router();
 const ForumTopic = require('../models/forumTopicSchema');
 const ForumReply = require('../models/forumReplySchema');
 const authenticate = require('../middleware/authenticate');
-const { awsuploadMiddleware, awsdeleteMiddleware, generateSignedUrl } = require('../middleware/awsmiddleware');
+const { awsuploadMiddleware, awsdeleteMiddleware, generateSignedUrl,uploadImageFromUrl } = require('../middleware/awsmiddleware');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const AWS = require('aws-sdk');
@@ -567,11 +567,14 @@ router.get('/paginated', async(req, res) => {
 });
 
 
-router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, modelSelection, async (req, res) => {
+router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
+  console.log("i m come here");
   try {
-    const { content, topicId, parentReplyId, userId, userName } = req.body;
+    console.log("i m coming here");
+    const { topicId, parentReplyId, userId, userName} = req.body;
+    const content = JSON.parse(req.body.content);
     console.log('Request body content:', req.body.content);
-    
+    console.log(1);
     // Validate content object
     if (!content || typeof content !== 'object') {
       return res.status(400).json({ 
@@ -581,9 +584,9 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
     }
     
     // Check if at least one content field is provided
-    const hasUserText = content.userText && content.userText.trim();
-    const hasPromptText = content.promptText && content.promptText.trim();
-    const hasAiText = content.aiText && content.aiText.trim();
+    const hasUserText = content.userText && content.userText.length>0;
+    const hasPromptText = content.promptText && content.promptText.length>0;
+    const hasAiText = content.aiText && content.aiText.length>0;
     
     if (!hasUserText && !hasPromptText && !hasAiText) {
       return res.status(400).json({ 
@@ -591,10 +594,11 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
         error: 'At least one content field (userText, promptText, or aiText) must be provided' 
       });
     }
-    //console.log('Request body content:', req.body.content);
+  
     if (!topicId) {
       return res.status(400).json({ status: 400, error: 'Topic ID is required' });
     }
+
     
     // Check if topic exists and is not locked
     const topic = await ForumTopic.findById(topicId);
@@ -622,33 +626,17 @@ router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddlew
     if (req.uploadedFiles && req.uploadedFiles.length > 0) {
       mediaAttachments = [...req.uploadedFiles];
     }
+
+    if (Array.isArray(content.imageUrl) && content.imageUrl.length > 0) {
+        for (const url of content.imageUrl) {
+          const getObj = await uploadImageFromUrl(url);
+          mediaAttachments.push(getObj);
+        }
+      }
+
+      // Remove imageUrl from content before saving
+    const { imageUrl, ...processedContent } = content;
     
-    // Process S3 URLs if any
-    if (req.body.mediaUrls) {
-      const mediaUrls = Array.isArray(req.body.mediaUrls) ? req.body.mediaUrls : [req.body.mediaUrls];
-      mediaAttachments = [
-        ...mediaAttachments,
-        ...mediaUrls.map(url => ({
-          fileName: url.split('/').pop(),
-          fileType: 'image/jpeg', // Default to image/jpeg for S3 URLs
-          fileUrl: url,
-          fileSize: 0, // Size not available for S3 URLs
-          uploadedAt: new Date()
-        }))
-      ];
-    }
-    
-    // Process content object
-    const processedContent = {
-      userText: content.userText ? content.userText.trim() : '',
-      promptText: content.promptText ? content.promptText.trim() : '',
-      aiText: content.aiText ? content.aiText.trim() : '',
-      userTimestamp: content.userTimestamp || (content.userText ? new Date() : null),
-      promptTimestamp: content.promptTimestamp || (content.promptText ? new Date() : null),
-      aiTimestamp: content.aiTimestamp || (content.aiText ? new Date() : null)
-    };
-    
-    console.log("Processed content object:", processedContent);
     
     // Create new reply
     const newReply = new ForumReply({

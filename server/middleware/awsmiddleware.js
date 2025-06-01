@@ -2,6 +2,7 @@ const express = require('express')
 const multer = require('multer')
 const crypto = require("crypto");
 const sharp = require("sharp");
+const axios = require('axios');
 
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
@@ -64,129 +65,147 @@ const upload = multer({
 });
 
 const awsuploadMiddleware = async (req, res, next) => {
-    console.log("Processing file upload ");
-    console.log("this is after i generate an image from ai",req.file);
+    console.log("this is after i generate an image from ai", req.file);
+
     try {
         // Handle single file upload from multer.single()
         if (req.file) {
-            console.log("Processing single file upload");
             const file = req.file;
-            const fileType = file.mimetype.split('/')[0]; // 'image', 'video', or 'audio'
+            const fileType = file.mimetype.split("/")[0]; // 'image', 'video', or 'audio'
             let buffer;
 
-            // Process images with sharp, leave videos and audio as is
-            if (fileType === 'image') {
+            if (fileType === "image") {
                 try {
-                    buffer = await sharp(file.buffer)
-                        .resize({ height: 1920, width: 1080, fit: "contain" })
-                        .toBuffer();
+                    const image = sharp(file.buffer);
+                    const metadata = await image.metadata();
+
+                    if (metadata.width > 1920 || metadata.height > 1080) {
+                        buffer = await image
+                            .resize({
+                                width: metadata.width > 1920 ? 1920 : undefined,
+                                height: metadata.height > 1080 ? 1080 : undefined,
+                                fit: "inside",
+                            })
+                            .toBuffer();
+                    } else {
+                        buffer = await image.toBuffer();
+                    }
                 } catch (sharpError) {
                     console.error("Error processing image with sharp:", sharpError);
-                    // Fallback to original buffer if sharp fails
                     buffer = file.buffer;
                 }
             } else {
-                buffer = file.buffer; // For videos and audio, use the original buffer
+                buffer = file.buffer;
             }
 
             const fileName = randomFileName();
             console.log("Generated file name:", fileName);
-            
+
             const params = {
                 Bucket: bucketName,
                 Key: fileName,
                 Body: buffer,
                 ContentType: file.mimetype,
             };
+
             console.log("Uploading to S3 bucket");
 
             const command = new PutObjectCommand(params);
             await s3.send(command);
             console.log("File uploaded successfully");
 
-            // Generate signed URL for the uploaded file
             const fileUrl = await generateSignedUrl(fileName);
             console.log("Generated signed URL:", fileUrl);
 
-            // Add the fileName directly to the request object for single file uploads
             req.fileName = fileName;
             req.mimetype = file.mimetype;
             req.fileUrl = fileUrl;
-            
-            // Also maintain backward compatibility with the uploadedFiles array
-            req.uploadedFiles = [{
-                fileName,
-                fileType: file.mimetype,
-                fileUrl,
-                fileSize: file.size,
-                uploadedAt: new Date()
-            }];
-            
+            req.uploadedFiles = [
+                {
+                    fileName,
+                    fileType: file.mimetype,
+                    fileUrl,
+                    fileSize: file.size,
+                    uploadedAt: new Date(),
+                },
+            ];
+
             return next();
         }
-        
+
         // Handle multiple file upload from multer.array()
         if (!req.files || req.files.length === 0) {
             console.log("No files to process");
-            return next(); // No files to process, continue to next middleware
+            return next();
         }
 
-        req.uploadedFiles = []; // Array to store processed file information
+        req.uploadedFiles = [];
 
         for (const file of req.files) {
-            const fileType = file.mimetype.split('/')[0]; // 'image', 'video', or 'audio'
+            const fileType = file.mimetype.split("/")[0];
             let buffer;
 
-            // Process images with sharp, leave videos and audio as is
-            if (fileType === 'image') {
+            if (fileType === "image") {
                 try {
-                    buffer = await sharp(file.buffer)
-                        .resize({ height: 1920, width: 1080, fit: "contain" })
-                        .toBuffer();
+                    const image = sharp(file.buffer);
+                    const metadata = await image.metadata();
+
+                    if (metadata.width > 1920 || metadata.height > 1080) {
+                        buffer = await image
+                            .resize({
+                                width: metadata.width > 1920 ? 1920 : undefined,
+                                height: metadata.height > 1080 ? 1080 : undefined,
+                                fit: "inside",
+                            })
+                            .toBuffer();
+                    } else {
+                        buffer = await image.toBuffer();
+                    }
                 } catch (sharpError) {
                     console.error("Error processing image with sharp:", sharpError);
-                    // Fallback to original buffer if sharp fails
                     buffer = file.buffer;
                 }
             } else {
-                buffer = file.buffer; // For videos and audio, use the original buffer
+                buffer = file.buffer;
             }
 
             const fileName = randomFileName();
             console.log("Generated file name:", fileName);
-            
+
             const params = {
                 Bucket: bucketName,
                 Key: fileName,
                 Body: buffer,
                 ContentType: file.mimetype,
             };
+
             console.log("Uploading to S3 bucket");
 
             const command = new PutObjectCommand(params);
             await s3.send(command);
             console.log("File uploaded successfully");
 
-            // Generate signed URL for the uploaded file
             const fileUrl = await generateSignedUrl(fileName);
             console.log("Generated signed URL:", fileUrl);
 
-            // Store file information
             req.uploadedFiles.push({
                 fileName,
                 fileType: file.mimetype,
                 fileUrl,
                 fileSize: file.size,
-                uploadedAt: new Date()
+                uploadedAt: new Date(),
             });
         }
 
         next();
     } catch (error) {
         console.error("Error uploading file:", error);
-        return res.status(500).json({ status: 500, error: "Error uploading file: " + error.message });
+        return res
+            .status(500)
+            .json({ status: 500, error: "Error uploading file: " + error.message });
     }
 };
+
 
 const generateSignedUrl = async(keys)=>{
     try{
@@ -257,9 +276,15 @@ const uploadImageFromUrl = async (imageUrl) => {
         };
         
         await s3.send(new PutObjectCommand(uploadParams));
-        
+        const fileUrl = await generateSignedUrl(fileName);
         console.log(`Image uploaded successfully: ${fileName}`);
-        return fileName;
+        return {
+            fileName,
+            fileType: "image",
+            fileUrl,
+            fileSize: "",
+            uploadedAt: new Date(),
+        }
     } catch (error) {
         console.error("Error uploading image:", error);
         throw error;
@@ -270,5 +295,6 @@ const uploadImageFromUrl = async (imageUrl) => {
 module.exports={
     generateSignedUrl,
     awsuploadMiddleware,
-    awsdeleteMiddleware
+    awsdeleteMiddleware,
+    uploadImageFromUrl
 };
