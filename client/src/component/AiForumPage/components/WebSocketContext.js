@@ -70,6 +70,41 @@ export const WebSocketProvider = ({ children }) => {
     return () => {};
   };
   
+  // Join a post room
+  const joinPost = (postId) => {
+    if (socket && postId) {
+      socket.emit('join_post', postId);
+    }
+  };
+  
+  // Leave a post room
+  const leavePost = (postId) => {
+    if (socket && postId) {
+      socket.emit('leave_post', postId);
+    }
+  };
+  
+  // Emit new comment event
+  const emitNewComment = (comment) => {
+    if (socket && comment) {
+      socket.emit('new_comment', comment);
+    }
+  };
+  
+  // Emit delete comment event
+  const emitDeleteComment = (commentId, postId) => {
+    if (socket && commentId && postId) {
+      socket.emit('delete_comment', { commentId, postId });
+    }
+  };
+
+  // Emit comment reaction event
+  const emitCommentReaction = (data) => {
+    if (socket && data) {
+      socket.emit('comment_reaction', data);
+    }
+  };
+  
   const value = {
     socket,
     joinTopic,
@@ -78,7 +113,12 @@ export const WebSocketProvider = ({ children }) => {
     emitNewReply,
     emitDeleteTopic,
     emitDeleteReply,
-    subscribeToEvent
+    subscribeToEvent,
+    joinPost,
+    leavePost,
+    emitNewComment,
+    emitDeleteComment,
+    emitCommentReaction
   };
   
   return (

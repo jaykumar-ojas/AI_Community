@@ -65,7 +65,7 @@ app.use("/", commentsRouter);
 app.use("/forum", forumRoutes);
 app.use("/",llmRoutes);
 app.use("/",batchRoutes);
-app.use("/subscription", subscriptionRoutes);
+app.use("/", subscriptionRoutes);
 
 // WebSocket event handlers
 io.on('connection', (socket) => {
@@ -112,6 +112,44 @@ io.on('connection', (socket) => {
     console.log("Reply deleted:", data);
     const room = `topic_${data.topicId}`;
     io.to(room).emit('reply_deleted', data.replyId);
+  });
+
+  // Join a post room
+  socket.on('join_post', (postId) => {
+    const room = `post_${postId}`;
+    socket.join(room);
+    console.log(`User joined post room: ${room}`);
+  });
+
+  // Leave a post room
+  socket.on('leave_post', (postId) => {
+    const room = `post_${postId}`;
+    socket.leave(room);
+    console.log(`User left post room: ${room}`);
+  });
+
+  // New comment created
+  socket.on('new_comment', (comment) => {
+    console.log("New comment received:", comment);
+    const room = `post_${comment.postId}`;
+    // Broadcast to all clients in the room except the sender
+    socket.to(room).emit('comment_created', comment);
+    // Also emit to the sender to ensure they get the update
+    socket.emit('comment_created', comment);
+  });
+
+  // Comment deleted
+  socket.on('delete_comment', (data) => {
+    console.log("Comment deleted:", data);
+    const room = `post_${data.postId}`;
+    io.to(room).emit('comment_deleted', data.commentId);
+  });
+
+  // Comment liked/disliked
+  socket.on('comment_reaction', (data) => {
+    console.log("Comment reaction:", data);
+    const room = `post_${data.postId}`;
+    io.to(room).emit('comment_reaction_updated', data);
   });
 
   socket.on('disconnect', () => {

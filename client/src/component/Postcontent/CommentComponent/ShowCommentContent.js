@@ -32,7 +32,7 @@ const ShowCommentContent = ({
     useContext(ForumContext);
   const { topicId } = useParams();
   const [isOpen,setIsOpen] = useState(false);
-  const { emitDeleteReply } = useWebSocket();
+  const { emitDeleteReply, emitCommentReaction, emitDeleteComment } = useWebSocket();
   const { loginData } = useContext(LoginContext);
   const [isLiked, setIsLiked] = useState();
   const [isDisliked, setIsDisLiked] = useState();
@@ -63,24 +63,47 @@ const ShowCommentContent = ({
   }, [replyLikes, replyDislikes, loginData]);
 
   const handleDeleteReply = async () => {
-    alert("i am goind to delete");
     if (!loginData || !loginData.validuserone) {
       setError("You must be logged in to delete a reply");
       return;
     }
 
     // Ask for confirmation before deleting
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this reply? This action cannot be undone."
-      )
-    ) {
+    if (!window.confirm("Are you sure you want to delete this reply? This action cannot be undone.")) {
       return;
     }
 
     try {
       setIsLoading(true);
 
+      // Function to recursively delete child comments
+      const deleteChildComments = async (children) => {
+        if (!children || children.length === 0) return;
+        
+        for (const child of children) {
+          // First delete all grandchildren
+          if (child.children && child.children.length > 0) {
+            await deleteChildComments(child.children);
+          }
+          
+          // Then delete the child comment
+          await axios.delete(
+            `http://localhost:8099/comments/${child._id}`,
+            {
+              headers: getAuthHeaders(),
+            }
+          );
+          // Emit delete event for child
+          emitDeleteComment(child._id, child.postId);
+        }
+      };
+
+      // First delete all child comments
+      if (reply.children && reply.children.length > 0) {
+        await deleteChildComments(reply.children);
+      }
+
+      // Then delete the parent comment
       const response = await axios.delete(
         `http://localhost:8099/comments/${reply?._id}`,
         {
@@ -89,9 +112,8 @@ const ShowCommentContent = ({
       );
 
       if (response.status === 200) {
-        // Emit socket event for reply deletion
-        console.log("i emitting reply");
-        emitDeleteReply(reply?._id, topicId);
+        // Emit delete comment event through WebSocket
+        emitDeleteComment(reply._id, reply.postId);
       }
     } catch (error) {
       console.error("Error deleting reply:", error);
@@ -107,7 +129,6 @@ const ShowCommentContent = ({
     }
   };
 
-  // Handle reply like
   const handleReplyLike = async () => {
     if (!loginData || !loginData.validuserone) {
       alert("Please log in to like replies");
@@ -124,16 +145,23 @@ const ShowCommentContent = ({
       );
 
       if (response.status === 200) {
-        setReplyLikes(
-          response.data.liked
-            ? [...replyLikes, loginData.validuserone._id]
-            : replyLikes.filter((id) => id !== loginData.validuserone._id)
-        );
-        setReplyDislikes(
-          replyDislikes.filter((id) => id !== loginData.validuserone._id)
-        );
+        const updatedLikes = response.data.liked
+          ? [...replyLikes, loginData.validuserone._id]
+          : replyLikes.filter((id) => id !== loginData.validuserone._id);
+        const updatedDislikes = replyDislikes.filter((id) => id !== loginData.validuserone._id);
+        
+        setReplyLikes(updatedLikes);
+        setReplyDislikes(updatedDislikes);
         setIsLiked(!isLiked);
-        setIsDisLiked(!isDisliked);
+        setIsDisLiked(false);
+
+        // Emit the reaction through WebSocket
+        emitCommentReaction({
+          commentId: reply._id,
+          postId: reply.postId,
+          likes: updatedLikes,
+          dislikes: updatedDislikes
+        });
       }
     } catch (error) {
       console.error("Error liking reply:", error);
@@ -143,8 +171,7 @@ const ShowCommentContent = ({
     }
   };
 
-  // Handle reply dislike
-  const handleReplyDislike = async (replyId) => {
+  const handleReplyDislike = async () => {
     if (!loginData || !loginData.validuserone) {
       alert("Please log in to dislike replies");
       return;
@@ -158,17 +185,25 @@ const ShowCommentContent = ({
           headers: getAuthHeaders(),
         }
       );
+
       if (response.status === 200) {
-        setReplyDislikes(
-          response.data.disliked
-            ? [...replyDislikes, loginData.validuserone._id]
-            : replyDislikes.filter((id) => id !== loginData.validuserone._id)
-        );
-        setReplyLikes(
-          replyLikes.filter((id) => id !== loginData?.validuserone._id)
-        );
+        const updatedDislikes = response.data.disliked
+          ? [...replyDislikes, loginData.validuserone._id]
+          : replyDislikes.filter((id) => id !== loginData.validuserone._id);
+        const updatedLikes = replyLikes.filter((id) => id !== loginData.validuserone._id);
+        
+        setReplyDislikes(updatedDislikes);
+        setReplyLikes(updatedLikes);
         setIsDisLiked(!isDisliked);
-        setIsLiked(!isLiked);
+        setIsLiked(false);
+
+        // Emit the reaction through WebSocket
+        emitCommentReaction({
+          commentId: reply._id,
+          postId: reply.postId,
+          likes: updatedLikes,
+          dislikes: updatedDislikes
+        });
       }
     } catch (error) {
       console.error("Error disliking reply:", error);
@@ -177,6 +212,7 @@ const ShowCommentContent = ({
       }
     }
   };
+
   return (
     <div key={reply?._id} className="flex justify-start ">
       {/* user icon outside */}
@@ -231,7 +267,7 @@ const ShowCommentContent = ({
             {showFullContent
               ? reply?.content
               : getTrimmedContent(reply?.content)}
-            {reply?.content?.split(/\s+/).length > 100 && (
+            {reply?.content?.length > 100 && (
               <button
                 onClick={() => setShowFullContent(!showFullContent)}
                 className="ml-2 text-blue-600 hover:underline font-medium"

@@ -266,18 +266,20 @@ const ShowReplyContent = ({
           )}
         </div>
 
-        {/* Reply Content */}
-        <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
-          {showFullContent ? reply?.content : getTrimmedContent(reply?.content)}
-          {reply?.content?.length > 100 && (
-            <button
-              onClick={() => setShowFullContent(!showFullContent)}
-              className="ml-2 text-blue-600 hover:underline font-medium"
-            >
-              {showFullContent ? "View Less" : "View More"}
-            </button>
-          )}
-        </div>
+
+    {/* Reply Content */}
+    <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
+      {showFullContent ? reply?.content : getTrimmedContent(reply?.content)}
+      {reply?.content?.length > 100 && (
+        <button
+          onClick={() => setShowFullContent(!showFullContent)}
+          className="ml-2 text-blue-600 hover:underline font-medium"
+        >
+          {showFullContent ? "View Less" : "View More"}
+        </button>
+      )}
+    </div>
+
 
         {/* Media Attachments */}
         {reply?.mediaAttachments?.length > 0 && (

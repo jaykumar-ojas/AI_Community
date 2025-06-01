@@ -20,14 +20,6 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
-    subscribedTo: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'users'
-    }],
-    subscribedBy: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'users'
-    }],
     tokens:[
         {
             token:{

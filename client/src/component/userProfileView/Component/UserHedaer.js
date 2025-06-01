@@ -2,22 +2,32 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams } from 'react-router-dom';
 import Skeleton from "react-loading-skeleton";
 import 'react-loading-skeleton/dist/skeleton.css';
+import SubscriptionsList from './SubscriptionsList';
 
 import { LoginContext } from "../../ContextProvider/context";
-
-const bio = "A astrologer, Traveler, Enjoy Life huhu.....";
 
 const UserHeader = () => {
     const [backgroundLoaded, setBackgroundLoaded] = useState(false);
     const [profileLoaded, setProfileLoaded] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [isSubscribing, setIsSubscribing] = useState(false);
+    const [subscriptionStats, setSubscriptionStats] = useState({
+        subscribersCount: 0,
+        subscribedToCount: 0
+    });
 
     const { loginData, setLoginData } = useContext(LoginContext);
     const [profileUser, setProfileUser] = useState();
     const { id } = useParams();
 
     useEffect(() => {
+        console.log("Login data:", loginData); // Debug log
         fetchUserProfile(id);
-    }, [id]);
+        if (loginData?.validuserone?._id && id !== loginData?.validuserone?._id) {
+            checkSubscriptionStatus(id);
+        }
+        fetchSubscriptionStats(id);
+    }, [id, loginData]);
 
     const fetchUserProfile = async (userId) => {
         try {
@@ -41,6 +51,94 @@ const UserHeader = () => {
         }
     };
 
+    const checkSubscriptionStatus = async (userId) => {
+        try {
+            const token = localStorage.getItem("userdatatoken");
+            console.log("Checking subscription with token:", token); // Debug log
+            const response = await fetch(`http://localhost:8099/check/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+            console.log("Subscription status:", data); // Debug log
+            setIsSubscribed(data.isSubscribed);
+        } catch (error) {
+            console.error("Error checking subscription status:", error);
+        }
+    };
+
+    const fetchSubscriptionStats = async (userId) => {
+        try {
+            const token = localStorage.getItem("userdatatoken");
+            const response = await fetch(`http://localhost:8099/stats/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+            setSubscriptionStats(data);
+        } catch (error) {
+            console.error("Error fetching subscription stats:", error);
+        }
+    };
+
+    const handleSubscription = async () => {
+        if (!loginData?.validuserone?._id) {
+            alert("Please login to subscribe");
+            return;
+        }
+
+        setIsSubscribing(true);
+        
+        try {
+            const token = localStorage.getItem("userdatatoken");
+            const url = isSubscribed 
+                ? `http://localhost:8099/unsubscribe/${id}`
+                : `http://localhost:8099/subscribe/${id}`;
+            
+            const method = isSubscribed ? 'DELETE' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                setIsSubscribed(!isSubscribed);
+                // Update follower count
+                setSubscriptionStats(prev => ({
+                    ...prev,
+                    subscribersCount: isSubscribed 
+                        ? prev.subscribersCount - 1 
+                        : prev.subscribersCount + 1
+                }));
+            } else {
+                alert(data.error || "Failed to update subscription");
+            }
+        } catch (error) {
+            console.error("Error updating subscription:", error);
+            alert("An error occurred. Please try again.");
+        } finally {
+            setIsSubscribing(false);
+        }
+    };
+
+    const isOwnProfile = loginData?.validuserone?._id === id;
+
+    console.log("loginData?.validuserone?._id", loginData?.validuserone?._id);
+    console.log("isOwnProfile", isOwnProfile);
     return (
         <>
             <div className="relative h-36 bg-cover bg-center md:h-52" style={{ backgroundImage: `url(${profileUser?.backgroundImageUrl})` }}>
@@ -91,7 +189,7 @@ const UserHeader = () => {
                             alt=""
                             className="hidden"
                             onLoad={() => setProfileLoaded(true)}
-                            onError={() => setProfileLoaded(true)}
+                            onError={() => setBackgroundLoaded(true)}
                         />
                     </div>
                 </div>
@@ -114,11 +212,38 @@ const UserHeader = () => {
                                 <p className="pt-1 text-center justify-center text-sm text-gray-600 sm:text-md sm:text-start md:text-lg">
                                     {profileUser?.email}
                                 </p>
+                                
+                                {/* Subscription Button */}
+                                {!isOwnProfile && loginData?.validuserone && (
+                                    <div className="flex justify-center sm:justify-start mt-3">
+                                        <button
+                                            onClick={handleSubscription}
+                                            disabled={isSubscribing}
+                                            className={`px-6 py-2 rounded-full font-medium text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                isSubscribed
+                                                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500'
+                                                    : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-lg'
+                                            }`}
+                                        >
+                                            {isSubscribing ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                                                    <span>Loading...</span>
+                                                </div>
+                                            ) : (
+                                                isSubscribed ? 'Unsubscribe' : 'Subscribe'
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <>
                                 <Skeleton height={30} width={150} />
                                 <Skeleton count={2} />
+                                <div className="mt-3">
+                                    <Skeleton height={40} width={100} />
+                                </div>
                             </>
                         )}
                     </div>
@@ -132,15 +257,19 @@ const UserHeader = () => {
                         {profileUser ? (
                             <>
                                 <div>
-                                    <div className="text-md font-bold text-gray-900 tracking-wide md:text-2xl sm:text-xl lg:text-3xl">16</div>
+                                    <div className="text-md font-bold text-gray-900 tracking-wide md:text-2xl sm:text-xl lg:text-3xl">0</div>
                                     <div className="text-base font-small md:font-medium text-gray-600">Posts</div>
                                 </div>
                                 <div>
-                                    <div className="text-md font-bold text-gray-900 tracking-wide  md:text-2xl  sm:text-xl lg:text-3xl">324</div>
+                                    <div className="text-md font-bold text-gray-900 tracking-wide  md:text-2xl  sm:text-xl lg:text-3xl">
+                                        {subscriptionStats.subscribersCount}
+                                    </div>
                                     <div className="text-base font-small md:font-medium text-gray-600">Followers</div>
                                 </div>
                                 <div>
-                                    <div className="text-md font-bold text-gray-900 tracking-wide  md:text-2xl  sm:text-xl lg:text-3xl">210</div>
+                                    <div className="text-md font-bold text-gray-900 tracking-wide  md:text-2xl  sm:text-xl lg:text-3xl">
+                                        {subscriptionStats.subscribedToCount}
+                                    </div>
                                     <div className="text-base font-small md:font-medium text-gray-600">Following</div>
                                 </div>
                             </>
@@ -162,10 +291,16 @@ const UserHeader = () => {
                         )}
                     </div>
                 </div>
-
             </div>
+            
+            {/* Show subscriptions list only on own profile */}
+            {isOwnProfile && (
+                <div className="mt-8 border-t border-gray-200">
+                    <SubscriptionsList userId={id} />
+                </div>
+            )}
         </>
-    )
-}
+    );
+};
 
 export default UserHeader;
