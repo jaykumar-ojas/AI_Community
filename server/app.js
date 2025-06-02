@@ -24,7 +24,7 @@ const commentsRouter = require("./routes/comments");
 const forumRoutes = require("./routes/forumRoutes");
 const llmRoutes = require("./routes/llmRoute");
 const batchRoutes = require("./routes/batchRoute");
-// const subscriptionRoutes = require("./routes/subscriptionRoutes");
+
 
 // Load environment variables from .env file
 dotenv.config();
@@ -65,7 +65,7 @@ app.use("/", commentsRouter);
 app.use("/forum", forumRoutes);
 app.use("/",llmRoutes);
 app.use("/",batchRoutes);
-// app.use("/subscription", subscriptionRoutes);
+
 
 // WebSocket event handlers
 io.on('connection', (socket) => {
