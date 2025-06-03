@@ -52,7 +52,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <DashBoardPage /> },
       { path: "userprofile", element: <UserProfile2 /> },
-      { path: "userprofile/:userId", element: <UserProfile /> },
+      { path: "userprofile/:id", element: <UserProfile /> },
       { path: "forgot-password", element: <ForgotPassword /> },
       { path: "verify-otp/:id", element: <VerfiyOtp /> },
       { path: "update-password/:id", element: <UpdatePassword /> },

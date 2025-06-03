@@ -17,7 +17,7 @@ import { SearchIcon } from "../../asset/icons";
 
 
   const navigation = [
-    { name: "Home", href:'#',current: true},
+    { name: "Home", href:'/',current: true},
     { name: "Team", href: "/test2", current: false }
   ];
   
@@ -116,7 +116,7 @@ import { SearchIcon } from "../../asset/icons";
                     <MenuItem>
                       {({ active }) => (
                         <Link
-                          to="/userprofile"
+                          to={`/userprofile/${loginData?.validuserone?._id}`}
                           className={`block px-4 py-2 text-sm ${
                             active ? "bg-gray-100" : "text-gray-700"
                           }`}

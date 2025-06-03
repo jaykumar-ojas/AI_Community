@@ -20,14 +20,14 @@ import {
 } from "../AiForumPage/components/ForumUtils";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 
-const UserReply = () => {
+const UserCommentReply = () => {
+  const {id} = useParams();
   const { loginData } = useContext(LoginContext);
-  const { replyIdForContext } = useContext(ForumContext);
+  const { replyIdForContext,setReplyIdForContext,model,setModel } = useContext(ForumContext);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
-  const { emitNewReply } = useWebSocket();
-
+  const { emitNewComment } = useWebSocket();
   const [loading, setLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [newReply, setNewReply] = useState("");
@@ -42,7 +42,7 @@ const UserReply = () => {
       generateImage: false,
       processContextAware: false,
     },
-    contextType: "forumReply",
+    contextType: "commentReply",
     entityId: "",
   });
   const anyControlBitTrue = Object.values(formData.controlBits).some(Boolean);
@@ -123,13 +123,77 @@ const UserReply = () => {
   };
 
   // handle submit to post
-  const handleSubmit = async (e) => {
-    console.log("i come here")
-    e.preventDefault();
-    if (!newReply.trim()) return;
+//   const handleSubmit = async (e) => {
+//     console.log("i come here")
+//     e.preventDefault();
+//     if (!newReply.trim()) return;
+//     setIsLoading(true);
+//     setError(null);
+//     console.log("i passed return")
+
+//     const updatedPostingData = [
+//       ...postingData,
+//       {
+//         userText: newReply.trim(),
+//         aiText: "",
+//         prompt: "",
+//         imageUrl: "",
+//       },
+//     ];
+
+//     try {
+//       const formData = new FormData();
+//       formData.append("content", JSON.stringify(updatedPostingData));
+//       formData.append("topicId", topicId);
+//       formData.append("userId", loginData.validuserone._id);
+//       formData.append("userName", loginData.validuserone.userName);
+//       if (replyIdForContext) {
+//         formData.append("parentReplyId", replyIdForContext);
+//       }
+
+//       // Append files if any
+//       selectedFiles.forEach((file) => {
+//         formData.append("media", file);
+//       });
+
+//       const response = await axios.post(REPLIES_URL, formData, {
+//         headers: {
+//           ...getAuthHeaders(), // Fixed: Call getAuthHeaders as a function
+//           "Content-Type": "multipart/form-data",
+//         },
+//       });
+
+//       if (response.status === 201) {
+//         emitNewReply({
+//           ...response.data.reply,
+//           topicId: topicId,
+//           userName: loginData.validuserone.userName,
+//           userId: loginData.validuserone._id,
+//         });
+
+//         setNewReply("");
+//         setSelectedFiles([]);
+//         setPostingData([]);
+//       }
+//     } catch (err) {
+//       console.error("Error posting reply:", err);
+//       if (handleAuthError(err, setError)) {
+//         return;
+//       }
+//       setError("Failed to post reply. Please try again.");
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+  const handlePostReply = async () => {
+    if (!loginData?.validuserone) return alert("Please log in to reply");
+
+    if (!newReply.trim()) return alert("Please enter a reply");
+
     setIsLoading(true);
+    setIsUploading(true);
     setError(null);
-    console.log("i passed return")
 
     const updatedPostingData = [
       ...postingData,
@@ -144,45 +208,37 @@ const UserReply = () => {
     try {
       const formData = new FormData();
       formData.append("content", JSON.stringify(updatedPostingData));
-      formData.append("topicId", topicId);
+      formData.append("postId", id);
       formData.append("userId", loginData.validuserone._id);
       formData.append("userName", loginData.validuserone.userName);
-      if (replyIdForContext) {
+      formData.append("model", model || "");
+      if(replyIdForContext){
         formData.append("parentReplyId", replyIdForContext);
       }
+      
 
-      // Append files if any
-      selectedFiles.forEach((file) => {
-        formData.append("media", file);
-      });
-
-      const response = await axios.post(REPLIES_URL, formData, {
+      selectedFiles.forEach(file => formData.append("media", file));
+      console.log("i m going to post");
+      const response = await axios.post('http://localhost:8099/comments/post', formData, {
         headers: {
-          ...getAuthHeaders(), // Fixed: Call getAuthHeaders as a function
+          ...getAuthHeaders(),
           "Content-Type": "multipart/form-data",
         },
       });
-
-      if (response.status === 201) {
-        emitNewReply({
-          ...response.data.reply,
-          topicId: topicId,
-          userName: loginData.validuserone.userName,
-          userId: loginData.validuserone._id,
-        });
-
-        setNewReply("");
-        setSelectedFiles([]);
-        setPostingData([]);
-      }
+      console.log(response.data.result);
+      // Emit the new comment through WebSocket
+      emitNewComment(response.data.reply);
+      setPostingData([]);
+      setReplyIdForContext(null);
+      setNewReply("");
+      setModel("");
+      setSelectedFiles([]);
     } catch (err) {
-      console.error("Error posting reply:", err);
-      if (handleAuthError(err, setError)) {
-        return;
-      }
-      setError("Failed to post reply. Please try again.");
+      if (handleAuthError(err, setError)) return;
+      setError("Failed to post reply.");
     } finally {
       setIsLoading(false);
+      setIsUploading(false);
     }
   };
 
@@ -221,7 +277,7 @@ const UserReply = () => {
           {!anyControlBitTrue && (
             <button
               type="submit"
-              onClick={handleSubmit}
+              onClick={handlePostReply}
               className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
               disabled={isLoading || !newReply.trim()}
             >
@@ -318,29 +374,5 @@ const UserReply = () => {
   );
 };
 
-export default UserReply;
+export default UserCommentReply;
 
-// contextAwareResponse
-// :
-// null
-// currentText
-// :
-// "Absolutely, I would love to assist you with content creation! However, I need a bit more information to ensure that what I generate aligns with your needs. Could you please provide more details like the topic, target audience, format (blog, social media post, article), and any specific points you want me to include in the content? The more details you provide, the better I can assist you!"
-// enhancedPrompt
-// :
-// null
-// generatedImage
-// :
-// null
-// generatedImageUrl
-// :
-// null
-// generatedText
-// :
-// "Absolutely, I would love to assist you with content creation! However, I need a bit more information to ensure that what I generate aligns with your needs. Could you please provide more details like the topic, target audience, format (blog, social media post, article), and any specific points you want me to include in the content? The more details you provide, the better I can assist you!"
-// originalPrompt
-// :
-// "generate my content"
-// processingSteps
-// :
-// ['textSuggestion']

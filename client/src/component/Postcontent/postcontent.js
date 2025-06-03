@@ -5,6 +5,8 @@ import CommentReview from "./CommentReview";
 import ReplyCommentBox from "./CommentComponent/ReplyForComment";
 import Card from "../Card/Card";
 import RelatedCard from "../Card/RelatedCard"
+import UserReply from "../UserReply/UserReply";
+import UserCommentReply from "../UserReply/UserCommentReply";
 
 const PostContent = () => {
   const history = useNavigate();
@@ -131,7 +133,7 @@ const PostContent = () => {
 
   {/* Reply box grows and pushes content upward */}
   <div className="px-24">
-    <ReplyCommentBox />
+    <UserCommentReply/>
   </div>
 </div>
 

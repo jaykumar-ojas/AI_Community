@@ -46,23 +46,23 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
   };
 
   return (
-    <div className="flex h-screen bg-bg_comment">
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-bg_comment">
       {/* Sidebar */}
-      <div className='w-[15%]'>
+      <div className='h-[calc(100vh-3.5rem)] bg-bg_sidebar/50 border-r border-black w-[18%]'>
         <ModelList></ModelList>
       </div>
       
       
       {/* Main Content */}
-      <div className="flex-1 min-h-screen flex flex-col w-[60%]">
+      <div className="flex-1 px-4 flex flex-col w-[%]">
         
         {/* Chat Container */}
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto ">
           <TopicContent/>
         </div>
       </div>
-      <div className="text-lg text-text_header h-[calc(100vh-3.5rem)] w-[20%] flex flex-col">
-  <div className="font-semibold text-lg mb-2">
+      <div className="text-lg text-text_header h-[calc(100vh-3.5rem)]  bg-bg_sidebar/50 w-[22%] flex flex-col">
+  <div className="font-semibold text-lg  p-2">
     Popular discussions you may like
   </div>
   <div className="flex-1 overflow-y-auto no-scrollbar">

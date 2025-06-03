@@ -7,6 +7,7 @@ module.exports = {
   theme: {
     extend: {
       colors:{
+        bg_sidebar:'#040f13',
         nav_color: '#585763',
         bg_scroll : '#20232d',
         like_color : '#7b5cfe',

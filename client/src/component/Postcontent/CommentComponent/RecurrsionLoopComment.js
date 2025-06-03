@@ -16,7 +16,6 @@ const RecurrsionLoopComment = ({
   const showViewMore = hasChildren && isDeep && !isExpanded;
   const [showReply,setShowReply] = useState(false);
   const show = (depth===2);
-  console.log(reply,hasChildren);
 
   return (
     <div key={reply?._id} className={`${depth > 0 ? "pl-12 " : ""}`}>

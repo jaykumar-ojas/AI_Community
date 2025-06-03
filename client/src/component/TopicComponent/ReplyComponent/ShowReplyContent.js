@@ -20,6 +20,7 @@ import {
   LikeIcon,
   DisLikeIcon,
 } from "../../../asset/icons";
+import ReplyData from "../../Card/ReplyData";
 
 const ShowReplyContent = ({
   reply,
@@ -268,29 +269,29 @@ const ShowReplyContent = ({
 
 
     {/* Reply Content */}
-    <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
-      {showFullContent ? reply?.content : getTrimmedContent(reply?.content)}
-      {reply?.content?.length > 100 && (
-        <button
-          onClick={() => setShowFullContent(!showFullContent)}
-          className="ml-2 text-blue-600 hover:underline font-medium"
-        >
-          {showFullContent ? "View Less" : "View More"}
-        </button>
-      )}
-    </div>
+    
+    {typeof reply?.content === "string" ? (
+          <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
+            {showFullContent ? reply.content : getTrimmedContent(reply.content)}
+            {reply.content.length > 100 && (
+              <button
+                onClick={() => setShowFullContent(!showFullContent)}
+                className="ml-2 text-blue-600 hover:underline font-medium"
+              >
+                {showFullContent ? "View Less" : "View More"}
+              </button>
+            )}
+          </div>
+        ) : Array.isArray(reply?.content) ? (
+          <ReplyData content={reply?.content} />
+        ) : null}
 
 
         {/* Media Attachments */}
         {reply?.mediaAttachments?.length > 0 && (
           <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
             {reply?.mediaAttachments.map((attachment, index) => (
-              <div
-                key={index}
-                className="w-full h-full rounded-3xl overflow-hidden border border-gray-200 shadow-sm"
-              >
                 <ShowMedia attachment={attachment} />
-              </div>
             ))}
           </div>
         )}

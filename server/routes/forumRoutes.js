@@ -567,124 +567,115 @@ router.get('/paginated', async(req, res) => {
 });
 
 
-router.post('/replies', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
-  console.log("i m come here");
-  try {
-    console.log("i m coming here");
-    const { topicId, parentReplyId, userId, userName} = req.body;
-    const content = JSON.parse(req.body.content);
-    console.log('Request body content:', req.body.content);
-    console.log(1);
-    // Validate content object
-    if (!content || typeof content !== 'object') {
-      return res.status(400).json({ 
-        status: 400, 
-        error: 'Content object is required' 
+router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware,async (req, res) => {
+    try {
+      const { topicId, parentReplyId, userId, userName } = req.body;
+
+      // Parse content as array of content blocks
+      const contentArray = JSON.parse(req.body.content);
+      // contentArray is like [
+      //   {
+      //     userText:"",
+      //     prompt:"",
+      //     AiText:"",
+      //     imageUrl:""
+      //   }
+      // ]
+
+      // Validate content
+      if (!Array.isArray(contentArray) || contentArray.length === 0) {
+        return res.status(400).json({
+          status: 400,
+          error: 'Content must be a non-empty array',
+        });
+      }
+
+      if (!topicId) {
+        return res.status(400).json({ status: 400, error: 'Topic ID is required' });
+      }
+
+      // Check if topic exists and is not locked
+      const topic = await ForumTopic.findById(topicId);
+      if (!topic) {
+        return res.status(404).json({ status: 404, error: 'Topic not found' });
+      }
+
+      if (topic.isLocked && req.userRole !== 'admin') {
+        return res.status(403).json({ status: 403, error: 'This topic is locked' });
+      }
+
+      // Use authenticated user info if available, else from request body
+      const actualUserId = req.userId || userId;
+      const actualUserName = req.rootuser?.userName || userName;
+      if (!actualUserId || !actualUserName) {
+        return res.status(400).json({ status: 400, error: 'User information is required' });
+      }
+
+      // Collect media attachments from uploaded files
+      let allMediaAttachments = [...(req.uploadedFiles || [])];
+
+      // Process each content block, extract and upload images from URLs
+      const processedContent = [];
+      for (const block of contentArray) {
+        const { imageUrl, ...rest } = block;
+      
+        if (imageUrl &&  imageUrl.length > 0) {
+            const mediaObj = await uploadImageFromUrl(imageUrl);
+            rest.imageUrl = mediaObj ;// rest is also object what ever suitable it also get object so it become nested now update regarding this
+        }
+
+        processedContent.push(rest);
+      }
+
+      // Create and save new reply document
+      const newReply = new ForumReply({
+        content: processedContent,
+        topicId,
+        userId: actualUserId,
+        userName: actualUserName,
+        parentReplyId: parentReplyId || null,
+        mediaAttachments: allMediaAttachments,
+        likes: [],
+        dislikes: [],
+        children: [],
       });
-    }
-    
-    // Check if at least one content field is provided
-    const hasUserText = content.userText && content.userText.length>0;
-    const hasPromptText = content.promptText && content.promptText.length>0;
-    const hasAiText = content.aiText && content.aiText.length>0;
-    
-    if (!hasUserText && !hasPromptText && !hasAiText) {
-      return res.status(400).json({ 
-        status: 400, 
-        error: 'At least one content field (userText, promptText, or aiText) must be provided' 
-      });
-    }
-  
-    if (!topicId) {
-      return res.status(400).json({ status: 400, error: 'Topic ID is required' });
-    }
 
-    
-    // Check if topic exists and is not locked
-    const topic = await ForumTopic.findById(topicId);
-    
-    if (!topic) {
-      return res.status(404).json({ status: 404, error: 'Topic not found' });
-    }
-    
-    if (topic.isLocked && req.userRole !== 'admin') {
-      return res.status(403).json({ status: 403, error: 'This topic is locked' });
-    }
-    
-    // Use the authenticated user ID from the request if available
-    const actualUserId = req.userId || userId;
-    const actualUserName = req.rootuser?.userName || userName;
-    
-    if (!actualUserId || !actualUserName) {
-      return res.status(400).json({ status: 400, error: 'User information is required' });
-    }
+      const savedReply = await newReply.save();
 
-    // Handle media attachments
-    let mediaAttachments = [];
-    
-    // Process uploaded files
-    if (req.uploadedFiles && req.uploadedFiles.length > 0) {
-      mediaAttachments = [...req.uploadedFiles];
-    }
+      // If this reply is a child reply, update parent reply's children array
+      if (parentReplyId) {
+        try {
+          const updatedParent = await ForumReply.findByIdAndUpdate(
+            parentReplyId,
+            { $push: { children: savedReply._id } },
+            { new: true }
+          );
 
-    if (Array.isArray(content.imageUrl) && content.imageUrl.length > 0) {
-        for (const url of content.imageUrl) {
-          const getObj = await uploadImageFromUrl(url);
-          mediaAttachments.push(getObj);
+          if (!updatedParent) {
+            console.warn(`Parent reply ID ${parentReplyId} not found`);
+          } else {
+            console.log( `Successfully added reply ${savedReply._id} to parent ${parentReplyId}`);
+          }
+        } catch (parentUpdateError) {
+          console.error('Error updating parent reply:', parentUpdateError);
         }
       }
 
-      // Remove imageUrl from content before saving
-    const { imageUrl, ...processedContent } = content;
-    
-    
-    // Create new reply
-    const newReply = new ForumReply({
-      content: processedContent,
-      topicId,
-      userId: actualUserId,
-      userName: actualUserName,
-      parentReplyId: parentReplyId || null,
-      mediaAttachments,
-      likes: [],
-      dislikes: [],
-      children: []
-    });
-    
-    const savedReply = await newReply.save();
-    
-    if (parentReplyId) {
-      try {
-        const updatedParent = await ForumReply.findByIdAndUpdate(
-          parentReplyId,
-          { $push: { children: savedReply._id } },
-          { new: true }
-        );
+      // Increment reply count on the topic
+      topic.replyCount += 1;
+      await topic.save();
 
-        if (!updatedParent) {
-          console.warn(`Parent reply ID ${parentReplyId} not found`);
-        } else {
-          console.log(`Successfully added reply ${savedReply._id} to parent ${parentReplyId}`);
-        }
-      } catch (parentUpdateError) {
-        console.log(`Error updating parent reply:`, parentUpdateError);
-      }
+      res.status(201).json({ status: 201, reply: savedReply });
+    } catch (error) {
+      console.error('Error creating reply:', error);
+      res.status(500).json({
+        status: 500,
+        error: 'Server error',
+        message: error.message,
+      });
     }
-
-    // Increment reply count on the topic
-    topic.replyCount += 1;
-    await topic.save();
-    
-    res.status(201).json({ status: 201, reply: savedReply });
-  } catch (error) {
-    console.error('Error creating reply:', error);
-    res.status(500).json({ 
-      status: 500, 
-      error: 'Server error',
-      message: error.message 
-    });
   }
-});
+);
 
 
 

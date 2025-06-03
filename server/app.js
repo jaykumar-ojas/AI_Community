@@ -24,6 +24,8 @@ const commentsRouter = require("./routes/comments");
 const forumRoutes = require("./routes/forumRoutes");
 const llmRoutes = require("./routes/llmRoute");
 const batchRoutes = require("./routes/batchRoute");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
+
 
 
 // Load environment variables from .env file

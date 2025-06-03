@@ -1,9 +1,34 @@
 var mongoose = require('mongoose');
 var commentSchema = mongoose.Schema({
-    content: {
-        type: String,
-        required: true
-    },
+    content: [
+      {
+        userText: {
+          type: String,
+          trim: true,
+          default: "",
+        },
+        prompt: {
+          type: String,
+          trim: true,
+          default: "",
+        },
+        aiText: {
+          type: String,
+          trim: true,
+          default: "",
+        },
+        imageUrl: {
+          fileName: String,
+          fileType: String,
+          fileUrl: String,
+          fileSize: Number,
+          uploadedAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      },
+    ],
     postId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,

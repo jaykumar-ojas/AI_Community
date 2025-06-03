@@ -9,20 +9,18 @@ const ShowMedia = ({ attachment }) => {
   const isUnknown = !isImage && !isVideo && !isAudio;
 
   return (
-    <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+    <div className="bg-bg_comment_box">
        {isImage && (
-  <div className="w-full aspect-video bg-gray-100">
     <img
       src={fileUrl}
       alt={fileName}
-      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+      className="max-w-64 h-auto object-cover "
       loading="lazy"
       onError={(e) => {
         console.error("Error loading image:", fileUrl);
         e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
       }}
     />
-  </div>
 )}
 
       {isVideo && (

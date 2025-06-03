@@ -26,7 +26,7 @@ const { model, setModel } = useContext(ForumContext);
 const aiModels = ["GPT-4", "DALL-E", "Claude", "Stable Diffusion", "Midjourney","Sora","Googel-veo"];
 
 return (
-    <div className="w-full bg-bg_comment flex flex-col">
+    <div className="w-full flex flex-col">
 
     {/* AI Models Section */}
     <div className="p-4">

@@ -2,29 +2,35 @@ const mongoose = require("mongoose");
 
 const forumReplySchema = new mongoose.Schema(
   {
-    content: {
-      userText: [
-        {
+    content: [
+      {
+        userText: {
           type: String,
           trim: true,
           default: "",
         },
-      ],
-      promptText: [
-        {
+        prompt: {
           type: String,
           trim: true,
           default: "",
         },
-      ],
-      aiText: [
-        {
+        aiText: {
           type: String,
           trim: true,
           default: "",
         },
-      ],
-    },
+        imageUrl: {
+          fileName: String,
+          fileType: String,
+          fileUrl: String,
+          fileSize: Number,
+          uploadedAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      },
+    ],
     topicId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
