@@ -126,9 +126,6 @@ const CommentReview = () => {
             <div key={index} className="ml-2">
               <RecurrsionLoopComment
                 reply={reply}
-                expandedThreads={expandedThreads}
-                toggleThreadExpansion={toggleThreadExpansion}
-                handleViewThread={handleViewThread}
               />
             </div>
             </>
@@ -140,23 +137,6 @@ const CommentReview = () => {
 
 export default CommentReview;
 
-
-const ReplyBubbleIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-4 w-4 text-blue-500"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={1.8}
-      d="M7 8h10M7 12h4m-2 8c-4.418 0-8-2.686-8-6V6c0-1.104.896-2 2-2h16c1.104 0 2 .896 2 2v8c0 3.314-3.582 6-8 6h-2l-4 4v-4z"
-    />
-  </svg>
-);
 
 const findReplyById = (replies, replyId) => {
   for (const reply of replies) {
