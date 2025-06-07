@@ -53,6 +53,11 @@ app.use(
 // for sending cookies user credentials
 app.use(cookieparser());
 
+// Test route to verify server is running
+app.get("/", (req, res) => {
+  res.json({ message: "Server is running" });
+});
+
 // for google authenticating full code in googleroute in any problem
 
 app.use("/",userRouter);
@@ -63,8 +68,8 @@ app.use("/",otpRouter);
 app.use("/",forgetOtpRoute);
 app.use("/", commentsRouter);
 app.use("/forum", forumRoutes);
-app.use("/",llmRoutes);
-app.use("/",batchRoutes);
+app.use("/", llmRoutes);
+app.use("/", batchRoutes);
 app.use("/", subscriptionRoutes);
 
 // WebSocket event handlers

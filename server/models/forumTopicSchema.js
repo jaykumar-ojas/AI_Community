@@ -36,6 +36,10 @@ const forumTopicSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  imageUrl: {
+    type: String,
+    trim: true
+  },
   tags: [{
     type: String,
     trim: true

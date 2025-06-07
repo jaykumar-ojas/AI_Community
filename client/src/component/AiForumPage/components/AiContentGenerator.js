@@ -61,36 +61,28 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
   
       console.log('Sending request to API:', { prompt: userPrompt });
       
-      // Call the local API endpoint
-      const response = await fetch('http://localhost:8099/generateTopicContent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: userPrompt }),
+      // Call the API endpoint
+      const response = await axios.post(`${API_BASE_URL}/generateTopicContent`, {
+        prompt: userPrompt
+      }, {
+        headers: getAuthHeaders()
       });
   
-      console.log('API response status:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`API responded with status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      console.log('API response data:', data);
+      console.log('API response:', response.data);
       
       // Remove the "thinking" message
       setMessages(prev => prev.filter(msg => !msg.isThinking));
       
       // Check the structure of the response data
-      if (data && data.content && data.content.title && data.content.body) {
+      if (response.data && response.data.content && response.data.content.title && response.data.content.body) {
         setNewTopic({
-          title: data.content.title,
-          content: data.content.body
+          title: response.data.content.title,
+          content: response.data.content.body,
+          imageUrl: response.data.content.imageUrl
         });
         onClose();
       } else {
-        console.error('Unexpected response structure:', data);
+        console.error('Unexpected response structure:', response.data);
         throw new Error('Invalid response structure from API');
       }
       

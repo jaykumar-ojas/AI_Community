@@ -57,6 +57,11 @@ const NewTopicModal = ({ onClose }) => {
       formData.append('userId', loginData.validuserone._id);
       formData.append('userName', loginData.validuserone.userName);
 
+      // If there's a generated image URL, add it to the form data
+      if (newTopic.imageUrl) {
+        formData.append('imageUrl', newTopic.imageUrl);
+      }
+
       // Append media files if any
       selectedFiles.forEach(file => {
         formData.append('media', file);
@@ -88,8 +93,8 @@ const NewTopicModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 mt-20 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 mt-20 flex items-center justify-center overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-xl my-8 flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b">
           <h3 className="text-lg font-semibold">Create New Topic</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -105,7 +110,7 @@ const NewTopicModal = ({ onClose }) => {
           </div>
         )}
 
-        <div className="p-4">
+        <div className="p-4 overflow-y-auto flex-grow">
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
             <input
@@ -118,14 +123,23 @@ const NewTopicModal = ({ onClose }) => {
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-            <textarea
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              rows="5"
-              placeholder="Describe your topic..."
-              value={newTopic.content}
-              onChange={(e) => setNewTopic({ ...newTopic, content: e.target.value })}
+            <div
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+              contentEditable={true}
+              onInput={(e) => setNewTopic({ ...newTopic, content: e.currentTarget.textContent })}
+              dangerouslySetInnerHTML={{ __html: newTopic.content }}
             />
+            {newTopic.imageUrl && (
+              <div className="mt-2">
+                <img 
+                  src={newTopic.imageUrl} 
+                  alt="Generated topic image" 
+                  className="w-20 h-20 inline-block"
+                />
+              </div>
+            )}
           </div>
+
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Media Attachments</label>
             <input
@@ -166,7 +180,7 @@ const NewTopicModal = ({ onClose }) => {
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 p-4 border-t">
+        <div className="flex justify-end gap-2 p-4 border-t mt-auto">
           <button onClick={onClose} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
             Cancel
           </button>

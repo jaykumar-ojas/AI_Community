@@ -14,12 +14,21 @@ const PostData = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   
+  // AI Image Generation states
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [enhancedPrompt, setEnhancedPrompt] = useState("");
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  
   // Cropping states - only for images, not videos
   const [showCropper, setShowCropper] = useState(false);
   const [crop, setCrop] = useState({ 
     unit: '%', 
-    width: 100,
-    aspect: 1/1 // 1:1 for images
+    width: 90,
+    height: 90,
+    x: 5,
+    y: 5
   });
   const [completedCrop, setCompletedCrop] = useState(null);
   const imageRef = useRef(null);
@@ -91,6 +100,107 @@ const PostData = () => {
 
   const setChange = (e) => {
     setDesc(e.target.value);
+  };
+
+  // AI Image Generation function
+  const enhancePrompt = async () => {
+    if (!aiPrompt.trim()) {
+      alert("Please enter a prompt first");
+      return;
+    }
+
+    try {
+      setIsEnhancing(true);
+      const response = await fetch('http://localhost:8099/enhance-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: aiPrompt
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to enhance prompt');
+      }
+
+      const result = await response.json();
+      if (result.enhancedPrompt) {
+        setEnhancedPrompt(result.enhancedPrompt);
+        setAiPrompt(result.enhancedPrompt);
+      }
+    } catch (error) {
+      console.error("Error enhancing prompt:", error);
+      alert("Failed to enhance prompt. Please try again.");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const generateAIImage = async () => {
+    if (!aiPrompt.trim()) {
+      alert("Please enter a prompt for image generation");
+      return;
+    }
+
+    try {
+      setIsGeneratingImage(true);
+      console.log("Generating AI image with prompt:", aiPrompt);
+
+      const response = await fetch('http://localhost:8099/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: aiPrompt
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error occurred' }));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("AI Image generation response:", result);
+
+      if (result.status === 200 && result.imageUrl) {
+        // Use the proxy endpoint to fetch the image
+        const proxyUrl = `http://localhost:8099/proxy-image?url=${encodeURIComponent(result.imageUrl)}`;
+        const imageResponse = await fetch(proxyUrl);
+        
+        if (!imageResponse.ok) {
+          throw new Error('Failed to fetch the generated image');
+        }
+        
+        const blob = await imageResponse.blob();
+        const file = new File([blob], `ai-generated-${Date.now()}.png`, { type: 'image/png' });
+        
+        // Process the file as if it was uploaded
+        processFile(file);
+        
+        // Add the prompt to the description
+        setDesc(prevDesc => {
+          const newDesc = prevDesc ? `${prevDesc}\n\nAI Generated Image Prompt: ${aiPrompt}` : `AI Generated Image Prompt: ${aiPrompt}`;
+          return newDesc;
+        });
+        
+        // Clear the prompt input
+        setAiPrompt("");
+      } else {
+        throw new Error("Failed to generate image: Invalid response from server");
+      }
+
+    } catch (error) {
+      console.error("Error generating AI image:", error);
+      alert(`Failed to generate image: ${error.message}`);
+    } finally {
+      setIsGeneratingImage(false);
+    }
   };
 
   const handleSubmit = async(e) => {
@@ -178,12 +288,12 @@ const PostData = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Set canvas dimensions to match Instagram standards
+    // Set canvas dimensions to match the crop size
     const pixelRatio = window.devicePixelRatio || 1;
     
-    // 1080x1080 for images
-    const width = 1080;
-    const height = 1080;
+    // Use the actual crop dimensions instead of fixed 1080x1080
+    const width = completedCrop.width;
+    const height = completedCrop.height;
     
     canvas.width = width * pixelRatio;
     canvas.height = height * pixelRatio;
@@ -288,18 +398,18 @@ const PostData = () => {
     imageRef.current = e.currentTarget;
     
     const { width, height } = e.currentTarget;
-    // Initialize with centered crop
-    const cropWidth = width > height ? height : width;
+    // Initialize with a centered crop that's 90% of the image size
+    const cropWidth = width * 0.9;
+    const cropHeight = height * 0.9;
     const x = (width - cropWidth) / 2;
-    const y = (height - cropWidth) / 2;
+    const y = (height - cropHeight) / 2;
     
     setCrop({
       unit: 'px',
       x,
       y,
       width: cropWidth,
-      height: cropWidth,
-      aspect: 1 // Square aspect ratio for images
+      height: cropHeight
     });
   };
 
@@ -374,7 +484,7 @@ const PostData = () => {
       <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-screen overflow-auto">
           <h3 className="text-xl font-bold mb-4">
-            Crop Image (1080×1080)
+            Crop Image
           </h3>
           
           <div className="flex flex-col items-center">
@@ -382,8 +492,15 @@ const PostData = () => {
               crop={crop}
               onChange={(c) => setCrop(c)}
               onComplete={(c) => setCompletedCrop(c)}
-              aspect={1}
               className="max-h-[70vh] max-w-full"
+              minWidth={100}
+              minHeight={100}
+              keepRatio={false}
+              renderSelectionAddon={(state) => (
+                <div className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                  {Math.round(state.width)} × {Math.round(state.height)}
+                </div>
+              )}
             >
               <img
                 ref={imageRef}
@@ -427,7 +544,51 @@ const PostData = () => {
   return (
     <div className="bg-whtie-700 border border-black min-h-screen max-w-screen p-4 m-4">
       <div className="flex flex-row justify-between gap-4 w-full">
-        <div className="w-1/2 border-red-700">
+        <div className="w-1/2">
+          {/* AI Image Generation Section */}
+          <div className="mb-4 p-4 bg-white rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-3">✨ AI Image Generation</h3>
+            <div className="flex flex-col gap-2 mb-3">
+              <div className="flex gap-2">
+                <textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="Describe the image you want to create..."
+                  className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  rows="2"
+                />
+                <button
+                  onClick={enhancePrompt}
+                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isEnhancing || !aiPrompt.trim()}
+                >
+                  {isEnhancing ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Enhancing...
+                    </div>
+                  ) : (
+                    <span>✨ Enhance</span>
+                  )}
+                </button>
+              </div>
+              <button
+                onClick={generateAIImage}
+                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isGeneratingImage || !aiPrompt.trim()}
+              >
+                {isGeneratingImage ? (
+                  <div className="flex items-center text-black">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                    Generating...
+                  </div>
+                ) : (
+                  <span className="text-black">Generate</span>
+                )}
+              </button>
+            </div>
+          </div>
+
           <div className="flex items-center justify-center w-full">
             <label
               ref={dropzoneRef}
@@ -492,23 +653,24 @@ const PostData = () => {
           </div>
         </div>
         <div className="w-1/2 shadow-md flex flex-col p-2">
-            <div className="w-full m-2 p-2 font-bold">
-                Description
-            </div>
-            <div className="border border-bubblegum w-full h-full rounded-lg bg-pink-50">
-                <textarea onChange={setChange}
-                className="w-full h-full p-2 text-base border-0 bg-pink-50 text-left align-top outline-none focus:outline" 
-                placeholder="speak to people" 
-                value={desc}
-                />
-            </div>
-            <button 
-              onClick={handleSubmit} 
-              className="w-full border border-blue-700 mt-2 mx-auto bg-blue-700 h-16 text-white font-bold rounded-md hover:bg-blue-800 disabled:opacity-50"
-              disabled={isUploading}
-            >
-              {isUploading ? "Uploading..." : "Submit"}
-            </button>
+          <div className="w-full m-2 p-2 font-bold">
+            Description
+          </div>
+          <div className="border border-bubblegum w-full h-full rounded-lg bg-pink-50">
+            <textarea 
+              onChange={setChange}
+              className="w-full h-full p-2 text-base border-0 bg-pink-50 text-left align-top outline-none focus:outline" 
+              placeholder="speak to people" 
+              value={desc}
+            />
+          </div>
+          <button 
+            onClick={handleSubmit} 
+            className="w-full border border-blue-700 mt-2 mx-auto bg-blue-700 h-16 text-white font-bold rounded-md hover:bg-blue-800 disabled:opacity-50"
+            disabled={isUploading}
+          >
+            {isUploading ? "Uploading..." : "Submit"}
+          </button>
         </div>
       </div>
 

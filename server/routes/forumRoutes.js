@@ -116,7 +116,7 @@ router.get('/topics/:id', async (req, res) => {
 // Create a new topic
 router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
   try {
-    const { title, content, tags, userId, userName } = req.body;
+    const { title, content, tags, userId, userName, imageUrl } = req.body;
     
     if (!title || !content) {
       return res.status(400).json({ status: 400, error: 'Title and content are required' });
@@ -140,6 +140,7 @@ router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddlewa
       userName: actualUserName,
       tags: tags || [],
       mediaAttachments,
+      imageUrl,
       likes: [],
       dislikes: [],
       children: []
