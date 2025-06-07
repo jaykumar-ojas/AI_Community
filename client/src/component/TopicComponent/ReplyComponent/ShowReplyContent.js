@@ -219,14 +219,14 @@ const ShowReplyContent = ({
   }
 
   return (
-    <div key={reply?._id} className="flex justify-start mb-4">
+    <div key={reply?._id} className="flex justify-start">
       {/* User Icon Outside */}
-      <div className="w-8 h-8 flex-shrink-0">
+      <div className="w-8 h-8 flex-shrink-0 z-30">
         <UserIconCard id={reply?.userId} />
       </div>
 
       {/* Content Section */}
-      <div className="flex flex-col p-4 pt-0 ml-2 rounded-xl  w-full">
+      <div className="flex flex-col px-2 p-4 pt-0 w-full">
         {/* User Info & Delete Button */}
 
         <div className="flex items-center justify-between">
@@ -332,27 +332,6 @@ const ShowReplyContent = ({
             <div className="text-xs">Reply</div>
           </button>
         </div>
-
-        {/* Conditional Reply Buttons */}
-        {hasChildren && show && !showReply && (
-          <button
-            onClick={() => setShowReply(!showReply)}
-            className="text-xs text-blue-500 hover:underline mt-2"
-          >
-            view more replies...
-          </button>
-        )}
-
-        {showViewMore && (
-          <div className="mt-2">
-            <button
-              onClick={onViewMore}
-              className="text-xs text-blue-500 hover:underline"
-            >
-              View more replies...
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

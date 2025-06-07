@@ -20,20 +20,10 @@ import {
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
 
-const ShowCommentContent = ({
-  reply,
-  showViewMore,
-  onViewMore,
-  hasChildren,
-  show,
-  showReply,
-  setShowReply,
-}) => {
-  const { setReplyIdForContext, setViewBox, setUserName } =
-    useContext(ForumContext);
-  const { topicId } = useParams();
+const ShowCommentContent = ({reply}) => {
+  const { setReplyIdForContext, setViewBox, setUserName } =useContext(ForumContext);
   const [isOpen,setIsOpen] = useState(false);
-  const { emitDeleteReply, emitCommentReaction, emitDeleteComment } = useWebSocket();
+  const { emitCommentReaction, emitDeleteComment } = useWebSocket();
   const { loginData } = useContext(LoginContext);
   const [isLiked, setIsLiked] = useState();
   const [isDisliked, setIsDisLiked] = useState();
@@ -138,9 +128,7 @@ const ShowCommentContent = ({
 
     try {
       const response = await axios.post(
-        `http://localhost:8099/comments/${reply?._id}/like`,
-        {},
-        {
+        `http://localhost:8099/comments/${reply?._id}/like`,{},{
           headers: getAuthHeaders(),
         }
       );
@@ -215,13 +203,15 @@ const ShowCommentContent = ({
   };
 
   return (
-    <div key={reply?._id} className="flex justify-start ">
-      {/* user icon outside */}
-      <div className="w-8 h-8 flex-shrink-0">
+    <div key={reply?._id} className="relative flex justify-start ">
+      
+      <div className="w-8 h-8 flex-shrink-0 z-30">
         <UserIconCard id={reply?.userId} />
       </div>
+      {/* user icon outside */}
+      
 
-      <div className="flex flex-col p-4 pt-0 mb-2">
+      <div className="flex flex-col p-4 px-2 pt-0 w-full mb-2">
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
              <div className="text-text_header font-normal mr-2 text-md">
@@ -294,7 +284,7 @@ const ShowCommentContent = ({
           )}
         </div>
 
-        <div className="pt-4 flex items-center gap-2 text-xs text-gray-500">
+        <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
           <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
             <button
               onClick={handleReplyLike}
@@ -330,28 +320,7 @@ const ShowCommentContent = ({
             <div className="text-xs">Reply</div>
           </button>
         </div>
-
-        {hasChildren && show && !showReply && (
-          <button
-            onClick={() => setShowReply(!showReply)}
-            className="text-sm text-blue-500 hover:underline"
-          >
-            view more replies...
-          </button>
-        )}
-        {showViewMore && (
-          <div className="mt-2">
-            <button
-              onClick={onViewMore}
-              className="text-sm text-blue-500 hover:underline"
-            >
-              View more replies...
-            </button>
-          </div>
-        )}
       </div>
-
-      {/* lower button section */}
     </div>
   );
 };
