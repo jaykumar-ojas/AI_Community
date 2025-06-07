@@ -1,5 +1,6 @@
 const express = require("express");
 const router = new express.Router();
+const axios = require('axios');
 
 const {
   openai,
@@ -36,7 +37,7 @@ const {
 //  }
 // });
 
-router.post("/aitest", promptEnhancer, async (req, res) => {
+router.post("/aitest", async (req, res) => {
   console.log("Request body: outside try in after middleware", req.body);
   try {
     const prompt = req.updatedPrompt;
@@ -67,6 +68,8 @@ router.post("/aitest", promptEnhancer, async (req, res) => {
   }
 });
 
+
+
 // New route for generating forum topic content
 router.post("/generateTopicContent", async (req, res) => {
   try {
@@ -75,7 +78,7 @@ router.post("/generateTopicContent", async (req, res) => {
       return res.status(400).json({ status: 400, error: "Prompt is required" });
     }
 
-    final_Prompt = `Generate a forum topic based on the folowing idea: "${prompt}" .
+    const final_Prompt = `Generate a forum topic based on the folowing idea: "${prompt}" .
     
     Please provide the output in this format:
     Title: [Generated Title Here]
@@ -113,13 +116,18 @@ router.post("/generateTopicContent", async (req, res) => {
         "AI response format might not contains 'Title:: useing default"
       );
     }
-    // For demonstration, we'll return the enhanced prompt
-    // In a real implementation, you might want to structure this differently
+
+    // Generate an image based on the topic
+    const imagePrompt = `Create a visually appealing image that represents: ${title}`;
+    const imageUrl = await imageGenerator(imagePrompt);
+
+    // Return both the content and the generated image
     res.status(200).json({
       status: 200,
       content: {
         title: title,
         body: body,
+        imageUrl: imageUrl
       },
     });
   } catch (error) {
@@ -524,5 +532,97 @@ router.post("/stateselection", async (req, res) => {
 });
 
 // });
+
+// Image Generator API Route
+router.post("/generate-image", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({
+        status: 400,
+        error: "Prompt is required for image generation"
+      });
+    }
+
+    // Generate image using the existing imageGenerator middleware
+    const imageUrl = await imageGenerator(prompt);
+
+    if (!imageUrl) {
+      throw new Error("Failed to generate image");
+    }
+
+    res.status(200).json({
+      status: 200,
+      imageUrl: imageUrl,
+      prompt: prompt
+    });
+
+  } catch (error) {
+    console.error("Error in image generation:", error);
+    res.status(500).json({
+      status: 500,
+      error: error.message || "Failed to generate image"
+    });
+  }
+});
+
+// Add proxy endpoint for fetching images
+router.get("/proxy-image", async (req, res) => {
+  try {
+    const imageUrl = req.query.url;
+    if (!imageUrl) {
+      return res.status(400).json({ error: "Image URL is required" });
+    }
+
+    const response = await axios.get(imageUrl, {
+      responseType: 'arraybuffer'
+    });
+
+    // Set appropriate headers
+    res.set('Content-Type', response.headers['content-type']);
+    res.set('Content-Length', response.headers['content-length']);
+    
+    // Send the image data
+    res.send(response.data);
+  } catch (error) {
+    console.error("Error proxying image:", error);
+    res.status(500).json({ error: "Failed to fetch image" });
+  }
+});
+
+// New route for enhancing prompts
+router.post("/enhance-prompt", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({
+        status: 400,
+        error: "Prompt is required for enhancement"
+      });
+    }
+
+    // Use the existing promptEnhancerAI middleware function
+    const enhancedPrompt = await promptEnhancerAI(prompt);
+
+    if (!enhancedPrompt) {
+      throw new Error("Failed to enhance prompt");
+    }
+
+    res.status(200).json({
+      status: 200,
+      enhancedPrompt: enhancedPrompt,
+      originalPrompt: prompt
+    });
+
+  } catch (error) {
+    console.error("Error in prompt enhancement:", error);
+    res.status(500).json({
+      status: 500,
+      error: error.message || "Failed to enhance prompt"
+    });
+  }
+});
 
 module.exports = router;

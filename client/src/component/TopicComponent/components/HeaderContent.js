@@ -166,6 +166,19 @@ const HeaderContent = ({ topic, onDelete }) => {
       </div>
     )}
 
+    {/* Generated Image */}
+    {topic?.imageUrl && (
+      <div className="pt-4">
+        <div className="w-full rounded-md overflow-hidden border border-gray-200 shadow-sm">
+          <img 
+            src={topic.imageUrl} 
+            alt="Generated topic image" 
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      </div>
+    )}
+
     {/* Actions Section */}
     <div className="pt-4 flex items-center gap-2 text-xs text-gray-500">
       <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
