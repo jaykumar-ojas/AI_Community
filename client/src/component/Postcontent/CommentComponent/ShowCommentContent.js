@@ -211,7 +211,7 @@ const ShowCommentContent = ({reply}) => {
       {/* user icon outside */}
       
 
-      <div className="flex flex-col p-4 px-2 pt-0 mb-2">
+      <div className="flex flex-col p-4 px-2 pt-0 w-full mb-2">
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
              <div className="text-text_header font-normal mr-2 text-md">
