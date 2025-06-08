@@ -118,9 +118,9 @@ const Page = () => {
                 scrollableTarget="scrollableDiv"
               >
                 <div id="scrollableDiv" className="h-[calc(100vh-3.5rem)] overflow-y-auto no-scrollbar">
-                  <div className="grid grid-cols-1 md:grid-cols-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
                     {postdata.map((post) => (
-                      <div key={post._id} className="flex justify-center">
+                      <div key={post._id} className="flex justify-center items-stretch">
                         <Card post={post} />
                       </div>
                     ))}

@@ -13,12 +13,12 @@ import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate } from "react-router-dom";
 import { isAuthenticated, logout } from "../../utils/authUtils";
-import { SearchIcon } from "../../asset/icons";
+import { PlusIcon, SearchIcon } from "../../asset/icons";
 
 
   const navigation = [
     { name: "Home", href:'/',current: true},
-    { name: "Team", href: "/test2", current: false }
+    { name: <PlusIcon/>, href: "/post", current: false }
   ];
   
   function classNames(...classes) {

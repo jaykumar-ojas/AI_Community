@@ -546,6 +546,7 @@ router.post("/generate-image", async (req, res) => {
     }
 
     // Generate image using the existing imageGenerator middleware
+    console.log("my prompt going for imagegen",prompt);
     const imageUrl = await imageGenerator(prompt);
 
     if (!imageUrl) {
