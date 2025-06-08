@@ -25,6 +25,7 @@ import  ForumContext  from "./component/ContextProvider/ModelContext";
 import 'react-image-crop/dist/ReactCrop.css';
 import PixelLoader from "./component/Loader/PixelLoader";
 import UserProfile from "./component/userProfileView/userProfile";
+import PostImage from "./component/PostImage/PostImage";
 
 
 const Layout = () => {
@@ -64,6 +65,7 @@ const router = createBrowserRouter([
       { path: "t/:topicId", element: <TopicContent /> },
       { path: "loader", element: <PixelLoader /> },
       { path: "sample-user/:id", element: <UserProfile /> },
+      { path: "post", element:<PostImage/>},
     ]
   },
   { path: "/login", element: <Login /> },
