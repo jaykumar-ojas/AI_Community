@@ -5,6 +5,7 @@ import Login from "../Auth/Login";
 import UserIconCard from "../Card/UserIconCard";
 import UserNameCard from "../Card/UserNameCard";
 import PixelLoader from "../Loader/PixelLoader";
+import MasonryMediaGrid from "./MansoryMediaGrid";
 
 const Card = ({ post }) => {
   const [showLogin, setShowLogin] = useState(false);
@@ -13,14 +14,8 @@ const Card = ({ post }) => {
   // console.log("this is my post inside data",post);
   
   const handleCardClick = () => {
-    // Check if this is a forum media post
-    if (post.mediaAttachments && post.mediaAttachments.length > 0) {
-      // This is a forum media post, navigate to the forum topic
-      navigate(`/forum/${post.topicId}`);
-    } else {
       // This is a regular post, navigate to the post view
       navigate(`/userPost/${post?._id}`);
-    }
   };
 
   const handleUserClick = (e) => {
@@ -51,9 +46,17 @@ const Card = ({ post }) => {
   return (
     <div
       onClick={handleCardClick}
-      className="group border rounded-lg h-72 w-96 overflow-hidden relative hover:cursor-pointer"
     >
-      <div className="h-full w-full">
+    <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type}/>
+    </div>
+  );
+};
+
+export default Card;
+
+
+
+  {/* <div className="h-full w-full">
         {mediaInfo.type === "image" && 
         <img
           src={mediaInfo.url}
@@ -84,21 +87,16 @@ const Card = ({ post }) => {
 
 
         {/* Hidden div to show on hover */}
-        <div 
-          onClick={handleUserClick}
-          className="absolute top-2 left-2 flex items-center gap-2 p-2 rounded-lg bg-white bg-opacity-0 opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-50 cursor-pointer hover:bg-opacity-75"
-        >
-          <div className="relative w-12 h-12">
-            <UserIconCard id ={post?.userId}/>
-          </div>
-          <div className="text-white font-semibold hover:text-blue-200"><UserNameCard id={post?.userId}/></div>
-        </div>
-        <div className="absolute bottom-6 text-white left-4 opacity-0 transition duration-700 group-hover:opacity-100 bg-white bg-opacity-0 group-hover:bg-opacity-25 text-white font-semibold p-2 rounded-lg">
-          {post.desc}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Card;
+      //   <div 
+      //     onClick={handleUserClick}
+      //     className="absolute top-2 left-2 flex items-center gap-2 p-2 rounded-lg bg-white bg-opacity-0 opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-50 cursor-pointer hover:bg-opacity-75"
+      //   >
+      //     <div className="relative w-12 h-12">
+      //       <UserIconCard id ={post?.userId}/>
+      //     </div>
+      //     <div className="text-white font-semibold hover:text-blue-200"><UserNameCard id={post?.userId}/></div>
+      //   </div>
+      //   <div className="absolute bottom-6 text-white left-4 opacity-0 transition duration-700 group-hover:opacity-100 bg-white bg-opacity-0 group-hover:bg-opacity-25 text-white font-semibold p-2 rounded-lg">
+      //     {post.desc}
+      //   </div>
+      // </div> */}

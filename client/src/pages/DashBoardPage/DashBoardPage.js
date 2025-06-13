@@ -93,7 +93,7 @@ const Page = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg_comment">
+    <div className="h-full bg-bg_comment">
       <div className="mx-auto px-4">
         <div className="flex gap-8">
           <div className="flex-1">
@@ -110,17 +110,15 @@ const Page = () => {
                   </div>
                 }
                 endMessage={
-                  <p className="text-center text-gray-500 my-4">
-                    You've seen all posts!
-                  </p>
+                  ""
                 }
-                scrollThreshold="90%"
+                scrollThreshold="100%"
                 scrollableTarget="scrollableDiv"
               >
                 <div id="scrollableDiv" className="h-[calc(100vh-3.5rem)] overflow-y-auto no-scrollbar">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
+                  <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-3 p-4 gap-2 ">
                     {postdata.map((post) => (
-                      <div key={post._id} className="flex justify-center items-stretch">
+                      <div key={post._id} >
                         <Card post={post} />
                       </div>
                     ))}
