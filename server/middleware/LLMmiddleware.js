@@ -313,22 +313,17 @@ async function fetchAncestorContext(req, res, next) {
     let SelectedModel;
     let parentId;
     
-    let contentField;
-
     if(contextType === 'forumReply') {
       SelectedModel = ForumReply;
       parentId = 'parentReplyId';
-      contentField = 'content';
     }else if(contextType === 'comment') {
       SelectedModel = Comment;
       parentId = 'parentId';
-      contentField = 'commentText';
     }
 
     console.log('Selected model configuration:', { 
       modelName: SelectedModel.modelName,
-      parentId,
-      contentField 
+      parentId
     });
 
     const ancestorDescriptions = [];
@@ -336,16 +331,33 @@ async function fetchAncestorContext(req, res, next) {
     
     // First, include the start node itself
     const startNode = await SelectedModel.findById(startId)
-      .select(`${contentField} description _id ${parentId}`)
+      .select('content description _id ' + parentId)
       .lean();
       
     if (startNode) {
-      const textToUse = startNode.description || startNode[contentField];
+      let textToUse = '';
+      
+      // Handle forum reply content structure
+      if (contextType === 'forumReply' && startNode.content && startNode.content.length > 0) {
+        // Combine all content elements
+        textToUse = startNode.content.map(item => {
+          let content = '';
+          if (item.userText) content += item.userText + ' ';
+          if (item.aiText) content += item.aiText + ' ';
+          if (item.prompt) content += item.prompt + ' ';
+          return content;
+        }).join(' ').trim();
+      } else {
+        // Fallback to description or empty string
+        textToUse = startNode.description || '';
+      }
+      
       const description = getFirstNWords(textToUse, maxWords);
       
       ancestorDescriptions.push({
         priority: 10,
-        description: description
+        description: description,
+        mediaAttachments: startNode.mediaAttachments || []
       });
       
       console.log('Added start node:', {
@@ -366,7 +378,7 @@ async function fetchAncestorContext(req, res, next) {
       }
 
       const parentNode = await SelectedModel.findById(currentNode[parentId])
-        .select(`${contentField} description _id ${parentId}`)
+        .select('content description _id ' + parentId)
         .lean();
       console.log('Parent node:', parentNode);
 
@@ -375,18 +387,33 @@ async function fetchAncestorContext(req, res, next) {
         break;
       }
 
-      // Use content field based on context type
-      const textToUse = parentNode.description || parentNode[contentField];
+      // Handle forum reply content structure
+      let textToUse = '';
+      if (contextType === 'forumReply' && parentNode.content && parentNode.content.length > 0) {
+        // Combine all content elements
+        textToUse = parentNode.content.map(item => {
+          let content = '';
+          if (item.userText) content += item.userText + ' ';
+          if (item.aiText) content += item.aiText + ' ';
+          if (item.prompt) content += item.prompt + ' ';
+          return content;
+        }).join(' ').trim();
+      } else {
+        // Fallback to description or empty string
+        textToUse = parentNode.description || '';
+      }
+
       const description = getFirstNWords(textToUse, maxWords);
 
       console.log('Adding ancestor:', {
-        priority: 9-i, // Reduced priority for ancestors (since start node has priority 10)
+        priority: 9-i,
         description: description
       });
 
       ancestorDescriptions.push({
-        priority: 9-i, // Reduced priority for ancestors
-        description: description
+        priority: 9-i,
+        description: description,
+        mediaAttachments: parentNode.mediaAttachments || []
       });
 
       currentId = parentNode._id;
@@ -397,8 +424,6 @@ async function fetchAncestorContext(req, res, next) {
       }
     }
 
-
-
     ancestorDescriptions.sort((a,b) => a.priority - b.priority);
 
     const contextString = ancestorDescriptions.map(item => `P${item.priority}: ${item.description}`).join(', ');
@@ -406,6 +431,7 @@ async function fetchAncestorContext(req, res, next) {
     console.log('Final context string:', contextString);
     
     req.ancestorContext = contextString;
+    req.ancestorMedia = ancestorDescriptions.map(item => item.mediaAttachments).flat();
     next();
   }catch (error){
     console.error('Error in fetchAncestorContext:', error);
@@ -464,8 +490,10 @@ function analyzeRequestType(userPrompt) {
 }
 const processContextAwareRequest = async (req, res) => {
   try {
-    // Get ancestor context from the middleware
+    // Get ancestor context and media from the middleware
     const ancestorContext = req.ancestorContext;
+    const ancestorMedia = req.ancestorMedia || [];
+    
     if (!ancestorContext) {
       return res.status(400).json({
         success: false,
@@ -484,6 +512,7 @@ const processContextAwareRequest = async (req, res) => {
 
     console.log('Processing context-aware request with context:', ancestorContext);
     console.log('User prompt:', userPrompt);
+    console.log('Media attachments:', ancestorMedia);
 
     // Format context for AI consumption
     const formattedContext = formatContextForAI(ancestorContext);
@@ -515,7 +544,16 @@ const processContextAwareRequest = async (req, res) => {
       result = {
         type: "image",
         imageUrl: imageUrl,
-        description: imageDescription
+        description: imageDescription,
+        content: [{
+          userText: userPrompt,
+          prompt: imageDescription,
+          imageUrl: {
+            fileUrl: imageUrl,
+            fileType: 'image/png',
+            uploadedAt: new Date()
+          }
+        }]
       };
     } else {
       // Generate text response
@@ -529,8 +567,16 @@ const processContextAwareRequest = async (req, res) => {
       
       result = {
         type: "text",
-        content: textResponse
+        content: [{
+          userText: userPrompt,
+          aiText: textResponse
+        }]
       };
+    }
+    
+    // Add media attachments if any
+    if (ancestorMedia.length > 0) {
+      result.mediaAttachments = ancestorMedia;
     }
     
     return res.status(200).json({

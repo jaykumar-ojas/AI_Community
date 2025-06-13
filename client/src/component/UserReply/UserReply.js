@@ -101,18 +101,23 @@ const UserReply = () => {
     const payload = {
       ...formData,
       textPrompt: newReply.length > 0 ? newReply : formData.textPrompt,
+      contextType: formData.controlBits.processContextAware ? "forumReply" : "general",
+      entityId: formData.controlBits.processContextAware ? replyIdForContext : "",
     };
-    console.log(payload, "this is my formdata");
+
+    console.log("Sending payload:", payload);
     try {
       const response = await axios.post(
         "http://localhost:8099/stateselection",
         payload
       );
+      console.log("Full response:", response.data);
+      console.log("Result:", response.data.result);
       handleGeneratedResult(response.data.result);
-      console.log("this is my data", response.data.result);
       setNewReply("");
       resetFormData();
     } catch (err) {
+      console.error("Error:", err);
       setError(
         err.response?.data?.error ||
           "An error occurred while processing your request"
@@ -187,16 +192,29 @@ const UserReply = () => {
   };
 
   const handleGeneratedResult = (result) => {
-    const { originalPrompt, currentText, enhancedPrompt, generatedImageUrl } =
+    console.log("Handling result:", result);
+    const { originalPrompt, currentText, enhancedPrompt, generatedImageUrl, contextAwareResponse } =
       result || {};
+
+    console.log("ContextAwareResponse:", contextAwareResponse);
+    
+    let aiText = "";
+    if (contextAwareResponse?.type === "text") {
+      aiText = contextAwareResponse.content;
+    } else if (contextAwareResponse?.aiText) {
+      aiText = contextAwareResponse.aiText;
+    } else if (currentText && (currentText !== originalPrompt || currentText !== enhancedPrompt)) {
+      aiText = currentText;
+    }
 
     const newEntry = {
       userText: originalPrompt || "",
-      aiText: currentText != originalPrompt || currentText!=enhancedPrompt ? currentText || "" : "",
+      AiText: aiText,
       prompt: enhancedPrompt || "",
-      imageUrl: generatedImageUrl || "",
+      imageUrl: contextAwareResponse?.type === "image" ? contextAwareResponse?.imageUrl : generatedImageUrl || "",
     };
 
+    console.log("New Entry:", newEntry);
     setPostingData((prev) => [...prev, newEntry]);
   };
 
