@@ -7,6 +7,7 @@ const Context=({children})=>{
     const [viewBox,setViewBox] = useState(false);
     const [replyIdForContext,setReplyIdForContext]= useState(null);
     const [userName,setUserName] = useState(null);
+    const [modelType, setModelType] = useState('text');
 
     // useEffect(() => {
     //     console.log("i am coming to set userData");
@@ -19,7 +20,7 @@ const Context=({children})=>{
     //   console.log("this is set loginData,",loginData);
     
     return (
-        <ForumContext.Provider value={{model,setModel,viewBox,setViewBox,replyIdForContext,setReplyIdForContext,userName,setUserName}}>
+        <ForumContext.Provider value={{model,setModel,viewBox,setViewBox,replyIdForContext,setReplyIdForContext,userName,setUserName,modelType,setModelType}}>
             {children}
         </ForumContext.Provider>
     )

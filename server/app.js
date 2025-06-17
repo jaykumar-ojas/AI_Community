@@ -23,6 +23,7 @@ const forgetOtpRoute = require("./routes/forgetOtpRoute");
 const commentsRouter = require("./routes/comments"); 
 const forumRoutes = require("./routes/forumRoutes");
 const llmRoutes = require("./routes/llmRoute");
+const llm = require("./routes/llmRoutes");
 const batchRoutes = require("./routes/batchRoute");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 
@@ -71,6 +72,7 @@ app.use("/",forgetOtpRoute);
 app.use("/", commentsRouter);
 app.use("/forum", forumRoutes);
 app.use("/", llmRoutes);
+app.use("/", llm);
 app.use("/", batchRoutes);
 app.use("/", subscriptionRoutes);
 
