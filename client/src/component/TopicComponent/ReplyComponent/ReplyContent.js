@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
 import { LoginContext } from "../../ContextProvider/context";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { getAuthHeaders, handleAuthError, organizeReplies, REPLIES_URL } from "../../AiForumPage/components/ForumUtils";
 import ShowReplyContent from "./ShowReplyContent";
 import axios from "axios";
@@ -16,9 +16,9 @@ const ReplyContent = () => {
   const [isLoading,setIsLoading] = useState(false);
   const [expandedThreads,setExpandedThreads] = useState({});
   const [threadView,setThreadView] = useState();
-
-  const [forceRender, setForceRender] = useState(0); // Add force render trigger
-  const repliesContainerRef = useRef(null);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const scrollToId = params.get("comment");
   const { subscribeToEvent, joinTopic, leaveTopic } = useWebSocket();
 
   // Join topic room when component mounts
@@ -269,7 +269,8 @@ const ReplyContent = () => {
               setExpandedThreads={setExpandedThreads}
               threadView={threadView}
               setThreadView={setThreadView}
-              onReplyDeleted={handleReplyDeleted} // Add this line
+              onReplyDeleted={handleReplyDeleted} 
+              scrollToId={scrollToId}// Add this line
             />
           </div>
         ))

@@ -110,9 +110,9 @@ export const heartSvg = (filled = false) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="21" id="heart">
       <path
-        fill={filled ? "#ff4d4d" : "none"}
+        fill={filled ? "#ffd4d" : "none"}
         fillRule="evenodd"
-        stroke={filled ? "#ff4d4d" : "#000"}
+        stroke={filled ? "#ff4d4d" : "white"}
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"
@@ -266,8 +266,8 @@ export const PenIcon = () => {
       class="w-5 h-5 text-gray-800"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
+      width="44"
+      height="44"
       fill="none"
       viewBox="0 0 24 24"
     >

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { LoginContext } from "../../component/ContextProvider/context";
 import Login from "../Auth/Login";
@@ -6,16 +6,126 @@ import UserIconCard from "../Card/UserIconCard";
 import UserNameCard from "../Card/UserNameCard";
 import PixelLoader from "../Loader/PixelLoader";
 import MasonryMediaGrid from "./MansoryMediaGrid";
+import { heartSvg, thumbsDownSvg } from "../../asset/icons";
+import axios from "axios";
+
 
 const Card = ({ post }) => {
   const [showLogin, setShowLogin] = useState(false);
   const { loginData } = useContext(LoginContext);
-  const navigate = useNavigate();
-  // console.log("this is my post inside data",post);
+  const [userLiked, setUserLiked] = useState(false);
+  const [userDisliked, setUserDisliked] = useState(false);
+  const [currentUser, setCurrentUser] = useState({
+    id: '',
+    name: ''
+  });
+  const [postData, setPostData] = useState(post);
+
+  const handleLikePost = async () => {
+      if (!currentUser.id) {
+        alert("Please log in to like posts");
+        return;
+      }
   
+      try {
+        const response = await axios.post(`http://localhost:8099/${postData._id}/like`, {
+          userId: currentUser.id
+        });
+        
+        if (response.status === 200) {
+          // Update local state to reflect the change
+          const updatedPost = { ...postData };
+          
+          if (userLiked) {
+            // Remove like
+            updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
+          } else {
+            // Add like and remove dislike if exists
+            if (!updatedPost.likes) updatedPost.likes = [];
+            if (!updatedPost.likes.includes(currentUser.id)) {
+              updatedPost.likes.push(currentUser.id);
+            }
+            
+            // Remove from dislikes if present
+            if (updatedPost.dislikes && updatedPost.dislikes.includes(currentUser.id)) {
+              updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
+            }
+          }
+          
+          setPostData(updatedPost);
+          setUserLiked(!userLiked);
+          if (userDisliked) setUserDisliked(false);
+        }
+      } catch (error) {
+        console.error('Error liking post:', error);
+        alert("Error liking post. Please try again.");
+      }
+    };
+  
+    const handleDislikePost = async () => {
+      if (!currentUser.id) {
+        alert("Please log in to dislike posts");
+        return;
+      }
+  
+      try {
+        const response = await axios.post(`http://localhost:8099/${postData._id}/dislike`, {
+          userId: currentUser.id
+        });
+        
+        if (response.status === 200) {
+          // Update local state to reflect the change
+          const updatedPost = { ...postData };
+          
+          if (userDisliked) {
+            // Remove dislike
+            updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
+          } else {
+            // Add dislike and remove like if exists
+            if (!updatedPost.dislikes) updatedPost.dislikes = [];
+            if (!updatedPost.dislikes.includes(currentUser.id)) {
+              updatedPost.dislikes.push(currentUser.id);
+            }
+            
+            // Remove from likes if present
+            if (updatedPost.likes && updatedPost.likes.includes(currentUser.id)) {
+              updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
+            }
+          }
+          
+          setPostData(updatedPost);
+          setUserDisliked(!userDisliked);
+          if (userLiked) setUserLiked(false);
+        }
+      } catch (error) {
+        console.error('Error disliking post:', error);
+        alert("Error disliking post. Please try again.");
+      }
+    };
+
+  useEffect(() => {
+    console.log("UserContent received post:", post);
+    if (post) {
+      setPostData(post);
+
+      // Check if current user has liked or disliked this post
+      if (loginData && loginData.validuserone && post.likes && post.dislikes) {
+        const userId = loginData.validuserone._id;
+        setUserLiked(post.likes.includes(userId));
+        setUserDisliked(post.dislikes.includes(userId));
+        setCurrentUser({
+        id: loginData.validuserone._id,
+        name: loginData.validuserone.userName
+      });
+      }
+    }
+  }, [post]);
+  const navigate = useNavigate();
+
+
   const handleCardClick = () => {
-      // This is a regular post, navigate to the post view
-      navigate(`/userPost/${post?._id}`);
+    // This is a regular post, navigate to the post view
+    navigate(`/userPost/${post?._id}`);
   };
 
   const handleUserClick = (e) => {
@@ -45,10 +155,63 @@ const Card = ({ post }) => {
 
   return (
     <div
-      onClick={handleCardClick}
-    >
-    <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type}/>
+  className="group relative cursor-pointer"
+  onClick={handleCardClick}
+>
+  <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type} />
+
+  <div className="absolute flex flex-col bottom-0 h-full w-full justify-between left-0 right-0 bg-black bg-opacity-60 text-white text-sm p-2 opacity-0 group-hover:opacity-100 transition duration-500">
+    
+    {/* User info row */}
+    <div className="flex flex-row gap-2 pb-1">
+      <div className="h-6 w-6 flex-shrink-0" onClick={handleUserClick}>
+        <UserIconCard id={post?.userId} />
+      </div>
+      <div onClick={handleUserClick}>
+        <UserNameCard id={post?.userId} />
+      </div>
     </div>
+
+    {/* Description */}
+    <div className="overflow-y-auto items-center.g justify-center no-scrollbar">
+      {post?.desc}
+    </div>
+
+    {/* Like/Dislike Buttons */}
+    <div>
+      <div className="flex items-center gap-4 p-2 pb-1">
+        <button
+          className="flex items-center gap-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleLikePost();
+          }}
+          title={userLiked ? "Remove like" : "Like this post"}
+        >
+          {heartSvg(userLiked)}
+          <span className="text-xs font-medium">
+            {postData?.likes?.length || 0}
+          </span>
+        </button>
+
+        <button
+          className="flex items-center gap-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDislikePost();
+          }}
+          title={userDisliked ? "Remove dislike" : "Dislike this post"}
+        >
+          {thumbsDownSvg(userDisliked)}
+          <span className="text-sm font-medium">
+            {postData?.dislikes?.length || 0}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
   );
 };
 
@@ -56,47 +219,3 @@ export default Card;
 
 
 
-  {/* <div className="h-full w-full">
-        {mediaInfo.type === "image" && 
-        <img
-          src={mediaInfo.url}
-          className="h-full w-full object-cover opacity-95 hover:opacity-100 transition duration-300"
-          alt="Card Image"
-        />
-        // <PixelLoader imgUrl={mediaInfo?.url}/>
-        }
-        {mediaInfo.type === "video" && <video
-          src={mediaInfo.url}
-          className="h-full w-full object-cover opacity-95 hover:opacity-100 transition duration-300"
-          autoPlay
-          loop
-          muted
-          playsInline
-          />}
-         {mediaInfo.type === "audio" && (
-          <div className="h-full w-full flex items-center justify-center bg-gray-800 p-4">
-            <div className="p-4 bg-gray-900 rounded-lg shadow-lg w-80">
-              <audio
-                src={mediaInfo.url}
-                className="w-full opacity-95 hover:opacity-100 transition duration-300"
-                controls
-              />
-            </div>
-          </div>
-        )}
-
-
-        {/* Hidden div to show on hover */}
-      //   <div 
-      //     onClick={handleUserClick}
-      //     className="absolute top-2 left-2 flex items-center gap-2 p-2 rounded-lg bg-white bg-opacity-0 opacity-0 transition duration-700 group-hover:opacity-100 group-hover:bg-opacity-50 cursor-pointer hover:bg-opacity-75"
-      //   >
-      //     <div className="relative w-12 h-12">
-      //       <UserIconCard id ={post?.userId}/>
-      //     </div>
-      //     <div className="text-white font-semibold hover:text-blue-200"><UserNameCard id={post?.userId}/></div>
-      //   </div>
-      //   <div className="absolute bottom-6 text-white left-4 opacity-0 transition duration-700 group-hover:opacity-100 bg-white bg-opacity-0 group-hover:bg-opacity-25 text-white font-semibold p-2 rounded-lg">
-      //     {post.desc}
-      //   </div>
-      // </div> */}

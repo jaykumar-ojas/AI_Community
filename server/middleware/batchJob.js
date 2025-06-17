@@ -52,10 +52,28 @@ const updateUrlFromReplies = async () => {
                 }
             }
 
+            if(Array.isArray(reply.content))
+            {
+                console.log(reply.content);
+            for(const content of reply.content){
+                const imageUrl = content.imageUrl;
+                const isOld = isOlderThan6Days(imageUrl.uploadedAt);
+                if(isOld){
+                    const newSignedUrl = await generateSignedUrl(content.imageUrl.fileName);
+                    content.imageUrl.fileName = newSignedUrl;
+                    content.imageUrl.uploadedAt = new Date();
+                    hasUpdates = true;
+                }
+            }
+        }
+            
+
             if (hasUpdates) {
                 await reply.save();
             }
         }
+
+        
 
         console.log("Media attachment URLs updated successfully for replies.");
     } catch (error) {
@@ -118,6 +136,19 @@ const updateUrlFromComment = async () => {
                     hasUpdates = true;
                 }
             }
+            if(Array.isArray(comment.content)){
+                
+            for(const content of comment.content){
+                const imageUrl = content.imageUrl;
+                const isOld = isOlderThan6Days(content.imageUrl.uploadedAt);
+                if(isOld){
+                    const newSignedUrl = await generateSignedUrl(content.imageUrl.fileName);
+                    content.imageUrl.fileUrl= newSignedUrl;
+                    content.imageUrl.uploadedAt = new Date();
+                    hasUpdates = true;
+                }
+            }
+        }
 
             if (hasUpdates) {
                 await comment.save();

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { organizeReplies } from "../AiForumPage/components/ForumUtils";
 import RecurrsionLoopComment from "./CommentComponent/RecurrsionLoopComment";
 import axios from 'axios';
-import ReplyCommentBox from "./CommentComponent/ReplyForComment";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 
 const CommentReview = () => {
@@ -14,6 +13,9 @@ const CommentReview = () => {
   const [expandedThreads,setExpandedThreads] = useState({});
   const { id } = useParams();
   const { socket, joinPost, leavePost, subscribeToEvent } = useWebSocket();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const [scrollToId, setScrollToId] = useState(params.get("comment"));
 
   useEffect(() => {
     if(!id){
@@ -27,6 +29,7 @@ const CommentReview = () => {
     const unsubscribeCommentCreated = subscribeToEvent('comment_created', (newComment) => {
       setComments(prevComments => {
         const updatedComments = [...(prevComments || []), newComment];
+        
         return updatedComments;
       });
     });
@@ -126,6 +129,7 @@ const CommentReview = () => {
             <div key={index} className="ml-2">
               <RecurrsionLoopComment
                 reply={reply}
+                scrollToId={scrollToId}
               />
             </div>
             </>

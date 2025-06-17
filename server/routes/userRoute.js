@@ -441,4 +441,65 @@ router.get("/get-user-profile/:userId", async(req, res) => {
   }
 });
 
+
+router.post(
+  "/updateProfile",
+  authenticate,
+  upload.fields([
+    { name: 'backgroundImage', maxCount: 1 },
+    { name: 'profilePicture', maxCount: 1 }
+  ]),
+  awsuploadMiddleware,
+  async (req, res) => {
+    const {userId,userName} = req.body;
+
+    const backgroundImageFile = req.files?.backgroundImage?.[0];
+    const profilePictureFile = req.files?.profilePicture?.[0];
+
+    let updateFields = {};
+
+    if (backgroundImageFile) {
+      updateFields.backgroundImageUrl = req.uploadedFiles.find(file =>
+        file.originalField === 'backgroundImage'
+      )?.fileUrl;
+      updateFields.backgroundImage = req.uploadedFiles.find(file =>
+        file.originalField === 'backgroundImage'
+      )?.fileName;
+      
+    }
+
+    if (profilePictureFile) {
+      updateFields.profilePictureUrl = req.uploadedFiles.find(file =>
+        file.originalField === 'profilePicture'
+      )?.fileUrl;
+       updateFields.profilePicture = req.uploadedFiles.find(file =>
+        file.originalField === 'profilePicture'
+      )?.fileName;
+    }
+
+    if(userName){
+        updateFields.userName=userName;
+    }
+    
+    // Preserve other fields if needed
+    const updatedUser = await userdb.findByIdAndUpdate(
+      userId,
+      { $set: updateFields },
+      { new: true }
+    ) || await googledb.findByIdAndUpdate(
+      userId,
+      { $set: updateFields },
+      { new: true }
+    );;
+
+    console.log(updatedUser);
+
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user: updatedUser
+    });
+  }
+);
+
 module.exports=router;

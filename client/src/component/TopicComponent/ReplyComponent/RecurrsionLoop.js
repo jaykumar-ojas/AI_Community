@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import ShowReplyContent from "./ShowReplyContent";
 import { LoginContext } from "../../ContextProvider/context";
 import UserIconCard from "../../Card/UserIconCard";
@@ -8,18 +8,32 @@ const RecurrsionLoop = ({
   reply,
   depth = 0,
   isLastChild,
-  onReplyDeleted // Add this new prop
+  onReplyDeleted,
+  scrollToId // Add this new prop
 }) => {
   const { loginData } = useContext(LoginContext);
   const [showReply, setShowReply] = useState(false);
   const hasChildren = reply?.children && reply?.children.length > 0;
   const [view, setView] = useState(true);
+  const commentRef = useRef(null);
+  
+  useEffect(() => {
+    if (scrollToId && reply?._id === scrollToId && commentRef.current) {
+      commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      // Optional: highlight the comment
+      commentRef.current.classList.add("ring-2", "ring-yellow-400", "rounded");
+      setTimeout(() => {
+        commentRef.current?.classList.remove("ring-2", "ring-yellow-400", "rounded");
+      }, 2000);
+    }
+  }, [scrollToId, reply?._id]);
   
 
 
   return (
-
-    <div key={reply?._id} className={`relative ${depth > 0 ? "ml-8": ``}`}>
+    <div key={reply?._id}
+      ref={commentRef} className={`relative ${depth > 0 ? "ml-8": ``}`}>
       <div
         className="absolute top-0 left-0 h-full border-l border-time_header"
         style={{ marginLeft: "0.75rem" }} // align to margin
@@ -111,7 +125,8 @@ const RecurrsionLoop = ({
                 reply={childReply}
                 depth={depth + 1}
                 isLastChild={index === reply.children.length - 1}
-                onReplyDeleted={onReplyDeleted} // Pass down the delete handler
+                onReplyDeleted={onReplyDeleted}
+                scrollToId={scrollToId} // Pass down the delete handler
               />
             </div>
           ))}
