@@ -4,10 +4,6 @@ import UserAndModel from "./Component/UserAndModel";
 import ShowSelectedFile from "./Component/ShowSelectedFiie";
 import {
   AttachIcon,
-  BrainIcon,
-  Pallete,
-  PenIcon,
-  SparkIcon,
 } from "../../asset/icons";
 import axios from "axios";
 import ShowGeneratedContent from "./Component/ShowGeneratedContent";
@@ -22,105 +18,64 @@ import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 
 const UserReply = () => {
   const { loginData } = useContext(LoginContext);
-  const { replyIdForContext } = useContext(ForumContext);
+  const { replyIdForContext, model, modelType } = useContext(ForumContext);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const { emitNewReply } = useWebSocket();
 
   const [loading, setLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [newReply, setNewReply] = useState("");
   const { topicId } = useParams();
   const [postingData, setPostingData] = useState([]);
-
-  const [formData, setFormData] = useState({
-    textPrompt: "",
-    controlBits: {
-      enhancePrompt: false,
-      generateText: false,
-      generateImage: false,
-      processContextAware: false,
-    },
-    contextType: "forumReply",
-    entityId: "",
-  });
-  const anyControlBitTrue = Object.values(formData.controlBits).some(Boolean);
-
-  // setting replyIdForContext
-  useEffect(() => {
-    if (replyIdForContext !== null) {
-      setFormData((prev) => ({
-        ...prev,
-        entityId: replyIdForContext, // update entityId here
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        entityId: "", // update entityId here
-      }));
-    }
-  }, [replyIdForContext]);
 
   // function handling file
   const handleFileSelect = (e) => {
     setSelectedFiles(Array.from(e.target.files));
   };
 
-  // toggle between generate and post
-  const toggleControl = (name) => {
-    setFormData((prev) => ({
-      ...prev,
-      controlBits: {
-        ...prev.controlBits,
-        [name]: !prev.controlBits[name],
-      },
-    }));
-  };
-
-  const resetFormData = () => {
-    setFormData({
-      textPrompt: "",
-      controlBits: {
-        enhancePrompt: false,
-        generateText: false,
-        generateImage: false,
-        processContextAware: false,
-      },
-    });
-  };
-
-
-  // handle generate Submit
+  // handle generate Submit - calls the /generate API
   const handleGenerateSubmit = async (e) => {
     e.preventDefault();
+    if (!newReply.trim()) return;
+    
     setLoading(true);
     setError(null);
 
-    // set textPrompt manually
-    const payload = {
-      ...formData,
-      textPrompt: newReply.length > 0 ? newReply : formData.textPrompt,
-      contextType: formData.controlBits.processContextAware ? "forumReply" : "general",
-      entityId: formData.controlBits.processContextAware ? replyIdForContext : "",
-    };
-
-    console.log("Sending payload:", payload);
     try {
+      const generatePayload = {
+        model: model,
+        prompt: newReply.trim(),
+        type: modelType,
+        options: {
+          // Add any additional options here based on your requirements
+          temperature: 0.7,
+          maxTokens: modelType === 'text' ? 1000 : undefined,
+          n: 1,
+          size: modelType === 'image' ? '1024x1024' : undefined,
+        }
+      };
+
+      console.log("Calling /generate API with payload:", generatePayload);
+      
       const response = await axios.post(
-        "http://localhost:8099/stateselection",
-        payload
+        "http://localhost:8099/generate", // Updated endpoint
+        generatePayload
       );
-      console.log("Full response:", response.data);
-      console.log("Result:", response.data.result);
-      handleGeneratedResult(response.data.result);
-      setNewReply("");
-      resetFormData();
+      
+      console.log("Generate API response:", response.data);
+      
+      if (response.data.success) {
+        handleGeneratedResult(response.data.data, newReply.trim());
+        setNewReply("");
+      } else {
+        setError("Failed to generate content");
+      }
     } catch (err) {
       console.error("Error:", err);
       setError(
         err.response?.data?.error ||
-          "An error occurred while processing your request"
+          "An error occurred while generating content"
       );
     } finally {
       setLoading(false);
@@ -129,12 +84,11 @@ const UserReply = () => {
 
   // handle submit to post
   const handleSubmit = async (e) => {
-    console.log("i come here")
+    console.log("Direct post submit");
     e.preventDefault();
     if (!newReply.trim()) return;
     setIsLoading(true);
     setError(null);
-    console.log("i passed return")
 
     const updatedPostingData = [
       ...postingData,
@@ -163,7 +117,7 @@ const UserReply = () => {
 
       const response = await axios.post(REPLIES_URL, formData, {
         headers: {
-          ...getAuthHeaders(), // Fixed: Call getAuthHeaders as a function
+          ...getAuthHeaders(),
           "Content-Type": "multipart/form-data",
         },
       });
@@ -191,41 +145,48 @@ const UserReply = () => {
     }
   };
 
-  const handleGeneratedResult = (result) => {
-    console.log("Handling result:", result);
-    const { originalPrompt, currentText, enhancedPrompt, generatedImageUrl, contextAwareResponse } =
-      result || {};
-
-    console.log("ContextAwareResponse:", contextAwareResponse);
+  const handleGeneratedResult = (data, originalPrompt) => {
+    console.log("Handling generated result:", data);
     
-    let aiText = "";
-    if (contextAwareResponse?.type === "text") {
-      aiText = contextAwareResponse.content;
-    } else if (contextAwareResponse?.aiText) {
-      aiText = contextAwareResponse.aiText;
-    } else if (currentText && (currentText !== originalPrompt || currentText !== enhancedPrompt)) {
-      aiText = currentText;
-    }
-
-    const newEntry = {
-      userText: originalPrompt || "",
-      AiText: aiText,
-      prompt: enhancedPrompt || "",
-      imageUrl: contextAwareResponse?.type === "image" ? contextAwareResponse?.imageUrl : generatedImageUrl || "",
+    let newEntry = {
+      userText: originalPrompt,
+      aiText: "",
+      prompt: "",
+      imageUrl: "",
     };
+
+    // Since we're passing response.data.data, the structure is:
+    // data.type, data.result.text, etc.
+    if (data.type === 'text' && data.result?.text) {
+      newEntry.aiText = data.result.text;
+    } else if (data.type === 'image' && data.result?.images?.[0]?.url) {
+      newEntry.imageUrl = data.result.images[0].url;
+    } else if (data.type === 'image' && data.result?.images) {
+      // Alternative structure for image URLs
+      newEntry.imageUrl = data.result.images;
+    }
 
     console.log("New Entry:", newEntry);
     setPostingData((prev) => [...prev, newEntry]);
   };
 
   return (
-    <div className="relative bottom-0 left-0 right-0 bg-bg_comment_box shadow-lg  z-50 p-2">
+    <div className="relative bottom-0 left-0 right-0 bg-bg_comment_box shadow-lg z-50 p-2">
+      {/* Error display */}
+      {error && (
+        <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+
       {/* for showing user generated content */}
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box">
         <ShowGeneratedContent postingData={postingData} />
       </div>
-      {/* for showing model and userName you want to */}
+      
+      {/* for showing model and userName */}
       <UserAndModel />
+      
       <form>
         <div className="flex mb-2">
           <input
@@ -234,32 +195,32 @@ const UserReply = () => {
             placeholder="Write your reply..."
             value={newReply}
             onChange={(e) => setNewReply(e.target.value)}
-            disabled={isLoading}
+            disabled={isLoading || loading}
           />
-          {!anyControlBitTrue && (
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
-              disabled={isLoading || !newReply.trim()}
-            >
-              {isLoading ? "Posting..." : "Post"}
-            </button>
-          )}
-          {anyControlBitTrue && (
-            <button
-              type="submit"
-              onClick={handleGenerateSubmit}
-              className="bg-green-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
-              disabled={loading || !newReply.trim()}
-            >
-              {loading ? "Generating..." : "Generate"}
-            </button>
-          )}
+          
+          {/* Generate Button */}
+          <button
+            type="button"
+            onClick={handleGenerateSubmit}
+            className="bg-green-600 text-white rounded-md px-4 py-2 text-sm hover:bg-green-700 disabled:opacity-50 mr-2"
+            disabled={loading || !newReply.trim()}
+          >
+            {loading ? "Generating..." : `Generate ${modelType === 'image' ? 'Image' : 'Text'}`}
+          </button>
+          
+          {/* Post Button */}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+            disabled={isLoading || !newReply.trim() && postingData.length === 0}
+          >
+            {isLoading ? "Posting..." : "Post"}
+          </button>
         </div>
 
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-2">
             <label className="text-gray-500 hover:text-gray-700 cursor-pointer text-sm flex items-center">
               <input
                 type="file"
@@ -271,62 +232,14 @@ const UserReply = () => {
               />
               <AttachIcon /> Attach
             </label>
-
-            <div className="flex flex-wrap gap-0.5">
-              <button
-                type="button"
-                onClick={() => toggleControl("enhancePrompt")}
-                className={`flex items-center gap-2 px-3 py-1 rounded-md text-sm transition-colors ${
-                  formData.controlBits.enhancePrompt
-                    ? "bg-blue-100 text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                <SparkIcon />
-                Enhanced Prompt
-              </button>
-
-              <button
-                type="button"
-                onClick={() => toggleControl("generateText")}
-                className={`flex items-center gap-2 px-3 py-1 rounded-md text-sm transition-colors ${
-                  formData.controlBits.generateText
-                    ? "bg-blue-100 text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                <PenIcon />
-                Generate Text
-              </button>
-
-              <button
-                type="button"
-                onClick={() => toggleControl("generateImage")}
-                className={`flex items-center gap-2 px-3 py-1 rounded-md text-sm transition-colors ${
-                  formData.controlBits.generateImage
-                    ? "bg-blue-100 text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                <Pallete />
-                Generate Image
-              </button>
-
-              <button
-                type="button"
-                onClick={() => toggleControl("processContextAware")}
-                className={`flex items-center gap-2 px-3 py-1 rounded-md text-sm transition-colors ${
-                  formData.controlBits.processContextAware
-                    ? "bg-blue-100 text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                <BrainIcon />
-                Context Aware
-              </button>
+            
+            {/* Display current model info */}
+            <div className="text-xs text-gray-500 ml-4">
+              Current: {model} ({modelType})
             </div>
           </div>
         </div>
+        
         <ShowSelectedFile
           selectedFiles={selectedFiles}
           setSelectedFiles={setSelectedFiles}
@@ -337,28 +250,3 @@ const UserReply = () => {
 };
 
 export default UserReply;
-
-// contextAwareResponse
-// :
-// null
-// currentText
-// :
-// "Absolutely, I would love to assist you with content creation! However, I need a bit more information to ensure that what I generate aligns with your needs. Could you please provide more details like the topic, target audience, format (blog, social media post, article), and any specific points you want me to include in the content? The more details you provide, the better I can assist you!"
-// enhancedPrompt
-// :
-// null
-// generatedImage
-// :
-// null
-// generatedImageUrl
-// :
-// null
-// generatedText
-// :
-// "Absolutely, I would love to assist you with content creation! However, I need a bit more information to ensure that what I generate aligns with your needs. Could you please provide more details like the topic, target audience, format (blog, social media post, article), and any specific points you want me to include in the content? The more details you provide, the better I can assist you!"
-// originalPrompt
-// :
-// "generate my content"
-// processingSteps
-// :
-// ['textSuggestion']

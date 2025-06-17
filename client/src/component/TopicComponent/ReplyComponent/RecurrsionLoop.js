@@ -41,7 +41,7 @@ const RecurrsionLoop = ({
       {/* for those comment those dont have child */}
       {!hasChildren &&  (
         <div
-          className="absolute top-0 left-0 h-full border-l border-bg_comment_box"
+          className="absolute top-0 left-0  h-full border-l border-bg_comment_box"
           style={{ marginLeft: "0.75rem" }} // align to margin
         />
       )}
