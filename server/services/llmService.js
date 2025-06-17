@@ -198,10 +198,7 @@ class LLMService {
     // XAI (Grok) Text Generation
 // XAI (Grok) Text Generation
 async _generateXaiText(client, model, prompt, options) {
-    // const client = new OpenAI({
-    //     apiKey: "xai-dNyf3BRp8IdE8rvbX3eAYZBxp09H34HGhRs3b0HJh1j6Fx3sUGlorM1Tpk4vwTRZHTbO221BgMDtz7H1",
-    //     baseURL: 'https://api.x.ai/v1'
-    // });
+   
 
     try {
         const response = await client.chat.completions.create({
