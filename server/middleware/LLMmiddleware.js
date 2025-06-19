@@ -4,6 +4,10 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const ForumReply = require('../models/forumReplySchema');
 const Comment = require('../models/commentsModel');
+const axios = require('axios');
+const { ObjectId } = require('mongodb');
+
+
 
 dotenv.config();
 
@@ -134,30 +138,28 @@ const imageGenerator = async(text)=>{
 }
 
 const describeImage = async (imageBuffer) => {
-    console.log("is this describe image function even calling or not");
+  console.log("Describing image buffer, size:", imageBuffer.length);
+  
   try {
-    if(!imageBuffer || !Buffer.isBuffer(imageBuffer) || imageBuffer.length === 0){
+    if (!imageBuffer || !Buffer.isBuffer(imageBuffer) || imageBuffer.length === 0) {
       console.error("No valid image buffer provided for description");
       return null;
     }
-    console.log("describing image buffer, size: ", imageBuffer.length);
 
     const base64Image = imageBuffer.toString('base64');
-    
-    // Detect mime type from buffer magic numbers
-    const mimeType = 'image/png'; // Default to PNG, you might want to add proper mime type detection
+    const mimeType = detectMimeType(imageBuffer) || 'image/png';
 
-    console.log("sending image to OPENAI for description..");
+    console.log("Sending image to OpenAI for description...");
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",  // Updated to use the vision model
+      model: "gpt-4o",
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "describe this image in detail. what is happening? what objects are present?",
+              text: "Describe this image concisely for forum context. Focus on key objects, people, and actions. Keep it under 50 words.",
             },
             {
               type: "image_url",
@@ -168,86 +170,344 @@ const describeImage = async (imageBuffer) => {
           ],
         },
       ],
-      max_tokens: 300,
+      max_tokens: 150,
     });
 
-    if(response && response.choices && response.choices[0] && response.choices[0].message && response.choices[0].message.content){
-      const description = response.choices[0].message.content;  // Fixed typo in 'choices'
-      console.log("success received image description");
+    if (response?.choices?.[0]?.message?.content) {
+      const description = response.choices[0].message.content;
+      console.log("Successfully received image description");
       return description;
-    }else{
-      console.error("invalid response structure");
+    } else {
+      console.error("Invalid response structure from OpenAI");
       return null;
     }
 
-  }catch(error){
-    console.error("error in describe image function: ", error);
-    if(error.response){
-      console.error("OpenAI error details: ", error.response);
+  } catch (error) {
+    console.error("Error in describeImage function:", error);
+    if (error.response) {
+      console.error("OpenAI error details:", error.response.data);
     }
-
     return null;
   }
-}
+};
 
 
-async function extractImageDescription(context, userPrompt) {
+const downloadImage = async (url) => {
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: `You are an assistant that extracts detailed image descriptions from conversation contexts. 
-                   Given a conversation and a request like "image of that" or "show me a picture", 
-                   determine exactly what "that" refers to and create a detailed description for image generation.`
-        },
-        {
-          role: "user",
-          content: `${context}\n\nThe user has requested: "${userPrompt}"\n\nExtract a detailed description of what the image should show, based on the conversation context.`
-        }
-      ],
-      max_tokens: 1000
+    console.log("Downloading image from URL:", url);
+    const response = await axios({
+      method: 'GET',
+      url: url,
+      responseType: 'arraybuffer',
+      timeout: 30000, // 30 second timeout
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
     });
     
-    return response.choices[0].message.content;
-
+    return Buffer.from(response.data);
   } catch (error) {
-    console.error("Error extracting image description:", error);
+    console.error("Error downloading image from URL:", url, error.message);
     return null;
   }
-}
+};
 
-const modelSelection = async(req,res,next)=>{
-    try{
-      console.log("i m jay");
-    let content = req.body.content;
-    const model = req.body.model || "";
-    console.log("htis is my model name",model);
-    if(model===""){
-      console.log("i m returning from hree");
-      return next();
+// Add the missing detectMimeType function
+const detectMimeType = (buffer) => {
+  // Simple MIME type detection based on file signatures
+  const signatures = {
+    '/9j/': 'image/jpeg',
+    'iVBORw0KGgo': 'image/png',
+    'R0lGODlh': 'image/gif',
+    'UklGRg==': 'image/webp'
+  };
+  
+  const base64 = buffer.toString('base64');
+  
+  for (const [signature, mimeType] of Object.entries(signatures)) {
+    if (base64.startsWith(signature)) {
+      return mimeType;
     }
-    if (model === "DALL-E") {
-      req.body.content = await responseFromDalle(content);
-    } else if (model === "GPT-4") {
-      req.body.content = await responseFromGpt4(content);
-    } else if (model === "Claude") {
-      console.log("Before model transformation:", req.body.content);
-      req.body.content = await responseFromClaude(req.body.content);
-      console.log("After model transformation:", req.body.content);
-    } else if (model === "Stable Diffusion") {
-      req.body.content = await responseFromStableDiffusion(content);
-    } else if (model === "Mid Journey") {
-      req.body.content = await responseFromMidJourney(content);
-    }
-
-    next();
-  } catch (error) {
-    console.error("Error extracting image description:", error);
-    return null;
   }
-}
+  
+  return 'image/png'; // Default fallback
+};
+
+const extractImageUrls = (document) => {
+  const imageUrls = [];
+  
+  // Extract from content array
+  if (document.content && Array.isArray(document.content)) {
+    document.content.forEach((item, index) => {
+      if (item.imageUrl && item.imageUrl.fileUrl) {
+        imageUrls.push({
+          url: item.imageUrl.fileUrl,
+          source: 'content',
+          index: index,
+          fileName: item.imageUrl.fileName || `content_image_${index}`
+        });
+      }
+    });
+  }
+  
+  // Extract from mediaAttachments
+  if (document.mediaAttachments && Array.isArray(document.mediaAttachments)) {
+    document.mediaAttachments.forEach((attachment, index) => {
+      if (attachment.fileUrl) {
+        imageUrls.push({
+          url: attachment.fileUrl,
+          source: 'mediaAttachments',
+          index: index,
+          fileName: attachment.fileName || `media_image_${index}`
+        });
+      }
+    });
+  }
+  
+  return imageUrls;
+};
+
+const addImageDescriptions = async (objectId, db) => {
+  try {
+    console.log("Processing document with ObjectId:", objectId);
+    
+    // Validate ObjectId
+    if (!ObjectId.isValid(objectId)) {
+      throw new Error("Invalid ObjectId provided");
+    }
+    
+    // Check if database connection is valid
+    if (!db) {
+      throw new Error("Database connection is not available");
+    }
+    
+    // List available collections for debugging
+    try {
+      const collections = await db.listCollections().toArray();
+      console.log("Available collections:", collections.map(c => c.name));
+    } catch (err) {
+      console.error("Error listing collections:", err);
+    }
+    
+    // Try different possible collection names
+    const possibleCollections = ['forumreplies', 'postcomments'];
+    let collection = null;
+    let document = null;
+    
+    for (const collectionName of possibleCollections) {
+      try {
+        collection = db.collection(collectionName);
+        document = await collection.findOne({ _id: new ObjectId(objectId) });
+        if (document) {
+          console.log(`Found document in collection: ${collectionName}`);
+          break;
+        }
+      } catch (err) {
+        console.log(`Collection ${collectionName} not found or error:`, err.message);
+        continue;
+      }
+    }
+    
+    if (!document) {
+      console.error("Document not found with ObjectId:", objectId, "in any collection");
+      return {
+        success: false,
+        error: "Document not found with the provided ObjectId",
+        document: null
+      };
+    }
+    
+    console.log("Document found, processing content and mediaAttachments arrays...");
+    
+    let processedCount = 0;
+    let updatedContent = document.content ? [...document.content] : [];
+    let updatedMediaAttachments = document.mediaAttachments ? [...document.mediaAttachments] : [];
+    
+    // Process content array to find items with imageUrl
+    if (Array.isArray(document.content)) {
+      for (let i = 0; i < updatedContent.length; i++) {
+        const contentItem = updatedContent[i];
+        
+        // Check if this content item has an imageUrl
+        if (contentItem.imageUrl && contentItem.imageUrl.fileUrl) {
+          try {
+            console.log(`Processing content image ${i}: ${contentItem.imageUrl.fileName || 'unnamed'}`);
+        
+        // Download image
+            const imageBuffer = await downloadImage(contentItem.imageUrl.fileUrl);
+        
+        if (!imageBuffer) {
+              console.log(`Failed to download image for content item ${i}`);
+          continue;
+        }
+        
+        // Get description
+        const description = await describeImage(imageBuffer);
+        
+            if (description) {
+              // Add description to the content item
+              updatedContent[i] = {
+                ...contentItem,
+                description: description
+              };
+              processedCount++;
+              console.log(`Added description to content item ${i}`);
+            }
+        
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+      } catch (error) {
+            console.error(`Error processing image for content item ${i}:`, error);
+          }
+        }
+      }
+    }
+    
+    // Process mediaAttachments array
+    if (Array.isArray(document.mediaAttachments)) {
+      for (let i = 0; i < updatedMediaAttachments.length; i++) {
+        const mediaItem = updatedMediaAttachments[i];
+        
+        // Check if this media item has a fileUrl
+        if (mediaItem.fileUrl) {
+          try {
+            console.log(`Processing media attachment ${i}: ${mediaItem.fileName || 'unnamed'}`);
+            
+            // Download image
+            const imageBuffer = await downloadImage(mediaItem.fileUrl);
+            
+            if (!imageBuffer) {
+              console.log(`Failed to download image for media attachment ${i}`);
+              continue;
+            }
+            
+            // Get description
+            const description = await describeImage(imageBuffer);
+            
+            if (description) {
+              // Add description to the media item
+              updatedMediaAttachments[i] = {
+                ...mediaItem,
+                description: description
+              };
+              processedCount++;
+              console.log(`Added description to media attachment ${i}`);
+            }
+            
+            // Small delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+          } catch (error) {
+            console.error(`Error processing image for media attachment ${i}:`, error);
+          }
+        }
+      }
+    }
+    
+    if (processedCount === 0) {
+      console.log("No images found in content or mediaAttachments arrays");
+      return {
+        success: true,
+        message: "No images found in content or mediaAttachments arrays",
+        document: document
+      };
+    }
+    
+    // Update document with modified arrays
+    const updateData = {
+          lastDescriptionUpdate: new Date()
+    };
+    
+    if (updatedContent.length > 0) {
+      updateData.content = updatedContent;
+        } 
+    
+    if (updatedMediaAttachments.length > 0) {
+      updateData.mediaAttachments = updatedMediaAttachments;
+      }
+    
+    const updateResult = await collection.updateOne(
+      { _id: new ObjectId(objectId) },
+      { $set: updateData }
+    );
+    
+    if (updateResult.modifiedCount === 1) {
+      console.log(`Successfully updated document with ${processedCount} image descriptions`);
+      
+      // Fetch and return updated document
+      const updatedDocument = await collection.findOne({ _id: new ObjectId(objectId) });
+      
+      return {
+        success: true,
+        message: `Successfully processed ${processedCount} images`,
+        document: updatedDocument
+      };
+    } else {
+      throw new Error("Failed to update document in database");
+    }
+    
+  } catch (error) {
+    console.error("Error in addImageDescriptions:", error);
+    return {
+      success: false,
+      error: error.message,
+      document: null
+    };
+  }
+};
+
+const handleImageDescriptionRequest = async (req, res) => {
+  try {
+    const { objectId } = req.params;
+    
+    console.log("handleImageDescriptionRequest called with objectId:", objectId);
+    
+    if (!objectId) {
+      return res.status(400).json({
+        success: false,
+        error: "ObjectId is required"
+      });
+    }
+    
+    // Check if mongoose connection is ready
+    if (!mongoose.connection || !mongoose.connection.db) {
+      console.error("Mongoose connection not ready");
+      return res.status(500).json({
+        success: false,
+        error: "Database connection not available"
+      });
+    }
+    
+    // Use mongoose connection instead of req.db
+    const db = mongoose.connection.db;
+    console.log("Database connection obtained, calling addImageDescriptions...");
+    
+    const result = await addImageDescriptions(objectId, db);
+    console.log("addImageDescriptions result:", result);
+    
+    if (result && result.success) {
+      res.status(200).json(result);
+    } else {
+      const errorMessage = result ? result.error : "Unknown error occurred";
+      console.error("addImageDescriptions failed:", errorMessage);
+      res.status(500).json({
+        success: false,
+        error: errorMessage
+      });
+    }
+    
+  } catch (error) {
+    console.error("Error in handleImageDescriptionRequest:", error);
+    console.error("Error stack:", error.stack);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+      details: error.message
+    });
+  }
+};
+
 
 async function generateTextResponse(context, userPrompt) {
   try {
@@ -258,7 +518,7 @@ async function generateTextResponse(context, userPrompt) {
           role: "system",
           content: `You are a helpful assistant in a forum discussion. 
                    Use the provided conversation context to understand the discussion 
-                   and give a relevant, thoughtful response.`
+                   and give a relevant, context.`
         },
         {
           role: "user",
@@ -275,15 +535,47 @@ async function generateTextResponse(context, userPrompt) {
   }
 }
 
-function getFirstNWords(text, n){
-  if(!text || typeof text !== 'string')
-  {
-    return ' ';
+
+function getFirstNWords(text, n) {
+  if (!text || typeof text !== 'string') {
+    return '';
   }
-
-  const words = text.split(/\s+/).filter(words => words.length > 0);
-
+  
+  const words = text.split(/\s+/).filter(word => word.length > 0);
   return words.slice(0, n).join(' ');
+}
+
+function extractContentText(contentArray) {
+  if (!contentArray || !Array.isArray(contentArray)) {
+    return '';
+  }
+  
+  return contentArray.map(item => {
+    let text = '';
+    if (item.userText) text += item.userText + ' ';
+    if (item.aiText) text += item.aiText + ' ';
+    if (item.prompt) text += item.prompt + ' ';
+    
+    // Handle imageUrl with description
+    if (item.imageUrl && item.description) {
+      text += `[Image: ${item.description}] `;
+    } else if (item.imageUrl && !item.description) {
+      text += '[Image attached] ';
+    }
+    
+    return text.trim();
+  }).filter(text => text.length > 0).join(' ');
+}
+
+function extractMediaDescriptions(mediaAttachments) {
+  if (!mediaAttachments || !Array.isArray(mediaAttachments)) {
+    return '';
+  }
+  
+  return mediaAttachments
+    .map(media => media.description || '')
+    .filter(desc => desc.length > 0)
+    .join(' ');
 }
 
 async function fetchAncestorContext(req, res, next) {
@@ -294,311 +586,277 @@ async function fetchAncestorContext(req, res, next) {
     console.log('fetchAncestorContext - Input:', { startId, contextType });
 
     const maxDepth = 10;
-    const maxWords = 50;
+    const maxWordsPerNode = 50;
+    const maxTotalContextWords = 500;
 
-    if(!startId || !mongoose.Types.ObjectId.isValid(startId)){     
+    // Validation
+    if (!startId || !mongoose.Types.ObjectId.isValid(startId)) {
       console.log('Invalid ID:', startId);
       return res.status(400).json({
         success: false,
-        message: 'invalid or missing ID for context fetching'
-      })
+        message: 'Invalid or missing ID for context fetching'
+      });
     }
-    if(!contextType || (contextType !== 'forumReply' && contextType !== 'comment')){
+
+    if (!contextType || (contextType !== 'forumReply' && contextType !== 'comment')) {
       console.log('Invalid context type:', contextType);
       return res.status(400).json({
         success: false,
-        message: "Missing or invalid context type"
+        message: 'Missing or invalid context type'
       });
     }
+
     let SelectedModel;
-    let parentId;
+    let parentIdField;
     
-    if(contextType === 'forumReply') {
+    if (contextType === 'forumReply') {
       SelectedModel = ForumReply;
-      parentId = 'parentReplyId';
-    }else if(contextType === 'comment') {
+      parentIdField = 'parentReplyId';
+    } else if (contextType === 'comment') {
       SelectedModel = Comment;
-      parentId = 'parentId';
+      parentIdField = 'parentReplyId'; // Changed this line - assuming comments use 'parentCommentId'
     }
 
     console.log('Selected model configuration:', { 
       modelName: SelectedModel.modelName,
-      parentId
+      parentIdField
     });
 
-    const ancestorDescriptions = [];
+    const ancestorNodes = [];
     let currentId = startId;
-    
-    // First, include the start node itself
-    const startNode = await SelectedModel.findById(startId)
-      .select('content description _id ' + parentId)
+    let totalWords = 0;
+
+    // Build ancestor chain from bottom to top
+    for (let depth = 0; depth <= maxDepth; depth++) {
+      console.log(`Fetching node at depth ${depth}, currentId:`, currentId);
+      
+      const currentNode = await SelectedModel.findById(currentId)
+        .select(`content description mediaAttachments userName userId createdAt ${parentIdField} _id`)
       .lean();
       
-    if (startNode) {
-      let textToUse = '';
-      
-      // Handle forum reply content structure
-      if (contextType === 'forumReply' && startNode.content && startNode.content.length > 0) {
-        // Combine all content elements
-        textToUse = startNode.content.map(item => {
-          let content = '';
-          if (item.userText) content += item.userText + ' ';
-          if (item.aiText) content += item.aiText + ' ';
-          if (item.prompt) content += item.prompt + ' ';
-          return content;
-        }).join(' ').trim();
+      if (!currentNode) {
+        console.log(`Node not found at depth ${depth}`);
+        break;
+      }
+
+      // Extract text content (same logic for both types since they have same structure)
+      let textContent = '';
+      if (currentNode.content) {
+        textContent = extractContentText(currentNode.content);
       } else {
-        // Fallback to description or empty string
-        textToUse = startNode.description || '';
+        textContent = currentNode.description || '';
+      }
+
+      // Extract media descriptions from mediaAttachments
+      const mediaDescriptions = extractMediaDescriptions(currentNode.mediaAttachments);
+      
+      // Count images in content array (same logic for both types)
+      let contentImageCount = 0;
+      if (currentNode.content) {
+        contentImageCount = currentNode.content.filter(item => item.imageUrl).length;
       }
       
-      const description = getFirstNWords(textToUse, maxWords);
+      // Combine text and media descriptions
+      const fullText = [textContent, mediaDescriptions].filter(t => t.length > 0).join(' ');
       
-      ancestorDescriptions.push({
-        priority: 10,
-        description: description,
-        mediaAttachments: startNode.mediaAttachments || []
-      });
+      // Truncate to word limit
+      const truncatedText = getFirstNWords(fullText, maxWordsPerNode);
       
-      console.log('Added start node:', {
-        priority: 10,
-        description: description
+      // Count words for total limit
+      const wordCount = truncatedText.split(/\s+/).filter(word => word.length > 0).length;
+      
+      if (totalWords + wordCount > maxTotalContextWords && depth > 0) {
+        console.log('Reached maximum total context words limit');
+        break;
+      }
+
+      totalWords += wordCount;
+
+      // Create structured ancestor node
+      const ancestorNode = {
+        id: currentNode._id.toString(),
+        depth: depth,
+        priority: 10 - depth, // Higher priority for closer ancestors
+        content: truncatedText,
+        userName: currentNode.userName || 'Unknown',
+        userId: currentNode.userId?.toString(),
+        createdAt: currentNode.createdAt,
+        mediaCount: (currentNode.mediaAttachments ? currentNode.mediaAttachments.length : 0) + contentImageCount,
+        mediaAttachments: currentNode.mediaAttachments || [],
+        contentImages: contentImageCount,
+        isStartNode: depth === 0
+      };
+
+      ancestorNodes.push(ancestorNode);
+
+      console.log(`Added ancestor at depth ${depth}:`, {
+        priority: ancestorNode.priority,
+        content: ancestorNode.content.substring(0, 100) + '...',
+        mediaCount: ancestorNode.mediaCount,
+        userName: ancestorNode.userName
       });
+
+      // Check for parent
+      if (!currentNode[parentIdField]) {
+        console.log('No parent found, reached root');
+        break;
+      }
+
+      currentId = currentNode[parentIdField];
     }
 
-    for(let i = 0; i<maxDepth; i++){
-      console.log(`Fetching ancestor level ${i}, currentId:`, currentId);
-      
-      const currentNode = await SelectedModel.findById(currentId).select(parentId).lean();
-      console.log('Current node:', currentNode);
-      
-      if(!currentNode || !currentNode[parentId]){
-        console.log('No more ancestors found at level', i);
-        break;
-      }
+    // Sort by priority (highest first - closest ancestors)
+    ancestorNodes.sort((a, b) => b.priority - a.priority);
 
-      const parentNode = await SelectedModel.findById(currentNode[parentId])
-        .select('content description _id ' + parentId)
-        .lean();
-      console.log('Parent node:', parentNode);
+    // Create structured context string
+    const contextString = ancestorNodes
+      .map(node => {
+        const prefix = node.isStartNode ? 'CURRENT' : `ANCESTOR_${node.depth}`;
+        const mediaInfo = node.mediaCount > 0 ? ` [${node.mediaCount} media]` : '';
+        const contentImgInfo = node.contentImages > 0 ? ` [${node.contentImages} inline images]` : '';
+        const userInfo = ` (by ${node.userName})`;
+        return `${prefix}${userInfo}${mediaInfo}${contentImgInfo}: ${node.content}`;
+      })
+      .join(' | ');
 
-      if(!parentNode){
-        console.log('Parent node not found');
-        break;
-      }
+    // Extract all media attachments with metadata
+    const allMediaAttachments = ancestorNodes
+      .flatMap(node => node.mediaAttachments.map(media => ({
+        ...media,
+        sourceNodeId: node.id,
+        sourceDepth: node.depth,
+        sourceUserName: node.userName
+      })));
 
-      // Handle forum reply content structure
-      let textToUse = '';
-      if (contextType === 'forumReply' && parentNode.content && parentNode.content.length > 0) {
-        // Combine all content elements
-        textToUse = parentNode.content.map(item => {
-          let content = '';
-          if (item.userText) content += item.userText + ' ';
-          if (item.aiText) content += item.aiText + ' ';
-          if (item.prompt) content += item.prompt + ' ';
-          return content;
-        }).join(' ').trim();
-      } else {
-        // Fallback to description or empty string
-        textToUse = parentNode.description || '';
-      }
+    // Create summary statistics
+    const contextSummary = {
+      totalNodes: ancestorNodes.length,
+      totalWords: totalWords,
+      totalMedia: allMediaAttachments.length,
+      depthReached: Math.max(...ancestorNodes.map(n => n.depth)),
+      rootUserName: ancestorNodes.length > 0 ? ancestorNodes[ancestorNodes.length - 1].userName : null
+    };
 
-      const description = getFirstNWords(textToUse, maxWords);
+    console.log('Context fetching complete:', contextSummary);
+    console.log('Final context string length:', contextString.length);
 
-      console.log('Adding ancestor:', {
-        priority: 9-i,
-        description: description
-      });
-
-      ancestorDescriptions.push({
-        priority: 9-i,
-        description: description,
-        mediaAttachments: parentNode.mediaAttachments || []
-      });
-
-      currentId = parentNode._id;
-
-      if(!parentNode[parentId]){
-        console.log('No more parent IDs found');
-        break;
-      }
-    }
-
-    ancestorDescriptions.sort((a,b) => a.priority - b.priority);
-
-    const contextString = ancestorDescriptions.map(item => `P${item.priority}: ${item.description}`).join(', ');
-
-    console.log('Final context string:', contextString);
+    // Attach to request object
+    req.ancestorContext = {
+      contextString: contextString,
+      nodes: ancestorNodes,
+      summary: contextSummary
+    };
+    req.ancestorMedia = allMediaAttachments;
     
-    req.ancestorContext = contextString;
-    req.ancestorMedia = ancestorDescriptions.map(item => item.mediaAttachments).flat();
     next();
-  }catch (error){
+
+  } catch (error) {
     console.error('Error in fetchAncestorContext:', error);
     next(error);
   }
 }
 
-
+// Helper function to format context for AI prompt
 function formatContextForAI(ancestorContext) {
-  if (!ancestorContext) return "";
-  
-  const contextItems = ancestorContext.split(', P').map(item => {
-    if (!item.startsWith('P')) {
-      item = 'P' + item;
-    }
-    return item;
-  });
-  
-  let formattedContext = "CONVERSATION CONTEXT (from earliest to latest):\n\n";
-  
-  contextItems.forEach((item, index) => {
-    // Extract priority and description
-    const matches = item.match(/P(\d+):\s*(.*)/);
-    if (matches && matches.length >= 3) {
-      const priority = matches[1];
-      const description = matches[2];
-      
-      // Calculate indentation based on reversed priority
-      // Higher priority (more recent) gets more indentation
-      const indentation = "  ".repeat(index);
-      
-      // Format each message
-      formattedContext += `${indentation}[Message ${index + 1}] A user wrote:\n`;
-      formattedContext += `${indentation}${description}\n\n`;
-    }
-  });
-  
-  return formattedContext;
-}
+  if (!ancestorContext || !ancestorContext.nodes) {
+    return '';
+  }
 
-function analyzeRequestType(userPrompt) {
-  const prompt = userPrompt.toLowerCase();
+  const { nodes, summary } = ancestorContext;
   
-  // Check for image generation requests
-  if (
-    prompt.includes('image of') || 
-    prompt.includes('picture of') || 
-    prompt.includes('show me') || 
-    (prompt.includes('generate') && (prompt.includes('image') || prompt.includes('picture')))
-  ) {
-    return 'IMAGE_REQUEST';
+  let prompt = `CONVERSATION CONTEXT (${summary.totalNodes} messages, depth: ${summary.depthReached}):\n\n`;
+  
+  nodes.forEach(node => {
+    const label = node.isStartNode ? '🎯 CURRENT MESSAGE' : `📖 ${node.depth} levels back`;
+    const mediaInfo = node.mediaCount > 0 ? ` 📎${node.mediaCount}` : '';
+    
+    prompt += `${label}${mediaInfo} - ${node.userName}:\n`;
+    prompt += `"${node.content}"\n\n`;
+  });
+  
+  if (summary.totalMedia > 0) {
+    prompt += `📎 Total media attachments: ${summary.totalMedia}\n`;
   }
   
-  // Default to text response
-  return 'TEXT_REQUEST';
+  return prompt;
 }
-const processContextAwareRequest = async (req, res) => {
+
+const textSuggestionWithContext = async (text, ancestorContext = null, ancestorMedia = null, options = {}) => {
   try {
-    // Get ancestor context and media from the middleware
-    const ancestorContext = req.ancestorContext;
-    const ancestorMedia = req.ancestorMedia || [];
-    
-    if (!ancestorContext) {
-      return res.status(400).json({
-        success: false,
-        message: "Context information is missing"
-      });
+    if (!text) {
+      throw new Error("Text field is required");
     }
 
-    // Get user prompt
-    const userPrompt = req.body.prompt;
-    if (!userPrompt) {
-      return res.status(400).json({
-        success: false,
-        message: "User prompt is required"
-      });
-    }
+    const {
+      includeContext = true,
+      responseStyle = 'conversational',
+      maxTokens = 500,
+      temperature = 0.7,
+      focusOnMedia = false,
+      contentType = 'general'
+    } = options;
 
-    console.log('Processing context-aware request with context:', ancestorContext);
-    console.log('User prompt:', userPrompt);
-    console.log('Media attachments:', ancestorMedia);
+    let contextualPrompt = '';
 
-    // Format context for AI consumption
-    const formattedContext = formatContextForAI(ancestorContext);
-    
-    // Analyze request type
-    const requestType = analyzeRequestType(userPrompt);
-    
-    let result;
-    
-    if (requestType === 'IMAGE_REQUEST') {
-      // Extract what the image should be of
-      const imageDescription = await extractImageDescription(formattedContext, userPrompt);
-      if (!imageDescription) {
-        return res.status(500).json({
-          success: false,
-          message: "Failed to extract image description"
-        });
-      }
-      
-      // Use existing imageGenerator function to generate the image
-      const imageUrl = await imageGenerator(imageDescription);
-      if (!imageUrl) {
-        return res.status(500).json({
-          success: false,
-          message: "Failed to generate image"
-        });
-      }
-      
-      result = {
-        type: "image",
-        imageUrl: imageUrl,
-        description: imageDescription,
-        content: [{
-          userText: userPrompt,
-          prompt: imageDescription,
-          imageUrl: {
-            fileUrl: imageUrl,
-            fileType: 'image/png',
-            uploadedAt: new Date()
-          }
-        }]
-      };
+    // Build context-aware prompt
+    if (includeContext && ancestorContext && ancestorContext.nodes && ancestorContext.nodes.length > 0) {
+      const contextString = formatContextForAI(ancestorContext);
+      const totalMedia = ancestorMedia ? ancestorMedia.length : 0;
+      const mediaTypes = ancestorMedia ? [...new Set(ancestorMedia.map(m => m.fileType))].join(', ') : '';
+
+      contextualPrompt = `CONVERSATION CONTEXT:
+${contextString}
+
+${totalMedia > 0 ? `MEDIA ATTACHMENTS: ${totalMedia} files (${mediaTypes})\n` : ''}USER REQUEST: ${text}
+
+Based on the above context and request, create an enhanced detailed prompt for content generation that:
+- Incorporates relevant context from the conversation
+- Maintains consistency with the discussion thread
+${focusOnMedia && totalMedia > 0 ? '- References any relevant media mentioned' : ''}
+- Uses ${responseStyle} style
+${contentType !== 'general' ? `- Focuses on ${contentType} content` : ''}`;
+
     } else {
-      // Generate text response
-      const textResponse = await generateTextResponse(formattedContext, userPrompt);
-      if (!textResponse) {
-        return res.status(500).json({
-          success: false,
-          message: "Failed to generate text response"
-        });
-      }
-      
-      result = {
-        type: "text",
-        content: [{
-          userText: userPrompt,
-          aiText: textResponse
-        }]
-      };
+      contextualPrompt = `USER REQUEST: ${text}
+
+Create an enhanced detailed prompt for content generation that:
+- Uses ${responseStyle} style
+${contentType !== 'general' ? `- Focuses on ${contentType} content` : ''}
+- Provides comprehensive guidance for generating quality content`;
     }
-    
-    // Add media attachments if any
-    if (ancestorMedia.length > 0) {
-      result.mediaAttachments = ancestorMedia;
-    }
-    
-    return res.status(200).json({
-      success: true,
-      result: result
+
+    // Call OpenAI to get the enhanced prompt
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{
+        role: "system",
+        content: "You are a prompt engineering expert. Create enhanced, detailed prompts for content generation. Return ONLY the enhanced prompt, nothing else."
+      }, {
+        role: "user",
+        content: contextualPrompt
+      }],
+      temperature: temperature,
+      max_tokens: maxTokens
     });
+
+    console.log("enhanced prompt", response.choices[0].message.content);
+    // Return just the enhanced prompt string
+    return response.choices[0].message.content.trim();
+
   } catch (error) {
-    console.error("Error processing context-aware request:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to process request",
-      details: error.message
-    });
+    console.error("Error generating enhanced prompt:", error);
+    throw error;
   }
 };
+
+
 
 const promptEnhancerAI = async (prompt) => {
   try {
     if (!prompt) {
       throw new Error("Prompt is required");
     }
-
+    console.log('prompt',prompt);
     const userPrompt = "Improve this image generation prompt to create a more detailed, vivid, and artistic description:";
     const final_prompt = userPrompt + "\n\n" + prompt;
 
@@ -608,7 +866,7 @@ const promptEnhancerAI = async (prompt) => {
       temperature: 0.7,
       max_tokens: 500
     });
-
+    console.log('responce', response.choices[0].message.content);
     return response.choices[0].message.content;
   } catch (error) {
     console.error("Error enhancing prompt:", error);
@@ -616,8 +874,34 @@ const promptEnhancerAI = async (prompt) => {
   }
 };
 
+// Add the missing extractImageDescription function
+const extractImageDescription = async (context, userPrompt) => {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert at creating detailed image descriptions for AI image generation. Extract what the user wants to see in an image based on their request and the conversation context."
+        },
+        {
+          role: "user",
+          content: `Context: ${context}\n\nUser request: ${userPrompt}\n\nCreate a detailed, vivid description of what image should be generated. Focus on visual elements, style, composition, and mood.`
+        }
+      ],
+      max_tokens: 300,
+      temperature: 0.7
+    });
+    
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error("Error extracting image description:", error);
+    return userPrompt; // Fallback to original prompt
+  }
+};
+
 module.exports ={
-    modelSelection,
+    openai,
     model,
     describeImage,
     promptEnhancer,
@@ -626,10 +910,16 @@ module.exports ={
     textSuggestion,
     imageGenerator,
     fetchAncestorContext,
-    processContextAwareRequest,
     formatContextForAI,
-    analyzeRequestType,
+    generateTextResponse,
+    addImageDescriptions,
+    handleImageDescriptionRequest,
+    describeImage,
     extractImageDescription,
-    generateTextResponse
+    detectMimeType,
+    getFirstNWords,
+    extractContentText,
+    extractMediaDescriptions,
+    textSuggestionWithContext
 };
 

@@ -29,15 +29,75 @@ const UserReply = () => {
   const { topicId } = useParams();
   const [postingData, setPostingData] = useState([]);
 
+  // Track posted replies to call describe-images API
+  const [postedReplies, setPostedReplies] = useState([]);
+  
+  // Context aware functionality
+  const [isContextAware, setIsContextAware] = useState(false);
+  const [contextLoading, setContextLoading] = useState(false);
+
+  // Background function to describe images
+  const describeImagesInBackground = async (replyId, postingData) => {
+    // Check if there are any images in the posting data
+    const hasImages = postingData.some(entry => 
+      entry.imageUrl || 
+      selectedFiles.some(file => file.type.startsWith('image/'))
+    );
+
+    if (!hasImages) return;
+
+    try {
+      console.log(`Calling describe-images API for reply: ${replyId}`);
+      
+      const response = await axios.put(
+        `http://localhost:8099/describe-images/${replyId}`,
+        {},
+        {
+          headers: getAuthHeaders()
+        }
+      );
+
+      console.log("Image description API response:", response.data);
+      
+      if (response.data.success) {
+        console.log("Images described successfully for reply:", replyId);
+      }
+    } catch (err) {
+      console.error("Error describing images:", err);
+      // Don't show this error to user since it's a background operation
+    }
+  };
+
+  // Effect to monitor posted replies and trigger image description
+  useEffect(() => {
+    postedReplies.forEach(({ replyId, postingData, processed }) => {
+      if (!processed) {
+        // Mark as processed to avoid multiple calls
+        setPostedReplies(prev => 
+          prev.map(item => 
+            item.replyId === replyId 
+              ? { ...item, processed: true }
+              : item
+          )
+        );
+        
+        // Call the describe-images API in background
+        describeImagesInBackground(replyId, postingData);
+      }
+    });
+  }, [postedReplies]);
+
   // function handling file
   const handleFileSelect = (e) => {
     setSelectedFiles(Array.from(e.target.files));
   };
 
   // handle generate Submit - calls the /generate API
-  const handleGenerateSubmit = async (e) => {
-    e.preventDefault();
-    if (!newReply.trim()) return;
+  const handleGenerateSubmit = async (e, enhancedPrompt = null, originalUserText = null) => {
+    e?.preventDefault();
+    const promptToUse = enhancedPrompt || newReply.trim();
+    const textToRender = originalUserText || newReply.trim();
+    if (!promptToUse) return;
     
     setLoading(true);
     setError(null);
@@ -45,14 +105,14 @@ const UserReply = () => {
     try {
       const generatePayload = {
         model: model,
-        prompt: newReply.trim(),
+        prompt: promptToUse,
         type: modelType,
         options: {
           // Add any additional options here based on your requirements
           temperature: 0.7,
           maxTokens: modelType === 'text' ? 1000 : undefined,
           n: 1,
-          size: modelType === 'image' ? '1024x1024' : undefined,
+          size: modelType === 'image' ? '1024x1920' : undefined,
         }
       };
 
@@ -66,8 +126,11 @@ const UserReply = () => {
       console.log("Generate API response:", response.data);
       
       if (response.data.success) {
-        handleGeneratedResult(response.data.data, newReply.trim());
-        setNewReply("");
+        // Always render the original user text, not the enhanced prompt
+        handleGeneratedResult(response.data.data, textToRender);
+        if (!enhancedPrompt) {
+          setNewReply("");
+        }
       } else {
         setError("Failed to generate content");
       }
@@ -79,6 +142,61 @@ const UserReply = () => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle context-aware generation
+  const handleContextAwareGenerate = async (e) => {
+    e.preventDefault();
+    if (!newReply.trim()) return;
+    
+    setContextLoading(true);
+    setError(null);
+
+    try {
+      // First call the suggest API to get context-aware enhancement
+      console.log("Calling /suggest API for context awareness");
+      
+      const suggestResponse = await axios.post(
+        `http://localhost:8099/suggest/${replyIdForContext || topicId}`,
+        {
+          text: newReply.trim(),
+          contextType: 'forumReply',
+          options: {
+            // Add any specific options for suggestion
+            temperature: 0.7,
+            maxTokens: 500
+          }
+        },
+        {
+          headers: getAuthHeaders()
+        }
+      );
+
+      console.log("Suggest API response:", suggestResponse.data);
+
+      if (suggestResponse.data.success) {
+        const enhancedPrompt = suggestResponse.data.data.suggestion;
+        const originalUserText = newReply.trim();
+        
+        console.log("Original user input:", originalUserText);
+        console.log("Enhanced prompt (for generation only):", enhancedPrompt);
+        
+        // Use enhanced prompt for generation but render original user text
+        handleGenerateSubmit(null, enhancedPrompt, originalUserText);
+        
+      } else {
+        setError("Failed to generate context-aware suggestion");
+      }
+    } catch (err) {
+      console.error("Error in context-aware generation:", err);
+      setError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "An error occurred while generating context-aware content"
+      );
+    } finally {
+      setContextLoading(false);
     }
   };
 
@@ -123,12 +241,27 @@ const UserReply = () => {
       });
 
       if (response.status === 201) {
-        emitNewReply({
+        const newReplyData = {
           ...response.data.reply,
           topicId: topicId,
           userName: loginData.validuserone.userName,
           userId: loginData.validuserone._id,
-        });
+        };
+
+        emitNewReply(newReplyData);
+
+        // Add to posted replies for background image description
+        const replyId = response.data.reply._id || response.data.reply.id;
+        if (replyId) {
+          setPostedReplies(prev => [
+            ...prev,
+            {
+              replyId: replyId,
+              postingData: updatedPostingData,
+              processed: false
+            }
+          ]);
+        }
 
         setNewReply("");
         setSelectedFiles([]);
@@ -195,15 +328,28 @@ const UserReply = () => {
             placeholder="Write your reply..."
             value={newReply}
             onChange={(e) => setNewReply(e.target.value)}
-            disabled={isLoading || loading}
+            disabled={isLoading || loading || contextLoading}
           />
           
-          {/* Generate Button */}
+          {/* Context Aware Generate Button - Only show when model is selected */}
+          {model && (
+            <button
+              type="button"
+              onClick={handleContextAwareGenerate}
+              className="bg-purple-600 text-white rounded-md px-4 py-2 text-sm hover:bg-purple-700 disabled:opacity-50 mr-2"
+              disabled={contextLoading || loading || !newReply.trim()}
+              title="Generate with context awareness from conversation history"
+            >
+              {contextLoading ? "Context..." : "Context Aware"}
+            </button>
+          )}
+          
+          {/* Regular Generate Button */}
           <button
             type="button"
             onClick={handleGenerateSubmit}
             className="bg-green-600 text-white rounded-md px-4 py-2 text-sm hover:bg-green-700 disabled:opacity-50 mr-2"
-            disabled={loading || !newReply.trim()}
+            disabled={loading || contextLoading || !newReply.trim()}
           >
             {loading ? "Generating..." : `Generate ${modelType === 'image' ? 'Image' : 'Text'}`}
           </button>
@@ -213,7 +359,7 @@ const UserReply = () => {
             type="button"
             onClick={handleSubmit}
             className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading || !newReply.trim() && postingData.length === 0}
+            disabled={isLoading || loading || contextLoading || (!newReply.trim() && postingData.length === 0)}
           >
             {isLoading ? "Posting..." : "Post"}
           </button>
@@ -237,6 +383,13 @@ const UserReply = () => {
             <div className="text-xs text-gray-500 ml-4">
               Current: {model} ({modelType})
             </div>
+            
+            {/* Context Aware Info */}
+            {model && (
+              <div className="text-xs text-purple-600 ml-2">
+                💡 Context Aware available
+              </div>
+            )}
           </div>
         </div>
         
