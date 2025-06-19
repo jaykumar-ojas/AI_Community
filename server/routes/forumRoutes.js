@@ -9,6 +9,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const AWS = require('aws-sdk');
 const { modelSelection } = require('../middleware/LLMmiddleware');
 const {deleteForumById} = require('../middleware/DeleteMiddleware');
+const notifiyUser = require("../middleware/notification");
 
 
 // Configure AWS
@@ -326,6 +327,14 @@ router.post('/topics/:id/like', authenticate, async (req, res) => {
         { _id: req.params.id },
         updateOperation
       );
+      notifiyUser({
+          parentId: topic?.userId,
+          userId,
+          topicId : topic?._id,
+          desc: "",
+          type: "forum",
+          action: "like"
+        });    
       res.status(200).json({
         status: 200,
         message: "Topic liked successfully",
@@ -435,6 +444,15 @@ router.post('/replies/:id/like', authenticate, async (req, res) => {
         { _id: req.params.id },
         updateOperation
       );
+      notifiyUser({
+        parentId: reply?.userId,
+        userId,
+        topicId: reply?.topicId,
+        commentId: reply?._id,
+        desc: reply?.content[0]?.userText,
+        type: "forum",
+        action: "like"
+      }); 
       res.status(200).json({
         status: 200,
         message: "Reply liked successfully",
@@ -574,15 +592,6 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
 
       // Parse content as array of content blocks
       const contentArray = JSON.parse(req.body.content);
-      // contentArray is like [
-      //   {
-      //     userText:"",
-      //     prompt:"",
-      //     AiText:"",
-      //     imageUrl:""
-      //   }
-      // ]
-
       // Validate content
       if (!Array.isArray(contentArray) || contentArray.length === 0) {
         return res.status(400).json({
@@ -643,6 +652,7 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
 
       const savedReply = await newReply.save();
 
+      let parentCommentId;
       // If this reply is a child reply, update parent reply's children array
       if (parentReplyId) {
         try {
@@ -651,6 +661,7 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
             { $push: { children: savedReply._id } },
             { new: true }
           );
+          parentCommentId = updatedParent;
 
           if (!updatedParent) {
             console.warn(`Parent reply ID ${parentReplyId} not found`);
@@ -665,6 +676,15 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
       // Increment reply count on the topic
       topic.replyCount += 1;
       await topic.save();
+      notifiyUser({
+        parentId: parentCommentId?.userId || topic?.userId,
+        userId,
+        topicId: topic?._id,
+        commentId: parentReplyId ? parentReplyId : "",
+        desc: parentCommentId?.content[0]?.userText,
+        type: "forum",
+        action: "comment"
+      });    
 
       res.status(201).json({ status: 201, reply: savedReply });
     } catch (error) {

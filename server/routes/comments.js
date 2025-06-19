@@ -17,6 +17,7 @@ const {
   awsdeleteMiddleware,
   uploadImageFromUrl,
 } = require("../middleware/awsmiddleware");
+const notifiyUser = require("../middleware/notification");
 
 //  get all comments related to topic
 router.get("/comments/replies", async (req, res) => {
@@ -106,6 +107,7 @@ router.post("/comments/post",upload.array("media", 5),awsuploadMiddleware,async 
       });
 
       const savedReply = await newComment.save();
+      let parentCommentId;
       console.log(savedReply);
       if (parentReplyId) {
         try {
@@ -114,6 +116,7 @@ router.post("/comments/post",upload.array("media", 5),awsuploadMiddleware,async 
             { $push: { children: savedReply._id } },
             { new: true }
           );
+          parentCommentId = parentComment;
           if (!updatedParent) {
             console.warn(`Parent reply Id ${parentReplyId} not found`);
           } else {
@@ -125,6 +128,15 @@ router.post("/comments/post",upload.array("media", 5),awsuploadMiddleware,async 
           console.log(`Eror updating parent reply: `, parentUpdateError);
         }
       }
+       notifiyUser({
+        parentId: parentCommentId?.userId || post?.userId,
+        userId,
+        postId: postId,
+        commentId: parentReplyId,
+        desc: parentCommentId?.content[0]?.userText,
+        type: "comment",
+        action: "comment"
+      });    
       res.status(201).json({ status: 201, reply: savedReply });
     } catch (error) {
       console.error("Error creating reply:", error);
@@ -171,6 +183,7 @@ router.delete("/comments/:id", authenticate, async (req, res) => {
 // like dislike the comment reply
 router.post("/comments/:id/like", authenticate, async (req, res) => {
   try {
+    const commentId = req.params.id;
     const reply = await Comment.findById(req.params.id);
 
     if (!reply) {
@@ -214,6 +227,18 @@ router.post("/comments/:id/like", authenticate, async (req, res) => {
         message: "Reply liked successfully",
         liked: true,
       });
+      if(!alreadyLiked){
+        notifiyUser({
+          parentId: reply?.userId,
+          userId,
+          postId: reply?.postId,
+          commentId,
+          desc: reply?.content[0]?.userText,
+          type: "comment",
+          action: "like"
+        });    
+      }
+      
     }
   } catch (error) {
     console.error("Error liking/unliking reply:", error);

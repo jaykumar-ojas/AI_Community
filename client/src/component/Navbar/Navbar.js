@@ -14,6 +14,8 @@ import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate } from "react-router-dom";
 import { isAuthenticated, logout } from "../../utils/authUtils";
 import { PlusIcon, SearchIcon } from "../../asset/icons";
+import NotificationComponent from "../Notification/Notification";
+import { useState } from "react";
 
 
   const navigation = [
@@ -27,6 +29,7 @@ import { PlusIcon, SearchIcon } from "../../asset/icons";
   
   export default function Navbar() {
     const {loginData,setLoginData} = useContext(LoginContext);
+    const [showNotification,setShowNotification] = useState(false);
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -98,10 +101,12 @@ import { PlusIcon, SearchIcon } from "../../asset/icons";
               <div className="flex items-center space-x-4">
                 <button
                   type="button"
+                  onClick={()=>{setShowNotification(true)}}
                   className="p-2 text-text_header hover:text-text_comment"
                 >
                   <BellIcon className="h-6 w-6" />
                 </button>
+                {showNotification && <NotificationComponent isOpen={true} onClose={()=>{setShowNotification(false)}}/>}
                 {isAuthenticated() && loginData ?
                 (<Menu as="div" className="relative z-10">
                   <MenuButton className="flex items-center focus:outline-none">
