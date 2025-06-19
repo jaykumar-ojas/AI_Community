@@ -121,7 +121,7 @@ const PostData = () => {
           prompt: aiPrompt
         })
       });
-
+      console.log('responce to enhance',response);
       if (!response.ok) {
         throw new Error('Failed to enhance prompt');
       }

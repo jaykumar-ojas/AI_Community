@@ -1,41 +1,71 @@
 const express = require("express");
 const router = new express.Router();
 const axios = require('axios');
+const mongoose = require('mongoose');
 
 const {
-  openai,
-  model,
-  describeImage,
-  imageToText,
-  promptEnhancer,
-  imageGenerator,
-  promptEnhancerAI,
-  textSuggestion,
-  fetchAncestorContext,
-  processContextAwareRequest,
-  upload,
-  fileFilter,
-  downloadImage,
-  uploadToS3,
-  formatContextForAI,
-  analyzeRequestType,
-  extractImageDescription,
-  generateTextResponse,
+    openai,
+    model,
+    promptEnhancer,
+    promptEnhancerAI,
+    imageToText,
+    textSuggestion,
+    imageGenerator,
+    fetchAncestorContext,
+    formatContextForAI,
+    generateTextResponse,
+    addImageDescriptions,
+    handleImageDescriptionRequest,
+    describeImage,
+    getFirstNWords,
+    extractContentText,
+    extractMediaDescriptions,
+    textSuggestionWithContext
 } = require("../middleware/LLMmiddleware");
 
-// there no uploading feature
-// for prompt check promptEnhancer
-// router.post('/enhancedPrompt',upload.single("image"),imageToText,promptEnhancer,async(req,res)=>{
-//  try{
-//     if(!req.file){
-//         throw new Error("file is not found");
-//     }
-//     res.status(200).json({status:200,updatedPrompt:req.updatedPrompt})
-//  }
-//  catch(error){
-//     res.status(422).json({status: 422 ,message:"this is message",error :error});
-//  }
-// });
+router.post('/suggest/:id', (req, res, next) => {
+  // Set the contextType for the middleware
+  req.body.contextType = 'comment';
+  next();
+}, fetchAncestorContext, async (req, res) => {
+  try {
+    const { text, options = {} } = req.body;
+
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Text is required for AI suggestion'
+      });
+    }
+
+    const ancestorContext = req.ancestorContext;
+    const ancestorMedia = req.ancestorMedia;
+
+    // Generate AI suggestion with context
+    const result = await textSuggestionWithContext(text, ancestorContext, ancestorMedia, options);
+
+    res.json({
+      success: true,
+      data: {
+        suggestion: result,
+        metadata: result.metadata,
+        context: {
+          totalNodes: ancestorContext?.summary?.totalNodes || 0,
+          depthReached: ancestorContext?.summary?.depthReached || 0,
+          mediaCount: ancestorMedia?.length || 0
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in forum AI suggestion:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate AI suggestion',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
 
 router.post("/aitest", async (req, res) => {
   console.log("Request body: outside try in after middleware", req.body);
@@ -177,172 +207,9 @@ router.post("/generateTopicResponse", async (req, res) => {
   }
 });
 
-// Update the generateReplyImage route
 
-// router.post("/generateReplyImage/:id", fetchAncestorContext, async (req, res, next) => {
-//   try {
 
-//     console.log('Route handler - Request params:', req.params);
-//     console.log('Route handler - Request body:', req.body);
-
-//     const { userQuery } = req.body;
-//     const { contextType } = req.body;
-//     const { ancestorContext } = req;
-
-//     console.log('Route handler - Extracted values:', {
-//       userQuery,
-//       contextType,
-//       ancestorContext
-//     });
-
-//     if (!userQuery) {
-//       return res.status(400).json({ status: 400, error: "User query is required" });
-//     }
-
-//     const llmPrompt = `
-// Context Type: ${contextType}
-// Ancestor Context (P1 is the most recent parent):
-// ${ancestorContext}
-
-// User Query (replying to item with ID ${req.params.id}): ${userQuery}
-
-// Generate the response content:
-//     `;
-
-//     console.log('Generated LLM prompt:', llmPrompt);
-
-//       return res.status(200).json({
-//                status: 200,
-//                LLmprommpt: llmPrompt
-//           });
-
-//    // req.body.prompt = llmPrompt;
-
-//     // Call promptEnhancer middleware
-//     // promptEnhancer(req, res, async () => {
-//     //   try {
-//     //     const prompt = req.updatedPrompt;
-//     //     console.log("Enhanced prompt from middleware:", prompt);
-//     //     console.log("Starting image generation process for prompt:", prompt);
-
-//     //     // Generate the image using OpenAI
-//     //     // const imageUrl = await imageGenerator(prompt);
-//     //     console.log("Generated image URL:", imageUrl);
-
-//     //     if (!imageUrl) {
-//     //       throw new Error("Image generation failed - no URL returned");
-//     //     }
-
-//     //     // Download the image from OpenAI
-//     //     console.log("Downloading image from OpenAI...");
-//     //     const imageBuffer = await downloadImage(imageUrl);
-//     //     console.log("Image downloaded successfully, size:", imageBuffer.length);
-
-//     //     console.log("About to call describeImage function...");
-//     //     const description = await describeImage(imageBuffer);
-//     //     console.log("describeImage function returned:", description);
-
-//     //     // Upload to S3
-//     //     console.log("Starting S3 upload...");
-//     //     const s3Url = await uploadToS3(imageBuffer);
-//     //     console.log("Successfully uploaded to S3:", s3Url);
-
-//     //     // Return the successful response with S3 URL
-//     //     return res.status(200).json({
-//     //       status: 200,
-//     //       imageUrl: s3Url,
-//     //       prompt: prompt,
-//     //       description: description
-//     //     });
-//     //   } catch (innerError) {
-//     //     console.error("Detailed error in image generation process:", {
-//     //       message: innerError.message,
-//     //       stack: innerError.stack,
-//     //       code: innerError.code
-//     //     });
-
-//     //     return res.status(500).json({
-//     //       status: 500,
-//     //       error: innerError.message || "Failed to process image. Please try again.",
-//     //       details: process.env.NODE_ENV === 'development' ? innerError.stack : undefined
-//     //     });
-//     //   }
-//     // });
-//   } catch (error) {
-//     console.error("Error in route handler:", error);
-//     return res.status(500).json({
-//       status: 500,
-//       error: "Server error while processing image generation request",
-//       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-//     });
-//   }
-// });
-
-// we can delete
-// router.post("/generate-image", upload.single("image"), async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ error: "Image file is required" });
-//     }
-
-//     const imagePath = req.file.path; // This is the file path
-//     console.log("Uploaded file path:", imagePath);
-
-//     // Read the image file
-//     const imageBuffer = fs.readFileSync(imagePath);
-
-//     // Process the image with OpenAI
-//     // ...
-
-//     // Delete the file after processing
-//     fs.unlinkSync(imagePath);
-
-//     res.json({ message: "Image processed successfully" });
-//   } catch (error) {
-//     console.error("Error processing image:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// });
-
-// New route for context-aware requests
-/**
- * Context-Aware LLM Request Handler
- *
- * This endpoint processes requests with conversation context awareness. It can handle both
- * text responses and image generation based on the context of the conversation.
- *
- * URL: POST /api/llm/contextAwareRequest/:id
- *
- * Path Parameters:
- * - id: The ID of the starting node (forum reply or comment) to build context from
- *
- * Request Body:
- * {
- *   "contextType": "forumReply" or "comment", // Type of the context to retrieve
- *   "prompt": "Your question or request" // User's prompt/question
- * }
- *
- * Response:
- * {
- *   "success": true,
- *   "result": {
- *     "type": "text" or "image",
- *     // For text responses:
- *     "content": "AI-generated response text",
- *     // For image responses:
- *     "imageUrl": "URL to generated image",
- *     "description": "Description used to generate the image"
- *   }
- * }
- *
- * The system automatically detects if the user is requesting an image based on the prompt
- * and responds accordingly with either text or an image.
- */
-router.post(
-  "/contextAwareRequest/:id",
-  fetchAncestorContext,
-  processContextAwareRequest
-);
+router.put("/describe-images/:objectId", handleImageDescriptionRequest);
 
 // global router for model selection
 // here we have to select model
@@ -546,7 +413,6 @@ router.post("/generate-image", async (req, res) => {
     }
 
     // Generate image using the existing imageGenerator middleware
-    console.log("my prompt going for imagegen",prompt);
     const imageUrl = await imageGenerator(prompt);
 
     if (!imageUrl) {
@@ -568,7 +434,7 @@ router.post("/generate-image", async (req, res) => {
   }
 });
 
-// Add proxy endpoint for fetching images
+// Add proxy endpoint for cors issue
 router.get("/proxy-image", async (req, res) => {
   try {
     const imageUrl = req.query.url;
@@ -580,11 +446,10 @@ router.get("/proxy-image", async (req, res) => {
       responseType: 'arraybuffer'
     });
 
-    // Set appropriate headers
+    //image data
     res.set('Content-Type', response.headers['content-type']);
     res.set('Content-Length', response.headers['content-length']);
-    
-    // Send the image data
+
     res.send(response.data);
   } catch (error) {
     console.error("Error proxying image:", error);
@@ -596,7 +461,7 @@ router.get("/proxy-image", async (req, res) => {
 router.post("/enhance-prompt", async (req, res) => {
   try {
     const { prompt } = req.body;
-
+    console.log("i am in the ehnace route");
     if (!prompt) {
       return res.status(400).json({
         status: 400,
@@ -606,22 +471,140 @@ router.post("/enhance-prompt", async (req, res) => {
 
     // Use the existing promptEnhancerAI middleware function
     const enhancedPrompt = await promptEnhancerAI(prompt);
+    console.log('enhaqncing gn',enhancedPrompt);
 
     if (!enhancedPrompt) {
       throw new Error("Failed to enhance prompt");
     }
+
+    console.log('i am going to send the ence promtp');
 
     res.status(200).json({
       status: 200,
       enhancedPrompt: enhancedPrompt,
       originalPrompt: prompt
     });
-
   } catch (error) {
     console.error("Error in prompt enhancement:", error);
     res.status(500).json({
       status: 500,
       error: error.message || "Failed to enhance prompt"
+    });
+  }
+});
+
+router.get('/forum/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { format = 'json', maxDepth = 10, maxWords = 50 } = req.query;
+
+    // Validate ID
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or missing forum reply ID'
+      });
+    }
+
+    // Set up request object for middleware
+    req.params.id = id;
+    req.body.contextType = 'forumReply';
+    req.body.maxDepth = parseInt(maxDepth);
+    req.body.maxWords = parseInt(maxWords);
+
+    // Use middleware to fetch context
+    await new Promise((resolve, reject) => {
+      fetchAncestorContext(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const ancestorContext = req.ancestorContext;
+    const ancestorMedia = req.ancestorMedia;
+
+    // Format response based on requested format
+    let response = {
+      success: true,
+      data: {
+        id: id,
+        contextType: 'forumReply',
+        context: ancestorContext,
+        media: ancestorMedia,
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    if (format === 'ai') {
+      response.data.aiFormattedContext = formatContextForAI(ancestorContext);
+    }
+
+    res.json(response);
+
+  } catch (error) {
+    console.error('Error fetching forum context:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch ancestor context',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+router.get('/comment/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { format = 'json', maxDepth = 10, maxWords = 50 } = req.query;
+
+    // Validate ID
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or missing comment ID'
+      });
+    }
+
+    // Set up request object for middleware
+    req.params.id = id;
+    req.body.contextType = 'comment';
+    req.body.maxDepth = parseInt(maxDepth);
+    req.body.maxWords = parseInt(maxWords);
+
+    // Use middleware to fetch context
+    await new Promise((resolve, reject) => {
+      fetchAncestorContext(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const ancestorContext = req.ancestorContext;
+    const ancestorMedia = req.ancestorMedia;
+
+    // Format response
+    let response = {
+      success: true,
+      data: {
+        id: id,
+        contextType: 'comment',
+        context: ancestorContext,
+        media: ancestorMedia,
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    if (format === 'ai') {
+      response.data.aiFormattedContext = formatContextForAI(ancestorContext);
+    }
+
+    res.json(response);
+
+  } catch (error) {
+    console.error('Error fetching comment context:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch ancestor context',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
