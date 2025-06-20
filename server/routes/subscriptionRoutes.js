@@ -139,13 +139,30 @@ router.get('/subscribers', authenticate, async (req, res) => {
     try {
         const userId = req.rootuser._id;
         
-        // Ensure subscription document exists
-        const subscription = await ensureSubscriptionExists(userId);
+        const subscription = await Subscription.findOne({ userId });
+
+        if (!subscription || !subscription.subscribers) {
+            return res.json([]);
+        }
+
+        const userPromises = subscription.subscribers.map(async (subId) => {
+            const user = await userdb.findById(subId, 'userName profilePictureUrl');
+            if (user) return user;
+
+            const googleUser = await googledb.findById(subId, 'userName profilePictureUrl image');
+            if (googleUser) {
+                return {
+                    _id: googleUser._id,
+                    userName: googleUser.userName,
+                    profilePictureUrl: googleUser.profilePictureUrl || googleUser.image
+                };
+            }
+            return null;
+        });
+
+        const users = (await Promise.all(userPromises)).filter(Boolean);
         
-        const populatedSubscription = await Subscription.findOne({ userId })
-            .populate('subscribers', 'userName profilePicture profilePictureUrl');
-        
-        res.json(populatedSubscription.subscribers);
+        res.json(users);
     } catch (error) {
         console.error("Get subscribers error:", error);
         res.status(500).json({ error: error.message });
@@ -157,13 +174,30 @@ router.get('/subscriptions', authenticate, async (req, res) => {
     try {
         const userId = req.rootuser._id;
         
-        // Ensure subscription document exists
-        const subscription = await ensureSubscriptionExists(userId);
+        const subscription = await Subscription.findOne({ userId });
         
-        const populatedSubscription = await Subscription.findOne({ userId })
-            .populate('subscribedTo', 'userName profilePicture profilePictureUrl');
+        if (!subscription || !subscription.subscribedTo) {
+            return res.json([]);
+        }
+
+        const userPromises = subscription.subscribedTo.map(async (subId) => {
+            const user = await userdb.findById(subId, 'userName profilePictureUrl');
+            if (user) return user;
+
+            const googleUser = await googledb.findById(subId, 'userName profilePictureUrl image');
+            if (googleUser) {
+                return {
+                    _id: googleUser._id,
+                    userName: googleUser.userName,
+                    profilePictureUrl: googleUser.profilePictureUrl || googleUser.image
+                };
+            }
+            return null; // or some placeholder for not found users
+        });
+
+        const users = (await Promise.all(userPromises)).filter(Boolean);
         
-        res.json(populatedSubscription.subscribedTo);
+        res.json(users);
     } catch (error) {
         console.error("Get subscriptions error:", error);
         res.status(500).json({ error: error.message });
