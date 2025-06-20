@@ -58,11 +58,11 @@ const llmConfig = {
         }
     },
     image: {
-        "dall-e-2": {
+        "dall-e-3": {
             provider: "openai",
             baseURL: "https://api.openai.com/v1",
             apiKey: "OPENAI_API_KEY",
-            size: "1080x1920"
+            size: "1024x1792"
         },
         "grok-2-image-1212": {
             provider: "xai",

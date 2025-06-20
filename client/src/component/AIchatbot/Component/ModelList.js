@@ -36,7 +36,7 @@ const modelConfig = {
         }
     },
     image: {
-        "dall-e-2": {
+        "dall-e-3": {
             provider: "openai",
             displayName: "DALL-E 3",
             emoji: "🎨"

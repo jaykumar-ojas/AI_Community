@@ -12,6 +12,7 @@ const PostProvider = ({ children }) => {
     const [refreshKey, setRefreshKey] = useState(0);
     const [aiPrompt, setAiPrompt] = useState("");
     const [desc,setDesc] = useState("");
+    const [selectedImageModel, setSelectedImageModel] = useState("dall-e-3");
     const [crop, setCrop] = useState({ 
     unit: '%', 
     width: 100,
@@ -32,7 +33,8 @@ const PostProvider = ({ children }) => {
             <PostContext.Provider value={{
                 previewUrl, file, fileType, completedCrop, showCropper, refreshKey, crop,desc,aiPrompt,
                 setPreviewUrl, setFile, setFileType, setCompletedCrop, setShowCropper, setRefreshKey, setCrop, setDesc,setAiPrompt,
-                imageRef, canvasRef, originalFileRef, fileInputRef, dropzoneRef
+                imageRef, canvasRef, originalFileRef, fileInputRef, dropzoneRef,
+                selectedImageModel, setSelectedImageModel
             }}>
                 {children}
             </PostContext.Provider>

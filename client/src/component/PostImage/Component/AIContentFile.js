@@ -1,8 +1,19 @@
 import React, { useContext, useRef, useState } from "react";
 import { PostContext } from "../PostContext";
 
+// Image model config (copied from ModelList.js)
+const imageModelConfig = {
+    "dall-e-3": { displayName: "DALL-E 3", emoji: "🎨" },
+    "stable-diffusion-xl": { displayName: "Stable Diffusion XL", emoji: "🖼️" },
+    "stable-diffusion-3-5": { displayName: "Stable Diffusion 3.5", emoji: "🎯" },
+    "imagen-3.0-generate-002": { displayName: "Imagen 3.0", emoji: "🌟" },
+    "grok-2-image-1212": { displayName: "Grok Image", emoji: "🌌" },
+    "runway-sd": { displayName: "Runway SD", emoji: "🎬" },
+    "flux-schnell": { displayName: "Flux Schnell", emoji: "⚡" }
+};
+
 const AIContentFile = () => {
-    const { setPreviewUrl, setShowCropper, setFileType, setFile,aiPrompt,setAiPrompt } =useContext(PostContext);
+    const { setPreviewUrl, setShowCropper, setFileType, setFile, aiPrompt, setAiPrompt, selectedImageModel, setSelectedImageModel } = useContext(PostContext);
     
     // const [aiPrompt, setAiPrompt] = useState("");
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -78,12 +89,16 @@ const AIContentFile = () => {
             alert("Please enter a prompt for image generation");
             return;
         }
-
+        if (!selectedImageModel) {
+            alert("Please select an image model");
+            return;
+        }
         try {
             setIsGeneratingImage(true);
-            console.log("Generating AI image with prompt:", aiPrompt);
+            console.log("Generating AI image with prompt:", aiPrompt, "model:", selectedImageModel);
 
-            const response = await fetch("http://localhost:8099/generate-image", {
+            // Call /generate with model and prompt
+            const response = await fetch("http://localhost:8099/generate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -91,53 +106,51 @@ const AIContentFile = () => {
                 },
                 body: JSON.stringify({
                     prompt: aiPrompt,
+                    model: selectedImageModel,
+                    type: "image"
                 }),
             });
-            console.log("this is my response");
-
+            console.log("this is my response", response);
+            
             if (!response.ok) {
-                const errorData = await response
-                    .json()
-                    .catch(() => ({ error: "Unknown error occurred" }));
+                const errorData = await response.json().catch(() => ({ error: "Unknown error occurred" }));
                 throw new Error(errorData.error || `Server error: ${response.status}`);
             }
-
+            
             const result = await response.json();
             console.log("AI Image generation response:", result);
-
-            if (result.status === 200 && result.imageUrl) {
-                // Use the proxy endpoint to fetch the image
-                const proxyUrl = `http://localhost:8099/proxy-image?url=${encodeURIComponent(
-                    result.imageUrl
-                )}`;
+            
+            // Updated: Check for the correct response structure
+            if (result.success && result.data && result.data.result && result.data.result.images) {
+                const imageUrl = result.data.result.images;
+                const proxyUrl = `http://localhost:8099/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+                
                 const imageResponse = await fetch(proxyUrl);
-
                 if (!imageResponse.ok) {
                     throw new Error("Failed to fetch the generated image");
                 }
-
+                
                 const blob = await imageResponse.blob();
                 const file = new File([blob], `ai-generated-${Date.now()}.png`, {
                     type: "image/png",
+                    lastModified: Date.now(),
                 });
-
-                // Process the file as if it was uploaded
+                
+                // Ensure the file has proper metadata
+                console.log("Created file:", file);
+                console.log("File size:", file.size);
+                console.log("File type:", file.type);
+                
                 processFile(file);
-
-                // Add the prompt to the description
                 setDesc((prevDesc) => {
                     const newDesc = prevDesc
                         ? `${prevDesc}\n\nAI Generated Image Prompt: ${aiPrompt}`
                         : `AI Generated Image Prompt: ${aiPrompt}`;
                     return newDesc;
                 });
-
-                // Clear the prompt input
                 setAiPrompt("");
             } else {
-                throw new Error(
-                    "Failed to generate image: Invalid response from server"
-                );
+                throw new Error("Failed to generate image: Invalid response from server");
             }
         } catch (error) {
             console.error("Error generating AI image:", error);
@@ -152,7 +165,25 @@ const AIContentFile = () => {
             <h3 className="text-xl text-text_header px-2 font-bold text-gray-800 mb-4 flex items-center gap-2">
                 AI Image Generation
             </h3>
-
+            {/* Image Model Selection */}
+            <div className="mb-4">
+                <div className="font-semibold text-text_header text-sm mb-2 flex items-center">
+                    <span className="mr-2">🖼️</span> Select Image Model
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    {Object.entries(imageModelConfig).map(([modelKey, config]) => (
+                        <button
+                            key={modelKey}
+                            className={`px-3 py-2 rounded-md text-sm flex items-center space-x-2 transition-all duration-150 border border-gray-700 ${selectedImageModel === modelKey ? 'bg-like_color text-text_header font-bold scale-105' : 'text-text_header hover:bg-like_color hover:scale-105'}`}
+                            onClick={() => setSelectedImageModel(modelKey)}
+                            type="button"
+                        >
+                            <span>{config.emoji}</span>
+                            <span>{config.displayName}</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
             <div className="flex flex-col gap-4">
                 {/* Prompt Input + Enhance Button */}
                 <div className="flex flex-col gap-3">
