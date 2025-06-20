@@ -25,6 +25,7 @@ const ReplyData = ({ content }) => {
               src={item.imageUrl.fileUrl}
               alt={item.imageUrl.fileName || 'uploaded'}
               className="w-64 h-auto rounded-md mt-2"
+              loading='lazy'
             />
           )}
         </div>

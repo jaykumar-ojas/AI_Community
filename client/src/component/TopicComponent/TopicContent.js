@@ -14,6 +14,7 @@ import ReplyContent from "./ReplyComponent/ReplyContent";
 import { ForumContext} from "../ContextProvider/ModelContext";
 import { LikeIcon,DisLikeIcon,BackArrow } from "../../asset/icons";
 import UserReply from "../UserReply/UserReply";
+import HeaderSkeleton from "./components/HeaderSkeleton";
 
 const TopicContent = () => {
   const { topicId } = useParams();
@@ -54,9 +55,9 @@ const TopicContent = () => {
     }
   };
 
-  if (isLoading) {
-    return <div className="text-bold">Loading content .....</div>;
-  }
+  // if (isLoading) {
+  //   return <div className="text-bold">Loading content .....</div>;
+  // }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -66,7 +67,7 @@ const TopicContent = () => {
           <BackArrow />
         </button>
         <h2 className="font-semibold text-lg text-text_header flex-1">
-          {threadView ? "Thread" : topic.title}
+          {threadView ? "Thread" : topic?.title}
         </h2>
         {!threadView && (
           <div className="flex items-center space-x-2">
@@ -84,7 +85,8 @@ const TopicContent = () => {
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box">
         <div className="space-y-4">
           <div className="bg-bg_comment_box rounded-xl p-4">
-            <HeaderContent topic={topic} />
+            {topic && <HeaderContent topic={topic} />}
+            {!topic && <HeaderSkeleton/> }
           </div>
           <div className="bg-bg_comment_box rounded-xl p-4 pt-0">
             <ReplyContent />

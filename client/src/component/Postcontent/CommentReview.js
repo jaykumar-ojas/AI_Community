@@ -4,6 +4,7 @@ import { organizeReplies } from "../AiForumPage/components/ForumUtils";
 import RecurrsionLoopComment from "./CommentComponent/RecurrsionLoopComment";
 import axios from 'axios';
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
+import ReplySkeletonLayout from "../TopicComponent/ReplyComponent/ReplySkeletonLayout";
 
 const CommentReview = () => {
   const [loading, setLoading] = useState(false);
@@ -105,6 +106,10 @@ const CommentReview = () => {
   const handleViewThread = (replyId) => {
     setThreadView(replyId);
   };
+
+  if(loading){
+    return <ReplySkeletonLayout/>
+  }
 
   return (
     <div>
