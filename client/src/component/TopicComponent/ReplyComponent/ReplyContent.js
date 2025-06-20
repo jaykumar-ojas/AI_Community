@@ -2,11 +2,10 @@ import React, { useContext, useEffect, useState, useRef } from "react";
 import { LoginContext } from "../../ContextProvider/context";
 import { useLocation, useParams } from "react-router-dom";
 import { getAuthHeaders, handleAuthError, organizeReplies, REPLIES_URL } from "../../AiForumPage/components/ForumUtils";
-import ShowReplyContent from "./ShowReplyContent";
 import axios from "axios";
 import RecurrsionLoop from "./RecurrsionLoop";
 import { useWebSocket } from "../../AiForumPage/components/WebSocketContext";
-import "./ReplyContent.css";
+import ReplySkeletonLayout from "./ReplySkeletonLayout";
 
 const ReplyContent = () => {
   const {topicId} = useParams();  
@@ -225,7 +224,7 @@ const ReplyContent = () => {
 
   if(isLoading){
     return (
-      <h1>Loading content...</h1>
+      <ReplySkeletonLayout/>
     );
   }
 

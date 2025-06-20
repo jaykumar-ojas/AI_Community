@@ -13,7 +13,6 @@ import Context from "./component/ContextProvider/context";
 import ForgotPassword from "./component/Auth/ForgotPassword";
 import VerfiyOtp from "./component/Auth/verifyOtp";
 import PostContent from "./component/Postcontent/postcontent";
-import PostData from "./component/Postcontent/PostData";
 import AIAggregator from "./component/AIchatbot/chatbot";
 
 import { WebSocketProvider } from "./component/AiForumPage/components/WebSocketContext";
@@ -56,7 +55,6 @@ const router = createBrowserRouter([
       { path: "verify-otp/:id", element: <VerfiyOtp /> },
       { path: "update-password/:id", element: <UpdatePassword /> },
       { path: "userPost/:id", element: <PostContent /> },
-      { path: "test2", element: <PostData /> },
       { path: "ai-aggregator/:topicId", element: <AIAggregator /> },
       { path: "forum/topic/:topicId/:replyId?", element: <AIAggregator /> },
       { path: "t/:topicId", element: <TopicContent /> },

@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import UserContent from "./UserContent";
 import { useNavigate, useParams } from "react-router-dom";
 import CommentReview from "./CommentReview";
-import ReplyCommentBox from "./CommentComponent/ReplyForComment";
 import Card from "../Card/Card";
-import RelatedCard from "../Card/RelatedCard"
+import RelatedCard from "../Card/RelatedCard";
 import UserReply from "../UserReply/UserReply";
 import UserCommentReply from "../UserReply/UserCommentReply";
 
@@ -87,13 +86,7 @@ const PostContent = () => {
     }
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading post...</div>
-      </div>
-    );
-  }
+  
 
   if (error) {
     return (
@@ -111,53 +104,47 @@ const PostContent = () => {
 
   return (
     <div className="bg-bg_comment w-full overflow-x-hidden h-full">
-  <div className="w-full justify-center flex flex-col lg:flex-row">
-    {/* Left Section */}
-    <div className="relative w-full rounded-xl lg:w-[70%] h-[calc(100vh-3.5rem)] flex flex-col">
-  {/* Scrollable content that shrinks as ReplyCommentBox grows */}
-  <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box scrollbar-no-arrows px-24">
-    <div className="mb-6">
-      {post ? (
-        <UserContent post={post} />
-      ) : (
-        <div className="border border-gray-300 rounded-lg p-6 text-center">
-          No post content available lorem1000
-        </div>
-      )}
-    </div>
-
-    <div className="flex-1 bg-bg_comment_box p-4 rounded-xl">
-      <CommentReview />
-    </div>
-  </div>
-
-  {/* Reply box grows and pushes content upward */}
-  <div className="px-24">
-    <UserCommentReply/>
-  </div>
-</div>
-
-
-    {/* Right Section - Sticky Sidebar */}
-    <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar  bg-bg_comment_box rounded-xl lg:w-[30%]">
-      <div className="border border-gray-300 rounded-lg">
-        <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold ">More Related Content</div>
-        <div className="grid grid-cols-1 ">
-          {relevantPost?.length > 0 ? (
-            relevantPost.map((item, index) => (
-              <RelatedCard key={item?._id || index} post={item} />
-            ))
-          ) : (
-            <div className="col-span-3 text-center bg-bg_comment text-gray-500">
-              No related content found
+      <div className="w-full justify-center flex flex-col lg:flex-row">
+        {/* Left Section */}
+        <div className="relative w-full rounded-xl lg:w-[70%] h-[calc(100vh-3.5rem)] flex flex-col">
+          {/* Scrollable content that shrinks as ReplyCommentBox grows */}
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box scrollbar-no-arrows px-24">
+            <div className="mb-6">
+                <UserContent post={post} />
             </div>
-          )}
+
+            <div className="flex-1 bg-bg_comment_box p-4 rounded-xl">
+              <CommentReview />
+            </div>
+          </div>
+
+          {/* Reply box grows and pushes content upward */}
+          <div className="px-24">
+            <UserCommentReply />
+          </div>
+        </div>
+
+        {/* Right Section - Sticky Sidebar */}
+        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar  bg-bg_comment_box rounded-xl lg:w-[30%]">
+          <div className="border border-gray-300 rounded-lg">
+            <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold ">
+              More Related Content
+            </div>
+            <div className="grid grid-cols-1 ">
+              {relevantPost?.length > 0 ? (
+                relevantPost.map((item, index) => (
+                  <RelatedCard key={item?._id || index} post={item} />
+                ))
+              ) : (
+                <div className="col-span-3 text-center bg-bg_comment text-gray-500">
+                  No related content found
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-
   );
 };
 
