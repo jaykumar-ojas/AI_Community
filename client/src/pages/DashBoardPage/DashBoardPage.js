@@ -7,6 +7,8 @@ import ForumSystem from "../../component/AiForumPage/ForumSystem";
 import Loader from "../../component/Loader/Loader";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { handleGoogleLogin, validateToken } from "../../utils/authUtils";
+import Masonry from "react-masonry-css";
+import { MasonrySkeletonGrid } from "./MansorySkeletonGrid";
 
 const Page = () => {
   const [postdata, setPostData] = useState([]);
@@ -16,15 +18,20 @@ const Page = () => {
   const [isValidating, setIsValidating] = useState(false);
   const history = useNavigate();
   const { loginData, setLoginData } = useContext(LoginContext);
+  const breakpointColumnsObj = {
+    default: 3,
+    1024: 2,
+    768: 1,
+  };
 
   const validateUser = async () => {
     if (isValidating) return;
     setIsValidating(true);
-    
+
     try {
       // Handle Google login if token is in URL
       handleGoogleLogin();
-      
+
       // Validate token and get user data
       const userData = await validateToken();
       if (userData) {
@@ -39,12 +46,15 @@ const Page = () => {
 
   const dataFetch = async () => {
     try {
-      const regularPostsRes = await fetch("http://localhost:8099/allget?page=1&limit=9", {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+      const regularPostsRes = await fetch(
+        "http://localhost:8099/allget?page=1&limit=9",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
       const regularPostsData = await regularPostsRes.json();
       const allPosts = regularPostsData.userposts || [];
 
@@ -66,20 +76,23 @@ const Page = () => {
 
   const fetchMorePosts = async () => {
     if (!hasMore) return;
-    
+
     try {
-      const regularPostsRes = await fetch(`http://localhost:8099/allget?page=${page}&limit=9`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+      const regularPostsRes = await fetch(
+        `http://localhost:8099/allget?page=${page}&limit=9`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
       const regularPostsData = await regularPostsRes.json();
       const newPosts = regularPostsData.userposts || [];
 
-      setPostData(prevPosts => [...prevPosts, ...newPosts]);
+      setPostData((prevPosts) => [...prevPosts, ...newPosts]);
       setHasMore(regularPostsData.hasMore);
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     } catch (error) {
       console.error("Error fetching more posts:", error);
     } finally {
@@ -98,7 +111,7 @@ const Page = () => {
         <div className="flex gap-8">
           <div className="flex-1">
             {loading ? (
-              <Loader />
+              <MasonrySkeletonGrid/>
             ) : postdata && postdata.length > 0 ? (
               <InfiniteScroll
                 dataLength={postdata.length}
@@ -109,24 +122,31 @@ const Page = () => {
                     <Loader />
                   </div>
                 }
-                endMessage={
-                  ""
-                }
-                scrollThreshold="100%"
+                endMessage={""}
+                scrollThreshold="90%"
                 scrollableTarget="scrollableDiv"
               >
-                <div id="scrollableDiv" className="h-[calc(100vh-3.5rem)] overflow-y-auto no-scrollbar">
-                  <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-3 p-4 gap-2 ">
+                <div
+                  id="scrollableDiv"
+                  className="h-[calc(100vh-3.5rem)] overflow-y-auto no-scrollbar pt-2"
+                >
+                  <Masonry
+                    breakpointCols={breakpointColumnsObj}
+                    className="flex gap-2" // container
+                    columnClassName="flex flex-col gap-0" // columns
+                  >
                     {postdata.map((post) => (
-                      <div key={post._id} >
+                      <div key={post._id}>
                         <Card post={post} />
                       </div>
                     ))}
-                  </div>
+                  </Masonry>
                 </div>
               </InfiniteScroll>
             ) : (
-              <div className="text-center text-gray-500">No posts available</div>
+              <div className="text-center text-gray-500">
+                No posts available
+              </div>
             )}
           </div>
 

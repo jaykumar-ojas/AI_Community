@@ -82,6 +82,7 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async (req, r
 });
 
 
+
 // get all the post of specific users by their user id
 router.post('/get', async (req, res) => {
     const { userId } = req.body;
