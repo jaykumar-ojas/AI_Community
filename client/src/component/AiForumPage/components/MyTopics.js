@@ -4,6 +4,7 @@ import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import TopicList from './TopicList';
+import { TopicListSkeleton } from './TopicListSkeleton';
 
 const MyTopics = () => {
   const { loginData } = useContext(LoginContext);
@@ -46,9 +47,7 @@ const MyTopics = () => {
 
   if (!loginData?.validuserone) {
     return (
-      <div className="text-center text-gray-500 py-8">
-        Please log in to view your topics
-      </div>
+      <TopicListSkeleton/>
     );
   }
 

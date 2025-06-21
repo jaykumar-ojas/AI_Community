@@ -34,60 +34,44 @@ const upload = multer({
 // for uploading the file from user when login
 router.post('/upload', upload.single('file'), awsuploadMiddleware, async (req, res) => {
     try {
-        console.log("Upload route hit with:", {
-            body: req.body,
-            file: req.file ? {
-                originalname: req.file.originalname,
-                mimetype: req.file.mimetype,
-                size: req.file.size
-            } : 'No file',
-            fileName: req.fileName,
-        });
-
         const { userId, desc } = req.body;
 
         if (!userId) {
             throw new Error("User not logged in");
         }
 
-        if (!req.file) {
+        if (!req.uploadedFiles || req.uploadedFiles.length === 0) {
             throw new Error("No file uploaded");
         }
 
-        if (!req.fileName) {
+        const uploadedFile = req.uploadedFiles[0];
+
+        if (!uploadedFile.fileName) {
             throw new Error("File processing failed - no file name generated");
         }
 
-        console.log("File upload request received:");
-        console.log("- File:", req.file.originalname);
-        console.log("- MIME type:", req.file.mimetype);
-        console.log("- File size:", req.file.size);
-
-        // Get the file type from the mimetype
-        const fileType = req.file.mimetype.split('/')[0]; // 'image', 'video', or 'audio'
-        console.log("- Extracted file type:", fileType);
-        console.log("- File name from middleware:", req.fileName);
-        const imgUrl = await generateSignedUrl(req.fileName);
-
-        const finalpost = new postdb({
-            userId: userId,
-            desc: desc,
-            imgKey: req.fileName,
-            imgUrl: imgUrl,
-            fileType: fileType, // Store the file type
-            likes: [],
-            dislikes: []
-        });
+        const fileType = uploadedFile.fileType.split('/')[0]; // 'image', 'video', or 'audio'
 
         console.log("Saving post with data:", {
             userId,
             desc,
-            imgKey: req.fileName,
+            imgKey: uploadedFile.fileName,
             fileType
+        });
+
+        const finalpost = new postdb({
+            userId: userId,
+            desc: desc,
+            imgKey: uploadedFile.fileName,
+            imgUrl: uploadedFile.fileUrl,
+            fileType: fileType,
+            likes: [],
+            dislikes: []
         });
 
         const storePost = await finalpost.save();
         res.status(201).json({ status: 201, storePost });
+
     } catch (error) {
         console.error("Error in upload route:", error);
         res.status(422).json({
@@ -96,6 +80,7 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async (req, r
         });
     }
 });
+
 
 
 // get all the post of specific users by their user id

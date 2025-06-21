@@ -4,6 +4,7 @@ import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import TopicList from './TopicList';
+import { TopicListSkeleton } from './TopicListSkeleton';
 
 const PopularTopics = () => {
   const { loginData } = useContext(LoginContext);
@@ -88,9 +89,7 @@ const PopularTopics = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <TopicListSkeleton/>
     );
   }
 
