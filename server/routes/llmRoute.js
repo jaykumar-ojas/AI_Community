@@ -25,7 +25,7 @@ const {
 
 router.post('/suggest/:id', (req, res, next) => {
   // Set the contextType for the middleware
-  req.body.contextType = 'comment';
+  req.body.contextType = 'forumReply';
   next();
 }, fetchAncestorContext, async (req, res) => {
   try {
@@ -442,6 +442,19 @@ router.get("/proxy-image", async (req, res) => {
       return res.status(400).json({ error: "Image URL is required" });
     }
 
+    // Validate that imageUrl is a string and looks like a URL
+    if (typeof imageUrl !== 'string') {
+      console.error("Invalid imageUrl type:", typeof imageUrl, imageUrl);
+      return res.status(400).json({ error: "Image URL must be a string" });
+    }
+
+    if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+      console.error("Invalid imageUrl format:", imageUrl);
+      return res.status(400).json({ error: "Image URL must be a valid HTTP/HTTPS URL" });
+    }
+
+    console.log("Proxying image from URL:", imageUrl);
+
     const response = await axios.get(imageUrl, {
       responseType: 'arraybuffer'
     });
@@ -453,7 +466,11 @@ router.get("/proxy-image", async (req, res) => {
     res.send(response.data);
   } catch (error) {
     console.error("Error proxying image:", error);
-    res.status(500).json({ error: "Failed to fetch image" });
+    if (error.code === 'ERR_INVALID_URL') {
+      res.status(400).json({ error: "Invalid image URL provided" });
+    } else {
+      res.status(500).json({ error: "Failed to fetch image" });
+    }
   }
 });
 

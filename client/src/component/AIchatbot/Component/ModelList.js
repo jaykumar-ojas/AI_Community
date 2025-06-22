@@ -1,78 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ForumContext } from '../../ContextProvider/ModelContext';
-
-// Model configuration from llmConfig with emojis
-const modelConfig = {
-    text: {
-        "gpt-4.1": {
-            provider: "openai",
-            displayName: "GPT-4.1",
-            emoji: "🤖"
-        },
-        "gemini-2.0-flash": {
-            provider: "google",
-            displayName: "Gemini 2.0",
-            emoji: "✨"
-        },
-        "claude-3-7-sonnet-20250219": {
-            provider: "anthropic",
-            displayName: "Claude 3",
-            emoji: "🧠"
-        },
-        "llama-3.3-70b-versatile": {
-            provider: "meta",
-            displayName: "Llama 2",
-            emoji: "🦙"
-        },
-        "grok-3-mini": {
-            provider: "xai",
-            displayName: "Grok 3",
-            emoji: "🚀"
-        },
-        "deepseek-chat": {
-            provider: "deepseek",
-            displayName: "Deepseek Chat",
-            emoji: "🔍"
-        }
-    },
-    image: {
-        "dall-e-3": {
-            provider: "openai",
-            displayName: "DALL-E 3",
-            emoji: "🎨"
-        },
-        "stable-diffusion-xl": {
-            provider: "stability",
-            displayName: "Stable Diffusion XL",
-            emoji: "🖼️"
-        },
-        "stable-diffusion-3-5": {
-            provider: "stability",
-            displayName: "Stable Diffusion 3.5",
-            emoji: "🎯"
-        },
-        "imagen-3.0-generate-002": {
-            provider: "google",
-            displayName: "Imagen 3.0",
-            emoji: "🌟"
-        },
-        "grok-2-image-1212": {
-            provider: "xai",
-            displayName: "Grok Image",
-            emoji: "🌌"
-        },
-        "runway-sd": {
-            provider: "runway",
-            displayName: "Runway SD",
-            emoji: "🎬"
-        },
-        "flux-schnell": {
-            provider: "flux",
-            displayName: "Flux Schnell",
-            emoji: "⚡"
-        }
-    }
-};
 
 function ModelItem({ name, displayName, emoji, active = false, onClick }) {
     return (
@@ -94,6 +21,44 @@ function ModelItem({ name, displayName, emoji, active = false, onClick }) {
 
 const ModelList = () => {
     const { model, setModel, modelType, setModelType } = useContext(ForumContext);
+    const [modelConfig, setModelConfig] = useState({ text: {}, image: {} });
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch model configuration from backend
+    useEffect(() => {
+        const fetchModelConfig = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch("http://localhost:8099/models-info");
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        setModelConfig(data.data);
+                        // Set default model if none selected
+                        if (!model && data.data[modelType]) {
+                            const firstModel = Object.keys(data.data[modelType])[0];
+                            setModel(firstModel);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching model config:", error);
+                // Fallback to basic config if API fails
+                setModelConfig({
+                    text: {
+                        "gpt-4.1": { displayName: "GPT-4.1", emoji: "🤖", provider: "openai" }
+                    },
+                    image: {
+                        "dall-e-3": { displayName: "DALL-E 3", emoji: "🎨", provider: "openai" }
+                    }
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchModelConfig();
+    }, [model, modelType, setModel]);
 
     const handleModelSelect = (modelName) => {
         setModel(modelName);
@@ -117,24 +82,37 @@ const ModelList = () => {
 
     const handleTypeSelect = (type) => {
         setModelType(type);
-        const defaultModel = Object.keys(modelConfig[type])[0];
-        setModel(defaultModel);
-        // Update control bits when type changes
-        const isImageModel = type === 'image';
-        const controlBits = {
-            enhancePrompt: false,
-            generateText: !isImageModel,
-            generateImage: isImageModel,
-            processContextAware: false
-        };
-        window.dispatchEvent(new CustomEvent('modelSelected', {
-            detail: {
-                model: defaultModel,
-                type: type,
-                controlBits
-            }
-        }));
+        const defaultModel = Object.keys(modelConfig[type] || {})[0];
+        if (defaultModel) {
+            setModel(defaultModel);
+            // Update control bits when type changes
+            const isImageModel = type === 'image';
+            const controlBits = {
+                enhancePrompt: false,
+                generateText: !isImageModel,
+                generateImage: isImageModel,
+                processContextAware: false
+            };
+            window.dispatchEvent(new CustomEvent('modelSelected', {
+                detail: {
+                    model: defaultModel,
+                    type: type,
+                    controlBits
+                }
+            }));
+        }
     };
+
+    if (isLoading) {
+        return (
+            <div className="w-full flex flex-col bg-black rounded-lg shadow-sm p-4">
+                <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-b-transparent"></div>
+                    <span className="ml-2 text-text_header">Loading models...</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full flex flex-col bg-black rounded-lg shadow-sm">
@@ -175,7 +153,7 @@ const ModelList = () => {
                     <span className="mr-2">🤖</span> AI MODELS
                 </div>
                 <ul className="space-y-2">
-                    {Object.entries(modelConfig[modelType]).map(([modelName, config]) => (
+                    {Object.entries(modelConfig[modelType] || {}).map(([modelName, config]) => (
                         <ModelItem
                             key={modelName}
                             name={modelName}

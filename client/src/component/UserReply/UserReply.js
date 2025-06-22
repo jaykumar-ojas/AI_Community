@@ -112,7 +112,7 @@ const UserReply = () => {
           temperature: 0.7,
           maxTokens: modelType === 'text' ? 1000 : undefined,
           n: 1,
-          size: modelType === 'image' ? '1024x1920' : undefined,
+          size: modelType === 'image' ? '1024x1792' : undefined,
         }
       };
 

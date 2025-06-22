@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const llmService = require('../services/llmService');
-const llmConfig = require('../config/llmConfig');
-const {GoogleGenerativeAI} = require("@google/generative-ai");
+const { llmConfig } = require('../config/llmConfig');
+// const {GoogleGenerativeAI} = require("@google/generative-ai");
 // Middleware to validate request
 const validateRequest = (req, res, next) => {
     const { model, prompt, type } = req.body;
@@ -108,6 +108,77 @@ router.get('/models/:type/:model', (req, res) => {
         });
     } catch (error) {
         console.error('Error getting model details:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+});
+
+// Route to get model information with display names and emojis
+router.get('/models-info', (req, res) => {
+    try {
+        // Generate model info dynamically from llmConfig
+        const generateModelInfo = (config, type) => {
+            const modelInfo = {};
+            
+            // Default emojis for different providers
+            const providerEmojis = {
+                openai: "🤖",
+                google: "✨", 
+                anthropic: "🧠",
+                meta: "🦙",
+                xai: "🚀",
+                deepseek: "🔍",
+                stability: "🖼️",
+                runway: "🎬",
+                flux: "⚡"
+            };
+
+            // Default display names mapping
+            const displayNameMapping = {
+                "dall-e-3": "DALL-E 3",
+                "stable-diffusion-xl": "Stable Diffusion XL",
+                "stable-diffusion-3-5": "Stable Diffusion 3.5",
+                "imagen-3.0-generate-002": "Imagen 3.0",
+                "grok-2-image-1212": "Grok Image",
+                "runway-sd": "Runway SD",
+                "flux-schnell": "Flux Schnell",
+                "gpt-4.1": "GPT-4.1",
+                "gemini-2.0-flash": "Gemini 2.0",
+                "claude-3-7-sonnet-20250219": "Claude 3",
+                "llama-3.3-70b-versatile": "Llama 2",
+                "grok-3-mini": "Grok 3",
+                "deepseek-chat": "Deepseek Chat"
+            };
+
+            Object.entries(config).forEach(([modelName, modelConfig]) => {
+                const provider = modelConfig.provider;
+                const emoji = providerEmojis[provider] || "🤖";
+                const displayName = displayNameMapping[modelName] || modelName;
+                
+                modelInfo[modelName] = {
+                    provider: provider,
+                    displayName: displayName,
+                    emoji: emoji,
+                    type: type
+                };
+            });
+            
+            return modelInfo;
+        };
+
+        const modelInfo = {
+            text: generateModelInfo(llmConfig.text, 'text'),
+            image: generateModelInfo(llmConfig.image, 'image')
+        };
+        
+        res.json({
+            success: true,
+            data: modelInfo
+        });
+    } catch (error) {
+        console.error('Error getting model info:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Internal server error'
