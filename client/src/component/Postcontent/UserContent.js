@@ -8,6 +8,85 @@ import UserNameCard from "../Card/UserNameCard";
 import { heartSvg, thumbsDownSvg } from "../../asset/icons";
 import UserContentSkeleton from "./UserContentSkeleton";
 
+// AI Model Info Component
+const AIModelInfo = ({ aiMetadata }) => {
+  const [modelInfo, setModelInfo] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchModelInfo = async () => {
+      if (!aiMetadata || !aiMetadata.isAIGenerated) return;
+      
+      try {
+        setIsLoading(true);
+        const response = await fetch("http://localhost:8099/models-info");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setModelInfo(data.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching model info:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchModelInfo();
+  }, [aiMetadata]);
+
+  if (!aiMetadata || !aiMetadata.isAIGenerated) {
+    return null;
+  }
+
+  // Get model display info from backend or use fallback
+  const getModelDisplayInfo = () => {
+    if (modelInfo && modelInfo.image && modelInfo.image[aiMetadata.aiModel]) {
+      const model = modelInfo.image[aiMetadata.aiModel];
+      return {
+        displayName: model.displayName,
+        emoji: model.emoji
+      };
+    }
+    
+    // Fallback for unknown models
+    return {
+      displayName: aiMetadata.aiModel,
+      emoji: "🤖"
+    };
+  };
+
+  const { displayName, emoji } = getModelDisplayInfo();
+
+  return (
+    <div className="bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 rounded-lg p-3 mb-3">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-lg">{emoji}</span>
+        <span className="font-semibold text-purple-800">AI Generated</span>
+        <span className="text-xs bg-purple-200 text-purple-700 px-2 py-1 rounded-full">
+          {displayName}
+        </span>
+      </div>
+      {/* {aiMetadata.aiPrompt && (
+        <div className="text-sm text-gray-700">
+          <span className="font-medium">Prompt:</span> {aiMetadata.aiPrompt}
+        </div>
+      )} */}
+      <div className="flex items-center gap-2 mt-1">
+        <span className="text-xs text-gray-500">
+          Generated with {aiMetadata.aiProvider || 'Unknown Provider'}
+        </span>
+        {/* {aiMetadata.aiGeneratedAt && (
+          <span className="text-xs text-gray-500">
+            • {new Date(aiMetadata.aiGeneratedAt).toLocaleDateString()}
+          </span>
+        )} */}
+      </div>
+    </div>
+  );
+};
+
 const UserContent = ({ post }) => {
   const history = useNavigate();
   const { loginData } = useContext(LoginContext);
@@ -25,6 +104,13 @@ const UserContent = ({ post }) => {
       console.log("Post file URL:", post?.signedUrl);
       console.log("Post file type:", post?.fileType);
       console.log("Post user image:", post?.image);
+      console.log("AI Metadata:", {
+        isAIGenerated: post?.isAIGenerated,
+        aiModel: post?.aiModel,
+        aiProvider: post?.aiProvider,
+        aiPrompt: post?.aiPrompt,
+        aiGeneratedAt: post?.aiGeneratedAt
+      });
       setPostData(post);
 
       // Check if current user has liked or disliked this post
@@ -365,6 +451,14 @@ const UserContent = ({ post }) => {
           </Menu>
         </div>
       </div>
+
+      {/* AI Model Info */}
+      {postData?.isAIGenerated && (
+        <div className="px-2">
+          <AIModelInfo aiMetadata={postData} />
+        </div>
+      )}
+
       {/* user media content */}
       <div className="w-full min-h-[300px] backdrop-blur-md bg-white flex justify-center items-center">
         <div

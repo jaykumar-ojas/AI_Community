@@ -1,25 +1,52 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useRef, useState, useEffect } from "react";
 import { PostContext } from "../PostContext";
 
-// Image model config (copied from ModelList.js)
-const imageModelConfig = {
-    "dall-e-3": { displayName: "DALL-E 3", emoji: "🎨" },
-    "stable-diffusion-xl": { displayName: "Stable Diffusion XL", emoji: "🖼️" },
-    "stable-diffusion-3-5": { displayName: "Stable Diffusion 3.5", emoji: "🎯" },
-    "imagen-3.0-generate-002": { displayName: "Imagen 3.0", emoji: "🌟" },
-    "grok-2-image-1212": { displayName: "Grok Image", emoji: "🌌" },
-    "runway-sd": { displayName: "Runway SD", emoji: "🎬" },
-    "flux-schnell": { displayName: "Flux Schnell", emoji: "⚡" }
-};
-
 const AIContentFile = () => {
-    const { setPreviewUrl, setShowCropper, setFileType, setFile, aiPrompt, setAiPrompt, selectedImageModel, setSelectedImageModel } = useContext(PostContext);
+    const { setPreviewUrl, setShowCropper, setFileType, setFile, aiPrompt, setAiPrompt, selectedImageModel, setSelectedImageModel, setAiMetadata } = useContext(PostContext);
     
     // const [aiPrompt, setAiPrompt] = useState("");
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const [setEnhancedPrompt] = useState("");
     const [isEnhancing, setIsEnhancing] = useState(false);
+    const [availableModels, setAvailableModels] = useState({});
+    const [isLoadingModels, setIsLoadingModels] = useState(false);
     const { originalFileRef, setDesc } = useContext(PostContext);
+
+    // Fetch available models from backend
+    useEffect(() => {
+        const fetchModels = async () => {
+            try {
+                setIsLoadingModels(true);
+                const response = await fetch("http://localhost:8099/models-info");
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        setAvailableModels(data.data);
+                        // Set default model if none selected
+                        if (!selectedImageModel && data.data.image) {
+                            const firstModel = Object.keys(data.data.image)[0];
+                            setSelectedImageModel(firstModel);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching models:", error);
+                // Fallback to basic models if API fails
+                setAvailableModels({
+                    image: {
+                        "dall-e-3": { displayName: "DALL-E 3", emoji: "🎨", provider: "openai" }
+                    }
+                });
+            } finally {
+                setIsLoadingModels(false);
+            }
+        };
+
+        fetchModels();
+    }, [selectedImageModel, setSelectedImageModel]);
+
+    // Use backend models - no fallback to static config
+    const imageModels = availableModels.image || {};
 
     const processFile = (uploadedFile) => {
         if (uploadedFile) {
@@ -122,7 +149,33 @@ const AIContentFile = () => {
             
             // Updated: Check for the correct response structure
             if (result.success && result.data && result.data.result && result.data.result.images) {
-                const imageUrl = result.data.result.images;
+                // Handle different response structures
+                let imageUrl;
+                console.log("Processing images response:", result.data.result.images);
+                
+                if (Array.isArray(result.data.result.images)) {
+                    // If images is an array (like Stability AI), take the first image
+                    if (result.data.result.images.length > 0) {
+                        const firstImage = result.data.result.images[0];
+                        imageUrl = typeof firstImage === 'string' ? firstImage : firstImage.url;
+                        console.log("Extracted image URL from array:", imageUrl);
+                    } else {
+                        throw new Error("No images generated");
+                    }
+                } else if (typeof result.data.result.images === 'string') {
+                    // If images is a string (like OpenAI), use it directly
+                    imageUrl = result.data.result.images;
+                    console.log("Using direct image URL:", imageUrl);
+                } else {
+                    console.error("Unexpected images format:", typeof result.data.result.images, result.data.result.images);
+                    throw new Error("Invalid image response format");
+                }
+
+                if (!imageUrl) {
+                    throw new Error("No valid image URL found in response");
+                }
+
+                console.log("Final image URL for proxy:", imageUrl);
                 const proxyUrl = `http://localhost:8099/proxy-image?url=${encodeURIComponent(imageUrl)}`;
                 
                 const imageResponse = await fetch(proxyUrl);
@@ -140,6 +193,24 @@ const AIContentFile = () => {
                 console.log("Created file:", file);
                 console.log("File size:", file.size);
                 console.log("File type:", file.type);
+                
+                // Get model display name and provider info
+                const modelConfig = imageModels[selectedImageModel];
+                const modelDisplayName = modelConfig ? modelConfig.displayName : selectedImageModel;
+                const provider = result.data.provider || 'Unknown';
+                
+                // Store AI metadata in context for later use
+                const aiMetadata = {
+                    model: selectedImageModel,
+                    provider: provider,
+                    prompt: aiPrompt,
+                    displayName: modelDisplayName
+                };
+                
+                // Store AI metadata in context
+                if (setAiMetadata) {
+                    setAiMetadata(aiMetadata);
+                }
                 
                 processFile(file);
                 setDesc((prevDesc) => {
@@ -170,19 +241,26 @@ const AIContentFile = () => {
                 <div className="font-semibold text-text_header text-sm mb-2 flex items-center">
                     <span className="mr-2">🖼️</span> Select Image Model
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    {Object.entries(imageModelConfig).map(([modelKey, config]) => (
-                        <button
-                            key={modelKey}
-                            className={`px-3 py-2 rounded-md text-sm flex items-center space-x-2 transition-all duration-150 border border-gray-700 ${selectedImageModel === modelKey ? 'bg-like_color text-text_header font-bold scale-105' : 'text-text_header hover:bg-like_color hover:scale-105'}`}
-                            onClick={() => setSelectedImageModel(modelKey)}
-                            type="button"
-                        >
-                            <span>{config.emoji}</span>
-                            <span>{config.displayName}</span>
-                        </button>
-                    ))}
-                </div>
+                {isLoadingModels ? (
+                    <div className="flex items-center justify-center p-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-b-transparent"></div>
+                        <span className="ml-2 text-text_header">Loading models...</span>
+                    </div>
+                ) : (
+                    <div className="flex flex-wrap gap-2">
+                        {Object.entries(imageModels).map(([modelKey, config]) => (
+                            <button
+                                key={modelKey}
+                                className={`px-3 py-2 rounded-md text-sm flex items-center space-x-2 transition-all duration-150 border border-gray-700 ${selectedImageModel === modelKey ? 'bg-like_color text-text_header font-bold scale-105' : 'text-text_header hover:bg-like_color hover:scale-105'}`}
+                                onClick={() => setSelectedImageModel(modelKey)}
+                                type="button"
+                            >
+                                <span>{config.emoji}</span>
+                                <span>{config.displayName}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
             <div className="flex flex-col gap-4">
                 {/* Prompt Input + Enhance Button */}

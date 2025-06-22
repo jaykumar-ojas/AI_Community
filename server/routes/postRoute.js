@@ -81,6 +81,64 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async (req, r
     }
 });
 
+// for uploading AI-generated content
+router.post('/upload-ai', upload.single('file'), awsuploadMiddleware, async (req, res) => {
+    try {
+        const { userId, desc, aiModel, aiProvider, aiPrompt } = req.body;
+
+        if (!userId) {
+            throw new Error("User not logged in");
+        }
+
+        if (!req.uploadedFiles || req.uploadedFiles.length === 0) {
+            throw new Error("No file uploaded");
+        }
+
+        const uploadedFile = req.uploadedFiles[0];
+
+        if (!uploadedFile.fileName) {
+            throw new Error("File processing failed - no file name generated");
+        }
+
+        const fileType = uploadedFile.fileType.split('/')[0]; // 'image', 'video', or 'audio'
+
+        console.log("Saving AI-generated post with data:", {
+            userId,
+            desc,
+            imgKey: uploadedFile.fileName,
+            fileType,
+            aiModel,
+            aiProvider,
+            aiPrompt
+        });
+
+        const finalpost = new postdb({
+            userId: userId,
+            desc: desc,
+            imgKey: uploadedFile.fileName,
+            imgUrl: uploadedFile.fileUrl,
+            fileType: fileType,
+            // AI Generation Metadata
+            isAIGenerated: true,
+            aiModel: aiModel,
+            aiProvider: aiProvider,
+            aiPrompt: aiPrompt,
+            aiGeneratedAt: new Date(),
+            likes: [],
+            dislikes: []
+        });
+
+        const storePost = await finalpost.save();
+        res.status(201).json({ status: 201, storePost });
+
+    } catch (error) {
+        console.error("Error in AI upload route:", error);
+        res.status(422).json({
+            status: 422,
+            error: error.message || "Unknown error"
+        });
+    }
+});
 
 // get all the post of specific users by their user id
 router.post('/get', async (req, res) => {

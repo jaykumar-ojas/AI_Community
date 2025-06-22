@@ -118,4 +118,54 @@ const llmConfig = {
     }
 };
 
-module.exports = llmConfig; 
+// Function to add a new model dynamically
+const addModel = (type, modelName, config) => {
+    if (!llmConfig[type]) {
+        llmConfig[type] = {};
+    }
+    llmConfig[type][modelName] = config;
+    console.log(`Added new ${type} model: ${modelName}`);
+};
+
+// Function to remove a model
+const removeModel = (type, modelName) => {
+    if (llmConfig[type] && llmConfig[type][modelName]) {
+        delete llmConfig[type][modelName];
+        console.log(`Removed ${type} model: ${modelName}`);
+        return true;
+    }
+    return false;
+};
+
+// Function to get all available models
+const getAvailableModels = () => {
+    return {
+        text: Object.keys(llmConfig.text),
+        image: Object.keys(llmConfig.image)
+    };
+};
+
+// Function to validate model configuration
+const validateModelConfig = (type, modelName, config) => {
+    const requiredFields = {
+        text: ['provider', 'baseURL', 'apiKey'],
+        image: ['provider', 'baseURL', 'apiKey']
+    };
+    
+    const fields = requiredFields[type] || [];
+    const missingFields = fields.filter(field => !config[field]);
+    
+    if (missingFields.length > 0) {
+        throw new Error(`Missing required fields for ${type} model: ${missingFields.join(', ')}`);
+    }
+    
+    return true;
+};
+
+module.exports = { 
+    llmConfig, 
+    addModel, 
+    removeModel, 
+    getAvailableModels, 
+    validateModelConfig 
+}; 

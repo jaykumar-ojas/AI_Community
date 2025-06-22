@@ -1,5 +1,5 @@
 const { OpenAI } = require('openai');
-const llmConfig = require('../config/llmConfig');
+const { llmConfig } = require('../config/llmConfig');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Groq = require('groq-sdk');
 require('dotenv').config();
@@ -255,7 +255,10 @@ async _generateXaiText(client, model, prompt, options) {
             });
 
         return {
-            images: response.data[0].url
+            images: [{
+                url: response.data[0].url,
+                revised_prompt: response.data[0].revised_prompt || prompt
+            }]
         };
     }
 
@@ -306,7 +309,10 @@ async _generateXaiText(client, model, prompt, options) {
         });
 
         return {
-            images: response.data[0].url
+            images: [{
+                url: response.data[0].url,
+                revised_prompt: prompt
+            }]
         };
     }
 

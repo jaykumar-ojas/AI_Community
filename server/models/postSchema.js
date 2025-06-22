@@ -26,6 +26,26 @@ const postSchema = new mongoose.Schema({
         enum: ['image', 'video', 'audio'],
         default: 'image'
     },
+    // AI Generation Metadata
+    isAIGenerated: {
+        type: Boolean,
+        default: false
+    },
+    aiModel: {
+        type: String,
+        trim: true
+    },
+    aiProvider: {
+        type: String,
+        trim: true
+    },
+    aiPrompt: {
+        type: String,
+        trim: true
+    },
+    aiGeneratedAt: {
+        type: Date
+    },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

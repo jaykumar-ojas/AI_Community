@@ -11,8 +11,8 @@ import PostProvider from "./PostContext";
 const PostImageContent = () => {
   const [isUploading, setIsUploading] = useState(false);
   const { loginData } = useContext(LoginContext);
-  const { file, fileType, desc, completedCrop } = useContext(PostContext);
-  const { setFile, setDesc, setFileType, setPreviewUrl, setShowCropper, setCompletedCrop, setRefreshKey,setAiPrompt } = useContext(PostContext);
+  const { file, fileType, desc, completedCrop, aiMetadata } = useContext(PostContext);
+  const { setFile, setDesc, setFileType, setPreviewUrl, setShowCropper, setCompletedCrop, setRefreshKey,setAiPrompt, setAiMetadata } = useContext(PostContext);
 
   const getCroppedFile = useCroppedFile();
  
@@ -24,6 +24,7 @@ const PostImageContent = () => {
     setShowCropper(false);
     setCompletedCrop(null);
     setAiPrompt("");
+    setAiMetadata(null);
   }
 
   const handleSubmit = async (e) => {
@@ -42,6 +43,7 @@ const PostImageContent = () => {
       console.log("Starting upload for file:", file?.name);
       console.log("File type:", file?.type);
       console.log("User ID:", loginData.validuserone?._id || loginData.validateUser?._id);
+      console.log("AI Metadata:", aiMetadata);
 
       // Process crop for images only
       let fileToUpload = file;
@@ -53,13 +55,23 @@ const PostImageContent = () => {
       formData.append("file", fileToUpload);
       formData.append("userId", loginData.validuserone?._id || loginData.validateUser?._id);
       formData.append("desc", desc);
-
+      
+      // Add AI metadata if present
+      if (aiMetadata) {
+        formData.append("aiModel", aiMetadata.model);
+        formData.append("aiProvider", aiMetadata.provider);
+        formData.append("aiPrompt", aiMetadata.prompt);
+      }
+      
       // Log form data for debugging
       for (let pair of formData.entries()) {
         console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
       }
 
-      const data = await fetch('http://localhost:8099/upload', {
+      // Choose the appropriate upload endpoint
+      const uploadEndpoint = aiMetadata ? 'http://localhost:8099/upload-ai' : 'http://localhost:8099/upload';
+
+      const data = await fetch(uploadEndpoint, {
         method: 'POST',
         body: formData
       });
@@ -78,6 +90,14 @@ const PostImageContent = () => {
         console.log("Upload successful:", res);
         // Check if fileType was properly stored
         console.log("Stored file type:", res.storePost.fileType);
+        if (aiMetadata) {
+          console.log("AI metadata stored:", {
+            isAIGenerated: res.storePost.isAIGenerated,
+            aiModel: res.storePost.aiModel,
+            aiProvider: res.storePost.aiProvider,
+            aiPrompt: res.storePost.aiPrompt
+          });
+        }
 
         setFile(null);
         setDesc("");
@@ -85,6 +105,7 @@ const PostImageContent = () => {
         setFileType(null);
         setShowCropper(false);
         setCompletedCrop(null);
+        setAiMetadata(null);
 
         // Trigger refresh of posts list
         setRefreshKey(oldKey => oldKey + 1);

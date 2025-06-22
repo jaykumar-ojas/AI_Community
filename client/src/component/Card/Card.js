@@ -8,6 +8,7 @@ import PixelLoader from "../Loader/PixelLoader";
 import MasonryMediaGrid from "./MansoryMediaGrid";
 import { heartSvg, thumbsDownSvg } from "../../asset/icons";
 import axios from "axios";
+import AIModelInfo from "../Postcontent/UserContent";
 
 
 const Card = ({ post }) => {
@@ -161,15 +162,19 @@ const Card = ({ post }) => {
   <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type} />
 
   <div className="absolute flex flex-col bottom-0 h-full w-full justify-between left-0 right-0 bg-black bg-opacity-60 text-white text-sm p-2 opacity-0 group-hover:opacity-100 transition duration-500">
-    
-    {/* User info row */}
-    <div className="flex flex-row gap-2 pb-1">
+    {/* User info row (with AI model if AI generated) */}
+    <div className="flex flex-row gap-2 pb-1 items-center">
       <div className="h-6 w-6 flex-shrink-0" onClick={handleUserClick}>
         <UserIconCard id={post?.userId} />
       </div>
       <div onClick={handleUserClick}>
         <UserNameCard id={post?.userId} />
       </div>
+      {post?.isAIGenerated && post?.aiModel && (
+        <span className="inline-block bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-semibold ml-2">
+          {post.aiModel}
+        </span>
+      )}
     </div>
 
     {/* Description */}
