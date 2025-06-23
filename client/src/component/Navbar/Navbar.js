@@ -1,14 +1,14 @@
 import {
-    Disclosure,
-    DisclosureButton,
-    DisclosurePanel,
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-  } from "@headlessui/react";
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from "@headlessui/react";
 import { Bars3Icon, BellIcon } from "@heroicons/react/24/outline";
-import logo from './logo.jpg'
+import logo from "./logo.jpg";
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate } from "react-router-dom";
@@ -17,30 +17,32 @@ import { PlusIcon, SearchIcon } from "../../asset/icons";
 import NotificationComponent from "../Notification/Notification";
 import { useState } from "react";
 
+const navigation = [
+  { name: "Home", href: "/", current: true },
+  { name: <PlusIcon />, href: "/post", current: false },
+];
 
-  const navigation = [
-    { name: "Home", href:'/',current: true},
-    { name: <PlusIcon/>, href: "/post", current: false }
-  ];
-  
-  function classNames(...classes) {
-    return classes.filter(Boolean).join(" ");
-  }
-  
-  export default function Navbar() {
-    const {loginData,setLoginData} = useContext(LoginContext);
-    const [showNotification,setShowNotification] = useState(false);
-    const navigate = useNavigate();
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
 
-    const handleLogout = () => {
-      logout();
-      setLoginData(null);
-      navigate("/");
-    };
+export default function Navbar() {
+  const { loginData, setLoginData } = useContext(LoginContext);
+  const [showNotification, setShowNotification] = useState(false);
+  const navigate = useNavigate();
 
-    return (
-      <>
-      <Disclosure as="nav" className="sticky top-0 z-50 backdrop-blur-md backdrop-saturate-150 bg-bg_comment/80 shadow-md">
+  const handleLogout = () => {
+    logout();
+    setLoginData(null);
+    navigate("/");
+  };
+
+  return (
+    <>
+      <Disclosure
+        as="nav"
+        className="sticky top-0 z-50 backdrop-blur-md backdrop-saturate-150 bg-bg_comment/80 shadow-md"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
           <div className="flex justify-between  items-center h-14">
             {/* Mobile Menu */}
@@ -50,18 +52,17 @@ import { useState } from "react";
                 <Bars3Icon className="h-6 w-6" />
               </DisclosureButton>
             </div>
-  
+
             {/* Logo and Navigation Links */}
             <div className="relative flex h-full items-center space-x-4 overflow-hidden">
               <div className="h-8 w-8 rounded-full overflow-hidden">
-                  <img
-                    src={logo}
-                    alt="Logo"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className="h-full w-full object-cover"
+                />
+              </div>
 
-              
               <div className="hidden sm:flex space-x-2">
                 {navigation.map((item) => (
                   <Link
@@ -80,94 +81,105 @@ import { useState } from "react";
                 ))}
               </div>
             </div>
-              
-              {/* search icon */}
-            <div className="flex items-center w-[60%] px-4 rounded-full border border-gray-300 shadow-sm bg-bg_comment/70">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm"
-                />
-                <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                  <SearchIcon/>
-                </button>
-              </div>
 
-  
-             {/* user icon bell icon */}
+            {/* search icon */}
+            <div className="flex items-center w-[60%] px-4 rounded-full border border-gray-300 shadow-sm bg-bg_comment/70">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="w-full outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm"
+              />
+              <button className="p-2 rounded-full hover:bg-gray-100 transition">
+                <SearchIcon />
+              </button>
+            </div>
+
+            {/* user icon bell icon */}
             <div className="flex items-center space-x-4">
-  
               {/* Notification and Profile Dropdown */}
               <div className="flex items-center space-x-4">
-                <button
-                  type="button"
-                  onClick={()=>{setShowNotification(true)}}
-                  className="p-2 text-text_header hover:text-text_comment"
-                >
-                  <BellIcon className="h-6 w-6" />
-                </button>
-                {showNotification && <NotificationComponent isOpen={true} onClose={()=>{setShowNotification(false)}}/>}
-                {isAuthenticated() && loginData ?
-                (<Menu as="div" className="relative z-10">
-                  <MenuButton className="flex items-center focus:outline-none">
-                    <img
-                      src={loginData?.validuserone?.profilePictureUrl || loginData?.validuserone?.image}
-                      alt="Profile"
-                      className="h-8 w-8 rounded-full"
-                      referrerPolicy="no-referrer"
-                    />
+                <Menu as="div" className="relative z-10">
+                  <MenuButton className="flex items-center focus:outline-none p-2 hover:bg-gray-800 rounded-full transition">
+                    <BellIcon className="h-6 w-6 text-white" />
                   </MenuButton>
-                  <MenuItems className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <MenuItem>
-                      {({ active }) => (
-                        <Link
-                          to={`/userprofile/${loginData?.validuserone?._id}`}
-                          className={`block px-4 py-2 text-sm ${
-                            active ? "bg-gray-100" : "text-gray-700"
-                          }`}
-                        >
-                          Your Profile
-                        </Link>
-                      )}
-                    </MenuItem>
-                    <MenuItem>
-                      {({ active }) => (
-                        <a
-                          href="#"
-                          className={`block px-4 py-2 text-sm ${
-                            active ? "bg-gray-100" : "text-gray-700"
-                          }`}
-                        >
-                          Settings
-                        </a>
-                      )}
-                    </MenuItem>
-                    <MenuItem>
-                      {({ active }) => (
-                        <a
-                          href="#"
-                          onClick={handleLogout}
-                          className={`block px-4 py-2 text-sm ${
-                            active ? "bg-gray-100" : "text-gray-700"
-                          }`}
-                        >
-                          Sign Out
-                        </a>
-                      )}
-                    </MenuItem>
+                  <MenuItems
+                    as="div"
+                    className="absolute left-1/2 -translate-x-2/3 mt-3 w-96 max-h-[80vh]  rounded-lg shadow-2xl backdrop-blur-md  focus:outline-none  overflow-hidden z-50"
+                  >
+                    <NotificationComponent isOpen={true} onClose={() => {}} />
                   </MenuItems>
-                </Menu>)
-                :(<Link
-                  to="/login"
-                  className=" text-white px-4 py-2"
-                >
-                  Sign In
-                </Link>)}
+                </Menu>
+                {showNotification && (
+                  <NotificationComponent
+                    isOpen={true}
+                    onClose={() => {
+                      setShowNotification(false);
+                    }}
+                  />
+                )}
+                {isAuthenticated() && loginData ? (
+                  <Menu as="div" className="relative z-10">
+                    <MenuButton className="flex items-center focus:outline-none">
+                      <img
+                        src={
+                          loginData?.validuserone?.profilePictureUrl ||
+                          loginData?.validuserone?.image
+                        }
+                        alt="Profile"
+                        className="h-8 w-8 rounded-full"
+                        referrerPolicy="no-referrer"
+                      />
+                    </MenuButton>
+                    <MenuItems className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <MenuItem>
+                        {({ active }) => (
+                          <Link
+                            to={`/userprofile/${loginData?.validuserone?._id}`}
+                            className={`block px-4 py-2 text-sm ${
+                              active ? "bg-gray-100" : "text-gray-700"
+                            }`}
+                          >
+                            Your Profile
+                          </Link>
+                        )}
+                      </MenuItem>
+                      <MenuItem>
+                        {({ active }) => (
+                          <a
+                            href="#"
+                            className={`block px-4 py-2 text-sm ${
+                              active ? "bg-gray-100" : "text-gray-700"
+                            }`}
+                          >
+                            Settings
+                          </a>
+                        )}
+                      </MenuItem>
+                      <MenuItem>
+                        {({ active }) => (
+                          <a
+                            href="#"
+                            onClick={handleLogout}
+                            className={`block px-4 py-2 text-sm ${
+                              active ? "bg-gray-100" : "text-gray-700"
+                            }`}
+                          >
+                            Sign Out
+                          </a>
+                        )}
+                      </MenuItem>
+                    </MenuItems>
+                  </Menu>
+                ) : (
+                  <Link to="/login" className=" text-white px-4 py-2">
+                    Sign In
+                  </Link>
+                )}
               </div>
             </div>
           </div>
         </div>
-  
+
         {/* Mobile Menu Panel */}
         <DisclosurePanel className="sm:hidden">
           <div className="space-y-1 px-2 pt-2 pb-3">
@@ -190,7 +202,6 @@ import { useState } from "react";
           </div>
         </DisclosurePanel>
       </Disclosure>
-      </>
-    )
+    </>
+  );
 }
-  
