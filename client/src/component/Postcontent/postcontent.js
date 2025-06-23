@@ -1,103 +1,98 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import UserContent from "./UserContent";
-import { useNavigate, useParams } from "react-router-dom";
 import CommentReview from "./CommentReview";
-import Card from "../Card/Card";
 import RelatedCard from "../Card/RelatedCard";
-import UserReply from "../UserReply/UserReply";
 import UserCommentReply from "../UserReply/UserCommentReply";
 
+// Utility to fetch a post by ID if not found in cache
+const fetchPostById = async (id) => {
+  const res = await fetch("http://localhost:8099/getPostById", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ postId: id }),
+  });
+  const data = await res.json();
+  if (data.status === 201 && data.postdata) {
+    return data.postdata;
+  }
+  throw new Error("Post not found");
+};
+
+// Fetch related posts
+const fetchRelevantPosts = async (id) => {
+  const res = await fetch(`http://localhost:8000/search/bypostid/${id}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await res.json();
+
+  return (data?.results || [])
+    .map((value) => {
+      if (!value || !value.metadata) return null;
+      return {
+        ...(value.metadata.data || {}),
+        signedUrl: value.image_url || "",
+      };
+    })
+    .filter(Boolean);
+};
+
 const PostContent = () => {
-  const history = useNavigate();
   const { id } = useParams();
-  const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [relevantPost, setRelevantPost] = useState([]);
+  const queryClient = useQueryClient();
 
-  const getPost = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Try to find the post in the existing cached posts list (from useInfiniteQuery)
+  const postFromCache = queryClient.getQueryData(['posts'])?.pages
+    ?.flatMap((page) => page.posts || []) // Adjust according to your actual structure
+    ?.find((post) => post._id === id);
 
-      if (!id) {
-        setError("No post ID provided");
-        setLoading(false);
-        return;
-      }
+  // Get current post (from cache or backend)
+  const {
+    data: post,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['post', id],
+    queryFn: () => fetchPostById(id),
+    initialData: postFromCache,
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
+  });
 
-      const res = await fetch("http://localhost:8099/getPostById", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId: id }),
-      });
+  // Fetch relevant posts
+  const {
+    data: relevantPost = [],
+    isLoading: isRelatedLoading,
+  } = useQuery({
+    queryKey: ['relatedPosts', id],
+    queryFn: () => fetchRelevantPosts(id),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+  });
 
-      const data = await res.json();
-
-      if (data.status === 201 && data.postdata) {
-        setPost(data.postdata);
-      } else {
-        setError("Failed to load post. Please try again.");
-      }
-    } catch (err) {
-      setError("An error occurred while loading the post.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getRelevantPost = async () => {
-    try {
-      if (!id) return;
-
-      const res = await fetch(`http://localhost:8000/search/bypostid/${id}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await res.json();
-
-      if (data?.results?.length) {
-        const parsed = data.results
-          .map((value) => {
-            if (!value || !value.metadata) return null;
-            return {
-              ...(value.metadata.data || {}),
-              signedUrl: value.image_url || "",
-            };
-          })
-          .filter(Boolean);
-        setRelevantPost(parsed);
-      } else {
-        setRelevantPost([]);
-      }
-    } catch (err) {
-      setRelevantPost([]);
-    }
-  };
-
-  useEffect(() => {
-    if (id) {
-      getPost();
-      getRelevantPost();
-    } else {
-      setError("No post ID provided");
-      setLoading(false);
-    }
-  }, [id]);
-
-  
-
-  if (error) {
+  if (isError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-red-500">{error}</div>
+        <div className="text-xl text-red-500">{error.message || "Failed to load post."}</div>
         <button
           className="ml-4 px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={getPost}
+          onClick={refetch}
         >
           Try Again
         </button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg text-gray-500">Loading post...</div>
       </div>
     );
   }
@@ -107,10 +102,9 @@ const PostContent = () => {
       <div className="w-full justify-center flex flex-col lg:flex-row">
         {/* Left Section */}
         <div className="relative w-full rounded-xl lg:w-[70%] h-[calc(100vh-3.5rem)] flex flex-col">
-          {/* Scrollable content that shrinks as ReplyCommentBox grows */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box scrollbar-no-arrows px-24">
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box px-24">
             <div className="mb-6">
-                <UserContent post={post} />
+              <UserContent post={post} />
             </div>
 
             <div className="flex-1 bg-bg_comment_box p-4 rounded-xl">
@@ -118,20 +112,21 @@ const PostContent = () => {
             </div>
           </div>
 
-          {/* Reply box grows and pushes content upward */}
           <div className="px-24">
             <UserCommentReply />
           </div>
         </div>
 
         {/* Right Section - Sticky Sidebar */}
-        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar  bg-bg_comment_box rounded-xl lg:w-[30%]">
+        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar bg-bg_comment_box rounded-xl lg:w-[30%]">
           <div className="border border-gray-300 rounded-lg">
-            <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold ">
+            <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold">
               More Related Content
             </div>
-            <div className="grid grid-cols-1 ">
-              {relevantPost?.length > 0 ? (
+            <div className="grid grid-cols-1">
+              {isRelatedLoading ? (
+                <div className="p-4 text-center text-gray-500">Loading...</div>
+              ) : relevantPost.length > 0 ? (
                 relevantPost.map((item, index) => (
                   <RelatedCard key={item?._id || index} post={item} />
                 ))

@@ -1,111 +1,96 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+
 import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
+
 import TopicList from './TopicList';
 import { TopicListSkeleton } from './TopicListSkeleton';
+
+// 🔹 Separate fetch function
+const fetchPopularTopics = async () => {
+  const response = await axios.get(`${TOPICS_URL}?sort=popular`, {
+    headers: getAuthHeaders(),
+  });
+  return response.data.topics || [];
+};
 
 const PopularTopics = () => {
   const { loginData } = useContext(LoginContext);
   const { emitDeleteTopic, subscribeToEvent } = useWebSocket();
-  
-  const [topics, setTopics] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
 
-  // Fetch popular topics on mount
-  useEffect(() => {
-    fetchTopics();
-  }, [loginData]);
+  // 🔹 React Query handles fetching + caching
+  const {
+    data: topics = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['popularTopics'],
+    queryFn: fetchPopularTopics,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
+    retry: false,
+    onError: (err) => {
+      if (handleAuthError(err)) return;
+      console.error('Error fetching topics:', err);
+    },
+  });
 
-  // Listen for topic deletion
+  // 🔹 Handle real-time topic deletion
   useEffect(() => {
     const unsubscribe = subscribeToEvent('topic_deleted', (deletedTopicId) => {
-      setTopics(prevTopics => prevTopics.filter(topic => topic._id !== deletedTopicId));
+      queryClient.setQueryData(['popularTopics'], (oldTopics = []) =>
+        oldTopics.filter((topic) => topic._id !== deletedTopicId)
+      );
     });
-    
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
-  const fetchTopics = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await axios.get(`${TOPICS_URL}?sort=popular`, { headers: getAuthHeaders() });
-      setTopics(response.data.topics || []);
-    } catch (err) {
-      if (handleAuthError(err, setError)) {
-        return;
-      }
-      console.error('Error fetching topics:', err);
-      setError('Failed to load topics. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // 🔹 Delete a topic manually
   const handleDeleteTopic = async (topicId) => {
     if (!loginData || !loginData.validuserone) {
-      setError('You must be logged in to delete a topic');
+      alert('You must be logged in to delete a topic');
       return;
     }
 
-    // Ask for confirmation before deleting
-    if (!window.confirm("Are you sure you want to delete this topic? This will also delete all replies. This action cannot be undone.")) {
+    if (!window.confirm("Are you sure you want to delete this topic? This will also delete all replies.")) {
       return;
     }
 
     try {
-      setIsLoading(true);
-      
-      const response = await axios.delete(`${TOPICS_URL}/${topicId}`, {
-        headers: getAuthHeaders()
+      await axios.delete(`${TOPICS_URL}/${topicId}`, {
+        headers: getAuthHeaders(),
       });
 
-      if (response.status === 200) {
-        // Emit socket event for topic deletion
-        emitDeleteTopic(topicId);
-        
-        // Refresh the topics list
-        fetchTopics();
+      emitDeleteTopic(topicId);
+
+      // Optimistically update cache
+      queryClient.setQueryData(['popularTopics'], (oldTopics = []) =>
+        oldTopics.filter((topic) => topic._id !== topicId)
+      );
+    } catch (err) {
+      console.error('Error deleting topic:', err);
+      if (!handleAuthError(err)) {
+        alert('Failed to delete topic. Please try again.');
       }
-    } catch (error) {
-      console.error('Error deleting topic:', error);
-      if (!handleAuthError(error, setError)) {
-        if (error.response && error.response.status === 403) {
-          setError('You are not authorized to delete this topic');
-        } else {
-          setError('Failed to delete topic. Please try again.');
-        }
-      }
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <TopicListSkeleton/>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 text-center text-red-500">{error}</div>
-    );
-  }
+  // 🔹 UI rendering
+  if (isLoading) return <TopicListSkeleton />;
+  if (isError) return <div className="p-4 text-center text-red-500">Failed to load topics.</div>;
 
   return (
-    <TopicList 
-      topics={topics} 
+    <TopicList
+      topics={topics}
       onDeleteTopic={handleDeleteTopic}
       emptyMessage="No popular topics available"
     />
   );
 };
 
-export default PopularTopics; 
+export default PopularTopics;
