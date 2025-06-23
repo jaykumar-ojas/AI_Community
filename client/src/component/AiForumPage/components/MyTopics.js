@@ -1,54 +1,42 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
 import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import TopicList from './TopicList';
 import { TopicListSkeleton } from './TopicListSkeleton';
 
+const fetchMyTopics = async (userId) => {
+  const response = await axios.get(`${TOPICS_URL}?userId=${userId}`, {
+    headers: getAuthHeaders(),
+  });
+  return response.data.topics || [];
+};
+
 const MyTopics = () => {
   const { loginData } = useContext(LoginContext);
-  const { emitDeleteTopic, subscribeToEvent } = useWebSocket();
-  
-  const [topics, setTopics] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { validuserone } = loginData || {};
 
-  // Fetch my topics on mount
-  useEffect(() => {
-    fetchTopics();
-  }, [loginData]);
-
-  // Listen for topic deletion
-
-  const fetchTopics = async () => {
-    if (!loginData?.validuserone) {
-      return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const userId = loginData.validuserone._id;
-      const response = await axios.get(`${TOPICS_URL}?userId=${userId}`, { headers: getAuthHeaders() });
-      setTopics(response.data.topics || []);
-    } catch (err) {
-      if (handleAuthError(err, setError)) {
-        return;
+  const {
+    data: topics = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['myTopics', validuserone?._id],
+    queryFn: () => fetchMyTopics(validuserone._id),
+    enabled: !!validuserone, // ✅ Only run query when user is logged in
+    retry: false,
+    onError: (err) => {
+      if (!handleAuthError(err)) {
+        console.error('Error fetching my topics:', err);
       }
-      console.error('Error fetching my topics:', err);
-      setError('Failed to load topics. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
-
-  if (!loginData?.validuserone) {
-    return (
-      <TopicListSkeleton/>
-    );
+  if (!validuserone) {
+    return <TopicListSkeleton />;
   }
 
   if (isLoading) {
@@ -59,18 +47,20 @@ const MyTopics = () => {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
-      <div className="p-4 text-center text-red-500">{error}</div>
+      <div className="p-4 text-center text-red-500">
+        Failed to load topics. Please try again later.
+      </div>
     );
   }
 
   return (
-    <TopicList 
-      topics={topics} 
+    <TopicList
+      topics={topics}
       emptyMessage="You haven't created any topics yet"
     />
   );
 };
 
-export default MyTopics; 
+export default MyTopics;

@@ -1,113 +1,112 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import axios from 'axios';
 import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import TopicList from './TopicList';
 import { TopicListSkeleton } from './TopicListSkeleton';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+const fetchTopics = async () => {
+  const response = await axios.get(`${TOPICS_URL}?sort=recent`, {
+    headers: getAuthHeaders(),
+  });
+  const fetchedTopics = response.data.topics || [];
+  sessionStorage.setItem('recent_topics', JSON.stringify(fetchedTopics));
+  return fetchedTopics;
+};
 
 const RecentTopics = () => {
   const { loginData } = useContext(LoginContext);
   const { emitDeleteTopic, subscribeToEvent } = useWebSocket();
-  
-  const [topics, setTopics] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
 
-  // Fetch recent topics on mount
-  useEffect(() => {
-    fetchTopics();
-  }, [loginData]);
+  const {
+    data: topics = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['recentTopics'],
+    queryFn: fetchTopics,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
+    retry: false,
+    onError: (err) => {
+      if (handleAuthError(err)) return;
+      console.error('Error fetching topics:', err);
+    },
+  });
 
-  // Listen for new topics and topic deletion
   useEffect(() => {
     const unsubscribeNew = subscribeToEvent('topic_created', (newTopic) => {
-      setTopics(prevTopics => [newTopic, ...prevTopics]);
+      queryClient.setQueryData(['recentTopics'], (oldTopics = []) => [
+        newTopic,
+        ...oldTopics,
+      ]);
     });
-    
+
     const unsubscribeDelete = subscribeToEvent('topic_deleted', (deletedTopicId) => {
-      setTopics(prevTopics => prevTopics.filter(topic => topic._id !== deletedTopicId));
+      queryClient.setQueryData(['recentTopics'], (oldTopics = []) =>
+        oldTopics.filter((topic) => topic?._id !== deletedTopicId)
+      );
     });
-    
+
     return () => {
       unsubscribeNew();
       unsubscribeDelete();
     };
   }, []);
 
-  const fetchTopics = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await axios.get(`${TOPICS_URL}?sort=recent`, { headers: getAuthHeaders() });
-      setTopics(response.data.topics || []);
-    } catch (err) {
-      if (handleAuthError(err, setError)) {
-        return;
-      }
-      console.error('Error fetching recent topics:', err);
-      setError('Failed to load topics. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleDeleteTopic = async (topicId) => {
-    if (!loginData || !loginData.validuserone) {
-      setError('You must be logged in to delete a topic');
+    if (!loginData?.validuserone) {
+      alert('You must be logged in to delete a topic');
       return;
     }
 
-    // Ask for confirmation before deleting
-    if (!window.confirm("Are you sure you want to delete this topic? This will also delete all replies. This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this topic? This will also delete all replies. This action cannot be undone.'
+      )
+    ) {
       return;
     }
 
     try {
-      setIsLoading(true);
-      
       const response = await axios.delete(`${TOPICS_URL}/${topicId}`, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
       });
 
       if (response.status === 200) {
-        // Emit socket event for topic deletion
         emitDeleteTopic(topicId);
       }
     } catch (error) {
       console.error('Error deleting topic:', error);
-      if (!handleAuthError(error, setError)) {
-        if (error.response && error.response.status === 403) {
-          setError('You are not authorized to delete this topic');
-        } else {
-          setError('Failed to delete topic. Please try again.');
-        }
+      if (!handleAuthError(error)) {
+        alert(
+          error?.response?.status === 403
+            ? 'You are not authorized to delete this topic'
+            : 'Failed to delete topic. Please try again.'
+        );
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
   if (isLoading) {
-    return (
-      <TopicListSkeleton/>
-    );
+    return <TopicListSkeleton />;
   }
 
-  if (error) {
-    return (
-      <div className="p-4 text-center text-red-500">{error}</div>
-    );
+  if (isError) {
+    return <div className="p-4 text-center text-red-500">Failed to load topics. Please try again later.</div>;
   }
 
   return (
-    <TopicList 
-      topics={topics} 
+    <TopicList
+      topics={topics}
       onDeleteTopic={handleDeleteTopic}
       emptyMessage="No recent topics available"
     />
   );
 };
 
-export default RecentTopics; 
+export default RecentTopics;

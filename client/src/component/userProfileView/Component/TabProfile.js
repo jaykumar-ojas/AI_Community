@@ -1,92 +1,76 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Audio from "./Audio";
 import Video from "./Video";
 import Image from "./Image";
 import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
-const tabs = ['Image', 'Video', 'Audio', 'Saved'];
+const tabs = ["Image", "Video", "Audio", "Saved"];
+
+const fetchUserPosts = async (userId) => {
+  const response = await fetch("http://localhost:8099/get", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ userId }),
+  });
+
+  const data = await response.json();
+  if (data.status !== 200) {
+    throw new Error("Failed to fetch posts");
+  }
+  return data.userposts;
+};
 
 const TabProfile = () => {
-    const [activeTab, setActiveTab] = useState('Image');
-    const [posts,setPosts] = useState([]);
-    const [image,setImage] = useState([]);
-    const [video,setVideo] = useState([]);
-    const [audio,setAudio] = useState([]);
-    const {id} = useParams();
+  const [activeTab, setActiveTab] = useState("Image");
+  const { id } = useParams();
 
-    const filterPostData = () => {
-        setImage(posts.filter(post => post.fileType === "image"));
-        setVideo(posts.filter(post => post.fileType === "video"));
-        setAudio(posts.filter(post => post.fileType === "audio"));
-    };
+  const {
+    data: posts = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["userPosts", id],
+    queryFn: () => fetchUserPosts(id),
+    enabled: !!id,
+  });
 
-    console.log("this is my image",image);
+  const image = useMemo(() => posts.filter((post) => post.fileType === "image"), [posts]);
+  const video = useMemo(() => posts.filter((post) => post.fileType === "video"), [posts]);
+  const audio = useMemo(() => posts.filter((post) => post.fileType === "audio"), [posts]);
 
-    useEffect(()=>{
-        filterPostData();
-    },[posts])
+  if (isLoading) return <div className="p-4 text-gray-500">Loading posts...</div>;
+  if (isError) return <div className="p-4 text-red-500">Error: {error.message}</div>;
 
-    useEffect(()=>{
-        fetchUserPosts(id);
-    },[id]);
+  return (
+    <>
+      <div className="border-b pt-3 flex gap-6 border-gray-300">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`pb-2 text-lg font-semibold transition-colors duration-200 ${
+              activeTab === tab
+                ? "border-b-4 border-gray-600 text-gray-700"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
 
-    const fetchUserPosts = async (userId) => {
-        if (!userId) {
-        return;
-        }
-        
-        try {
-        const response = await fetch('http://localhost:8099/get', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userId: userId }),
-        });
-
-        
-        
-        const data = await response.json();
-        console.log("i m coming back from database",data);
-        
-        if (data.status === 200) {
-            setPosts(data.userposts);
-            console.log("i m setting posts");
-        }
-        } catch (error) {
-        console.error("Error fetching user posts:", error);
-        } finally {
-        console.log("not")
-        }
-    };
-
-    return (
-        <>
-            <div className="border-b pt-3  flex gap-6 border-gray-300">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`pb-2 text-lg font-semibold transition-colors duration-200 ${activeTab === tab
-                            ? 'border-b-4 border-gray-600 text-gray-700'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                    >
-                        {tab}
-                    </button>
-                ))}
-            </div>
-
-            {/* Tab Content */}
-            <div className=" pb-16 mx-auto text-center border-gray-300">
-                {activeTab === 'Image' && <Image data ={image} />}
-                {activeTab === 'Video' && <Video data = {video} />}
-                {activeTab === 'Audio' && <Audio data={audio} />}
-                {activeTab === 'Saved' && <div>💾 Saved content goes here...</div>}
-            </div>
-        </>
-    )
-
-}
+      <div className="pb-16 mx-auto text-center border-gray-300">
+        {activeTab === "Image" && <Image data={image} />}
+        {activeTab === "Video" && <Video data={video} />}
+        {activeTab === "Audio" && <Audio data={audio} />}
+        {activeTab === "Saved" && <div>💾 Saved content goes here...</div>}
+      </div>
+    </>
+  );
+};
 
 export default TabProfile;

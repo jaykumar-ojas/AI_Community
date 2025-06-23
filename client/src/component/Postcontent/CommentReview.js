@@ -2,69 +2,82 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { organizeReplies } from "../AiForumPage/components/ForumUtils";
 import RecurrsionLoopComment from "./CommentComponent/RecurrsionLoopComment";
-import axios from 'axios';
+import axios from "axios";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 import ReplySkeletonLayout from "../TopicComponent/ReplyComponent/ReplySkeletonLayout";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+const fetchComments = async (postId) => {
+  const response = await axios.get(`http://localhost:8099/comments/replies?postId=${postId}`);
+  if (response.data?.comments) {
+    return response.data.comments;
+  }
+  throw new Error("Failed to fetch comments");
+};
 
 const CommentReview = () => {
-  const [loading, setLoading] = useState(false);
-  const [comments, setComments] = useState(false);
-  const [structureReply, setStructureReply] = useState();
-  const [threadView,setThreadView] = useState(false);
-  const [expandedThreads,setExpandedThreads] = useState({});
   const { id } = useParams();
-  const { socket, joinPost, leavePost, subscribeToEvent } = useWebSocket();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const [scrollToId, setScrollToId] = useState(params.get("comment"));
+  const scrollToId = params.get("comment");
+
+  const queryClient = useQueryClient();
+  const { joinPost, leavePost, subscribeToEvent } = useWebSocket();
+
+  const {
+    data: comments = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["comments", id],
+    queryFn: () => fetchComments(id),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 2,
+  });
+
+  const [structureReply, setStructureReply] = useState();
+  const [threadView, setThreadView] = useState(false);
+  const [expandedThreads, setExpandedThreads] = useState({});
 
   useEffect(() => {
-    if(!id){
-      console.log(" no id in url");
-      return;
+    if (comments) {
+      setStructureReply(organizeReplies(comments));
     }
-    fetchComments(id);
+  }, [comments]);
+
+  useEffect(() => {
+    if (!id) return;
+
     joinPost(id);
 
-    // Subscribe to WebSocket events
-    const unsubscribeCommentCreated = subscribeToEvent('comment_created', (newComment) => {
-      setComments(prevComments => {
-        const updatedComments = [...(prevComments || []), newComment];
-        
-        return updatedComments;
-      });
+    const unsubscribeCommentCreated = subscribeToEvent("comment_created", (newComment) => {
+      queryClient.setQueryData(["comments", id], (old = []) => [...old, newComment]);
     });
 
-    const unsubscribeCommentDeleted = subscribeToEvent('comment_deleted', (deletedCommentId) => {
-      setComments(prevComments => {
-        const removeCommentAndChildren = (comments, targetId) => {
-          return comments.filter(comment => {
-            if (comment._id === targetId) {
-              return false; // This removes the comment and all its children
-            }
-            if (comment.children && comment.children.length > 0) {
-              comment.children = removeCommentAndChildren(comment.children, targetId);
-            }
-            return true;
-          });
-        };
-        return removeCommentAndChildren(prevComments, deletedCommentId);
-      });
-    });
-
-    const unsubscribeCommentReaction = subscribeToEvent('comment_reaction_updated', (data) => {
-      setComments(prevComments => {
-        return prevComments.map(comment => {
-          if (comment._id === data.commentId) {
-            return {
-              ...comment,
-              likes: data.likes,
-              dislikes: data.dislikes
-            };
+    const unsubscribeCommentDeleted = subscribeToEvent("comment_deleted", (deletedCommentId) => {
+      const removeCommentAndChildren = (comments, targetId) => {
+        return comments.filter((comment) => {
+          if (comment._id === targetId) return false;
+          if (comment.children && comment.children.length > 0) {
+            comment.children = removeCommentAndChildren(comment.children, targetId);
           }
-          return comment;
+          return true;
         });
-      });
+      };
+      queryClient.setQueryData(["comments", id], (old = []) =>
+        removeCommentAndChildren(old, deletedCommentId)
+      );
+    });
+
+    const unsubscribeCommentReaction = subscribeToEvent("comment_reaction_updated", (data) => {
+      queryClient.setQueryData(["comments", id], (old = []) =>
+        old.map((comment) =>
+          comment._id === data.commentId
+            ? { ...comment, likes: data.likes, dislikes: data.dislikes }
+            : comment
+        )
+      );
     });
 
     return () => {
@@ -73,28 +86,7 @@ const CommentReview = () => {
       unsubscribeCommentDeleted();
       unsubscribeCommentReaction();
     };
-  }, [id]);
-
-  useEffect(() => {
-    if(comments)
-    setStructureReply(organizeReplies(comments || []));
-  }, [comments]);
-
-  const fetchComments = async (id) => {
-    try {
-      setLoading(true);
-      console.log("i m going")
-      const response = await axios.get(`http://localhost:8099/comments/replies?postId=${id}`);
-
-      if (response.data && response.data.comments) {
-        setComments(response.data.comments);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-      setLoading(false);
-    }
-  };
+  }, [id, queryClient]);
 
   const toggleThreadExpansion = (replyId) => {
     setExpandedThreads((prev) => ({
@@ -107,8 +99,22 @@ const CommentReview = () => {
     setThreadView(replyId);
   };
 
-  if(loading){
-    return <ReplySkeletonLayout/>
+  if (isLoading) {
+    return <ReplySkeletonLayout />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-500 p-4">
+        Failed to load comments.
+        <button
+          className="ml-4 px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={() => refetch()}
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -119,44 +125,24 @@ const CommentReview = () => {
             Comments
           </h1>
           <div className="w-4 h-4 mt-2 text-xs font-medium border border-time_header text-time_header bg-bg_scroll rounded">
-  {comments?.length}
-</div>
-
-
+            {comments?.length || 0}
+          </div>
         </div>
-       
       </div>
+
       <div className="replyContent w-full pt-2">
-        {!threadView &&
-          structureReply ?(
+        {!threadView && structureReply?.length > 0 ? (
           structureReply.map((reply, index) => (
-            <>
-            <div key={index} className="ml-2">
-              <RecurrsionLoopComment
-                reply={reply}
-                scrollToId={scrollToId}
-              />
+            <div key={reply._id || index} className="ml-2">
+              <RecurrsionLoopComment reply={reply} scrollToId={scrollToId} />
             </div>
-            </>
-          ))):<div>No Comments</div>}
+          ))
+        ) : (
+          <div>No Comments</div>
+        )}
       </div>
     </div>
   );
 };
 
 export default CommentReview;
-
-
-const findReplyById = (replies, replyId) => {
-  for (const reply of replies) {
-    if (reply._id === replyId) {
-      return reply;
-    }
-    if (reply.children && reply.children.length > 0) {
-      const found = findReplyById(reply.children, replyId);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-

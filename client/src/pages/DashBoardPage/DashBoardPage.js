@@ -1,128 +1,84 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
+import { useInfiniteQuery } from '@tanstack/react-query';
 import Navbar from "../../component/Navbar/Navbar";
 import Card from "../../component/Card/Card";
-import { useNavigate } from "react-router-dom";
-import { LoginContext } from "../../component/ContextProvider/context";
 import ForumSystem from "../../component/AiForumPage/ForumSystem";
 import Loader from "../../component/Loader/Loader";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { handleGoogleLogin, validateToken } from "../../utils/authUtils";
 import Masonry from "react-masonry-css";
 import { MasonrySkeletonGrid } from "./MansorySkeletonGrid";
+import { LoginContext } from "../../component/ContextProvider/context";
+import { handleGoogleLogin, validateToken } from "../../utils/authUtils";
+import { useNavigate } from "react-router-dom";
+
+const fetchPosts = async ({ pageParam = 1 }) => {
+  const res = await fetch(`http://localhost:8099/allget?page=${pageParam}&limit=9`);
+  return res.json();
+};
 
 const Page = () => {
-  const [postdata, setPostData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-  const [isValidating, setIsValidating] = useState(false);
   const history = useNavigate();
   const { loginData, setLoginData } = useContext(LoginContext);
-  const breakpointColumnsObj = {
-    default: 3,
-    1024: 2,
-    768: 1,
-  };
+
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['posts'],
+    queryFn: fetchPosts,
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage.hasMore ? pages.length + 1 : undefined;
+    },
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
+  });
+
+  const allPosts = data?.pages.flatMap(page => page.userposts) || [];
 
   const validateUser = async () => {
-    if (isValidating) return;
-    setIsValidating(true);
-
     try {
-      // Handle Google login if token is in URL
       handleGoogleLogin();
-
-      // Validate token and get user data
       const userData = await validateToken();
       if (userData) {
         setLoginData(userData);
       } else if (!loginData) {
         history("/");
       }
-    } finally {
-      setIsValidating(false);
-    }
-  };
-
-  const dataFetch = async () => {
-    try {
-      const regularPostsRes = await fetch(
-        "http://localhost:8099/allget?page=1&limit=9",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const regularPostsData = await regularPostsRes.json();
-      const allPosts = regularPostsData.userposts || [];
-
-      if (allPosts.length > 0) {
-        setHasMore(regularPostsData.hasMore);
-        setPage(2);
-        setPostData(allPosts);
-      } else {
-        console.error("No posts found");
-        setPostData([]);
-      }
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-      setPostData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchMorePosts = async () => {
-    if (!hasMore) return;
-
-    try {
-      const regularPostsRes = await fetch(
-        `http://localhost:8099/allget?page=${page}&limit=9`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const regularPostsData = await regularPostsRes.json();
-      const newPosts = regularPostsData.userposts || [];
-
-      setPostData((prevPosts) => [...prevPosts, ...newPosts]);
-      setHasMore(regularPostsData.hasMore);
-      setPage((prev) => prev + 1);
-    } catch (error) {
-      console.error("Error fetching more posts:", error);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error("Validation error", err);
     }
   };
 
   useEffect(() => {
     validateUser();
-    dataFetch();
   }, []);
+
+  const breakpointColumnsObj = {
+    default: 3,
+    1024: 2,
+    768: 1,
+  };
 
   return (
     <div className="h-full bg-bg_comment">
       <div className="mx-auto px-4">
         <div className="flex gap-8">
           <div className="flex-1">
-            {loading ? (
-              <MasonrySkeletonGrid/>
-            ) : postdata && postdata.length > 0 ? (
+            {isLoading ? (
+              <MasonrySkeletonGrid />
+            ) : allPosts.length > 0 ? (
               <InfiniteScroll
-                dataLength={postdata.length}
-                next={fetchMorePosts}
-                hasMore={hasMore}
+                dataLength={allPosts.length}
+                next={fetchNextPage}
+                hasMore={hasNextPage}
                 loader={
                   <div className="flex justify-center my-4">
                     <Loader />
                   </div>
                 }
-                endMessage={""}
                 scrollThreshold="90%"
                 scrollableTarget="scrollableDiv"
               >
@@ -132,10 +88,10 @@ const Page = () => {
                 >
                   <Masonry
                     breakpointCols={breakpointColumnsObj}
-                    className="flex gap-2" // container
-                    columnClassName="flex flex-col gap-0" // columns
+                    className="flex gap-2"
+                    columnClassName="flex flex-col gap-0"
                   >
-                    {postdata.map((post) => (
+                    {allPosts.map((post) => (
                       <div key={post._id}>
                         <Card post={post} />
                       </div>
