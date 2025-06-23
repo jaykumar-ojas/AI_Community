@@ -89,13 +89,13 @@ const PostContent = () => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg text-gray-500">Loading post...</div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <div className="text-lg text-gray-500">Loading post...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="bg-bg_comment w-full overflow-x-hidden h-full">
