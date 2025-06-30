@@ -21,6 +21,28 @@ const Card = ({ post }) => {
     name: ''
   });
   const [postData, setPostData] = useState(post);
+  const [modelIcon, setModelIcon] = useState(null);
+
+  // Fetch model icon for AI-generated posts
+  useEffect(() => {
+    const fetchModelIcon = async () => {
+      if (post?.isAIGenerated && post?.aiModel) {
+        try {
+          const response = await fetch(`http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(post.aiModel)}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data.iconUrl) {
+              setModelIcon(data.data.iconUrl);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching model icon:", error);
+        }
+      }
+    };
+
+    fetchModelIcon();
+  }, [post?.isAIGenerated, post?.aiModel]);
 
   const handleLikePost = async () => {
       if (!currentUser.id) {
@@ -171,9 +193,19 @@ const Card = ({ post }) => {
         <UserNameCard id={post?.userId} />
       </div>
       {post?.isAIGenerated && post?.aiModel && (
-        <span className="inline-block bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-semibold ml-2">
-          {post.aiModel}
-        </span>
+        <div className="flex items-center gap-1 bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-semibold ml-2">
+          {modelIcon ? (
+            <img 
+              src={modelIcon} 
+              alt={`${post.aiModel} icon`}
+              className="w-3 h-3 rounded-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          ) : null}
+          <span>{post.aiModel}</span>
+        </div>
       )}
     </div>
 

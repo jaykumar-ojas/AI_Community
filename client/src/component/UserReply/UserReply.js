@@ -35,7 +35,7 @@ const UserReply = () => {
   // Context aware functionality
   const [isContextAware, setIsContextAware] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
-
+  const [aiGenerated, setAiGenerated] = useState(false);
   // Background function to describe images
   const describeImagesInBackground = async (replyId, postingData) => {
     // Check if there are any images in the posting data
@@ -65,6 +65,33 @@ const UserReply = () => {
     } catch (err) {
       console.error("Error describing images:", err);
       // Don't show this error to user since it's a background operation
+    }
+  };
+
+  // Function to fetch model information
+  const fetchModelInfo = async (modelName) => {
+    try {
+      console.log(`Calling /aimodels/search API for model: ${modelName}`);
+      
+      const response = await axios.get(
+        `http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
+        {
+          headers: getAuthHeaders()
+        }
+      );
+
+      console.log("AI model search API response:", response.data);
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        console.warn(`No model info found for: ${modelName}`);
+        return null;
+      }
+    } catch (err) {
+      console.error("Error fetching model info:", err);
+      // Return null if model info fetch fails, don't break the flow
+      return null;
     }
   };
 
@@ -126,8 +153,11 @@ const UserReply = () => {
       console.log("Generate API response:", response.data);
       
       if (response.data.success) {
+        // Fetch model information after successful generation
+        const modelInfo = await fetchModelInfo(model);
+        
         // Always render the original user text, not the enhanced prompt
-        handleGeneratedResult(response.data.data, textToRender);
+        handleGeneratedResult(response.data.data, textToRender, modelInfo);
         if (!enhancedPrompt) {
           setNewReply("");
         }
@@ -145,6 +175,7 @@ const UserReply = () => {
     }
   };
 
+  
   // Handle context-aware generation
   const handleContextAwareGenerate = async (e) => {
     e.preventDefault();
@@ -204,12 +235,18 @@ const UserReply = () => {
   const handleSubmit = async (e) => {
     console.log("Direct post submit");
     e.preventDefault();
-    if (!newReply.trim()) return;
+    if (!newReply.trim() && postingData.length === 0) return;
     setIsLoading(true);
     setError(null);
 
+    // Ensure all entries in postingData have the model field if they are AI-generated
     const updatedPostingData = [
-      ...postingData,
+      ...postingData.map(entry => {
+        if (entry.modelInfo && model) {
+          return { ...entry, model };
+        }
+        return entry;
+      }),
       {
         userText: newReply.trim(),
         aiText: "",
@@ -278,14 +315,18 @@ const UserReply = () => {
     }
   };
 
-  const handleGeneratedResult = (data, originalPrompt) => {
+  const handleGeneratedResult = (data, originalPrompt, modelInfo = null) => {
+    setAiGenerated(false);
     console.log("Handling generated result:", data);
+    console.log("Model info received:", modelInfo);
     
     let newEntry = {
       userText: originalPrompt,
       aiText: "",
       prompt: "",
       imageUrl: "",
+      model: model,
+      modelInfo: modelInfo
     };
 
     // Since we're passing response.data.data, the structure is:
@@ -301,6 +342,8 @@ const UserReply = () => {
 
     console.log("New Entry:", newEntry);
     setPostingData((prev) => [...prev, newEntry]);
+
+    setAiGenerated(true);
   };
 
   return (
@@ -345,7 +388,7 @@ const UserReply = () => {
           )}
           
           {/* Regular Generate Button */}
-          <button
+          {model && <button
             type="button"
             onClick={handleGenerateSubmit}
             className="bg-green-600 text-white rounded-md px-4 py-2 text-sm hover:bg-green-700 disabled:opacity-50 mr-2"
@@ -353,13 +396,13 @@ const UserReply = () => {
           >
             {loading ? "Generating..." : `Generate ${modelType === 'image' ? 'Image' : 'Text'}`}
           </button>
-          
+            }
           {/* Post Button */}
           <button
             type="button"
             onClick={handleSubmit}
             className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading || loading || contextLoading || (!newReply.trim() && postingData.length === 0)}
+            disabled={isLoading || loading || contextLoading || (!newReply.trim() && postingData.length === 0 || (model && !aiGenerated ))}
           >
             {isLoading ? "Posting..." : "Post"}
           </button>

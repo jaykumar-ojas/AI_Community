@@ -4,6 +4,7 @@ import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import AiContentGenerator from './AiContentGenerator';
+import { useNavigate } from 'react-router-dom';
 
 const NewTopicModal = ({ onClose }) => {
   const { loginData } = useContext(LoginContext);
@@ -14,6 +15,7 @@ const NewTopicModal = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [aiGeneratedContent, setAiGeneratedContent] = useState({ title: '', content: '' });
+  const [modelInfo, setModelInfo] = useState(null);
 
   console.log("AI Content Modal State:", showAiContent);
 
@@ -31,10 +33,17 @@ const NewTopicModal = ({ onClose }) => {
     }
   }, [aiGeneratedContent]);
 
+  // Handle AI content generation completion
+  const handleAiContentGenerated = (content, modelData) => {
+    setAiGeneratedContent(content);
+    setModelInfo(modelData);
+  };
+
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     setSelectedFiles(files);
   };
+  const navigate = useNavigate();
 
   const handleCreateTopic = async () => {
     if (!loginData || !loginData.validuserone) {
@@ -76,7 +85,7 @@ const NewTopicModal = ({ onClose }) => {
 
       // Emit socket event for new topic
       emitNewTopic(response.data.topic);
-
+      navigate(`/forum/topic/${response.data.topic._id}`);
       // Reset form and close modal
       setNewTopic({ title: '', content: '' });
       setSelectedFiles([]);
@@ -123,12 +132,13 @@ const NewTopicModal = ({ onClose }) => {
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-            <div
+            <div className="relative">
+            <textarea
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
-              contentEditable={true}
-              onInput={(e) => setNewTopic({ ...newTopic, content: e.currentTarget.textContent })}
-              dangerouslySetInnerHTML={{ __html: newTopic.content }}
+              value={newTopic.content}
+              onChange={(e) => setNewTopic({ ...newTopic, content: e.target.value })}
             />
+            </div>
             {newTopic.imageUrl && (
               <div className="mt-2">
                 <img 
@@ -194,7 +204,18 @@ const NewTopicModal = ({ onClose }) => {
         </div>
       </div>
 
-      {showAiContent && <AiContentGenerator onClose={() => setShowAiContent(false)} setNewTopic = {setNewTopic} />}
+      {showAiContent && (
+        <AiContentGenerator 
+          onClose={() => setShowAiContent(false)} 
+          setNewTopic={(content) => {
+            setNewTopic(content);
+            // If content has modelInfo, store it
+            if (content.modelInfo) {
+              setModelInfo(content.modelInfo);
+            }
+          }} 
+        />
+      )}
     </div>
   );
 };

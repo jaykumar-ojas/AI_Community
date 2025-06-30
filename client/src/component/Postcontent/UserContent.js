@@ -12,6 +12,7 @@ import BookMark from "../BookMark/BookMark";
 // AI Model Info Component
 const AIModelInfo = ({ aiMetadata }) => {
   const [modelInfo, setModelInfo] = useState(null);
+  const [modelIcon, setModelIcon] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const {loginData} = useContext(LoginContext);
 
@@ -21,6 +22,23 @@ const AIModelInfo = ({ aiMetadata }) => {
       
       try {
         setIsLoading(true);
+        
+        // Fetch model icon from /aimodels/search API
+        if (aiMetadata.aiModel) {
+          try {
+            const iconResponse = await fetch(`http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(aiMetadata.aiModel)}`);
+            if (iconResponse.ok) {
+              const iconData = await iconResponse.json();
+              if (iconData.success && iconData.data.iconUrl) {
+                setModelIcon(iconData.data.iconUrl);
+              }
+            }
+          } catch (iconError) {
+            console.error("Error fetching model icon:", iconError);
+          }
+        }
+        
+        // Fetch model display info from /models-info API
         const response = await fetch("http://localhost:8099/models-info");
         if (response.ok) {
           const data = await response.json();
@@ -59,31 +77,33 @@ const AIModelInfo = ({ aiMetadata }) => {
     };
   };
 
-  const { displayName, emoji } = getModelDisplayInfo();
+  const { displayName } = getModelDisplayInfo();
 
   return (
     <div className="bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 rounded-lg p-3 mb-3">
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">{emoji}</span>
+        {modelIcon ? (
+          <img 
+            src={modelIcon} 
+            alt={`${aiMetadata.aiModel} icon`}
+            className="w-6 h-6 rounded-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        ) : (
+          <span className="text-lg">🤖</span>
+        )}
         <span className="font-semibold text-purple-800">AI Generated</span>
         <span className="text-xs bg-purple-200 text-purple-700 px-2 py-1 rounded-full">
           {displayName}
         </span>
       </div>
-      {/* {aiMetadata.aiPrompt && (
-        <div className="text-sm text-gray-700">
-          <span className="font-medium">Prompt:</span> {aiMetadata.aiPrompt}
-        </div>
-      )} */}
+    
       <div className="flex items-center gap-2 mt-1">
         <span className="text-xs text-gray-500">
           Generated with {aiMetadata.aiProvider || 'Unknown Provider'}
         </span>
-        {/* {aiMetadata.aiGeneratedAt && (
-          <span className="text-xs text-gray-500">
-            • {new Date(aiMetadata.aiGeneratedAt).toLocaleDateString()}
-          </span>
-        )} */}
       </div>
     </div>
   );

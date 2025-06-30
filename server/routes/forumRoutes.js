@@ -118,6 +118,16 @@ router.get('/topics/:id', async (req, res) => {
 router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddleware, async (req, res) => {
   try {
     const { title, content, tags, userId, userName, imageUrl } = req.body;
+
+    let finalImageUrl = imageUrl;
+    if (imageUrl) {
+      try {
+        const uploaded = await uploadImageFromUrl(imageUrl);
+        finalImageUrl = uploaded.fileUrl;
+      } catch (err) {
+        return res.status(400).json({ status: 400, error: 'Failed to upload image from URL' });
+      }
+    }
     
     if (!title || !content) {
       return res.status(400).json({ status: 400, error: 'Title and content are required' });
@@ -141,7 +151,7 @@ router.post('/topics', authenticate, upload.array('media', 5), awsuploadMiddlewa
       userName: actualUserName,
       tags: tags || [],
       mediaAttachments,
-      imageUrl,
+      imageUrl: finalImageUrl,
       likes: [],
       dislikes: [],
       children: []
