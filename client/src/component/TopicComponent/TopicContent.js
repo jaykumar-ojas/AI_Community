@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
@@ -27,8 +27,12 @@ const fetchTopic = async (topicId) => {
 const TopicContent = () => {
   const { topicId } = useParams();
   const { loginData } = useContext(LoginContext);
-  const { viewBox, setViewBox, replyId, model, replyIdForContext, setReplyIdForContext } =
-    useContext(ForumContext);
+  const { setReplyIdForContext,setUserName } =useContext(ForumContext);
+
+  useEffect(()=>{
+    setReplyIdForContext(null);
+    setUserName(null);
+  },[]);
 
   const {
     data: topic,

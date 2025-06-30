@@ -122,6 +122,7 @@ const RecurrsionLoop = ({
           {reply?.children.map((childReply,index) => (
             <div key={childReply._id}>
               <RecurrsionLoop
+                key={childReply?._id}
                 reply={childReply}
                 depth={depth + 1}
                 isLastChild={index === reply.children.length - 1}

@@ -13,10 +13,12 @@ const UserIconCard = ({ id }) => {
     if (!id) return;
 
     const cachedUser = getUserFromCache(id);
-
+    console.log(cachedUser);
     if (cachedUser?.profilePictureUrl) {
+     
       setImageUrl(cachedUser.profilePictureUrl);
       setLoading(false);
+      console.log("there are url for thsi",imageUrl);
     } else {
       getUserInfo();
     }
@@ -24,6 +26,8 @@ const UserIconCard = ({ id }) => {
 
   const getUserInfo = async () => {
     try {
+
+      console.log("i m goint to backend to fetch url");
       const res = await fetch(`http://localhost:3000/getUserById/${id}`);
       const json = await res.json();
 
@@ -38,6 +42,7 @@ const UserIconCard = ({ id }) => {
       setLoading(false);
     }
   };
+  console.log(imageUrl,"this is imageurl");
 
   return (
     <div

@@ -5,13 +5,15 @@ import axios from "axios";
 import { LoginContext } from "../ContextProvider/context";
 import UserIconCard from "../Card/UserIconCard";
 import UserNameCard from "../Card/UserNameCard";
-import { heartSvg, thumbsDownSvg } from "../../asset/icons";
+import BookmarkIcon, { heartSvg, thumbsDownSvg } from "../../asset/icons";
 import UserContentSkeleton from "./UserContentSkeleton";
+import BookMark from "../BookMark/BookMark";
 
 // AI Model Info Component
 const AIModelInfo = ({ aiMetadata }) => {
   const [modelInfo, setModelInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const {loginData} = useContext(LoginContext);
 
   useEffect(() => {
     const fetchModelInfo = async () => {
@@ -497,6 +499,8 @@ const UserContent = ({ post }) => {
               {postData?.dislikes ? postData?.dislikes.length : 0}
             </span>
           </button>
+         <BookMark postId={postData?._id} userId={loginData?.validuserone?._id} isBookmarked={postData?.BookMark?.includes(loginData?.validuserone?._id)}/>
+
         </div>
         <div className="p-2 pt-1 text-sm text-time_header">
           {postData?.desc || "No description available"}

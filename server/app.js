@@ -27,6 +27,7 @@ const llm = require("./routes/llmRoutes");
 const batchRoutes = require("./routes/batchRoute");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const notificationRoutes = require("./routes/notificationRoute");
+const bookMarkRoutes = require("./routes/bookMarkRoute");
 
 
 
@@ -77,6 +78,7 @@ app.use("/", llm);
 app.use("/", batchRoutes);
 app.use("/", subscriptionRoutes);
 app.use("/",notificationRoutes);
+app.use("/",bookMarkRoutes);
 
 
 // WebSocket event handlers

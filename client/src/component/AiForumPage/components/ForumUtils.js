@@ -66,7 +66,7 @@ export const organizeReplies = (replyList) => {
   
   // Second pass: organize into parent-child relationships
   replyList.forEach(reply => {
-    if (reply.parentReplyId && replyMap[reply.parentReplyId]) {
+    if (reply?.parentReplyId && replyMap[reply?.parentReplyId]) {
       // This is a child reply, add it to its parent
       replyMap[reply.parentReplyId].children.push(reply);
     } else {

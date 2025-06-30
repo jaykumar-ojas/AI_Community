@@ -60,14 +60,34 @@ const ReplyContent = () => {
 
   // WebSocket Handlers
   useEffect(() => {
-    const unsubscribeNew = subscribeToEvent("reply_created", (newReply) => {
+   const unsubscribeNew = subscribeToEvent("reply_created", (newReply) => {
       if (newReply.topicId === topicId) {
-        queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
-          const updated = [...oldReplies, newReply];
-          return organizeReplies(updated);
+        queryClient.setQueryData(["replies", topicId], (oldNestedReplies = []) => {
+          // 1. Flatten the nested replies to use with organizeReplies
+          const flattenReplies = (replies) => {
+            let flat = [];
+            for (const r of replies) {
+              const { children, ...rest } = r;
+              flat.push(rest);
+              if (children?.length) {
+                flat = flat.concat(flattenReplies(children));
+              }
+            }
+            return flat;
+          };
+
+          const flatReplies = flattenReplies(oldNestedReplies);
+
+          // 2. Check if already exists
+          if (flatReplies.some(r => r._id === newReply._id)) return oldNestedReplies;
+
+          // 3. Add new reply and re-organize
+          const updatedFlatReplies = [...flatReplies, newReply];
+          return organizeReplies(updatedFlatReplies);
         });
       }
     });
+
 
     const unsubscribeDelete = subscribeToEvent("reply_deleted", (deletedReplyId) => {
       queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
@@ -148,6 +168,7 @@ const ReplyContent = () => {
           replies.map((reply, index) => (
             <div key={reply._id || index} className="ml-2">
               <RecurrsionLoop
+                key = {reply?._id}
                 reply={reply}
                 expandedThreads={expandedThreads}
                 setExpandedThreads={setExpandedThreads}
