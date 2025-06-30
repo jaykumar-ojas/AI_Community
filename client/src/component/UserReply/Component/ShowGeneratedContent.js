@@ -9,8 +9,8 @@ const ShowGeneratedContent = ({ postingData }) => {
         <div key={index} className="border p-4 rounded-lg shadow-md bg-white">
           <ShowUserText userText={item.userText} />
           <ShowPrompt prompt={item.prompt} />
-          <ShowAiText aiText={item.AiText} />
-          <ShowUrl url={item.imageUrl} />
+          <ShowAiText aiText={item.aiText} modelInfo={item.modelInfo} />
+          <ShowUrl url={item.imageUrl} modelInfo={item.modelInfo} />
         </div>
       ))}
     </div>
@@ -39,27 +39,82 @@ const ShowPrompt = ({ prompt }) => {
   );
 };
 
-const ShowAiText = ({ aiText }) => {
+const ShowAiText = ({ aiText, modelInfo }) => {
   if (!aiText) return null;
 
   return (
     <div className="bg-green-50 p-3 rounded-md shadow-sm mb-2">
-      <h3 className="text-green-700 text-sm font-semibold mb-2">AI Response</h3>
-      <div className="text-sm text-green-800">{aiText}</div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-green-700 text-sm font-semibold">AI Response</h3>
+        {modelInfo && (
+          <div className="flex items-center space-x-2">
+            {modelInfo.iconUrl && (
+              <img 
+                src={modelInfo.iconUrl} 
+                alt={`${modelInfo.providerName} icon`}
+                className="w-5 h-5 rounded-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            )}
+            <div className="flex flex-col items-end">
+              <span className="text-xs text-green-600 font-medium">
+                {modelInfo.providerName}
+              </span>
+              <span className="text-xs text-gray-500">
+                {modelInfo.modelName}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="text-sm text-green-800 whitespace-pre-wrap">{aiText}</div>
     </div>
   );
 };
 
-const ShowUrl = ({ url }) => {
+const ShowUrl = ({ url, modelInfo }) => {
   if (!url) return null;
 
   return (
     <div className="mb-2">
-      <div className="w-full max-h-[200px] rounded-lg bg-white flex items-center justify-center">
+      {/* Model Info Header for Images */}
+      {modelInfo && (
+        <div className="flex items-center justify-between mb-2 bg-purple-50 p-2 rounded-t-md">
+          <h3 className="text-purple-700 text-sm font-semibold">Generated Image</h3>
+          <div className="flex items-center space-x-2">
+            {modelInfo.iconUrl && (
+              <img 
+                src={modelInfo.iconUrl} 
+                alt={`${modelInfo.providerName} icon`}
+                className="w-5 h-5 rounded-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            )}
+            <div className="flex flex-col items-end">
+              <span className="text-xs text-purple-600 font-medium">
+                {modelInfo.providerName}
+              </span>
+              <span className="text-xs text-gray-500">
+                {modelInfo.modelName}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Image Container */}
+      <div className={`w-full max-h-[200px] rounded-lg bg-white flex items-center justify-center ${modelInfo ? 'rounded-t-none' : ''}`}>
         <img
           src={url}
-          className="max-h-[200px] w-auto object-contain"
+          className="max-h-[200px] w-auto object-contain rounded-lg"
           alt="Generated content"
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
         />
       </div>
     </div>

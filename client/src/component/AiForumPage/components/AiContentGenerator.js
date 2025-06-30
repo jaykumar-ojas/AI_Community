@@ -4,12 +4,22 @@ import { LoginContext } from '../../ContextProvider/context';
 import { getAuthHeaders, API_BASE_URL } from './ForumUtils';
 
 // Component for AI messages
-function AiMessage({ message, isUser = false }) {
+function AiMessage({ message, isUser = false, modelInfo = null }) {
   return (
     <div className={`mb-4 ${isUser ? 'bg-white' : 'bg-blue-50'} p-4 rounded-lg shadow-sm`}>
       <div className="flex items-center mb-2">
+        {!isUser && modelInfo && modelInfo.iconUrl && (
+          <img 
+            src={modelInfo.iconUrl} 
+            alt={`${modelInfo.providerName} icon`}
+            className="w-6 h-6 rounded-full mr-2 object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
         <span className="font-medium text-blue-600 mr-2">
-          {isUser ? 'You' : 'AI Assistant'}
+          {isUser ? 'You' : modelInfo ? `${modelInfo.providerName} (${modelInfo.modelName})` : 'AI Assistant'}
         </span>
       </div>
       <div className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -23,12 +33,13 @@ function AiMessage({ message, isUser = false }) {
 const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
   const { loginData } = useContext(LoginContext);
   const [messages, setMessages] = useState([
-    { content: "Welcome! I can help you generate content for your new topic. What would you like to discuss?", isUser: false }
+    { content: "Welcome! I can help you generate content for your new topic. What would you like to discuss?", isUser: false, modelInfo: null }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [generatedContent, setGeneratedContent] = useState({ title: '', content: '' });
   const [isGeneratingFinal, setIsGeneratingFinal] = useState(false);
+  const [currentModelInfo, setCurrentModelInfo] = useState(null);
   const messagesEndRef = useRef(null);
 
   // Scroll to bottom of messages when new messages are added
@@ -44,7 +55,7 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
     if (!inputValue.trim()) return;
   
     // Add user message
-    setMessages(prev => [...prev, { content: inputValue, isUser: true }]);
+    setMessages(prev => [...prev, { content: inputValue, isUser: true, modelInfo: null }]);
     
     // Clear input
     const userPrompt = inputValue;
@@ -56,14 +67,16 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
       setMessages(prev => [...prev, { 
         content: "Thinking...", 
         isUser: false,
-        isThinking: true 
+        isThinking: true,
+        modelInfo: null
       }]);
   
       console.log('Sending request to API:', { prompt: userPrompt });
       
-      // Call the API endpoint
+      // Call the API endpoint with model name
       const response = await axios.post(`${API_BASE_URL}/generateTopicContent`, {
-        prompt: userPrompt
+        prompt: userPrompt,
+        modelName: "gemini-2.0-flash" // You can make this dynamic based on selected model
       }, {
         headers: getAuthHeaders()
       });
@@ -75,10 +88,16 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
       
       // Check the structure of the response data
       if (response.data && response.data.content && response.data.content.title && response.data.content.body) {
+        // Store model info for display
+        if (response.data.modelInfo) {
+          setCurrentModelInfo(response.data.modelInfo);
+        }
+        
         setNewTopic({
           title: response.data.content.title,
           content: response.data.content.body,
-          imageUrl: response.data.content.imageUrl
+          imageUrl: response.data.content.imageUrl,
+          modelInfo: response.data.modelInfo
         });
         onClose();
       } else {
@@ -94,7 +113,8 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
       // Add error message
       setMessages(prev => [...prev, { 
         content: `Error: ${error.message || 'Could not generate topic content'}. Please check the console for more details.`, 
-        isUser: false 
+        isUser: false,
+        modelInfo: null
       }]);
       setIsLoading(false);
     }
@@ -115,7 +135,8 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
       setMessages(prev => [...prev, { 
         content: "Generating your topic content...", 
         isUser: false,
-        isGenerating: true
+        isGenerating: true,
+        modelInfo: currentModelInfo
       }]);
 
       // Generate content locally instead of calling the API
@@ -145,7 +166,8 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
         
         setMessages(prev => [...prev, { 
           content: "I've generated a title and content for your topic. You can now post it or continue refining it.", 
-          isUser: false 
+          isUser: false,
+          modelInfo: currentModelInfo
         }]);
         
         setIsGeneratingFinal(false);
@@ -156,7 +178,8 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
       setMessages(prev => prev.filter(msg => !msg.isGenerating));
       setMessages(prev => [...prev, { 
         content: "I encountered an error generating the final content. Let's try a simpler approach. I've created a basic template that you can customize before posting.", 
-        isUser: false 
+        isUser: false,
+        modelInfo: currentModelInfo
       }]);
       
       // Provide a fallback template
@@ -216,6 +239,7 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
               key={index} 
               message={msg.content} 
               isUser={msg.isUser}
+              modelInfo={msg.modelInfo}
             />
           ))}
           
