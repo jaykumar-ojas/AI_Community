@@ -387,3 +387,23 @@ export const PlusIcon = () => {
   );
 };
 
+
+
+export const BookmarkIcon = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 50 50"
+    width="28"
+    height="24"
+    fill="#FFFFFF"
+    stroke="#000000" // Black border
+    strokeWidth="1"  // Adjust as needed
+    {...props}
+  >
+    <path d="M 13 2 A 1.0001 1.0001 0 0 0 12 3 L 12 47 A 1.0001 1.0001 0 0 0 13.503906 47.863281 L 25 41.158203 L 36.496094 47.863281 A 1.0001 1.0001 0 0 0 38 47 L 38 3 A 1.0001 1.0001 0 0 0 37 2 L 13 2 z M 14 4 L 36 4 L 36 45.259766 L 25.503906 39.136719 A 1.0001 1.0001 0 0 0 24.496094 39.136719 L 14 45.259766 L 14 4 z" />
+  </svg>
+);
+
+export default BookmarkIcon;
+
+

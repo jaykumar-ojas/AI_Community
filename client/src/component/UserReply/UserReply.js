@@ -18,7 +18,7 @@ import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 
 const UserReply = () => {
   const { loginData } = useContext(LoginContext);
-  const { replyIdForContext, model, modelType } = useContext(ForumContext);
+  const { replyIdForContext,setReplyIdForContext, model, modelType } = useContext(ForumContext);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
