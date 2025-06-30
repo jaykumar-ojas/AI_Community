@@ -60,33 +60,60 @@ const ReplyContent = () => {
 
   // WebSocket Handlers
   useEffect(() => {
-   const unsubscribeNew = subscribeToEvent("reply_created", (newReply) => {
-      if (newReply.topicId === topicId) {
-        queryClient.setQueryData(["replies", topicId], (oldNestedReplies = []) => {
-          // 1. Flatten the nested replies to use with organizeReplies
-          const flattenReplies = (replies) => {
-            let flat = [];
-            for (const r of replies) {
-              const { children, ...rest } = r;
-              flat.push(rest);
-              if (children?.length) {
-                flat = flat.concat(flattenReplies(children));
-              }
-            }
-            return flat;
-          };
+    const unsubscribeNew = subscribeToEvent("reply_created", (newReply) => {
+  if (newReply.topicId !== topicId) return;
 
-          const flatReplies = flattenReplies(oldNestedReplies);
-
-          // 2. Check if already exists
-          if (flatReplies.some(r => r._id === newReply._id)) return oldNestedReplies;
-
-          // 3. Add new reply and re-organize
-          const updatedFlatReplies = [...flatReplies, newReply];
-          return organizeReplies(updatedFlatReplies);
-        });
+  queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
+    // Check if the reply already exists
+    const exists = (replies, id) => {
+      for (const reply of replies) {
+        if (reply._id === id) return true;
+        if (reply.children && exists(reply.children, id)) return true;
       }
-    });
+      return false;
+    };
+
+    if (exists(oldReplies, newReply._id)) return oldReplies;
+    console.log("i m adding reply")
+    // Recursive helper to insert into the right parent's children
+    const insertIntoParent = (replies) => {
+  let modified = false;
+
+  const updated = replies.map(reply => {
+    if (reply._id === newReply.parentReplyId) {
+      modified = true;
+      return {
+        ...reply,
+        children: [...(reply.children || []), { ...newReply, children: [] }],
+      };
+    }
+
+    if (reply.children?.length) {
+      const newChildren = insertIntoParent(reply.children);
+      if (newChildren !== reply.children) {
+        modified = true;
+        return { ...reply, children: newChildren };
+      }
+    }
+
+    return reply;
+  });
+
+  return modified ? updated : replies;
+};
+
+
+
+    // If it's a top-level reply, push to the root
+    if (!newReply.parentReplyId) {
+      return [...oldReplies, { ...newReply, children: [] }];
+    }
+
+    // Otherwise, insert as a nested reply
+    const updatedReplies = insertIntoParent(oldReplies);
+    return updatedReplies;
+  });
+});
 
 
     const unsubscribeDelete = subscribeToEvent("reply_deleted", (deletedReplyId) => {
@@ -168,7 +195,6 @@ const ReplyContent = () => {
           replies.map((reply, index) => (
             <div key={reply._id || index} className="ml-2">
               <RecurrsionLoop
-                key = {reply?._id}
                 reply={reply}
                 expandedThreads={expandedThreads}
                 setExpandedThreads={setExpandedThreads}
