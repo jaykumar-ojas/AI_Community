@@ -81,4 +81,21 @@ export const organizeReplies = (replyList) => {
 // API endpoints
 export const API_BASE_URL = 'http://localhost:8099';
 export const TOPICS_URL = `${API_BASE_URL}/forum/topics`;
-export const REPLIES_URL = `${API_BASE_URL}/forum/replies`; 
+export const REPLIES_URL = `${API_BASE_URL}/forum/replies`;
+
+// Fetch AI model information by name
+export const fetchModelInfo = async (modelName) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        return data.data;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching model info:', error);
+    return null;
+  }
+}; 

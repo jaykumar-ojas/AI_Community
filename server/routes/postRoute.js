@@ -4,6 +4,7 @@ const multer = require('multer');
 const postdb = require("../models/postSchema");
 const userdb = require("../models/userSchema");
 const googledb = require("../models/googleSchema");
+const commentdb = require("../models/commentsModel");
 const notifiyUser = require("../middleware/notification");
 const { awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware } = require("../middleware/awsmiddleware");
 
@@ -176,6 +177,10 @@ router.delete('/delete/:id', async (req, res) => {
             return res.status(404).json({ status: 404, error: "Post not found" });
         }
 
+        // Delete all comments associated with this post
+        const deletedComments = await commentdb.deleteMany({ postId: id });
+        console.log(`Deleted ${deletedComments.deletedCount} comments for post ${id}`);
+
         // Delete the file from S3
         const check = await awsdeleteMiddleware(imgKey);
         if (check) {
@@ -184,12 +189,13 @@ router.delete('/delete/:id', async (req, res) => {
 
             return res.status(200).json({
                 status: 200,
-                message: "Post deleted successfully",
+                message: "Post and associated comments deleted successfully",
                 deletedPost: {
                     _id: deletedPost._id,
                     fileType: deletedPost.fileType || 'image',
                     imgKey: deletedPost.imgKey
-                }
+                },
+                deletedComments: deletedComments.deletedCount
             });
         } else {
             console.error("Failed to delete file from S3:", imgKey);

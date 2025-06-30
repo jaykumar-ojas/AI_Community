@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { ForumContext } from '../../ContextProvider/ModelContext';
 
-function ModelItem({ name, displayName, emoji, active = false, onClick }) {
+function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick }) {
     return (
         <li>
             <button
@@ -12,7 +12,18 @@ function ModelItem({ name, displayName, emoji, active = false, onClick }) {
                 }`}
                 onClick={() => onClick(name)}
             >
-                <span className="text-xl">{emoji}</span>
+                {iconUrl ? (
+                    <img 
+                        src={iconUrl} 
+                        alt={displayName} 
+                        style={{ width: 24, height: 24, borderRadius: '50%' }}
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'inline';
+                        }}
+                    />
+                ) : null}
+                <span className="text-xl" style={{ display: iconUrl ? 'none' : 'inline' }}>{emoji}</span>
                 <span>{displayName}</span>
             </button>
         </li>
@@ -23,6 +34,7 @@ const ModelList = () => {
     const { model, setModel, modelType, setModelType } = useContext(ForumContext);
     const [modelConfig, setModelConfig] = useState({ text: {}, image: {} });
     const [isLoading, setIsLoading] = useState(true);
+    const [iconUrls, setIconUrls] = useState({}); // { modelName: iconUrl }
 
     // Fetch model configuration from backend
     useEffect(() => {
@@ -37,7 +49,7 @@ const ModelList = () => {
                         // Set default model if none selected
                         if (!model && data.data[modelType]) {
                             const firstModel = Object.keys(data.data[modelType])[0];
-                            setModel(firstModel);
+                            setModel("");
                         }
                     }
                 }
@@ -59,6 +71,30 @@ const ModelList = () => {
 
         fetchModelConfig();
     }, [model, modelType, setModel]);
+
+    // Fetch icon URLs for all models in the current type
+    useEffect(() => {
+        const fetchIcons = async () => {
+            const entries = Object.entries(modelConfig[modelType] || {});
+            for (const [modelName] of entries) {
+                if (!iconUrls[modelName]) {
+                    try {
+                        const res = await fetch(`http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.success && data.data.iconUrl) {
+                                setIconUrls(prev => ({ ...prev, [modelName]: data.data.iconUrl }));
+                            }
+                        }
+                    } catch (err) {
+                        // Ignore icon fetch errors
+                    }
+                }
+            }
+        };
+        fetchIcons();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [modelConfig, modelType]);
 
     const handleModelSelect = (modelName) => {
         setModel(modelName);
@@ -158,6 +194,7 @@ const ModelList = () => {
                             key={modelName}
                             name={modelName}
                             displayName={config.displayName}
+                            iconUrl={iconUrls[modelName]}
                             emoji={config.emoji}
                             active={model === modelName}
                             onClick={handleModelSelect}

@@ -10,6 +10,7 @@ const AIContentFile = () => {
     const [isEnhancing, setIsEnhancing] = useState(false);
     const [availableModels, setAvailableModels] = useState({});
     const [isLoadingModels, setIsLoadingModels] = useState(false);
+    const [modelIcons, setModelIcons] = useState({}); // { modelName: iconUrl }
     const { originalFileRef, setDesc } = useContext(PostContext);
 
     // Fetch available models from backend
@@ -44,6 +45,32 @@ const AIContentFile = () => {
 
         fetchModels();
     }, [selectedImageModel, setSelectedImageModel]);
+
+    // Fetch icon URLs for all image models
+    useEffect(() => {
+        const fetchModelIcons = async () => {
+            const imageModels = availableModels.image || {};
+            for (const [modelName] of Object.entries(imageModels)) {
+                if (!modelIcons[modelName]) {
+                    try {
+                        const response = await fetch(`http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success && data.data.iconUrl) {
+                                setModelIcons(prev => ({ ...prev, [modelName]: data.data.iconUrl }));
+                            }
+                        }
+                    } catch (err) {
+                        console.error(`Error fetching icon for ${modelName}:`, err);
+                    }
+                }
+            }
+        };
+        
+        if (Object.keys(availableModels.image || {}).length > 0) {
+            fetchModelIcons();
+        }
+    }, [availableModels, modelIcons]);
 
     // Use backend models - no fallback to static config
     const imageModels = availableModels.image || {};
@@ -255,7 +282,18 @@ const AIContentFile = () => {
                                 onClick={() => setSelectedImageModel(modelKey)}
                                 type="button"
                             >
-                                <span>{config.emoji}</span>
+                                {modelIcons[modelKey] ? (
+                                    <img 
+                                        src={modelIcons[modelKey]} 
+                                        alt={config.displayName} 
+                                        className="h-6 w-6 rounded-full object-cover"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'inline';
+                                        }}
+                                    />
+                                ) : null}
+                                <span style={{ display: modelIcons[modelKey] ? 'none' : 'inline' }}>{config.emoji}</span>
                                 <span>{config.displayName}</span>
                             </button>
                         ))}

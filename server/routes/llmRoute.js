@@ -25,7 +25,8 @@ const {
 
 router.post('/suggest/:id', (req, res, next) => {
   // Set the contextType for the middleware
-  req.body.contextType = 'forumReply';
+ // req.body.contextType = 'forumReply';
+ console.log("context type is ", req.body.contextType);
   next();
 }, fetchAncestorContext, async (req, res) => {
   try {
@@ -103,7 +104,7 @@ router.post("/aitest", async (req, res) => {
 // New route for generating forum topic content
 router.post("/generateTopicContent", async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const { prompt, modelName = "gemini-2.0-flash" } = req.body;
     if (!prompt) {
       return res.status(400).json({ status: 400, error: "Prompt is required" });
     }
@@ -151,6 +152,26 @@ router.post("/generateTopicContent", async (req, res) => {
     const imagePrompt = `Create a visually appealing image that represents: ${title}`;
     const imageUrl = await imageGenerator(imagePrompt);
 
+    // Get AI model information
+    let modelInfo = null;
+    try {
+      const AiModel = require('../models/aimodels');
+      const modelData = await AiModel.findOne({
+        modelName: { $regex: modelName, $options: 'i' }
+      });
+      
+      if (modelData) {
+        modelInfo = {
+          modelName: modelData.modelName,
+          providerName: modelData.providerName,
+          iconUrl: modelData.iconUrl
+        };
+      }
+    } catch (modelError) {
+      console.error("Error fetching model info:", modelError);
+      // Continue without model info if there's an error
+    }
+
     // Return both the content and the generated image
     res.status(200).json({
       status: 200,
@@ -159,6 +180,7 @@ router.post("/generateTopicContent", async (req, res) => {
         body: body,
         imageUrl: imageUrl
       },
+      modelInfo: modelInfo
     });
   } catch (error) {
     console.error("Error generating topic content:", error);
