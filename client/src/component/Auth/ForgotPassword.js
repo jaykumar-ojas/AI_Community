@@ -9,8 +9,9 @@ const ForgotPassword = () => {
     setEmail(e.target.value);
   }
   const handleSubmit = async(e) => {
+    console.log(email,"this is email");
     e.preventDefault();
-    const data =await fetch("http://localhost:3000/forget-password",{
+    const data =await fetch("http://localhost:8099/forget-password",{
       method:'POST',
       headers:{
         "Content-Type":"application/json"

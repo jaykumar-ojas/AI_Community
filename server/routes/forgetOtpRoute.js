@@ -53,30 +53,47 @@ router.get('/isvalid',authenticate,async(req,res)=>{
     }
 })
 
-router.post("/verify-otp",authenticate,async(req,res)=>{
+router.post("/verify-otp", async(req,res)=>{
     try {
-        const otp = req.body.enteredOtp;
-        console.log(otp,"this is otp");
-        if(!req.rootuser){
-            throw new Error("user not exist");
+        const { email, enteredOtp } = req.body;
+        console.log(enteredOtp, "this is otp");
+        console.log(email, "this is email");
+        
+        if(!enteredOtp){
+            return res.status(400).json({status:400, error:"OTP is required"});
         }
-        const user = req.rootuser;
-        const email = user.email;
-        const otpuser = await forgetotpdb.findOne({email:email});
-        console.log(otpuser);
-        if(otpuser.otp!==otp){
-            res.status(401).json({status:401,error:"otp not matched"});
-            return;
+        
+        if(!email){
+            return res.status(400).json({status:400, error:"Email is required"});
         }
-        const token = await user.generateForgetToken();
-        res.status(200).json({status:200,token:token});
+
+        // Find OTP record by email instead of relying on req.rootuser
+        const otpRecord = await forgetotpdb.findOne({email: email});
+        console.log(otpRecord, "OTP record found");
+        
+        if(!otpRecord){
+            return res.status(404).json({status:404, error:"OTP not found or expired"});
+        }
+        
+        // Convert both to string for comparison to avoid type issues
+        if(String(otpRecord.otp) !== String(enteredOtp)){
+            return res.status(401).json({status:401, error:"Invalid OTP"});
+        }
+        
+        // OTP is valid - you might want to delete the OTP record here
+        // await forgetotpdb.deleteOne({email: email});
+        
+        res.status(200).json({status:200, message:"OTP verified successfully"});
+        
     } catch (error) {
-        res.status(401).json({status:422,error:error.message});
+        console.error("OTP verification error:", error);
+        res.status(500).json({status:500, error:"Internal server error"});
     }
 })
 
 router.post("/update-password",authenticate,async(req,res)=>{
     try{
+        console.log(req.body,"this is req.body");
         const {password,confirmPassword} = req.body;
         if(password!==confirmPassword){
             throw new Error("user is password doesn't match");
@@ -86,8 +103,9 @@ router.post("/update-password",authenticate,async(req,res)=>{
         updateuser.confirmPassword = confirmPassword;
         await updateuser.save();
         res.status(200).json({status:200,message:"password update succefully"});
-
+        console.log(res.status,"this is res.status");
     }catch(error){
+        console.log(error,"this is error");
         res.status(422).json({status:422,error:"unauthorised user"});
     }
 })
