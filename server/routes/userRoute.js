@@ -29,7 +29,7 @@ router.post("/register",async(req,res)=>{
 
        const preuser= await userdb.findOne({email:email});
        if(preuser){
-        res.status(422).json({error:"user already exist"});
+        res.status(422).json({error:"user already exist email already exist"});
        }
        else if (password!=confirmPassword){
         res.status(422).json({error:"password is not matched"});

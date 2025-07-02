@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router(); // Ensure you're using Router correctly
 const otpdb = require("../models/otpSchema");
 const { body, validationResult } = require("express-validator");
+const User = require("../models/userSchema");
 const dotenv = require("dotenv").config(); 
 
 // Configure nodemailer transporter
@@ -27,6 +28,17 @@ router.post(
         try {
             const email = req.body.email;
 
+            // CHECK IF USER ALREADY EXISTS IN MAIN DATABASE
+            // Replace 'User' with your actual user model name (e.g., userdb, Users, etc.)
+            const existingUser = await User.findOne({ email: email });
+            
+            if (existingUser) {
+                return res.status(409).json({
+                    status: 409,
+                    message: "User with this email already exists. Please login instead."
+                });
+            }
+
             // Generate OTP
             const otp = `${1000 + Math.floor(Math.random() * 9000)}`;
 
@@ -38,11 +50,12 @@ router.post(
                 text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
             };
 
-            // Check if the user already exists in the database
+            // Check if the user already has an OTP entry
             let user = await otpdb.findOne({ email });
 
             if (user) {
                 user.otp = otp;
+                user.createdAt = new Date(); // Update timestamp for new OTP
                 await user.save();
             } else {
                 const newOtpEntry = new otpdb({
@@ -77,6 +90,34 @@ router.post(
         }
     }
 );
+
+// Registration OTP verification endpoint
+router.post("/verify-otp", async (req, res) => {
+    try {
+        const { email, enteredOtp } = req.body;
+        if (!enteredOtp) {
+            return res.status(400).json({ status: 400, error: "OTP is required" });
+        }
+        if (!email) {
+            return res.status(400).json({ status: 400, error: "Email is required" });
+        }
+        // Find OTP record by email in otpdb (registration)
+        const otpRecord = await otpdb.findOne({ email: email });
+        if (!otpRecord) {
+            return res.status(404).json({ status: 404, error: "OTP not found or expired" });
+        }
+        // Compare OTPs as strings
+        if (String(otpRecord.otp) !== String(enteredOtp)) {
+            return res.status(401).json({ status: 401, error: "Invalid OTP" });
+        }
+        // Optionally, delete the OTP record after successful verification
+        // await otpdb.deleteOne({ email: email });
+        res.status(200).json({ status: 200, message: "OTP verified successfully" });
+    } catch (error) {
+        console.error("OTP verification error (registration):", error);
+        res.status(500).json({ status: 500, error: "Internal server error" });
+    }
+});
 
 // router.post("/forget-password",async(req,res)=>{
 //     async (req, res) => {
