@@ -17,6 +17,10 @@ var commentSchema = mongoose.Schema({
           trim: true,
           default: "",
         },
+        model: {
+          type: String,
+          trim: true,
+        },
         imageUrl: {
           fileName: String,
           fileType: String,
