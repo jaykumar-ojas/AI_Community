@@ -6,6 +6,7 @@ import {
   getAuthHeaders,
   handleAuthError,
   REPLIES_URL,
+  API_BASE_URL,
 } from "../../AiForumPage/components/ForumUtils";
 import { useWebSocket } from "../../AiForumPage/components/WebSocketContext";
 import { useParams } from "react-router-dom";
@@ -19,6 +20,33 @@ import {
   DeleteIcon,
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
+
+const ModelIcon = ({ modelName }) => {
+  const [iconUrl, setIconUrl] = useState(null);
+
+  useEffect(() => {
+    if (!modelName) return;
+    const fetchIcon = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+        if (response.data.success) {
+          setIconUrl(response.data.data.iconUrl);
+        }
+      } catch (err) {
+        setIconUrl(null);
+      }
+    };
+    fetchIcon();
+  }, [modelName]);
+
+  if (!iconUrl) return null;
+  return (
+    <div className="flex items-center gap-1 bg-black-50 px-2 py-1 rounded-md">
+      <img src={iconUrl} alt={modelName} style={{ width: 24, height: 24, borderRadius: '50%' }} />
+      <span className="text-xs text-blue-700 font-medium">{modelName}</span>
+    </div>
+  );
+};
 
 const ShowCommentContent = ({reply}) => {
   const { setReplyIdForContext, setViewBox, setUserName } =useContext(ForumContext);
@@ -202,6 +230,17 @@ const ShowCommentContent = ({reply}) => {
     }
   };
 
+  // Helper to extract first model name from comment content
+  const getFirstModelName = () => {
+    if (Array.isArray(reply?.content)) {
+      for (const item of reply.content) {
+        if (item.model) return item.model;
+      }
+    }
+    return null;
+  };
+  const firstModelName = getFirstModelName();
+
   return (
     <div key={reply?._id} className="relative flex justify-start ">
       
@@ -224,33 +263,34 @@ const ShowCommentContent = ({reply}) => {
             {formatDate(reply?.createdAt)}
           </div>
           </div>
-         
-
-          {isAuthor && (
-            <div className="ml-2 relative">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
-              >
-                ⋯
-              </button>
-
-              {/* Dropdown menu */}
-              {isOpen && (
-                <div className="absolute left-0 w-full bg-white shadow-lg rounded-md z-10">
-                  <button
-                    onClick={() => {
-                      handleDeleteReply();
-                      setIsOpen(false);
-                    }}
-                    className="w-full p-2 bg-bg_comment_box text-red-600 hover:bg-btn_bg"
-                  >
-                    <DeleteIcon/>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Move ModelIcon to the right corner, after the delete button */}
+          <div className="flex items-center gap-2">
+            {isAuthor && (
+              <div className="ml-2 relative">
+                <button
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
+                >
+                  ⋯
+                </button>
+                {/* Dropdown menu */}
+                {isOpen && (
+                  <div className="absolute left-0 w-full bg-white shadow-lg rounded-md z-10">
+                    <button
+                      onClick={() => {
+                        handleDeleteReply();
+                        setIsOpen(false);
+                      }}
+                      className="w-full p-2 bg-bg_comment_box text-red-600 hover:bg-btn_bg"
+                    >
+                      <DeleteIcon/>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            {firstModelName && <div className="ml-2"><ModelIcon modelName={firstModelName} /></div>}
+          </div>
         </div>
 
         <div>
