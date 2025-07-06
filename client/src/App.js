@@ -24,6 +24,7 @@ import PixelLoader from "./component/Loader/PixelLoader";
 import UserProfile from "./component/userProfileView/userProfile";
 import PostImage from "./component/PostImage/PostImage";
 import UserEdit from "./component/userProfileView/UserEdit";
+import CommentModelProvider from "./component/ContextProvider/CommentModelContext";
 
 
 const Layout = () => {
@@ -74,7 +75,9 @@ function App() {
     <Context>
       <WebSocketProvider>
         <ForumContext>
-        <RouterProvider router={router} />
+          <CommentModelProvider>
+            <RouterProvider router={router} />
+          </CommentModelProvider>
         </ForumContext>
       </WebSocketProvider>
     </Context>

@@ -1,35 +1,38 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ForumContext } from '../../ContextProvider/ModelContext';
+// import Context from '../../ContextProvider/CommentModelContext';
+import {CommentContext} from '../../ContextProvider/CommentModelContext';
+
 
 function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick }) {
+    const [imageError, setImageError] = useState(false);
     return (
-        <li>
+        <li className="flex justify-center w-full ">
             <button
-                className={`w-full text-left px-3 py-2 rounded-md transition-all duration-150 cursor-pointer flex items-center space-x-2 ${
+                title={displayName}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer text-xl ${
                     active
-                        ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
-                        : 'text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
+                        ? 'bg-like_color text-text_header ring-2 ring-like_color scale-105'
+                        : 'text-text_header hover:ring-2 hover:ring-like_color hover:scale-105'
                 }`}
                 onClick={() => onClick(name)}
             >
-                {iconUrl ? (
-                    <img 
-                        src={iconUrl} 
-                        alt={displayName} 
-                        style={{ width: 24, height: 24, borderRadius: '50%' }}
-                        onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'inline';
-                        }}
+                {!imageError && iconUrl ? (
+                    <img
+                        src={iconUrl}
+                        alt={displayName}
+                        className="w-6 h-6 rounded-full object-cover"
+                        onError={() => setImageError(true)}
                     />
-                ) : null}
-                <span className="text-xl" style={{ display: iconUrl ? 'none' : 'inline' }}>{emoji}</span>
-                <span>{displayName}</span>
+                ) : (
+                    <span>{emoji}</span>
+                )}
             </button>
         </li>
     );
 }
+
 
 const fetchModelConfig = async () => {
     const res = await fetch("http://localhost:8099/models-info");
@@ -47,7 +50,7 @@ const fetchIconUrl = async (modelName) => {
 };
 
 const ModelList = () => {
-    const { model, setModel, modelType, setModelType } = useContext(ForumContext);
+    const { model, setModel, modelType, setModelType } = useContext(CommentContext);
     const [iconUrls, setIconUrls] = useState({});
 
     const {
@@ -140,36 +143,31 @@ const ModelList = () => {
     }
 
     return (
-        <div className="w-full flex flex-col bg-black rounded-lg shadow-sm">
-            {/* Model Type Selection */}
-            <div className="p-4 border-b border-gray-700">
-                <div className="font-semibold mb-3 text-text_header text-sm flex items-center">
-                    <span className="mr-2">🎯</span> MODEL TYPE
-                </div>
-                <div className="flex space-x-3">
+        <div className="w-full flex flex-col-reverse rounded-lg shadow-sm">
+
+            <div className="border-b border-gray-700">
+                
+                <div className="flex flex-col">
                     {['text', 'image'].map(type => (
                         <button
                             key={type}
-                            className={`px-4 py-2 rounded-md text-sm flex items-center space-x-2 transition-all duration-150 ${
+                            className={`p-2 border-b text-xs flex flex-col items-center  transition-all duration-150 ${
                                 modelType === type
-                                    ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
-                                    : 'text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
+                                    ? 'border-b-like_color text-text_header font-medium transform scale-[1.02]'
+                                    : 'text-text_header hover:border-b-like_color hover:transform hover:scale-[1.02]'
                             }`}
                             onClick={() => handleTypeSelect(type)}
                         >
                             <span>{type === 'text' ? '✍️' : '🖼️'}</span>
-                            <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                            <div className='text-xs'>{type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                            {/* <span></span> */}
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* AI Models Section */}
-            <div className="p-4">
-                <div className="font-semibold mb-3 text-text_header text-sm flex items-center">
-                    <span className="mr-2">🤖</span> AI MODELS
-                </div>
-                <ul className="space-y-2">
+                <ul className="border flex flex-col-reverse rounded-full p-2 space-y-2">
                     {Object.entries(modelConfig[modelType] || {}).map(([modelName, config]) => (
                         <ModelItem
                             key={modelName}
@@ -182,7 +180,8 @@ const ModelList = () => {
                         />
                     ))}
                 </ul>
-            </div>
+
+            
         </div>
     );
 };
