@@ -120,7 +120,6 @@ const RecurrsionLoop = ({
       {hasChildren && view && (
         <div className="">
           {reply?.children.map((childReply,index) => (
-            <div key={childReply._id}>
               <RecurrsionLoop
                 key={childReply?._id}
                 reply={childReply}
@@ -129,7 +128,6 @@ const RecurrsionLoop = ({
                 onReplyDeleted={onReplyDeleted}
                 scrollToId={scrollToId} // Pass down the delete handler
               />
-            </div>
           ))}
         </div>
       )}

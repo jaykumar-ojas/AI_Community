@@ -1,13 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { ForumContext } from "../ContextProvider/ModelContext";
-import UserAndModel from "./Component/UserAndModel";
 import ShowSelectedFile from "./Component/ShowSelectedFiie";
 import {
   AttachIcon,
 } from "../../asset/icons";
 import axios from "axios";
 import ShowGeneratedContent from "./Component/ShowGeneratedContent";
-import { LoginContext } from "../ContextProvider/context";
+import Context, { LoginContext } from "../ContextProvider/context";
 import { useParams } from "react-router-dom";
 import {
   REPLIES_URL,
@@ -15,11 +13,13 @@ import {
   handleAuthError,
 } from "../AiForumPage/components/ForumUtils";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
+import CommentModelProvider, { CommentContext } from "../ContextProvider/CommentModelContext";
+import UserAndModel from "./Comment/UserAndModelComment";
 
 const UserCommentReply = () => {
   const { id } = useParams();
   const { loginData } = useContext(LoginContext);
-  const { replyIdForContext, setReplyIdForContext, model, setModel, modelType } = useContext(ForumContext);
+  const { replyIdForContext, setReplyIdForContext, model, setModel, modelType } = useContext(CommentContext);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -362,7 +362,7 @@ const UserCommentReply = () => {
       </div>
       
       {/* for showing model and userName */}
-      <UserAndModel />
+      <UserAndModel/>
       
       <form>
         <div className="flex mb-2">

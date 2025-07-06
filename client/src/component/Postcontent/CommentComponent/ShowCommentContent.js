@@ -20,6 +20,7 @@ import {
   DeleteIcon,
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
+import {CommentContext} from "../../ContextProvider/CommentModelContext";
 
 const ModelIcon = ({ modelName }) => {
   const [iconUrl, setIconUrl] = useState(null);
@@ -49,7 +50,7 @@ const ModelIcon = ({ modelName }) => {
 };
 
 const ShowCommentContent = ({reply}) => {
-  const { setReplyIdForContext, setViewBox, setUserName } =useContext(ForumContext);
+  const { setReplyIdForContext, setViewBox, setUserName } =useContext(CommentContext);
   const [isOpen,setIsOpen] = useState(false);
   const { emitCommentReaction, emitDeleteComment } = useWebSocket();
   const { loginData } = useContext(LoginContext);
