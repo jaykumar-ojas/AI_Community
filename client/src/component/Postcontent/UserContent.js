@@ -80,8 +80,8 @@ const AIModelInfo = ({ aiMetadata }) => {
   const { displayName } = getModelDisplayInfo();
 
   return (
-    <div className="bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 rounded-lg p-3 mb-3">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="bg-gradient-to-r from-purple-100 to-blue-100  rounded-lg ">
+      <div className="flex flex-row items-center justify-center gap-2 mb-2">
         {modelIcon ? (
           <img 
             src={modelIcon} 
@@ -94,17 +94,18 @@ const AIModelInfo = ({ aiMetadata }) => {
         ) : (
           <span className="text-lg">🤖</span>
         )}
-        <span className="font-semibold text-purple-800">AI Generated</span>
+        {/* <span className="font-semibold text-purple-800">AI Generated</span>
         <span className="text-xs bg-purple-200 text-purple-700 px-2 py-1 rounded-full">
           {displayName}
-        </span>
-      </div>
-    
-      <div className="flex items-center gap-2 mt-1">
+        </span> */}
+        <div className="flex items-center gap-2 mt-1">
         <span className="text-xs text-gray-500">
           Generated with {aiMetadata.aiProvider || 'Unknown Provider'}
         </span>
       </div>
+      </div>
+    
+      
     </div>
   );
 };
@@ -422,20 +423,24 @@ const UserContent = ({ post }) => {
     <div className="w-full rounded-lg bg-bg_comment_box/40 shadow-lg flex flex-col gap-0">
       {/* user header */}
       <div className="flex justify-between items-center px-2 w-full h-full">
-        <div className="flex jsutify-between">
-          <Link to={`/userprofile/${postData?.userId}`} className="w-8 h-8 m-2">
-            <div className="w-full h-full">
+        <div className="flex justify-between items-center">
+            <div className="w-8 h-8 flex-shrink-0 m-2">
               <UserIconCard id={postData?.userId}></UserIconCard>
             </div>
-          </Link>
-          {/* user name remain */}
-          <Link
-            to={`/userprofile/${postData?.userId}`}
-            className="font-bold text-text_header m-2 flex items-center hover:text-red-900"
-          >
-            <UserNameCard id={postData?.userId}></UserNameCard>
-          </Link>
+            <div className="text-white">
+               <UserNameCard id={postData?.userId}></UserNameCard>
+            </div>
+            
         </div>
+
+      <div className="flex flex-row gap-2 justify-center items-center">
+
+      
+        {postData?.isAIGenerated && (
+        <div className="px-2">
+          <AIModelInfo aiMetadata={postData} />
+        </div>
+      )}
 
         {/* this is for openpanel */}
         <div className="px-2">
@@ -472,14 +477,11 @@ const UserContent = ({ post }) => {
             </MenuItems>
           </Menu>
         </div>
+        </div>
       </div>
 
       {/* AI Model Info */}
-      {postData?.isAIGenerated && (
-        <div className="px-2">
-          <AIModelInfo aiMetadata={postData} />
-        </div>
-      )}
+      
 
       {/* user media content */}
       <div className="w-full min-h-[300px] backdrop-blur-md bg-white flex justify-center items-center">

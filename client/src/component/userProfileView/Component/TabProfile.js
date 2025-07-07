@@ -4,6 +4,7 @@ import Video from "./Video";
 import Image from "./Image";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import Saved from "./Saved";
 
 const tabs = ["Image", "Video", "Audio", "Saved"];
 
@@ -67,7 +68,7 @@ const TabProfile = () => {
         {activeTab === "Image" && <Image data={image} />}
         {activeTab === "Video" && <Video data={video} />}
         {activeTab === "Audio" && <Audio data={audio} />}
-        {activeTab === "Saved" && <div>💾 Saved content goes here...</div>}
+        {activeTab === "Saved" && <Saved/>}
       </div>
     </>
   );
