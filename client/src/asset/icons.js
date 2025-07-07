@@ -3,9 +3,9 @@ export const LikeIcon = ({ isLiked }) => {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-4 w-4 mr-1"
-      fill={isLiked ? "currentColor" : "none"}
+      fill={isLiked ? "#3b82f6" : "none"} // Blue when liked
       viewBox="0 0 24 24"
-      stroke="currentColor"
+      stroke={isLiked ? "#3b82f6" : "currentColor"}
     >
       <path
         strokeLinecap="round"
@@ -17,14 +17,14 @@ export const LikeIcon = ({ isLiked }) => {
   );
 };
 
-export const DeleteIcon = () => {
+export const DeleteIcon = ({ isHovered }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-4 w-4"
       fill="none"
       viewBox="0 0 24 24"
-      stroke="currentColor"
+      stroke={isHovered ? "#ef4444" : "currentColor"} // Red when hovered
     >
       <path
         strokeLinecap="round"
@@ -41,9 +41,9 @@ export const DisLikeIcon = ({ isDisliked }) => {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-4 w-4 mr-1"
-      fill={isDisliked ? "currentColor" : "none"}
+      fill={isDisliked ? "#ef4444" : "none"} // Red when disliked
       viewBox="0 0 24 24"
-      stroke="currentColor"
+      stroke={isDisliked ? "#ef4444" : "currentColor"}
     >
       <path
         strokeLinecap="round"
@@ -55,14 +55,14 @@ export const DisLikeIcon = ({ isDisliked }) => {
   );
 };
 
-export const ReplyIcon = () => {
+export const ReplyIcon = ({ isActive }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-4 w-4 mr-1"
       fill="none"
       viewBox="0 0 24 24"
-      stroke="currentColor"
+      stroke={isActive ? "#10b981" : "currentColor"} // Green when active
     >
       <path
         strokeLinecap="round"
@@ -74,14 +74,14 @@ export const ReplyIcon = () => {
   );
 };
 
-export const BackArrow = () => {
+export const BackArrow = ({ isActive }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"
-      stroke="currentColor"
+      stroke={isActive ? "#3b82f6" : "currentColor"} // Blue when active
     >
       <path
         strokeLinecap="round"
@@ -93,13 +93,13 @@ export const BackArrow = () => {
   );
 };
 
-export const SearchIcon = () => {
+export const SearchIcon = ({ isActive }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 192.904 192.904"
       width="20px"
-      className="fill-gray-500"
+      className={isActive ? "fill-blue-500" : "fill-gray-500"}
     >
       <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
     </svg>
@@ -110,9 +110,9 @@ export const heartSvg = (filled = false) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="21" id="heart">
       <path
-        fill={filled ? "#ffd4d" : "none"}
+        fill={filled ? "#ff4d4d" : "none"} // Red when filled
         fillRule="evenodd"
-        stroke={filled ? "#ff4d4d" : "white"}
+        stroke={filled ? "#ff4d4d" : "currentColor"}
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"
@@ -130,26 +130,26 @@ export const thumbsDownSvg = (filled = false) => {
       height="24"
       viewBox="0 0 24 24"
       fill="none"
-      stroke={filled ? "#3b82f6" : "currentColor"}
+      stroke={filled ? "#ef4444" : "currentColor"} // Red when filled
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
       <path
         d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
-        fill={filled ? "#3b82f6" : "none"}
+        fill={filled ? "#ef4444" : "none"}
       ></path>
     </svg>
   );
 };
 
-export const AttachIcon = () => (
+export const AttachIcon = ({ isActive }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     className="h-5 w-5 mr-1"
     fill="none"
     viewBox="0 0 24 24"
-    stroke="currentColor"
+    stroke={isActive ? "#8b5cf6" : "currentColor"} // Purple when active
   >
     <path
       strokeLinecap="round"
@@ -160,13 +160,13 @@ export const AttachIcon = () => (
   </svg>
 );
 
-export const AiResponseIcon = () => (
+export const AiResponseIcon = ({ isActive }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     className="h-5 w-5 mr-1"
     fill="none"
     viewBox="0 0 24 24"
-    stroke="currentColor"
+    stroke={isActive ? "#f59e0b" : "currentColor"} // Amber when active
   >
     <path
       strokeLinecap="round"
@@ -177,13 +177,13 @@ export const AiResponseIcon = () => (
   </svg>
 );
 
-export const GenerateIcon = () => (
+export const GenerateIcon = ({ isActive }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     className="h-5 w-5 mr-1"
     fill="none"
     viewBox="0 0 24 24"
-    stroke="currentColor"
+    stroke={isActive ? "#06b6d4" : "currentColor"} // Cyan when active
   >
     <path
       strokeLinecap="round"
@@ -194,10 +194,10 @@ export const GenerateIcon = () => (
   </svg>
 );
 
-export const SparkIcon = () => {
+export const SparkIcon = ({ isActive }) => {
   return (
     <svg
-      class="w-5 h-5 text-gray-800"
+      className="w-5 h-5 text-gray-800"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -206,20 +206,20 @@ export const SparkIcon = () => {
       viewBox="0 0 24 24"
     >
       <path
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
+        stroke={isActive ? "#f59e0b" : "currentColor"} // Amber when active
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
         d="M16.872 9.687 20 6.56 17.44 4 4 17.44 6.56 20 16.873 9.687Zm0 0-2.56-2.56M6 7v2m0 0v2m0-2H4m2 0h2m7 7v2m0 0v2m0-2h-2m2 0h2M8 4h.01v.01H8V4Zm2 2h.01v.01H10V6Zm2-2h.01v.01H12V4Zm8 8h.01v.01H20V12Zm-2 2h.01v.01H18V14Zm2 2h.01v.01H20V16Z"
       />
     </svg>
   );
 };
 
-export const BrainIcon = () => {
+export const BrainIcon = ({ isActive }) => {
   return (
     <svg
-      class="w-5 h-5 text-gray-800"
+      className="w-5 h-5 text-gray-800"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -228,20 +228,20 @@ export const BrainIcon = () => {
       viewBox="0 0 24 24"
     >
       <path
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
+        stroke={isActive ? "#8b5cf6" : "currentColor"} // Purple when active
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
         d="M12 18.5A2.493 2.493 0 0 1 7.51 20H7.5a2.468 2.468 0 0 1-2.4-3.154 2.98 2.98 0 0 1-.85-5.274 2.468 2.468 0 0 1 .92-3.182 2.477 2.477 0 0 1 1.876-3.344 2.5 2.5 0 0 1 3.41-1.856A2.5 2.5 0 0 1 12 5.5m0 13v-13m0 13a2.493 2.493 0 0 0 4.49 1.5h.01a2.468 2.468 0 0 0 2.403-3.154 2.98 2.98 0 0 0 .847-5.274 2.468 2.468 0 0 0-.921-3.182 2.477 2.477 0 0 0-1.875-3.344A2.5 2.5 0 0 0 14.5 3 2.5 2.5 0 0 0 12 5.5m-8 5a2.5 2.5 0 0 1 3.48-2.3m-.28 8.551a3 3 0 0 1-2.953-5.185M20 10.5a2.5 2.5 0 0 0-3.481-2.3m.28 8.551a3 3 0 0 0 2.954-5.185"
       />
     </svg>
   );
 };
 
-export const Pallete = () => {
+export const Pallete = ({ isActive }) => {
   return (
     <svg
-      class="w-5 h-5 text-gray-800 "
+      className="w-5 h-5 text-gray-800"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -250,20 +250,20 @@ export const Pallete = () => {
       viewBox="0 0 24 24"
     >
       <path
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
+        stroke={isActive ? "#ec4899" : "currentColor"} // Pink when active
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
         d="M12 7h.01m3.486 1.513h.01m-6.978 0h.01M6.99 12H7m9 4h2.706a1.957 1.957 0 0 0 1.883-1.325A9 9 0 1 0 3.043 12.89 9.1 9.1 0 0 0 8.2 20.1a8.62 8.62 0 0 0 3.769.9 2.013 2.013 0 0 0 2.03-2v-.857A2.036 2.036 0 0 1 16 16Z"
       />
     </svg>
   );
 };
 
-export const PenIcon = () => {
+export const PenIcon = ({ isActive }) => {
   return (
     <svg
-      class="w-5 h-5 text-gray-800"
+      className="w-5 h-5 text-gray-800"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width="44"
@@ -272,10 +272,10 @@ export const PenIcon = () => {
       viewBox="0 0 24 24"
     >
       <path
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
+        stroke={isActive ? "#10b981" : "currentColor"} // Green when active
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
         d="M10.779 17.779 4.36 19.918 6.5 13.5m4.279 4.279 8.364-8.643a3.027 3.027 0 0 0-2.14-5.165 3.03 3.03 0 0 0-2.14.886L6.5 13.5m4.279 4.279L6.499 13.5m2.14 2.14 6.213-6.504M12.75 7.04 17 11.28"
       />
     </svg>
@@ -302,16 +302,14 @@ export const DragAndDropIcon = () => {
   );
 };
 
-
-
-export const CrossIcon = () => {
+export const CrossIcon = ({ isHovered }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="12"
       height="12"
       viewBox="0 0 122.88 122.88"
-      fill="currentColor"
+      fill={isHovered ? "#ef4444" : "currentColor"} // Red when hovered
     >
       <path d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0l53.127,53.127l53.127-53.127 
       c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886 
@@ -321,15 +319,14 @@ export const CrossIcon = () => {
   );
 };
 
-
-export const RightIcon = () => {
+export const RightIcon = ({ isActive }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="16"
       height="16"
       viewBox="0 0 122.881 89.842"
-      fill="currentColor"
+      fill={isActive ? "#10b981" : "currentColor"} // Green when active (success)
     >
       <path d="M1.232,55.541c-1.533-1.388-1.652-3.756-0.265-5.289c1.388-1.534,3.756-1.652,5.29-0.265l34.053,30.878l76.099-79.699 
         c1.429-1.501,3.804-1.561,5.305-0.132c1.502,1.428,1.561,3.803,0.133,5.305L43.223,88.683l-0.005-0.005 
@@ -338,16 +335,14 @@ export const RightIcon = () => {
   );
 };
 
-
-
-export const CropIcon = () => {
+export const CropIcon = ({ isActive }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="16"
       height="16"
       viewBox="0 0 122.88 117.52"
-      fill="currentColor"
+      fill={isActive ? "#06b6d4" : "currentColor"} // Cyan when active
     >
       <path d="M74.01,0v11.98H19.13c-3.93,0.01-7.14,3.22-7.15,7.15v17.74H0V19.13c0-1.07,0.09-2.09,0.26-3.14 
         c0.91-5.37,3.99-10,8.56-12.96c3.13-2,6.6-3.01,10.31-3.03H74.01z M106.86,101.52v16H94.87v-16H79.6V89.53h15.27V69.72h11.98
@@ -359,16 +354,14 @@ export const CropIcon = () => {
   );
 };
 
-
-
-export const PlusIcon = () => {
+export const PlusIcon = ({ isActive }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="16"
       height="16"
       viewBox="0 0 122.881 122.88"
-      fill="currentColor"
+      fill={isActive ? "#10b981" : "currentColor"} // Green when active
     >
       <path d="M56.573,4.868c0-0.655,0.132-1.283,0.37-1.859c0.249-0.6,0.61-1.137,1.056-1.583C58.879,0.545,60.097,0,61.44,0 
       c0.658,0,1.287,0.132,1.863,0.371c0.012,0.005,0.023,0.011,0.037,0.017c0.584,0.248,1.107,0.603,1.543,1.039
@@ -387,17 +380,15 @@ export const PlusIcon = () => {
   );
 };
 
-
-
-export const BookmarkIcon = (props) => (
+export const BookmarkIcon = ({ isBookmarked, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 50 50"
     width="28"
     height="24"
-    fill="#FFFFFF"
-    stroke="#000000" // Black border
-    strokeWidth="1"  // Adjust as needed
+    fill={isBookmarked ? "#fbbf24" : "#FFFFFF"} // Yellow when bookmarked
+    stroke={isBookmarked ? "#fbbf24" : "#000000"}
+    strokeWidth="1"
     {...props}
   >
     <path d="M 13 2 A 1.0001 1.0001 0 0 0 12 3 L 12 47 A 1.0001 1.0001 0 0 0 13.503906 47.863281 L 25 41.158203 L 36.496094 47.863281 A 1.0001 1.0001 0 0 0 38 47 L 38 3 A 1.0001 1.0001 0 0 0 37 2 L 13 2 z M 14 4 L 36 4 L 36 45.259766 L 25.503906 39.136719 A 1.0001 1.0001 0 0 0 24.496094 39.136719 L 14 45.259766 L 14 4 z" />
@@ -405,5 +396,3 @@ export const BookmarkIcon = (props) => (
 );
 
 export default BookmarkIcon;
-
-

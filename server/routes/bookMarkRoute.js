@@ -87,4 +87,38 @@ router.post('/bookMark/:userId/:postId', authenticate, async (req, res) => {
   }
 });
 
+
+router.get("/savedPost/:userId", authenticate, async (req, res) => {
+  console.log("i m coming here");
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ status: "fail", error: "User ID not provided" });
+    }
+
+    console.log("i go for fining bookMark data");
+
+    const userBookmarks = await bookMarkdb.findOne({ "userId":userId });
+
+        console.log("i go for fining bookMark  back data",userBookmarks);
+
+    if (!userBookmarks || !userBookmarks.savedPostId || userBookmarks.savedPostId.length === 0) {
+      return res.status(200).json({ status: "success", savedPost: [] });
+    }
+    
+        console.log("i get it for fining bookMark data");
+
+    // Assuming `postIds` is an array of post IDs
+    const savedPost = await Promise.all(
+      userBookmarks.savedPostId.map((id) => postdb.findById(id))
+    );
+
+    res.status(200).json({ status: "success", savedPost });
+  } catch (error) {
+    console.error("Error fetching saved posts:", error);
+    res.status(500).json({ status: "error", error: error.message });
+  }
+});
+
 module.exports = router;
