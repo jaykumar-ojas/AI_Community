@@ -27,7 +27,7 @@ router.post("/register",async(req,res)=>{
     }
     try{
 
-       const preuser= await userdb.findOne({email:email});
+       const preuser= await userdb.findOne({email:email}) || await googledb.findOne({email:email});
        if(preuser){
         res.status(422).json({error:"user already exist email already exist"});
        }

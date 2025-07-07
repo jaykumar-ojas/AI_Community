@@ -297,16 +297,25 @@ def extract_images_from_mongodb():
     """Extract all images from MongoDB collections that don't have embeddings yet"""
     image_data = []
 
+    print("Starting image extraction from MongoDB...")
+    
     # extract image from post
     post_data = extract_from_postCollection()
+    print(f"Found {len(post_data)} images from posts")
 
     # extract image content from comment image data
     comment_data = extract_from_commentCollection()
+    print(f"Found {len(comment_data)} images from comments")
 
     # extract image content from reply of forum replyCollection
     reply_data = extract_from_replyCollection()
+    print(f"Found {len(reply_data)} images from replies")
 
-    return image_data
+    # Combine all data
+    all_data = post_data + comment_data + reply_data
+    print(f"Total images to process: {len(all_data)}")
+    
+    return all_data
 
 
 
@@ -314,19 +323,39 @@ def extract_from_postCollection():
 
     image_data=[]
 
-    post_images = posts_collection.find({"imgKey": {"$exists": True, "$ne": None}})
+    # Find all posts that have imgKey and it's not empty
+    post_images = posts_collection.find({
+        "imgKey": {
+            "$exists": True, 
+            "$ne": None
+        }
+    })
 
-    for post in post_images:
+    post_images_list = list(post_images)
+    print(f"Found {len(post_images_list)} posts with imgKey")
+
+    for post in post_images_list:
+        print(f"Processing post {post['_id']} with imgKey: {post.get('imgKey')}")
+        
         # Check if embedding already exists
-        if not embeddings_collection.find_one({"image_id": str(post["_id"])}):
-            # For posts, the imgKey is directly the S3 key
-            image_data.append({
-                "id": str(post["_id"]),
-                "url": f"https://{BUCKET}.s3.{REGION}.amazonaws.com/{post['imgKey']}",
-                "key": post['imgKey'],  # Store the direct key for easier access
-                "collection": "posts"
-            })
+        existing_embedding = embeddings_collection.find_one({"image_id": str(post["_id"])})
+        print(f"Checking for existing embedding for post {post['_id']}: {existing_embedding is not None}")
+        if existing_embedding:
+            print(f"Embedding already exists for post {post['_id']}")
+            continue
+            
+        # For posts, use the existing imgUrl if available, otherwise construct from imgKey
+        img_url = post.get('imgUrl') or f"https://{BUCKET}.s3.{REGION}.amazonaws.com/{post['imgKey']}"
+        
+        image_data.append({
+            "id": str(post["_id"]),
+            "url": img_url,
+            "key": post['imgKey'],  # Store the direct key for easier access
+            "collection": "posts"
+        })
+        print(f"Added post {post['_id']} to image_data list")
 
+    print(f"Returning {len(image_data)} images for processing")
     return image_data
 
 

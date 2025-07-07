@@ -7,6 +7,7 @@ const googledb = require("../models/googleSchema");
 const commentdb = require("../models/commentsModel");
 const notifiyUser = require("../middleware/notification");
 const { awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware } = require("../middleware/awsmiddleware");
+const axios = require('axios');
 
 const storage = multer.memoryStorage();
 
@@ -71,6 +72,18 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async (req, r
         });
 
         const storePost = await finalpost.save();
+
+        // Fire and forget - no await
+        if (fileType === 'image') {
+            axios.post(
+                `http://localhost:8000/index/update-single?image_id=${storePost._id}&collection=posts`
+            ).then(() => {
+                console.log('✅ Embedding generated successfully for post:', storePost._id);
+            }).catch((embeddingError) => {
+                console.error('❌ Failed to generate embedding for post:', storePost._id, embeddingError.message);
+            });
+        }
+        
         res.status(201).json({ status: 201, storePost });
 
     } catch (error) {

@@ -36,17 +36,31 @@ REGION = os.getenv("REGION")
 async def build_index():
     """Build embeddings for all images in MongoDB that don't have embeddings yet"""
     try:
+        print("Starting build index process...")
+        
         # Extract images from MongoDB
         image_data = extract_images_from_mongodb()
         
+        print(f"Extracted {len(image_data)} images to process")
+        
+        if len(image_data) == 0:
+            print("No images found to process")
+            return {"message": "No images found to process"}
+        
         # Generate embeddings for each image
         success_count = 0
-        for img_data in image_data:
+        for i, img_data in enumerate(image_data):
+            print(f"Processing image {i+1}/{len(image_data)}: {img_data['id']}")
             if await generate_embedding_for_image(img_data):
                 success_count += 1
+                print(f"Successfully processed image {i+1}")
+            else:
+                print(f"Failed to process image {i+1}")
         
+        print(f"Build index completed. Successfully processed {success_count} out of {len(image_data)} images")
         return {"message": f"Generated embeddings for {success_count} images"}
     except Exception as e:
+        print(f"Error in build_index: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error building index: {str(e)}")
 
 
@@ -78,10 +92,13 @@ async def build_index_text():
 @router.post("/index/update-single")
 async def update_single_image(image_id: str, collection: str = "posts"):
     """Generate embedding for a single image by ID"""
+    print("image_id", image_id)
     try:
+        print("hdhdaad")
         # Find the image
         if collection == "posts":
             doc = posts_collection.find_one({"_id": ObjectId(image_id)})
+            print("i am whith new post")
         elif collection == "comments":
             doc = comments_collection.find_one({"_id": ObjectId(image_id)})
         elif collection == "replies":

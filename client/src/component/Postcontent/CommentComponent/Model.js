@@ -79,13 +79,7 @@ const ModelList = () => {
         loadIcons();
     }, [modelConfig, modelType]);
 
-    // Auto-select default model if none selected
-    useEffect(() => {
-        const models = Object.keys(modelConfig[modelType] || {});
-        if (!model && models.length > 0) {
-            setModel(models[0]);
-        }
-    }, [model, modelConfig, modelType, setModel]);
+    // Removed auto-selection of default model - user must manually select
 
     const handleModelSelect = (modelName) => {
         setModel(modelName);
@@ -107,24 +101,22 @@ const ModelList = () => {
 
     const handleTypeSelect = (type) => {
         setModelType(type);
-        const defaultModel = Object.keys(modelConfig[type] || {})[0];
-        if (defaultModel) {
-            setModel(defaultModel);
-            const isImageModel = type === 'image';
-            const controlBits = {
-                enhancePrompt: false,
-                generateText: !isImageModel,
-                generateImage: isImageModel,
-                processContextAware: false
-            };
-            window.dispatchEvent(new CustomEvent('modelSelected', {
-                detail: {
-                    model: defaultModel,
-                    type: type,
-                    controlBits
-                }
-            }));
-        }
+        // Clear model selection when changing type - user must manually select
+        setModel("");
+        const isImageModel = type === 'image';
+        const controlBits = {
+            enhancePrompt: false,
+            generateText: !isImageModel,
+            generateImage: isImageModel,
+            processContextAware: false
+        };
+        window.dispatchEvent(new CustomEvent('modelSelected', {
+            detail: {
+                model: "",
+                type: type,
+                controlBits
+            }
+        }));
     };
 
     if (isLoading) {

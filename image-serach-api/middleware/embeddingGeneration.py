@@ -32,10 +32,15 @@ model = SentenceTransformer('clip-ViT-B-32')
 async def generate_embedding_for_image(img_data):
     """Generate CLIP embedding for a single image and store it in MongoDB"""
     try:
+        print(f"Starting embedding generation for image {img_data['id']} from {img_data['collection']}")
+        
         # Skip if embedding already exists
         existing = embeddings_collection.find_one({"image_id": img_data["id"]})
         if existing:
+            print(f"Embedding already exists for image {img_data['id']}")
             return True
+        
+        print(f"Downloading image from URL: {img_data['url']}")
         
         # Download image from S3
         direct_key = img_data.get("key")
@@ -45,8 +50,12 @@ async def generate_embedding_for_image(img_data):
             print(f"Failed to download image for {img_data['id']}")
             return False
         
+        print(f"Successfully downloaded image for {img_data['id']}, generating embedding...")
+        
         # Generate embedding
         embedding = model.encode(image)
+        
+        print(f"Generated embedding for {img_data['id']}, storing in MongoDB...")
         
         # Store in MongoDB
         embeddings_collection.insert_one({
@@ -58,7 +67,7 @@ async def generate_embedding_for_image(img_data):
             "created_at": datetime.datetime.utcnow()
         })
         
-        print(f"Generated embedding for image {img_data['id']} from {img_data['collection']}")
+        print(f"Successfully generated and stored embedding for image {img_data['id']} from {img_data['collection']}")
         return True
     except Exception as e:
         print(f"Error processing image {img_data['url']}: {str(e)}")
