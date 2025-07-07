@@ -23,11 +23,7 @@ const AIContentFile = () => {
                     const data = await response.json();
                     if (data.success) {
                         setAvailableModels(data.data);
-                        // Set default model if none selected
-                        if (!selectedImageModel && data.data.image) {
-                            const firstModel = Object.keys(data.data.image)[0];
-                            setSelectedImageModel(firstModel);
-                        }
+                        // Removed auto-selection of default model - user must manually select
                     }
                 }
             } catch (error) {

@@ -58,7 +58,7 @@ embeddings_collection = db["image_embeddings"]
 @router.post("/search/image")
 async def search_by_image(
     file: UploadFile = File(...),
-    limit: int = Query(5, description="Number of results to return")
+    limit: int = Query(10, description="Number of results to return")
 ):
     """Search images by uploading an image"""
     try:
@@ -124,7 +124,7 @@ async def search_by_text(
 @router.get("/search/bypostid/{post_id}")
 async def search_by_post_id(
     post_id: str,
-    limit: int = Query(5, description="Number of results to return")
+    limit: int = Query(30, description="Number of results to return")
 ):
     """Search for images similar to the image in a specified post"""
     try:

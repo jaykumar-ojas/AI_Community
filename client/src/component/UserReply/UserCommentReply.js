@@ -191,7 +191,7 @@ const UserCommentReply = () => {
         `http://localhost:8099/suggest/${replyIdForContext || id}`,
         {
           text: newReply.trim(),
-          contextType: 'commentReply', // Updated context type
+          contextType: 'comment', // Updated context type
           options: {
             // Add any specific options for suggestion
             temperature: 0.7,

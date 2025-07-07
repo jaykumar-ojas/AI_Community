@@ -102,7 +102,7 @@ const NewTopicModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 mt-20 flex items-center justify-center overflow-y-auto">
+    <div className="fixed inset-0 bg-opacity-50 z-50 mt-20 flex items-center justify-center overflow-y-auto">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-xl my-8 flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b">
           <h3 className="text-lg font-semibold">Create New Topic</h3>
