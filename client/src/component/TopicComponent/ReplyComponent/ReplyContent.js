@@ -61,60 +61,35 @@ const ReplyContent = () => {
   // WebSocket Handlers
   useEffect(() => {
     const unsubscribeNew = subscribeToEvent("reply_created", (newReply) => {
-  if (newReply.topicId !== topicId) return;
+      if (newReply.topicId !== topicId) return;
 
-  queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
-    // Check if the reply already exists
-    const exists = (replies, id) => {
-      for (const reply of replies) {
-        if (reply._id === id) return true;
-        if (reply.children && exists(reply.children, id)) return true;
-      }
-      return false;
-    };
+      console.log("WebSocket: New reply received:", newReply);
 
-    if (exists(oldReplies, newReply._id)) return oldReplies;
-    console.log("i m adding reply")
-    // Recursive helper to insert into the right parent's children
-    const insertIntoParent = (replies) => {
-  let modified = false;
-
-  const updated = replies.map(reply => {
-    if (reply._id === newReply.parentReplyId) {
-      modified = true;
-      return {
-        ...reply,
-        children: [...(reply.children || []), { ...newReply, children: [] }],
-      };
-    }
-
-    if (reply.children?.length) {
-      const newChildren = insertIntoParent(reply.children);
-      if (newChildren !== reply.children) {
-        modified = true;
-        return { ...reply, children: newChildren };
-      }
-    }
-
-    return reply;
-  });
-
-  return modified ? updated : replies;
-};
-
-
-
-    // If it's a top-level reply, push to the root
-    if (!newReply.parentReplyId) {
-      return [...oldReplies, { ...newReply, children: [] }];
-    }
-
-    // Otherwise, insert as a nested reply
-    const updatedReplies = insertIntoParent(oldReplies);
-    return updatedReplies;
-  });
-});
-
+      // Instead of manually updating cache, refetch the data
+      queryClient.invalidateQueries(["replies", topicId]);
+      
+      // Alternative: If you want to keep manual cache update, use this approach:
+      /*
+      queryClient.setQueryData(["replies", topicId], (oldData) => {
+        if (!oldData) return oldData;
+        
+        const rawReplies = [...oldData];
+        
+        // Add the new reply to raw data
+        if (!newReply.parentReplyId) {
+          rawReplies.push(newReply);
+        } else {
+          // For nested replies, add to the raw array and let organizeReplies handle the structure
+          rawReplies.push(newReply);
+        }
+        
+        // Re-organize the replies using your existing function
+        const organizedReplies = organizeReplies(rawReplies);
+        console.log("Organized replies:", organizedReplies);
+        return organizedReplies;
+      });
+      */
+    });
 
     const unsubscribeDelete = subscribeToEvent("reply_deleted", (deletedReplyId) => {
       queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
@@ -135,7 +110,7 @@ const ReplyContent = () => {
       unsubscribeNew();
       unsubscribeDelete();
     };
-  }, [topicId]);
+  }, [topicId, queryClient, subscribeToEvent]);
 
   const toggleThreadExpansion = (replyId) => {
     setExpandedThreads((prev) => ({
