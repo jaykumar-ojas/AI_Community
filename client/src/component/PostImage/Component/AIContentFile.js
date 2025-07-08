@@ -40,7 +40,7 @@ const AIContentFile = () => {
         };
 
         fetchModels();
-    }, [selectedImageModel, setSelectedImageModel]);
+    }, []);
 
     // Fetch icon URLs for all image models
     useEffect(() => {
@@ -98,41 +98,47 @@ const AIContentFile = () => {
         }
     };
 
-    const enhancePrompt = async () => {
-        if (!aiPrompt.trim()) {
-            alert("Please enter a prompt first");
-            return;
+   const enhancePrompt = async () => {
+    if (!aiPrompt.trim()) {
+        alert("Please enter a prompt first");
+        return;
+    }
+
+    try {
+        setIsEnhancing(true);
+        const response = await fetch("http://localhost:8099/enhance-prompt", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ prompt: aiPrompt }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Server returned non-ok status: " + response.status);
         }
 
-        try {
-            setIsEnhancing(true);
-            const response = await fetch("http://localhost:8099/enhance-prompt", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
-                body: JSON.stringify({
-                    prompt: aiPrompt,
-                }),
-            });
+        const result = await response.json();
+        console.log("Result from backend:", result);
 
-            if (!response.ok) {
-                throw new Error("Failed to enhance prompt");
-            }
-
-            const result = await response.json();
-            if (result.enhancedPrompt) {
-                setEnhancedPrompt(result.enhancedPrompt);
-                setAiPrompt(result.enhancedPrompt);
-            }
-        } catch (error) {
-            console.error("Error enhancing prompt:", error);
-            alert("Failed to enhance prompt. Please try again.");
-        } finally {
-            setIsEnhancing(false);
+        if (result.status === 200) {
+            alert("i m generating very full");
         }
-    };
+
+        if (result.enhancedPrompt) {
+            // setEnhancedPrompt(result.enhancedPrompt);
+            setAiPrompt(result.enhancedPrompt);
+        } else {
+            alert("No enhanced prompt returned.");
+        }
+    } catch (error) {
+        console.error("Error enhancing prompt:", error);
+        alert("Failed to enhance prompt. Please try again: " + error.message);
+    } finally {
+        setIsEnhancing(false);
+    }
+};
+
 
     const generateAIImage = async () => {
         if (!aiPrompt.trim()) {
