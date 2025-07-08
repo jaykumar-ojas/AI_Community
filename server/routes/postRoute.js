@@ -5,6 +5,7 @@ const postdb = require("../models/postSchema");
 const userdb = require("../models/userSchema");
 const googledb = require("../models/googleSchema");
 const commentdb = require("../models/commentsModel");
+const embeddingdb = require("../models/embeding");
 const notifiyUser = require("../middleware/notification");
 const { awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware } = require("../middleware/awsmiddleware");
 const axios = require('axios');
@@ -178,6 +179,51 @@ router.post('/get', async (req, res) => {
 
 
 // delete the image by user
+// router.delete('/delete/:id', async (req, res) => {
+//     try {
+//         const { imgKey } = req.body;
+//         const { id } = req.params;
+
+//         // First check if the post exists
+//         const post = await postdb.findOne({ _id: id });
+//         if (!post) {
+//             console.error("Post not found:", id);
+//             return res.status(404).json({ status: 404, error: "Post not found" });
+//         }
+
+//         // Delete all comments associated with this post
+//         const deletedComments = await commentdb.deleteMany({ postId: id });
+//         console.log(`Deleted ${deletedComments.deletedCount} comments for post ${id}`);
+
+//         // Delete the file from S3
+//         const check = await awsdeleteMiddleware(imgKey);
+//         if (check) {
+//             // Delete the post from MongoDB
+//             const deletedPost = await postdb.findOneAndDelete({ _id: id });
+
+//             return res.status(200).json({
+//                 status: 200,
+//                 message: "Post and associated comments deleted successfully",
+//                 deletedPost: {
+//                     _id: deletedPost._id,
+//                     fileType: deletedPost.fileType || 'image',
+//                     imgKey: deletedPost.imgKey
+//                 },
+//                 deletedComments: deletedComments.deletedCount
+//             });
+//         } else {
+//             console.error("Failed to delete file from S3:", imgKey);
+//             return res.status(500).json({ status: 500, error: "Failed to delete file from storage" });
+//         }
+//     } catch (error) {
+//         console.error("Error in delete route:", error);
+//         res.status(500).json({
+//             status: 500,
+//             error: error.message || "An error occurred while deleting the post"
+//         });
+//     }
+// });
+
 router.delete('/delete/:id', async (req, res) => {
     try {
         const { imgKey } = req.body;
@@ -194,6 +240,10 @@ router.delete('/delete/:id', async (req, res) => {
         const deletedComments = await commentdb.deleteMany({ postId: id });
         console.log(`Deleted ${deletedComments.deletedCount} comments for post ${id}`);
 
+        // Delete image embeddings associated with this post
+        const deletedEmbeddings = await embeddingdb.deleteMany({ image_id: id });
+        console.log(`Deleted ${deletedEmbeddings.deletedCount} image embeddings for post ${id}`);
+
         // Delete the file from S3
         const check = await awsdeleteMiddleware(imgKey);
         if (check) {
@@ -202,13 +252,14 @@ router.delete('/delete/:id', async (req, res) => {
 
             return res.status(200).json({
                 status: 200,
-                message: "Post and associated comments deleted successfully",
+                message: "Post, associated comments, and image embeddings deleted successfully",
                 deletedPost: {
                     _id: deletedPost._id,
                     fileType: deletedPost.fileType || 'image',
                     imgKey: deletedPost.imgKey
                 },
-                deletedComments: deletedComments.deletedCount
+                deletedComments: deletedComments.deletedCount,
+                deletedEmbeddings: deletedEmbeddings.deletedCount
             });
         } else {
             console.error("Failed to delete file from S3:", imgKey);
@@ -222,6 +273,8 @@ router.delete('/delete/:id', async (req, res) => {
         });
     }
 });
+
+
 
 // getting all the post user login or not
 router.get('/allget', async (req, res) => {
