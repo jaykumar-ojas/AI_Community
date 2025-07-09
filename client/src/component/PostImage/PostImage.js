@@ -69,7 +69,7 @@ const PostImageContent = () => {
       }
 
       // Choose the appropriate upload endpoint
-      const uploadEndpoint = aiMetadata ? 'http://localhost:8099/upload-ai' : 'http://localhost:8099/upload';
+      const uploadEndpoint = aiMetadata ? '/upload-ai' : '/upload';
 
       const data = await fetch(uploadEndpoint, {
         method: 'POST',

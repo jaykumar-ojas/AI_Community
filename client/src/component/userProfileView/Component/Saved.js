@@ -6,7 +6,7 @@ import PostCard from "./PostCard";
 const fetchSavedPosts = async ({ queryKey }) => {
   const [, userId, token] = queryKey;
 
-  const response = await fetch(`http://localhost:8099/savedPost/${userId}`, {
+  const response = await fetch(`/savedPost/${userId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

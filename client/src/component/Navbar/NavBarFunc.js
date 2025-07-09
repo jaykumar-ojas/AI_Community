@@ -21,7 +21,7 @@ export const LogOutUser = () => {
       alert("user not login");
       return;
     }
-    const data = await fetch("http://localhost:8099/logout",{
+    const data = await fetch("/logout",{
       method:"GET",
       headers:{
         "Content-Type":"application/json",

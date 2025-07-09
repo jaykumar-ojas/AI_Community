@@ -15,7 +15,7 @@ const SubscriptionsList = ({ userId }) => {
     const fetchSubscriptions = async () => {
         try {
             const token = localStorage.getItem("userdatatoken");
-            const response = await fetch('http://localhost:8099/subscriptions', {
+            const response = await fetch('/subscriptions', {
                 method: 'GET',
                 headers: {
                     'Authorization': token,

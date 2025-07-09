@@ -28,7 +28,7 @@ const Card = ({ post }) => {
     const fetchModelIcon = async () => {
       if (post?.isAIGenerated && post?.aiModel) {
         try {
-          const response = await fetch(`http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(post.aiModel)}`);
+          const response = await fetch(`/aimodels/search?modelName=${encodeURIComponent(post.aiModel)}`);
           if (response.ok) {
             const data = await response.json();
             if (data.success && data.data.iconUrl) {
@@ -51,7 +51,7 @@ const Card = ({ post }) => {
       }
   
       try {
-        const response = await axios.post(`http://localhost:8099/${postData._id}/like`, {
+        const response = await axios.post(`/${postData._id}/like`, {
           userId: currentUser.id
         });
         
@@ -92,7 +92,7 @@ const Card = ({ post }) => {
       }
   
       try {
-        const response = await axios.post(`http://localhost:8099/${postData._id}/dislike`, {
+        const response = await axios.post(`/${postData._id}/dislike`, {
           userId: currentUser.id
         });
         

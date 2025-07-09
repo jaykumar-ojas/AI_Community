@@ -12,7 +12,7 @@ const NotificationComponent = ({ onClose }) => {
 
   const fetchNotifications = async () => {
     const token = localStorage.getItem('userdatatoken');
-    const res = await fetch(`http://localhost:8099/getNotification/${userId}`, {
+    const res = await fetch(`/getNotification/${userId}`, {
       method:'GET',
       headers: {
         'Content-Type': 'application/json',

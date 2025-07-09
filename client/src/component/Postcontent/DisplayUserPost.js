@@ -59,7 +59,7 @@ const RenderUserPosts = () => {
     }
     
     try {
-      const response = await fetch(`http://localhost:8099/delete/${postId}`, {
+      const response = await fetch(`/delete/${postId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -89,7 +89,7 @@ const RenderUserPosts = () => {
     }
 
     try {
-      const response = await axios.post(`http://localhost:8099/${postId}/like`, {
+      const response = await axios.post(`/${postId}/like`, {
         userId: currentUser.id
       });
       
@@ -110,7 +110,7 @@ const RenderUserPosts = () => {
     }
 
     try {
-      const response = await axios.post(`http://localhost:8099/${postId}/dislike`, {
+      const response = await axios.post(`/${postId}/dislike`, {
         userId: currentUser.id
       });
       
@@ -131,7 +131,7 @@ const RenderUserPosts = () => {
     
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8099/get', {
+      const response = await fetch('/get', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -8,7 +8,7 @@ import ReplySkeletonLayout from "../TopicComponent/ReplyComponent/ReplySkeletonL
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const fetchComments = async (postId) => {
-  const response = await axios.get(`http://localhost:8099/comments/replies?postId=${postId}`);
+  const response = await axios.get(`/comments/replies?postId=${postId}`);
   if (response.data?.comments) {
     return response.data.comments;
   }

@@ -184,7 +184,7 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const data = await fetch("http://localhost:8099/register", {
+      const data = await fetch("/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

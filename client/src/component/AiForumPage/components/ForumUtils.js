@@ -79,7 +79,7 @@ export const organizeReplies = (replyList) => {
 };
 
 // API endpoints
-export const API_BASE_URL = 'http://localhost:8099';
+export const API_BASE_URL = '';
 export const TOPICS_URL = `${API_BASE_URL}/forum/topics`;
 export const REPLIES_URL = `${API_BASE_URL}/forum/replies`;
 

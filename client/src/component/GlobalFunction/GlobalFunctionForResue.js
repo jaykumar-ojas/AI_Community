@@ -43,7 +43,7 @@ export const ValidUserForPage = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8099/validuser", {
+      const response = await fetch("/validuser", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

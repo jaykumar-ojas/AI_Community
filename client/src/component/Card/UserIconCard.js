@@ -28,7 +28,7 @@ const UserIconCard = ({ id }) => {
     try {
 
       console.log("i m goint to backend to fetch url");
-      const res = await fetch(`http://localhost:3000/getUserById/${id}`);
+      const res = await fetch(`/getUserById/${id}`);
       const json = await res.json();
 
       if (json.status === 200) {

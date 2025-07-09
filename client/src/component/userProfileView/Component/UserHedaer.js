@@ -48,7 +48,7 @@ const UserHeader = () => {
   const fetchUserProfile = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:8099/get-user-profile/${userId}`,
+        `/get-user-profile/${userId}`,
         {
           method: "GET",
           headers: {
@@ -74,7 +74,7 @@ const UserHeader = () => {
     try {
       const token = localStorage.getItem("userdatatoken");
       console.log("Checking subscription with token:", token); // Debug log
-      const response = await fetch(`http://localhost:8099/check/${userId}`, {
+      const response = await fetch(`/check/${userId}`, {
         method: "GET",
         headers: {
           Authorization: token,
@@ -93,7 +93,7 @@ const UserHeader = () => {
   const fetchSubscriptionStats = async (userId) => {
     try {
       const token = localStorage.getItem("userdatatoken");
-      const response = await fetch(`http://localhost:8099/stats/${userId}`, {
+      const response = await fetch(`/stats/${userId}`, {
         method: "GET",
         headers: {
           Authorization: token,
@@ -119,8 +119,8 @@ const UserHeader = () => {
     try {
       const token = localStorage.getItem("userdatatoken");
       const url = isSubscribed
-        ? `http://localhost:8099/unsubscribe/${id}`
-        : `http://localhost:8099/subscribe/${id}`;
+        ? `/unsubscribe/${id}`
+        : `/subscribe/${id}`;
 
       const method = isSubscribed ? "DELETE" : "POST";
 
@@ -204,7 +204,7 @@ const UserHeader = () => {
 
       console.log(formData, "this is form data");
 
-      const response = await fetch("http://localhost:8099/updateProfile", {
+      const response = await fetch("/updateProfile", {
         method: "POST",
         headers: {
           Authorization: token, // only include auth header; don't set Content-Type manually

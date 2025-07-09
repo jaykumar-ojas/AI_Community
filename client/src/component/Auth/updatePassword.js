@@ -51,7 +51,7 @@ const ChangePassword = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8099/update-password", {
+      const response = await fetch("/update-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -50,7 +50,7 @@ const UserReply = () => {
       console.log(`Calling describe-images API for reply: ${replyId}`);
       
       const response = await axios.put(
-        `http://localhost:8099/describe-images/${replyId}`,
+        `/describe-images/${replyId}`,
         {},
         {
           headers: getAuthHeaders()
@@ -74,7 +74,7 @@ const UserReply = () => {
       console.log(`Calling /aimodels/search API for model: ${modelName}`);
       
       const response = await axios.get(
-        `http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
+        `/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
         {
           headers: getAuthHeaders()
         }
@@ -146,7 +146,7 @@ const UserReply = () => {
       console.log("Calling /generate API with payload:", generatePayload);
       
       const response = await axios.post(
-        "http://localhost:8099/generate", // Updated endpoint
+        "/generate", // Updated endpoint
         generatePayload
       );
       
@@ -189,7 +189,7 @@ const UserReply = () => {
       console.log("Calling /suggest API for context awareness");
       
       const suggestResponse = await axios.post(
-        `http://localhost:8099/suggest/${replyIdForContext || topicId}`,
+        `/suggest/${replyIdForContext || topicId}`,
         {
           text: newReply.trim(),
           contextType: 'forumReply',

@@ -9,7 +9,7 @@ import Saved from "./Saved";
 const tabs = ["Image", "Video", "Audio", "Saved"];
 
 const fetchUserPosts = async (userId) => {
-  const response = await fetch("http://localhost:8099/get", {
+  const response = await fetch("/get", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
