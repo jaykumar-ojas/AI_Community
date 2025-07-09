@@ -9,7 +9,7 @@ const BookMark = ({ userId, postId, isBookmarked: initialState }) => {
   const handleBookMark = async () => {
     console.log("i m going to bacend in");
     try {
-      const response = await fetch(`http://localhost:8099/bookMark/${userId}/${postId}`, {
+      const response = await fetch(`/bookMark/${userId}/${postId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

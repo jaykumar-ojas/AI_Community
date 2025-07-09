@@ -35,7 +35,7 @@ function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick 
 
 
 const fetchModelConfig = async () => {
-    const res = await fetch("http://localhost:8099/models-info");
+    const res = await fetch("/models-info");
     if (!res.ok) throw new Error("Failed to fetch model config");
     const data = await res.json();
     if (!data.success) throw new Error("API returned unsuccessful response");
@@ -43,7 +43,7 @@ const fetchModelConfig = async () => {
 };
 
 const fetchIconUrl = async (modelName) => {
-    const res = await fetch(`http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+    const res = await fetch(`/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
     if (!res.ok) return null;
     const data = await res.json();
     return data.success ? data.data.iconUrl : null;

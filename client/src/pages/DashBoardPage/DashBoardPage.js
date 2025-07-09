@@ -12,7 +12,7 @@ import { handleGoogleLogin, validateToken } from "../../utils/authUtils";
 import { useNavigate } from "react-router-dom";
 
 const fetchPosts = async ({ pageParam = 1 }) => {
-  const res = await fetch(`http://localhost:8099/allget?page=${pageParam}&limit=9`);
+  const res = await fetch(`/allget?page=${pageParam}&limit=9`);
   return res.json();
 };
 

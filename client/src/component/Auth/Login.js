@@ -52,7 +52,7 @@ const Login = () => {
     else{
       setIsLoading(true);
       try {
-        const data=await fetch("http://localhost:8099/login",{
+        const data=await fetch("/login",{
           method:"POST",
           headers:{
             "Content-Type":"application/json"
@@ -93,7 +93,7 @@ const Login = () => {
     const token=localStorage.getItem("userdatatoken");
 
     try{
-    const data = await fetch("http://localhost:8099/validuser",{
+    const data = await fetch("/validuser",{
       method:"GET",
       headers:{
         "Content-Type":"application/json",

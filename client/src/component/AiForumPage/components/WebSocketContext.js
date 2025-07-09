@@ -10,7 +10,7 @@ export const WebSocketProvider = ({ children }) => {
   
   useEffect(() => {
     // Initialize socket connection
-    const newSocket = io('http://localhost:8099');
+    const newSocket = io('');
     setSocket(newSocket);
     
     return () => {

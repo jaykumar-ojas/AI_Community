@@ -34,7 +34,7 @@ const UserHeaderEdit = () => {
 
     const fetchUserProfile = async (userId) => {
         try {
-            const response = await fetch(`http://localhost:8099/get-user-profile/${userId}`, {
+            const response = await fetch(`/get-user-profile/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ const UserHeaderEdit = () => {
         try {
             const token = localStorage.getItem("userdatatoken");
             console.log("Checking subscription with token:", token); // Debug log
-            const response = await fetch(`http://localhost:8099/check/${userId}`, {
+            const response = await fetch(`/check/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': token,
@@ -77,7 +77,7 @@ const UserHeaderEdit = () => {
     const fetchSubscriptionStats = async (userId) => {
         try {
             const token = localStorage.getItem("userdatatoken");
-            const response = await fetch(`http://localhost:8099/stats/${userId}`, {
+            const response = await fetch(`/stats/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': token,
@@ -103,8 +103,8 @@ const UserHeaderEdit = () => {
         try {
             const token = localStorage.getItem("userdatatoken");
             const url = isSubscribed
-                ? `http://localhost:8099/unsubscribe/${id}`
-                : `http://localhost:8099/subscribe/${id}`;
+                ? `/unsubscribe/${id}`
+                : `/subscribe/${id}`;
 
             const method = isSubscribed ? 'DELETE' : 'POST';
 

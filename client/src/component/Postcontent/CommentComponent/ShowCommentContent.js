@@ -108,7 +108,7 @@ const ShowCommentContent = ({reply}) => {
           
           // Then delete the child comment
           await axios.delete(
-            `http://localhost:8099/comments/${child._id}`,
+            `/comments/${child._id}`,
             {
               headers: getAuthHeaders(),
             }
@@ -125,7 +125,7 @@ const ShowCommentContent = ({reply}) => {
 
       // Then delete the parent comment
       const response = await axios.delete(
-        `http://localhost:8099/comments/${reply?._id}`,
+        `/comments/${reply?._id}`,
         {
           headers: getAuthHeaders(),
         }
@@ -157,7 +157,7 @@ const ShowCommentContent = ({reply}) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8099/comments/${reply?._id}/like`,{},{
+        `/comments/${reply?._id}/like`,{},{
           headers: getAuthHeaders(),
         }
       );
@@ -197,7 +197,7 @@ const ShowCommentContent = ({reply}) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8099/comments/${reply?._id}/dislike`,
+        `/comments/${reply?._id}/dislike`,
         {},
         {
           headers: getAuthHeaders(),

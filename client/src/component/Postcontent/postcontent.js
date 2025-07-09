@@ -10,7 +10,7 @@ import AiIcons from "../../asset/AiIcons.png";
 
 // Utility to fetch a post by ID if not found in cache
 const fetchPostById = async (id) => {
-  const res = await fetch("http://localhost:8099/getPostById", {
+  const res = await fetch("/getPostById", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ postId: id }),

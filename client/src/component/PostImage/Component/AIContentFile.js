@@ -18,7 +18,7 @@ const AIContentFile = () => {
         const fetchModels = async () => {
             try {
                 setIsLoadingModels(true);
-                const response = await fetch("http://localhost:8099/models-info");
+                const response = await fetch("/models-info");
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
@@ -49,7 +49,7 @@ const AIContentFile = () => {
             for (const [modelName] of Object.entries(imageModels)) {
                 if (!modelIcons[modelName]) {
                     try {
-                        const response = await fetch(`http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+                        const response = await fetch(`/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
                         if (response.ok) {
                             const data = await response.json();
                             if (data.success && data.data.iconUrl) {
@@ -106,7 +106,7 @@ const AIContentFile = () => {
 
     try {
         setIsEnhancing(true);
-        const response = await fetch("http://localhost:8099/enhance-prompt", {
+        const response = await fetch("/enhance-prompt", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -154,7 +154,7 @@ const AIContentFile = () => {
             console.log("Generating AI image with prompt:", aiPrompt, "model:", selectedImageModel);
 
             // Call /generate with model and prompt
-            const response = await fetch("http://localhost:8099/generate", {
+            const response = await fetch("/generate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -205,7 +205,7 @@ const AIContentFile = () => {
                 }
 
                 console.log("Final image URL for proxy:", imageUrl);
-                const proxyUrl = `http://localhost:8099/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+                const proxyUrl = `/proxy-image?url=${encodeURIComponent(imageUrl)}`;
                 
                 const imageResponse = await fetch(proxyUrl);
                 if (!imageResponse.ok) {

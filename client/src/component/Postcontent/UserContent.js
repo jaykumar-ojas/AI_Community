@@ -26,7 +26,7 @@ const AIModelInfo = ({ aiMetadata }) => {
         // Fetch model icon from /aimodels/search API
         if (aiMetadata.aiModel) {
           try {
-            const iconResponse = await fetch(`http://localhost:8099/aimodels/search?modelName=${encodeURIComponent(aiMetadata.aiModel)}`);
+            const iconResponse = await fetch(`/aimodels/search?modelName=${encodeURIComponent(aiMetadata.aiModel)}`);
             if (iconResponse.ok) {
               const iconData = await iconResponse.json();
               if (iconData.success && iconData.data.iconUrl) {
@@ -39,7 +39,7 @@ const AIModelInfo = ({ aiMetadata }) => {
         }
         
         // Fetch model display info from /models-info API
-        const response = await fetch("http://localhost:8099/models-info");
+        const response = await fetch("/models-info");
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -171,7 +171,7 @@ const UserContent = ({ post }) => {
     try {
       console.log("Deleting post:", postId, "with image key:", imgKey);
 
-      const response = await fetch(`http://localhost:8099/delete/${postId}`, {
+      const response = await fetch(`/delete/${postId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -206,7 +206,7 @@ const UserContent = ({ post }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8099/${postData?._id}/like`,
+        `/${postData?._id}/like`,
         {
           userId: currentUser.id,
         }
@@ -257,7 +257,7 @@ const UserContent = ({ post }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8099/${postData?._id}/dislike`,
+        `/${postData?._id}/dislike`,
         {
           userId: currentUser.id,
         }
