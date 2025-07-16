@@ -3,7 +3,7 @@ import React from "react";
 const GoogleLogin = () => {
  
     const loginwithGoogle =()=>{
-        window.open("http://13.203.198.173:8099/auth/google/callback","_self");
+        window.open("https://pixxelmind.com:8099/auth/google/callback","_self");
     }
     return (
         <div className="my-6">
