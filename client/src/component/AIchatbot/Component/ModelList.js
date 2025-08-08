@@ -118,7 +118,7 @@ const ModelList = () => {
 
     if (isLoading) {
         return (
-            <div className="w-full flex flex-col bg-black rounded-lg shadow-sm p-4">
+            <div className="w-full flex flex-col bg-transparent rounded-lg shadow-sm p-4">
                 <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-b-transparent"></div>
                     <span className="ml-2 text-text_header">Loading models...</span>
@@ -132,7 +132,7 @@ const ModelList = () => {
     }
 
     return (
-        <div className="w-full flex flex-col bg-black rounded-lg shadow-sm">
+        <div className="w-full flex flex-col bg-transparent rounded-lg shadow-sm">
             {/* Model Type Selection */}
             <div className="p-4 border-b border-gray-700">
                 <div className="font-semibold mb-3 text-text_header text-sm flex items-center">

@@ -56,13 +56,13 @@ const DragAndDrop = () => {
     };
 
     return (
-        <div className="flex  h-full w-full">
+        <div className="flex  h-full w-full relative bg-transparent">
             {showCropper ? (
                 <div className="h-full w-full">
                     <Cropper />
                 </div>
             ) : previewUrl ? (
-                <div className="w-full h-full flex flex-col bg-bg_comment_box rounded-lg max-w-7xl p-4 pt-2">
+                <div className="w-full h-full flex flex-col relative bg-transparent rounded-lg max-w-7xl p-4 pt-2">
                     <div className="flex items-center justify-between">
                     <div className="text-text_header/70 tracking-wider items-center text-md">
                         Preview
@@ -91,7 +91,7 @@ const DragAndDrop = () => {
             ) : (
                 <label
                     htmlFor="dropzone-file"
-                    className="w-full h-[67vh] cursor-pointer bg-bg_comment_box flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-400"
+                    className="w-full h-[67vh] cursor-pointer relative bg-transparent flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-400"
                 >
                     <DragAndDropIcon />
                     <p className="mb-2 text-sm text-text_header dark:text-gray-400">

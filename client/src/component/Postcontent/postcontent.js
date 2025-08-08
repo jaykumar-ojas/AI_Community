@@ -1,16 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import UserContent from "./UserContent";
 import CommentReview from "./CommentReview";
 import RelatedCard from "../Card/RelatedCard";
 import UserCommentReply from "../UserReply/UserCommentReply";
-import ModelList from "./CommentComponent/Model";
-import AiIcons from "../../asset/AiIcons.png";
 
 // Utility to fetch a post by ID if not found in cache
 const fetchPostById = async (id) => {
-  const res = await fetch("/getPostById", {
+  const res = await fetch("http://localhost:8099/getPostById", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ postId: id }),
@@ -44,11 +42,6 @@ const fetchRelevantPosts = async (id) => {
 const PostContent = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const [showIcon,setShowICon] = useState(false);
-
-  const handleIconClick = () => {
-    setShowICon(!showIcon);
-  }
 
   // Try to find the post in the existing cached posts list (from useInfiniteQuery)
   const postFromCache = queryClient.getQueryData(['posts'])?.pages
@@ -109,19 +102,16 @@ const PostContent = () => {
       <div className="w-full justify-center flex flex-col lg:flex-row">
         {/* Left Section */}
         <div className="relative w-full rounded-xl lg:w-[70%] h-[calc(100vh-3.5rem)] flex flex-col">
-          {/* model icon list */}
-          <div className="absolute z-50 left-0 m-4  mb-8 bottom-0">
-            {showIcon && <ModelList/> }
-            <button onClick={handleIconClick} className="justify-center m-2 items-center"><img src={AiIcons} alt="model" className="w-10 h-10 rounded-full"></img></button>
-            </div>
           <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box px-24">
             <div className="mb-6">
               <UserContent post={post} />
             </div>
+
             <div className="flex-1 bg-bg_comment_box p-4 rounded-xl">
               <CommentReview />
             </div>
           </div>
+
           <div className="px-24">
             <UserCommentReply />
           </div>

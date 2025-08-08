@@ -5,6 +5,8 @@ import "react-loading-skeleton/dist/skeleton.css";
 const MasonryMediaGrid = ({ url, type }) => {
   const [mediaLoaded, setMediaLoaded] = useState(false);
 
+  console.log(url);
+
   return (
     <div className="mb-4 break-inside-avoid rounded-lg overflow-hidden bg-white shadow-sm relative">
       {/* Show Skeleton while media loads */}

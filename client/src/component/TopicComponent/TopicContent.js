@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
@@ -13,11 +13,13 @@ import {
 import HeaderContent from "./components/HeaderContent";
 import ReplyContent from "./ReplyComponent/ReplyContent";
 import { ForumContext } from "../ContextProvider/ModelContext";
-import { LikeIcon, DisLikeIcon, BackArrow } from "../../asset/icons";
+import { LikeIcon, DisLikeIcon, BackArrow, UpvoteIcon, DownvoteIcon } from "../../asset/icons";
 import UserReply from "../UserReply/UserReply";
 import HeaderSkeleton from "./components/HeaderSkeleton";
+import { encodeId } from '../../utils/hashids';
 
 const fetchTopic = async (topicId) => {
+  console.log("encodeed", topicId);
   const response = await axios.get(`${API_BASE_URL}/forum/topics/${topicId}`, {
     headers: getAuthHeaders(),
   });
@@ -28,6 +30,7 @@ const TopicContent = () => {
   const { topicId } = useParams();
   const { loginData } = useContext(LoginContext);
   const { setReplyIdForContext,setUserName } =useContext(ForumContext);
+  const navigate = useNavigate();
 
   useEffect(()=>{
     setReplyIdForContext(null);
@@ -56,6 +59,21 @@ const TopicContent = () => {
   const isTopicDisliked = false;
   const threadView = null;
 
+  // Delete handler
+  const handleDelete = async () => {
+    if (!topicId) return;
+    if (!window.confirm("Are you sure you want to delete this topic?")) return;
+    try {
+      await axios.delete(`http://localhost:8099/forum/topics/${topicId}`, {
+        headers: getAuthHeaders(),
+      });
+      navigate("/"); // Change this to your forum main page route
+    } catch (err) {
+      alert("Failed to delete topic.");
+      console.error(err);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Fixed Topic Header */}
@@ -68,20 +86,20 @@ const TopicContent = () => {
         </h2>
         {!threadView && (
           <div className="flex items-center space-x-2">
-            <button
+            {/* <button
               className={`flex items-center ${
                 isTopicLiked ? "text-blue-600" : "text-gray-500"
               } hover:text-blue-600`}
             >
-              <LikeIcon isLiked={isTopicLiked} />
+              <UpvoteIcon isLiked={isTopicLiked} />
             </button>
             <button
               className={`flex items-center ${
                 isTopicDisliked ? "text-red-600" : "text-gray-500"
               } hover:text-red-600`}
             >
-              <DisLikeIcon isDisliked={isTopicDisliked} />
-            </button>
+              <DownvoteIcon isDisliked={isTopicDisliked} />
+            </button> */}
           </div>
         )}
       </div>
@@ -90,7 +108,7 @@ const TopicContent = () => {
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box">
         <div className="space-y-4">
           <div className="bg-bg_comment_box rounded-xl p-4">
-            {isLoading ? <HeaderSkeleton /> : topic && <HeaderContent topic={topic} />}
+            {isLoading ? <HeaderSkeleton /> : topic && <HeaderContent topic={topic} onDelete={handleDelete} />}
             {isError && (
               <div className="text-red-500 text-center">
                 Failed to load topic.
@@ -110,7 +128,7 @@ const TopicContent = () => {
       </div>
 
       {/* Fixed Bottom Reply Input */}
-      <div className="px-4 py-2 bg-bg_comment_box">
+      <div className="px-4 py-2 bg-transparent">
         <UserReply />
       </div>
     </div>

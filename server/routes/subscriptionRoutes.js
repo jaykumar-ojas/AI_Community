@@ -4,7 +4,7 @@ const Subscription = require('../models/subscriptionSchema');
 const userdb = require('../models/userSchema');
 const authenticate = require('../middleware/authenticate');
 const googledb = require('../models/googleSchema');
-
+const {decodeId} = require('../utils/hashids');
 // Helper function to ensure subscription document exists for a user
 const ensureSubscriptionExists = async (userId) => {
     try {
@@ -208,7 +208,8 @@ router.get('/subscriptions', authenticate, async (req, res) => {
 router.get('/check/:userId', authenticate, async (req, res) => {
     try {
         const subscriberId = req.rootuser._id;
-        const subscribedToId = req.params.userId;
+        console.log("roooooot user",  subscriberId);
+        const subscribedToId = decodeId(req.params.userId);
         
         if (!subscriberId || !subscribedToId) {
             return res.status(400).json({ error: "Invalid user IDs" });
@@ -228,7 +229,7 @@ router.get('/check/:userId', authenticate, async (req, res) => {
 // Get subscription stats for a user
 router.get('/stats/:userId?', authenticate, async (req, res) => {
     try {
-        const userId = req.params.userId || req.rootuser._id;
+        const userId = decodeId(req.params.userId) || req.rootuser._id;
         
         if (!userId) {
             return res.status(400).json({ error: "Invalid user ID" });

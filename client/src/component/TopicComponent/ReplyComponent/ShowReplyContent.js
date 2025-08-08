@@ -18,6 +18,8 @@ import {
   ReplyIcon,
   LikeIcon,
   DisLikeIcon,
+  UpvoteIcon,
+  DownvoteIcon
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
 
@@ -131,25 +133,6 @@ const ShowReplyContent = ({
         // Set local deleted state for immediate UI feedback
         setIsDeleted(true);
 
-        // If this reply has children, emit delete events for them as well
-        if (reply.children && reply.children.length > 0) {
-          const emitDeleteForChildren = (children) => {
-            children.forEach((child) => {
-              // Emit delete event for each child
-              emitDeleteReply(child._id, topicId);
-              // Call parent's delete handler for each child
-              if (onReplyDeleted) {
-                onReplyDeleted(child._id);
-              }
-              // Recursively handle grandchildren
-              if (child.children && child.children.length > 0) {
-                emitDeleteForChildren(child.children);
-              }
-            });
-          };
-
-          emitDeleteForChildren(reply.children);
-        }
       }
     } catch (error) {
       console.error("Error deleting reply:", error);
@@ -248,13 +231,13 @@ const ShowReplyContent = ({
   const firstModelName = getFirstModelName();
 
   // Don't render if deleted (immediate UI feedback)
-  if (isDeleted) {
-    return (
-      <div className="p-4 text-center text-gray-500 bg-gray-100 rounded-xl border border-gray-200">
-        <span className="text-sm">This reply has been deleted</span>
-      </div>
-    );
-  }
+  // if (isDeleted) {
+  //   return (
+  //     <div className="p-4 text-center text-gray-500 bg-gray-100 rounded-xl border border-gray-200">
+  //       <span className="text-sm">This reply has been deleted</span>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div key={reply?._id} className="flex justify-start">
@@ -341,7 +324,7 @@ const ShowReplyContent = ({
                 isLiked && "text-like_color"
               }`}
             >
-              <LikeIcon isLiked={isLiked} />
+              <UpvoteIcon isLiked={isLiked} />
               {replyLikes?.length || 0}
             </button>
 
@@ -351,7 +334,7 @@ const ShowReplyContent = ({
                 isDisliked && "text-red-600"
               }`}
             >
-              <DisLikeIcon isDisliked={isDisliked} />
+              <DownvoteIcon isDisliked={isDisliked} />
               {replyDislikes?.length || 0}
             </button>
           </div>

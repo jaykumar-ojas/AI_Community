@@ -16,8 +16,19 @@ import {
   DisLikeIcon,
   LikeIcon,
   DeleteIcon,
+  UpvoteIcon,
+  DownvoteIcon
 } from "../../../asset/icons";
 import HeaderSkeleton from "./HeaderSkeleton";
+
+// Add a simple three dots icon (vertical ellipsis)
+const ThreeDotsIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="4" r="1.5" fill="#888" />
+    <circle cx="10" cy="10" r="1.5" fill="#888" />
+    <circle cx="10" cy="16" r="1.5" fill="#888" />
+  </svg>
+);
 
 const HeaderContent = ({ topic, onDelete }) => {
   const { viewBox, setViewBox, setReplyIdForContext } =
@@ -33,6 +44,8 @@ const HeaderContent = ({ topic, onDelete }) => {
   const [expanded, setExpanded] = useState(false);
   const [showToggle, setShowToggle] = useState(false);
   const contentRef = useRef();
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef();
 
   useEffect(() => {
     const el = contentRef.current;
@@ -55,6 +68,23 @@ const HeaderContent = ({ topic, onDelete }) => {
       setIsDisLiked(topicDislikes.includes(loginData.validuserone._id));
     }
   }, [topicLikes, topicDislikes, loginData]);
+
+  useEffect(() => {
+    // Close menu on outside click
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    }
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
 
   const handleTopicLike = async () => {
     if (!loginData?.validuserone) {
@@ -152,15 +182,31 @@ const HeaderContent = ({ topic, onDelete }) => {
               {formatDate(topic?.createdAt)}
             </span>
           </div>
-
+          {/* Three dots menu for author actions */}
           {isAuthor && (
-            <button
-              onClick={onDelete}
-              className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
-              title="Delete post"
-            >
-              <DeleteIcon />
-            </button>
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMenu((prev) => !prev)}
+                className="p-1 rounded-full hover:bg-btn_bg focus:outline-none"
+                title="More actions"
+              >
+                <ThreeDotsIcon />
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 mt-2 w-28 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      onDelete();
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-gray-100 w-full text-left"
+                  >
+                    <DeleteIcon />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -219,7 +265,7 @@ const HeaderContent = ({ topic, onDelete }) => {
                 isLiked && "text-like_color"
               }`}
             >
-              <LikeIcon isLiked={isLiked} />
+              <UpvoteIcon isLiked={isLiked} />
               {topicLikes?.length || 0}
             </button>
 
@@ -229,7 +275,7 @@ const HeaderContent = ({ topic, onDelete }) => {
                 isDisliked && "text-red-600"
               }`}
             >
-              <DisLikeIcon isDisliked={isDisliked} />
+              <DownvoteIcon isDisliked={isDisliked} />
               {topicDislikes?.length || 0}
             </button>
           </div>

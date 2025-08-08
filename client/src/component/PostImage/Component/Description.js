@@ -9,7 +9,7 @@ const Description = () => {
   };
 
   return (
-    <div className="w-full pt-0 p-6">
+    <div className="w-full pt-0 p-6 relative bg-transparent">
       <h2 className="text-xl px-2 font-semibold text-text_header mb-3">Description</h2>
 
       <div className="relative">

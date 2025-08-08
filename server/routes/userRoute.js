@@ -11,7 +11,7 @@ const {awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware} = require(".
 
 const jwt = require("jsonwebtoken");
 const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
-
+const {decodeId} = require("../utils/hashids");
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -335,13 +335,14 @@ router.post("/upload-background-image", authenticate, upload.single('file'), aws
 // Get user profile picture URL
 router.get("/get-profile-picture", authenticate, async(req, res) => {
     try {
+        console.log("is iam gettting thisnf smas");
         if (!req.userId) {
             throw new Error("User not logged in");
         }
-        
+        console.log("userid", req.userId);
         // Find user
-        const user = await userdb.findOne({_id: req.userId}) || await googledb.findOne({_id: req.userId});
-        
+        const user = await userdb.findOne({_id: decodeId(req.userId)}) || await googledb.findOne({_id: decodeId(req.userId)});
+        console.log("decode user id", decodeId(req.userId));
         if (!user) {
             throw new Error("User not found");
         }
@@ -398,7 +399,8 @@ router.get("/get-background-image", authenticate, async(req, res) => {
 // Get user profile by ID
 router.get("/get-user-profile/:userId", async(req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = decodeId(req.params.userId);
+    
     if (!userId) {
       return res.status(400).json({ status: 400, error: "User ID is required" });
     }

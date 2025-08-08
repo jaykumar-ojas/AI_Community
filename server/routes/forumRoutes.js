@@ -10,6 +10,7 @@ const AWS = require('aws-sdk');
 const { modelSelection } = require('../middleware/LLMmiddleware');
 const {deleteForumById} = require('../middleware/DeleteMiddleware');
 const notifiyUser = require("../middleware/notification");
+const { decodeId, encodeId } = require('../utils/hashids');
 
 
 // Configure AWS
@@ -93,8 +94,13 @@ router.get('/topics', async (req, res) => {
 // Get a single topic by ID
 router.get('/topics/:id', async (req, res) => {
   try {
-    const topic = await ForumTopic.findById(req.params.id);
+   
+    const realId = decodeId(req.params.id);
+   
+    if(!realId)  return res.status(400).json({error: 'invalid ID'});
     
+    const topic = await ForumTopic.findById(realId);
+   // console.log("topic ", topic);
     if (!topic) {
       return res.status(404).json({ status: 404, error: 'Topic not found' });
     }
@@ -103,6 +109,9 @@ router.get('/topics/:id', async (req, res) => {
     topic.viewCount += 1;
     await topic.save();
 
+    // const topicObj = topic.toObject();
+    // topicObj.id = req.params.id; // keep encoded in response
+    //res.json({ topic: topicObj });
     
     // Process media attachments to generate signed URLs
     
@@ -216,17 +225,21 @@ router.delete('/topics/:id', authenticate, async (req, res) => {
 // Get replies for a topic
 router.get('/replies', async (req, res) => {
   try {
-    const { topicId } = req.query;
+    const realId = decodeId(req.query.topicId);
+    console.log("realId", realId);
+    console.log("reqquery", req.query);
+
+   // const { topicId } = req.query;
     
-    if (!topicId) {
+    if (!realId) {
       return res.status(400).json({ status: 400, error: 'Topic ID is required' });
     }
     
-    const replies = await ForumReply.find({ topicId })
+         const replies = await ForumReply.find({ topicId: realId })
       .sort({ isAnswer: -1, createdAt: 1 });
     
 
-    
+    console.log("replies", replies);
     res.status(200).json({ status: 200, replies: replies});
 
   } catch (error) {
@@ -599,7 +612,9 @@ router.get('/paginated', async(req, res) => {
 router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware,async (req, res) => {
     try {
       const { topicId, parentReplyId, userId, userName } = req.body;
-
+      console.log("topicId", req.body.topicId);
+      const realId = decodeId(req.body.topicId);
+      console.log("realId", realId);
       // Parse content as array of content blocks
       const contentArray = JSON.parse(req.body.content);
       // Validate content
@@ -610,12 +625,12 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
         });
       }
 
-      if (!topicId) {
+      if (!realId) {
         return res.status(400).json({ status: 400, error: 'Topic ID is required' });
       }
 
       // Check if topic exists and is not locked
-      const topic = await ForumTopic.findById(topicId);
+      const topic = await ForumTopic.findById(realId);
       if (!topic) {
         return res.status(404).json({ status: 404, error: 'Topic not found' });
       }
@@ -650,7 +665,7 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
       // Create and save new reply document
       const newReply = new ForumReply({
         content: processedContent,
-        topicId,
+          topicId: realId,
         userId: actualUserId,
         userName: actualUserName,
         parentReplyId: parentReplyId || null,

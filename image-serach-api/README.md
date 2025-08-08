@@ -33,6 +33,8 @@ S3_SECRET_ACCESS_KEY="your-aws-secret-key"
 BUCKET="your-s3-bucket-name"
 REGION="your-aws-region"
 ```
+### set up virtual enviroment and activate
+
 
 ### Installation
 

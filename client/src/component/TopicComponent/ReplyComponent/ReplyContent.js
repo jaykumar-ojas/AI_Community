@@ -64,48 +64,40 @@ const ReplyContent = () => {
       if (newReply.topicId !== topicId) return;
 
       console.log("WebSocket: New reply received:", newReply);
-
-      // Instead of manually updating cache, refetch the data
-      queryClient.invalidateQueries(["replies", topicId]);
       
-      // Alternative: If you want to keep manual cache update, use this approach:
-      /*
-      queryClient.setQueryData(["replies", topicId], (oldData) => {
-        if (!oldData) return oldData;
-        
-        const rawReplies = [...oldData];
-        
-        // Add the new reply to raw data
-        if (!newReply.parentReplyId) {
-          rawReplies.push(newReply);
-        } else {
-          // For nested replies, add to the raw array and let organizeReplies handle the structure
-          rawReplies.push(newReply);
-        }
-        
-        // Re-organize the replies using your existing function
-        const organizedReplies = organizeReplies(rawReplies);
-        console.log("Organized replies:", organizedReplies);
-        return organizedReplies;
-      });
-      */
+      queryClient.invalidateQueries(["replies", topicId]);
+  
     });
+
+   
+    let count = 0;
+
 
     const unsubscribeDelete = subscribeToEvent("reply_deleted", (deletedReplyId) => {
       queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
-        const removeReply = (replies) => {
+        const removeReplyAndChildren = (replies) => {
           return replies.filter(reply => {
-            if (reply._id === deletedReplyId) return false;
-            if (reply.children) {
-              reply.children = removeReply(reply.children);
+            // If this is the reply to delete, remove it (and all its children automatically)
+            if (reply._id === deletedReplyId) {
+              return false; // This removes the entire branch
             }
-            return true;
+            
+            // For other replies, recursively check their children
+            if (reply.children && reply.children.length > 0) {
+              reply.children = removeReplyAndChildren(reply.children);
+            }
+            
+            return true; // Keep this reply
           });
         };
-        return organizeReplies(removeReply(oldReplies));
+        
+        const updatedReplies = removeReplyAndChildren(oldReplies);
+        console.log('Deleting reply and its children:', deletedReplyId);
+        console.log('Updated replies:', updatedReplies);
+        return organizeReplies(updatedReplies);
       });
+      queryClient.invalidateQueries(["replies", topicId]);
     });
-
     return () => {
       unsubscribeNew();
       unsubscribeDelete();

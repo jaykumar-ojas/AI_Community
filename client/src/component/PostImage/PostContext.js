@@ -12,7 +12,7 @@ const PostProvider = ({ children }) => {
     const [refreshKey, setRefreshKey] = useState(0);
     const [aiPrompt, setAiPrompt] = useState("");
     const [desc,setDesc] = useState("");
-    const [selectedImageModel, setSelectedImageModel] = useState("dall-e-3");
+    const [selectedImageModel, setSelectedImageModel] = useState("");
     const [aiMetadata, setAiMetadata] = useState(null);
     const [crop, setCrop] = useState({ 
     unit: '%', 

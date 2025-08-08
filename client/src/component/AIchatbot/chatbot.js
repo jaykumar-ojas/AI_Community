@@ -46,7 +46,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-bg_comment">
+    <div className="flex h-[calc(100vh-3.5rem)] relative overflow-hidden bg-transparent">
       {/* Sidebar */}
       <div className='h-[calc(100vh-3.5rem)] bg-bg_sidebar/50 border-r border-black w-[18%]'>
         <ModelList></ModelList>

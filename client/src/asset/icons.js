@@ -17,6 +17,45 @@ export const LikeIcon = ({ isLiked }) => {
   );
 };
 
+export const UpvoteIcon = ({ isUpvoted }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-4 w-4 mr-1"
+      fill={isUpvoted ? "#3b82f6" : "none"} // Blue when upvoted
+      viewBox="0 0 24 24"
+      stroke={isUpvoted ? "#3b82f6" : "currentColor"}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 4l-8 8h5v8h6v-8h5l-8-8z"
+      />
+    </svg>
+  );
+};
+
+export const DownvoteIcon = ({ isDownvoted }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-4 w-4 mr-1"
+      fill={isDownvoted ? "#ef4444" : "none"} // Red when downvoted
+      viewBox="0 0 24 24"
+      stroke={isDownvoted ? "#ef4444" : "currentColor"}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 20l-8-8h5V4h6v8h5l-8 8z"
+      />
+    </svg>
+  );
+};
+
+
 export const DeleteIcon = ({ isHovered }) => {
   return (
     <svg
@@ -106,21 +145,54 @@ export const SearchIcon = ({ isActive }) => {
   );
 };
 
-export const heartSvg = (filled = false) => {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="21" id="heart">
-      <path
-        fill={filled ? "#ff4d4d" : "none"} // Red when filled
-        fillRule="evenodd"
-        stroke={filled ? "#ff4d4d" : "currentColor"}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M20.84 2.61a5.5 5.5 0 0 0-7.78 0L12 3.67l-1.06-1.06a5.501 5.501 0 0 0-7.78 7.78l1.06 1.06L12 19.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-      ></path>
+// export const heartSvg = (filled = false) => {
+//   return (
+//     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="21" id="heart">
+//       <path
+//         fill={filled ? "#ff4d4d" : "none"} // Red when filled
+//         fillRule="evenodd"
+//         stroke={filled ? "#ff4d4d" : "currentColor"}
+//         strokeLinecap="round"
+//         strokeLinejoin="round"
+//         strokeWidth="2"
+//         d="M20.84 2.61a5.5 5.5 0 0 0-7.78 0L12 3.67l-1.06-1.06a5.501 5.501 0 0 0-7.78 7.78l1.06 1.06L12 19.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+//       ></path>
+//     </svg>
+//   );
+// };
+
+export const heartSvg = (filled) => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill={filled ? "#ff4757" : "none"}
+    stroke={filled ? "#ff4757" : "currentColor"}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={`transition-all duration-300 ${filled ? 'scale-110' : 'scale-100'}`}
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+
+export const Sparkle = ({ style, color }) => (
+  <div
+    className="absolute pointer-events-none animate-ping"
+    style={style}
+  >
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill={color}
+      className="animate-spin"
+    >
+      <path d="M12 0l2.4 7.2L24 12l-9.6 4.8L12 24l-2.4-7.2L0 12l9.6-4.8z" />
     </svg>
-  );
-};
+  </div>
+);
 
 export const thumbsDownSvg = (filled = false) => {
   return (

@@ -5,6 +5,7 @@ const goodledb = require("../models/googleSchema");
 
 const authenticate = async(req, res, next) => {
     try {
+        console.log("i am herec in authen " );
         const token = req.headers.authorization;
         
         if (!token) {

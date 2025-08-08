@@ -43,7 +43,7 @@ const Cropper = () => {
     if (!showCropper || !previewUrl || fileType !== "image") return null;
 
     return (
-        <div className="w-full h-full flex flex-col bg-bg_comment_box rounded-lg max-w-7xl p-4 pt-2">
+        <div className="w-full h-full flex flex-col relative bg-transparent rounded-lg max-w-7xl p-4 pt-2">
             <div className="flex justify-between items-center text-lg text-text_header/70 tracking-wider">
                 <div>
                     Crop

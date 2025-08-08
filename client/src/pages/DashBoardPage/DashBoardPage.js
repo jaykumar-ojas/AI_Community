@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from "react";
 import { useInfiniteQuery } from '@tanstack/react-query';
-import Navbar from "../../component/Navbar/Navbar";
 import Card from "../../component/Card/Card";
 import ForumSystem from "../../component/AiForumPage/ForumSystem";
 import Loader from "../../component/Loader/Loader";
@@ -63,52 +62,54 @@ const Page = () => {
   };
 
   return (
-    <div className="h-full bg-bg_comment">
-      <div className="mx-auto px-4">
-        <div className="flex gap-8">
-          <div className="flex-1">
-            {isLoading ? (
-              <MasonrySkeletonGrid />
-            ) : allPosts.length > 0 ? (
-              <InfiniteScroll
-                dataLength={allPosts.length}
-                next={fetchNextPage}
-                hasMore={hasNextPage}
-                loader={
-                  <div className="flex justify-center my-4">
-                    <Loader />
-                  </div>
-                }
-                scrollThreshold="90%"
-                scrollableTarget="scrollableDiv"
-              >
-                <div
-                  id="scrollableDiv"
-                  className="h-[calc(100vh-3.5rem)] overflow-y-auto no-scrollbar pt-2"
+    <div className="relative min-h-screen">
+      {/* Content - no background needed as it inherits from Layout */}
+      <div className="relative z-10 min-h-screen">
+        <div className="mx-auto px-4 py-4">
+          <div className="flex gap-8">
+            <div className="flex-1">
+              {isLoading ? (
+                <MasonrySkeletonGrid />
+              ) : allPosts.length > 0 ? (
+                <InfiniteScroll
+                  dataLength={allPosts.length}
+                  next={fetchNextPage}
+                  hasMore={hasNextPage}
+                  loader={
+                    <div className="flex justify-center my-4">
+                      <Loader />
+                    </div>
+                  }
+                  scrollThreshold="90%"
+                  scrollableTarget="scrollableDiv"
                 >
-                  <Masonry
-                    breakpointCols={breakpointColumnsObj}
-                    className="flex gap-2"
-                    columnClassName="flex flex-col gap-0"
+                  <div
+                    id="scrollableDiv"
+                    className="h-[calc(100vh-7rem)] overflow-y-auto no-scrollbar pt-2"
                   >
-                    {allPosts.map((post) => (
-                      <div key={post._id}>
-                        <Card post={post} />
-                      </div>
-                    ))}
-                  </Masonry>
+                    <Masonry
+                      breakpointCols={breakpointColumnsObj}
+                      className="flex gap-2"
+                      columnClassName="flex flex-col gap-0"
+                    >
+                      {allPosts.map((post) => (
+                        <div key={post._id}>
+                          <Card post={post} />
+                        </div>
+                      ))}
+                    </Masonry>
+                  </div>
+                </InfiniteScroll>
+              ) : (
+                <div className="text-center text-gray-300 text-lg">
+                  No posts available
                 </div>
-              </InfiniteScroll>
-            ) : (
-              <div className="text-center text-gray-500">
-                No posts available
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          <div className="w-96 relative hidden md:block">
-            <div className="sticky top-0 pt-2 h-[calc(100vh-3.5rem)] overflow-hidden">
-              <div className="h-full rounded-lg shadow-lg">
+            {/* Forum section */}
+            <div className="w-96 relative hidden md:block">
+              <div className="sticky top-4 pt-2 h-[calc(100vh-7rem)] overflow-hidden">
                 <ForumSystem />
               </div>
             </div>

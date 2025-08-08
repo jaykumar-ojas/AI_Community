@@ -124,7 +124,7 @@ const Login = () => {
   },[]);
 
   return (
-    <div className="z-10 fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center p-4">
+    <div className="z-10 fixed inset-0 bg-none  flex justify-center items-center p-4">
       {/* Loader Overlay */}
       {isLoading && !popupMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
