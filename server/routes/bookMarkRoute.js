@@ -5,6 +5,7 @@ const postdb = require("../models/postSchema");
 const googledb = require("../models/googleSchema");
 const bookMarkdb = require("../models/BookMark");
 const authenticate = require('../middleware/authenticate');
+const { decodeId, encodeId } = require('../utils/hashids');
 
 router.post('/bookMark/:userId/:postId', authenticate, async (req, res) => {
   try {
@@ -88,18 +89,25 @@ router.post('/bookMark/:userId/:postId', authenticate, async (req, res) => {
 });
 
 
+
+
 router.get("/savedPost/:userId", authenticate, async (req, res) => {
   console.log("i m coming here");
   try {
     const { userId } = req.params;
-
+    
     if (!userId) {
       return res.status(400).json({ status: "fail", error: "User ID not provided" });
     }
 
+    const realUserId = decodeId(userId);
+    if (!realUserId) {
+      return res.status(400).json({ status: "fail", error: "Invalid user ID" });
+    }
+
     console.log("i go for fining bookMark data");
 
-    const userBookmarks = await bookMarkdb.findOne({ "userId":userId });
+    const userBookmarks = await bookMarkdb.findOne({ "userId": realUserId });
 
         console.log("i go for fining bookMark  back data",userBookmarks);
 

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import { getUserFromCache, saveUserToCache } from "../../utils/cacheUtils"; // adjust path
 import "react-loading-skeleton/dist/skeleton.css";
-
+import { encodeId } from "../../utils/hashids";
 const UserIconCard = ({ id }) => {
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(true);

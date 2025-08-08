@@ -14,7 +14,6 @@ import ForgotPassword from "./component/Auth/ForgotPassword";
 import VerfiyOtp from "./component/Auth/verifyOtp";
 import PostContent from "./component/Postcontent/postcontent";
 import AIAggregator from "./component/AIchatbot/chatbot";
-
 import { WebSocketProvider } from "./component/AiForumPage/components/WebSocketContext";
 import NewTopicModal from "./component/AiForumPage/components/NewTopicModal";
 import TopicContent from "./component/TopicComponent/TopicContent";
@@ -25,7 +24,7 @@ import UserProfile from "./component/userProfileView/userProfile";
 import PostImage from "./component/PostImage/PostImage";
 import UserEdit from "./component/userProfileView/UserEdit";
 import CommentModelProvider from "./component/ContextProvider/CommentModelContext";
-
+import {BackgroundBeams} from "./component/ui/background-beams";
 
 const Layout = () => {
   const location = useLocation();
@@ -35,12 +34,29 @@ const Layout = () => {
   const shouldHideNavbar = noNavbarPaths.includes(location.pathname);
 
   return (
-    <div className="flex flex-col h-screen">
-  {!shouldHideNavbar && <Navbar />}
-  <main className="flex-1 overflow-auto bg-comment_box">
-    <Outlet />
-  </main>
-</div>
+    <div className="flex flex-col h-screen relative bg-black">
+      {/* Single BackgroundBeams for the entire layout */}
+      <BackgroundBeams className="absolute inset-0 z-0" />
+      
+      {/* Content overlay - make sure it's above the background */}
+      <div className="relative z-10 flex flex-col h-screen">
+        {!shouldHideNavbar && <Navbar />}
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+};
+
+const BackgroundWrapper = ({ children }) => {
+  return (
+    <div className="min-h-screen relative bg-black">
+      <BackgroundBeams className="absolute inset-0 z-0" />
+      <div className="relative z-10 min-h-screen">
+        {children}
+      </div>
+    </div>
   );
 };
 
@@ -65,9 +81,9 @@ const router = createBrowserRouter([
       {path: "userPost/edit/:id", element: <UserEdit/>}
     ]
   },
-  { path: "/login", element: <Login /> },
-  { path: "/register", element: <Register /> },
-  { path: "*", element: <Error /> },
+   { path: "/login", element: <BackgroundWrapper><Login /></BackgroundWrapper> },
+  { path: "/register", element: <BackgroundWrapper><Register /></BackgroundWrapper> },
+  { path: "*", element: <BackgroundWrapper><Error /></BackgroundWrapper> },
 ]);
 
 function App() {
@@ -85,5 +101,3 @@ function App() {
 }
 
 export default App;
-
-

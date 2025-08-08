@@ -15,7 +15,9 @@ const updateUrlFromUserPost = async () => {
         }
 
         for (const post of postData) {
-            const isOld = isOlderThan6Days(post.imgUrlCreatedAt);
+
+            //const isOld = isOlderThan6Days(post.imgUrlCreatedAt);
+            const isOld = true;
             if (isOld || post.imgUrl==="") {
                 const newImgUrl = await generateSignedUrl(post.imgKey); // await needed
                 post.imgUrl = newImgUrl; // triggers pre-save hook
@@ -43,7 +45,8 @@ const updateUrlFromReplies = async () => {
             let hasUpdates = false;
 
             for (const attachment of reply.mediaAttachments) {
-                const isOld = isOlderThan6Days(attachment.uploadedAt);
+               // const isOld = isOlderThan6Days(attachment.uploadedAt);
+                const isOld = true;
                 if (isOld) {
                     const newSignedUrl = await generateSignedUrl(attachment.fileName); // Assuming fileName is the S3 key
                     attachment.fileUrl = newSignedUrl;
@@ -54,10 +57,11 @@ const updateUrlFromReplies = async () => {
 
             if(Array.isArray(reply.content))
             {
-                console.log(reply.content);
+              //  console.log(reply.content);
             for(const content of reply.content){
                 const imageUrl = content.imageUrl;
-                const isOld = isOlderThan6Days(imageUrl.uploadedAt);
+                //const isOld = isOlderThan6Days(imageUrl.uploadedAt);
+                const isOld = true
                 if(isOld){
                     const newSignedUrl = await generateSignedUrl(content.imageUrl.fileName);
                     content.imageUrl.fileName = newSignedUrl;
@@ -95,7 +99,8 @@ const updateUrlFromTopic = async () =>{
             let hasUpdates = false;
 
             for (const attachment of topic.mediaAttachments) {
-                const isOld = isOlderThan6Days(attachment.uploadedAt);
+                // const isOld = isOlderThan6Days(attachment.uploadedAt);
+                const isOld = true;
                 if (isOld) {
                     const newSignedUrl = await generateSignedUrl(attachment.fileName); // Assuming fileName is the S3 key
                     attachment.fileUrl = newSignedUrl;
@@ -128,7 +133,8 @@ const updateUrlFromComment = async () => {
             let hasUpdates = false;
 
             for (const attachment of comment.mediaAttachments) {
-                const isOld = isOlderThan6Days(attachment.uploadedAt);
+                // const isOld = isOlderThan6Days(attachment.uploadedAt);
+                const isOld = true;
                 if (isOld) {
                     const newSignedUrl = await generateSignedUrl(attachment.fileName); // Assuming fileName is the S3 key
                     attachment.fileUrl = newSignedUrl;
@@ -162,6 +168,7 @@ const updateUrlFromComment = async () => {
 };
 
 const isOlderThan6Days = (date) => {
+    return true;
     if (!date) return true; // If date is missing, consider it old
     const sixDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
     return new Date(date) < sixDaysAgo;

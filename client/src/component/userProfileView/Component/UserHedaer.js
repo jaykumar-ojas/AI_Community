@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -6,8 +6,8 @@ import SubscriptionsList from "./SubscriptionsList";
 
 import { LoginContext } from "../../ContextProvider/context";
 import { AttachIcon, DragAndDropIcon, PenIcon } from "../../../asset/icons";
-
-const UserHeader = () => {
+import { encodeId, decodeId} from "../../../utils/hashids"
+const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const [backgroundLoaded, setBackgroundLoaded] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -20,6 +20,10 @@ const UserHeader = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isTextUpdating, setIsTextUpdating] = useState(false);
   const navigate = useNavigate();
+  const [showSubscriptions, setShowSubscriptions] = useState(false);
+  const subscriptionsRef = useRef();
+  const [isUploadingBackground, setIsUploadingBackground] = useState(false);
+  const [isUploadingProfile, setIsUploadingProfile] = useState(false);
 
   const [subscriptionStats, setSubscriptionStats] = useState({
     subscribersCount: 0,
@@ -44,6 +48,20 @@ const UserHeader = () => {
       setUserName(profileUser.userName);
     }
   }, [profileUser]);
+
+  // Close popover when clicking outside
+  useEffect(() => {
+    if (!showSubscriptions) return;
+    function handleClickOutside(event) {
+      if (subscriptionsRef.current && !subscriptionsRef.current.contains(event.target)) {
+        setShowSubscriptions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showSubscriptions]);
 
   const fetchUserProfile = async (userId) => {
     try {
@@ -188,6 +206,8 @@ const UserHeader = () => {
 
   const handleUpdateProfileData = async () => {
     try {
+      if (backgroundImage) setIsUploadingBackground(true);
+      if (profilePicture) setIsUploadingProfile(true);
       const token = localStorage.getItem("userdatatoken");
 
       const formData = new FormData();
@@ -216,16 +236,24 @@ const UserHeader = () => {
 
       if (data.status === 200) {
         alert("Profile updated successfully!");
+        setIsUpdating(false); // Hide upload button after successful upload
+        setProfilePicture(null);
+        setProfilePicturePreview(null);
+        setBackGroundImage(null);
+        setBackgroundPreview(null);
       } else {
         alert(data.message || "Update failed");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
       alert("Something went wrong while updating profile");
+    } finally {
+      setIsUploadingBackground(false);
+      setIsUploadingProfile(false);
     }
   };
 
-  const isOwnProfile = loginData?.validuserone?._id === id;
+  const isOwnProfile = loginData?.validuserone?._id ? encodeId(loginData.validuserone._id) === id : false;
 
   return (
     <>
@@ -240,21 +268,36 @@ const UserHeader = () => {
         {/* Edit button (top-right) */}
         {isOwnProfile && (
           <div className="absolute z-50 right-8 top-8">
-            {!isUpdating && (<button onClick={()=>{setIsUpdating(true);}} className="bg-gray-300 p-2 rounded-full cursor-pointer">
-              <PenIcon />
-            </button>)}
+            {!isUpdating && (
+              <button onClick={() => { setIsUpdating(true); }} className="bg-gray-300 p-2 rounded-full cursor-pointer">
+                <PenIcon />
+              </button>
+            )}
             {isUpdating &&
-            <div>
-              <button className="p-2 pt-1 text-like_color bg-gray-300 rounded-md" onClick={handleUpdateProfileData}>upload</button>
-              <button className="p-2 pt-1 text-white bg-gray-300 rouned-md" 
-              onClick={()=>{
-                setProfilePicture(null);
-                setProfilePicturePreview(null);
-                setBackGroundImage(null);
-                setBackgroundPreview(null);
-                setUserName(profileUser?.userName);
-                setIsUpdating(false);
-              }}>Cancel</button>
+              <div>
+                {/* Only show upload button if a file is selected */}
+                {(backgroundImage || profilePicture) && (
+                  <button
+                    className="p-2 pt-1 text-like_color bg-gray-300 rounded-md"
+                    onClick={handleUpdateProfileData}
+                    disabled={isUploadingBackground || isUploadingProfile || (!backgroundImage && !profilePicture)}
+                  >
+                    {isUploadingBackground || isUploadingProfile ? (
+                      <span className="flex items-center"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></span>Uploading...</span>
+                    ) : (
+                      "upload"
+                    )}
+                  </button>
+                )}
+                <button className="p-2 pt-1 text-white bg-gray-300 rouned-md"
+                  onClick={() => {
+                    setProfilePicture(null);
+                    setProfilePicturePreview(null);
+                    setBackGroundImage(null);
+                    setBackgroundPreview(null);
+                    setUserName(profileUser?.userName);
+                    setIsUpdating(false);
+                  }}>Cancel</button>
               </div>
             }
           </div>
@@ -340,6 +383,22 @@ const UserHeader = () => {
         </div>
       </div>
 
+      {/* Background Loader Overlay */}
+      {isUploadingBackground && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <span className="text-white ml-4">Uploading...</span>
+        </div>
+      )}
+
+      {/* Profile Loader Overlay */}
+      {isUploadingProfile && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 rounded-[30px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <span className="text-white ml-4">Uploading...</span>
+        </div>
+      )}
+
       <div className="it not needed for flexibilty it is here">
         <div className="relative flex flex-col justify-end md:items-center md:gap-8 md:pt-4 md:gap-0 sm:gap-4 sm:justify-end sm:flex sm:pt-1 sm:flex-row lg:gap-0">
           {/* Left: Name & Bio */}
@@ -354,11 +413,11 @@ const UserHeader = () => {
                     className="text-medium text-center sm:text-start font-bold text-gray-800 md:text-2xl sm:text-2xl lg:text-3xl border-none rounded px-2 py-1"
                   />
                 ) : (
-                  <h1 className="text-medium text-center justify-center font-bold text-gray-800 md:text-2xl sm:text-2xl sm:text-start lg:text-3xl">
+                  <h1 className="text-medium text-center justify-center font-bold text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl">
                     {profileUser?.userName}
                   </h1>
                 )}
-                <p className="pt-1 text-center justify-center text-sm text-gray-600 sm:text-md sm:text-start md:text-lg">
+                <p className="pt-1 text-center justify-center text-sm text-white sm:text-md sm:text-start md:text-lg">
                   {profileUser?.email}
                 </p>
 
@@ -387,6 +446,24 @@ const UserHeader = () => {
                     </button>
                   </div>
                 )}
+                {/* Show Subscriptions Button (only for own profile) */}
+                {isOwnProfile && (
+                  <button
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                    onClick={() => setShowSubscriptions((prev) => !prev)}
+                  >
+                    {showSubscriptions ? "Hide Subscriptions" : "Show Subscriptions"}
+                  </button>
+                )}
+                {/* Subscriptions Popover */}
+                {isOwnProfile && showSubscriptions && (
+                  <div
+                    ref={subscriptionsRef}
+                    className="absolute z-50 left-1/2 top-24 transform -translate-x-1/2 bg-gray-700 text-black rounded-lg shadow-lg p-4 w-80 border border-gray-200"
+                  >
+                    <SubscriptionsList userId={id} />
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -404,26 +481,30 @@ const UserHeader = () => {
             {profileUser ? (
               <>
                 <div>
-                  <div className="text-md font-bold text-gray-900 tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
-                    0
+                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
+                    { isError ? (
+                      <span>!</span>
+                    ) : (
+                      posts?.length
+                    )}
                   </div>
-                  <div className="text-base font-small md:font-medium text-gray-600">
+                  <div className="text-base font-small md:font-medium text-white">
                     Posts
                   </div>
                 </div>
                 <div>
-                  <div className="text-md font-bold text-gray-900 tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
-                    {subscriptionStats.subscribersCount}
+                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
+                    {subscriptionStats?.subscribersCount}
                   </div>
-                  <div className="text-base font-small md:font-medium text-gray-600">
+                  <div className="text-base font-small md:font-medium text-white">
                     Followers
                   </div>
                 </div>
                 <div>
-                  <div className="text-md font-bold text-gray-900 tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
-                    {subscriptionStats.subscribedToCount}
+                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
+                    {subscriptionStats?.subscribedToCount}
                   </div>
-                  <div className="text-base font-small md:font-medium text-gray-600">
+                  <div className="text-base font-small md:font-medium text-white">
                     Following
                   </div>
                 </div>
@@ -449,11 +530,11 @@ const UserHeader = () => {
       </div>
 
       {/* Show subscriptions list only on own profile */}
-      {isOwnProfile && (
+      {/* {isOwnProfile && (
         <div className="mt-8 border-t border-gray-200">
           <SubscriptionsList userId={id} />
         </div>
-      )}
+      )} */}
     </>
   );
 };

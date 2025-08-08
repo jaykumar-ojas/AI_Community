@@ -6,10 +6,10 @@ import UserIconCard from "../Card/UserIconCard";
 import UserNameCard from "../Card/UserNameCard";
 import PixelLoader from "../Loader/PixelLoader";
 import MasonryMediaGrid from "./MansoryMediaGrid";
-import { heartSvg, thumbsDownSvg } from "../../asset/icons";
+import { heartSvg, thumbsDownSvg, Sparkle } from "../../asset/icons";
 import axios from "axios";
 import AIModelInfo from "../Postcontent/UserContent";
-
+import {encodeId} from "../../utils/hashids"
 
 const Card = ({ post }) => {
   const [showLogin, setShowLogin] = useState(false);
@@ -44,47 +44,128 @@ const Card = ({ post }) => {
     fetchModelIcon();
   }, [post?.isAIGenerated, post?.aiModel]);
 
-  const handleLikePost = async () => {
-      if (!currentUser.id) {
-        alert("Please log in to like posts");
-        return;
-      }
+  // const handleLikePost = async () => {
+  //     if (!currentUser.id) {
+  //       alert("Please log in to like posts");
+  //       return;
+  //     }
   
-      try {
-        const response = await axios.post(`/${postData._id}/like`, {
-          userId: currentUser.id
-        });
+  //     try {
+  //       const response = await axios.post(`/${postData._id}/like`, {
+  //         userId: currentUser.id
+  //       });
         
-        if (response.status === 200) {
-          // Update local state to reflect the change
-          const updatedPost = { ...postData };
+  //       if (response.status === 200) {
+  //         // Update local state to reflect the change
+  //         const updatedPost = { ...postData };
           
-          if (userLiked) {
-            // Remove like
-            updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
-          } else {
-            // Add like and remove dislike if exists
-            if (!updatedPost.likes) updatedPost.likes = [];
-            if (!updatedPost.likes.includes(currentUser.id)) {
-              updatedPost.likes.push(currentUser.id);
-            }
+  //         if (userLiked) {
+  //           // Remove like
+  //           updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
+  //         } else {
+  //           // Add like and remove dislike if exists
+  //           if (!updatedPost.likes) updatedPost.likes = [];
+  //           if (!updatedPost.likes.includes(currentUser.id)) {
+  //             updatedPost.likes.push(currentUser.id);
+  //           }
             
-            // Remove from dislikes if present
-            if (updatedPost.dislikes && updatedPost.dislikes.includes(currentUser.id)) {
-              updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
-            }
+  //           // Remove from dislikes if present
+  //           if (updatedPost.dislikes && updatedPost.dislikes.includes(currentUser.id)) {
+  //             updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
+  //           }
+  //         }
+          
+  //         setPostData(updatedPost);
+  //         setUserLiked(!userLiked);
+  //         if (userDisliked) setUserDisliked(false);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error liking post:', error);
+  //       alert("Error liking post. Please try again.");
+  //     }
+  //   };
+  
+const [sparkles, setSparkles] = useState([]);
+
+
+ const handleLikePost = async () => {
+    if (!currentUser.id) {
+      alert("Please log in to like posts");
+      return;
+    }
+
+    // Create sparkle animation only when liking (not unliking)
+    if (!userLiked) {
+      // Array of vibrant colors for sparkles
+      const sparkleColors = [
+        '#ff6b6b', // Red
+        '#4ecdc4', // Teal
+        '#45b7d1', // Blue
+        '#f9ca24', // Yellow
+        '#f0932b', // Orange
+        '#eb4d4b', // Pink
+        '#6c5ce7', // Purple
+        '#a29bfe', // Light Purple
+        '#fd79a8', // Pink
+        '#00b894', // Green
+        '#e17055', // Coral
+        '#fdcb6e'  // Golden
+      ];
+      
+      // Create sparkle animation with random colors
+      const newSparkles = Array.from({ length: 8 }, (_, i) => ({
+        id: Date.now() + i,
+        color: sparkleColors[Math.floor(Math.random() * sparkleColors.length)],
+        style: {
+          left: `${Math.random() * 50 - 15}px`,
+          top: `${Math.random() * 50 - 15}px`,
+          animationDelay: `${i * 0.08}s`,
+          animationDuration: `${0.6 + Math.random() * 0.4}s`,
+        },
+      }));
+      
+      setSparkles(newSparkles);
+      
+      // Remove sparkles after animation
+      setTimeout(() => setSparkles([]), 1000);
+    }
+
+    try {
+      const response = await axios.post(`/${postData._id}/like`, {
+        userId: currentUser.id
+      });
+      
+      if (response.status === 200) {
+        // Update local state to reflect the change
+        const updatedPost = { ...postData };
+        
+        if (userLiked) {
+          // Remove like
+          updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
+        } else {
+          // Add like and remove dislike if exists
+          if (!updatedPost.likes) updatedPost.likes = [];
+          if (!updatedPost.likes.includes(currentUser.id)) {
+            updatedPost.likes.push(currentUser.id);
           }
           
-          setPostData(updatedPost);
-          setUserLiked(!userLiked);
-          if (userDisliked) setUserDisliked(false);
+          // Remove from dislikes if present
+          if (updatedPost.dislikes && updatedPost.dislikes.includes(currentUser.id)) {
+            updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
+          }
         }
-      } catch (error) {
-        console.error('Error liking post:', error);
-        alert("Error liking post. Please try again.");
+        
+        setPostData(updatedPost);
+        setUserLiked(!userLiked);
+        if (userDisliked) setUserDisliked(false);
       }
-    };
-  
+    } catch (error) {
+      console.error('Error liking post:', error);
+      alert("Error liking post. Please try again.");
+    }
+  };
+
+
     const handleDislikePost = async () => {
       if (!currentUser.id) {
         alert("Please log in to dislike posts");
@@ -153,7 +234,7 @@ const Card = ({ post }) => {
 
   const handleUserClick = (e) => {
     e.stopPropagation(); // Prevent card click when clicking user profile
-    navigate(`/userprofile/${post.userId}`);
+    navigate(`/userprofile/${encodeId(post.userId)}`);
   };
 
   // Determine the media URL and type
@@ -217,23 +298,28 @@ const Card = ({ post }) => {
     </div>
 
     {/* Like/Dislike Buttons */}
-    <div>
-      <div className="flex items-center gap-4 p-2 pb-1">
-        <button
-          className="flex items-center gap-1"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleLikePost();
-          }}
-          title={userLiked ? "Remove like" : "Like this post"}
-        >
-          {heartSvg(userLiked)}
-          <span className="text-xs font-medium">
-            {postData?.likes?.length || 0}
-          </span>
-        </button>
+   <div>
+  <div className="flex items-center gap-4 p-2 pb-1">
+    <button
+      className="flex items-center gap-1"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleLikePost();
+      }}
+      title={userLiked ? "Remove like" : "Like this post"}
+    >
+      <div className="relative">
+        {heartSvg(userLiked)}
+        {sparkles.map((sparkle) => (
+          <Sparkle key={sparkle.id} style={sparkle.style} color={sparkle.color} />
+        ))}
+      </div>
+      <span className="text-xs font-medium">
+        {postData?.likes?.length || 0}
+      </span>
+    </button>
 
-        <button
+        {/* <button
           className="flex items-center gap-1"
           onClick={(e) => {
             e.stopPropagation();
@@ -245,10 +331,30 @@ const Card = ({ post }) => {
           <span className="text-sm font-medium">
             {postData?.dislikes?.length || 0}
           </span>
-        </button>
+        </button> */}
       </div>
     </div>
   </div>
+  <style jsx>{`
+        @keyframes sparkle {
+          0% {
+            transform: scale(0) rotate(0deg);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1) rotate(180deg);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(0) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        
+        .animate-ping {
+          animation: sparkle 0.8s ease-out forwards;
+        }
+      `}</style>
 </div>
 
   );

@@ -347,7 +347,7 @@ const UserReply = () => {
   };
 
   return (
-    <div className="relative bottom-0 left-0 right-0 bg-bg_comment_box shadow-lg z-50 p-2">
+    <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-2">
       {/* Error display */}
       {error && (
         <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-md text-sm">

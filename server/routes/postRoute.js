@@ -9,6 +9,7 @@ const embeddingdb = require("../models/embeding");
 const notifiyUser = require("../middleware/notification");
 const { awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware } = require("../middleware/awsmiddleware");
 const axios = require('axios');
+const { decodeId, encodeId } = require('../utils/hashids');
 
 const storage = multer.memoryStorage();
 
@@ -163,7 +164,11 @@ router.post('/get', async (req, res) => {
         if (!userId) {
             throw new Error("user not logged in");
         }
-        const userposts = await postdb.find({ userId: userId });
+        const realUserId = decodeId(userId);
+        if (!realUserId) {
+            return res.status(400).json({ status: 400, error: "Invalid user ID" });
+        }
+        const userposts = await postdb.find({ userId: realUserId });
 
         if (!userposts || userposts.length === 0) {
             return res.status(200).json({ status: 200, userposts: [] });

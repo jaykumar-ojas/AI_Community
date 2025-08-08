@@ -8,7 +8,7 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon } from "@heroicons/react/24/outline";
-import logo from "./logo.jpg";
+import logo from "./logo.svg";
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,6 +16,7 @@ import { isAuthenticated, logout } from "../../utils/authUtils";
 import { PlusIcon, SearchIcon } from "../../asset/icons";
 import NotificationComponent from "../Notification/Notification";
 import { useState } from "react";
+import {encodeId} from "../../utils/hashids"
 
 const navigation = [
   { name: "Home", href: "/", current: true },
@@ -41,10 +42,11 @@ export default function Navbar() {
     <>
       <Disclosure
         as="nav"
-        className="sticky top-0 z-50 backdrop-blur-md backdrop-saturate-150 bg-bg_comment/80 shadow-md"
+        className="sticky top-0 z-50 min-h-[4rem]"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
-          <div className="flex justify-between  items-center h-14">
+        <div className="relative min-h-[4rem]">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
+            <div className="flex justify-between items-center h-14">
             {/* Mobile Menu */}
             <div className="flex items-center sm:hidden">
               <DisclosureButton className="inline-flex items-center justify-center p-2 text-gray-600 hover:bg-gray-200 hover:text-gray-800 rounded-md">
@@ -55,13 +57,13 @@ export default function Navbar() {
 
             {/* Logo and Navigation Links */}
             <div className="relative flex h-full items-center space-x-4 overflow-hidden">
-              <div className="h-8 w-8 rounded-full overflow-hidden">
+              <Link to={"/"} className="h-24 w-48 rounded-lg bg-white/10 flex items-center justify-center shadow-md">
                 <img
                   src={logo}
                   alt="Logo"
-                  className="h-full w-full object-cover"
+                  className="h-24 w-48 object-contain"
                 />
-              </div>
+              </Link>
 
               <div className="hidden sm:flex space-x-2">
                 {navigation.map((item) => (
@@ -104,7 +106,7 @@ export default function Navbar() {
                   </MenuButton>
                   <MenuItems
                     as="div"
-                    className="absolute left-1/2 -translate-x-2/3 mt-3 w-96 max-h-[80vh]  rounded-lg shadow-2xl backdrop-blur-md  focus:outline-none  overflow-hidden z-50"
+                    className="absolute left-1/2 -translate-x-2/3 mt-3 w-96 max-h-[80vh] rounded-lg shadow-2xl backdrop-blur-md focus:outline-none overflow-hidden z-50"
                   >
                     <NotificationComponent isOpen={true} onClose={() => {}} />
                   </MenuItems>
@@ -134,7 +136,7 @@ export default function Navbar() {
                       <MenuItem>
                         {({ active }) => (
                           <Link
-                            to={`/userprofile/${loginData?.validuserone?._id}`}
+                            to={`/userprofile/${encodeId(loginData?.validuserone?._id)}`}
                             className={`block px-4 py-2 text-sm ${
                               active ? "bg-gray-100" : "text-gray-700"
                             }`}
@@ -171,13 +173,14 @@ export default function Navbar() {
                     </MenuItems>
                   </Menu>
                 ) : (
-                  <Link to="/login" className=" text-white px-4 py-2">
+                  <Link to="/login" className="text-white px-4 py-2">
                     Sign In
                   </Link>
                 )}
               </div>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Mobile Menu Panel */}

@@ -124,22 +124,22 @@ const PostImageContent = () => {
   };
 
   return (
-    <div className="w-full h-full bg-bg_comment p-2 pt-0">
+    <div className="w-full h-full  relative bg-transparent p-2 pt-0">
       <div className=" flex flex-col ">
         <div className="text-xl text-text_header p-4 pt-2">
            Upload your creativity
         </div>
         <div className="flex flex-row gap-2 ">
-          <div className="w-2/5 h-full rounded-lg bg-bg_comment_box">
+          <div className="w-2/5 h-full rounded-lg  bg-transparent">
             <AIContentFile />
             <Description />
           </div>
-          <div className="w-3/5 h-full">
+          <div className="w-3/5 h-full relative bg-transparent">
             <DragAndDrop />
           </div>
         </div>
       </div>
-      <div className="bg-bg_comment flex justify-end gap-4 mx-4 mt-4">
+      <div className="relative bg-transparent flex justify-end gap-4 mx-4 mt-4">
         <button
           onClick={handleClear}
           className="border border-gray-700 mt-2 bg-gray-500 p-2 px-8 text-white font-bold rounded-md hover:bg-gray-800 disabled:opacity-50"
@@ -149,7 +149,7 @@ const PostImageContent = () => {
         </button>
         <button
           onClick={handleSubmit}
-          className="border border-blue-700 mt-2 bg-like_color px-8 p-2 text-white font-bold rounded-md hover:bg-blue-800 disabled:opacity-50"
+          className="border border-blue-700 mt-2 bg-like_color px-8 p-2 text-white font-bold rounded-md hover:bg-blue-800 disabled:opacity-50 "
           disabled={isUploading}
         >
           {isUploading ? "Uploading..." : "Post"}

@@ -5,6 +5,7 @@ import { useWebSocket } from './WebSocketContext';
 import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import AiContentGenerator from './AiContentGenerator';
 import { useNavigate } from 'react-router-dom';
+import { encodeId } from '../../../utils/hashids';
 
 const NewTopicModal = ({ onClose }) => {
   const { loginData } = useContext(LoginContext);
@@ -85,7 +86,7 @@ const NewTopicModal = ({ onClose }) => {
 
       // Emit socket event for new topic
       emitNewTopic(response.data.topic);
-      navigate(`/forum/topic/${response.data.topic._id}`);
+      navigate(`/forum/topic/${encodeId(response.data.topic._id)}`);
       // Reset form and close modal
       setNewTopic({ title: '', content: '' });
       setSelectedFiles([]);

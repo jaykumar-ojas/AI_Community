@@ -328,7 +328,7 @@ const UserContent = ({ post }) => {
 
     if (fileType === "image") {
       return (
-        <div className="w-full max-h-[500px] rounded-lg bg-white flex items-center justify-center">
+        <div className="w-full max-h-[500px] rounded-lg bg-transparent relative flex items-center justify-center">
           <img
             src={postData?.imgUrl}
             className="max-h-[500px] w-auto object-contain"
@@ -420,7 +420,7 @@ const UserContent = ({ post }) => {
   };
 
   return (
-    <div className="w-full rounded-lg bg-bg_comment_box/40 shadow-lg flex flex-col gap-0">
+    <div className="w-full rounded-lg bg-transparent relative shadow-lg flex flex-col gap-0">
       {/* user header */}
       <div className="flex justify-between items-center px-2 w-full h-full">
         <div className="flex justify-between items-center">
@@ -484,7 +484,7 @@ const UserContent = ({ post }) => {
       
 
       {/* user media content */}
-      <div className="w-full min-h-[300px] backdrop-blur-md bg-white flex justify-center items-center">
+      <div className="w-full min-h-[300px]  bg-transparent relative flex justify-center items-center">
         <div
           className={`w-full flex items-center justify-center overflow-hidden ${
             postData?.fileType === "image" ? "cursor-pointer" : ""
@@ -497,7 +497,8 @@ const UserContent = ({ post }) => {
 
       {/* user description and interaction */}
       <div>
-        <div className="flex items-center gap-4 p-2 pb-1">
+        <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
+        <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
           {/* Like button */}
           <button
             className="flex items-center gap-1"
@@ -524,6 +525,8 @@ const UserContent = ({ post }) => {
          <BookMark postId={postData?._id} userId={loginData?.validuserone?._id} isBookmarked={postData?.BookMark?.includes(loginData?.validuserone?._id)}/>
 
         </div>
+        </div>
+
         <div className="p-2 pt-1 text-sm text-time_header">
           {postData?.desc || "No description available"}
         </div>
