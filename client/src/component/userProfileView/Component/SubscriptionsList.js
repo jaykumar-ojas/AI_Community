@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import UserIconCard from '../../Card/UserIconCard';
+import {encodeId} from '../../../utils/hashids'
 
 const SubscriptionsList = ({ userId }) => {
     const [subscriptions, setSubscriptions] = useState([]);
@@ -49,7 +50,7 @@ const SubscriptionsList = ({ userId }) => {
                 <div className="space-y-4">
                     {subscriptions.map((user) => (
                         <Link 
-                            to={`/sample-user/${user._id}`} 
+                            to={`/sample-user/${encodeId(user._id)}`} 
                             key={user._id}
                             className="flex items-center space-x-3 p-2 hover:bg-gray-50 text-white hover:text-gray-700 rounded-lg transition-colors"
                         >
