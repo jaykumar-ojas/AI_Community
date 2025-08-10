@@ -15,7 +15,7 @@ const PostCard = ({ post }) => {
       <div className="relative h-full w-full">
         <PostCardLazy
           post={post}
-          lowResUrl={lowResUrl}
+         lowResUrl={lowResUrl}
           alt="post image"
         />
       </div>

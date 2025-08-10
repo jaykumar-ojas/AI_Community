@@ -32,7 +32,7 @@ const ForumSystem = () => {
       {/* Header with search - now with transparent/dark background */}
       <div className="p-4 border-b border-gray-800 sticky top-0 bg-black/40 backdrop-blur-sm">
         <h2 className="text-xl text-gray-300 font-bold mb-4">AI Forum</h2>
-        <div className="relative">
+        {/* <div className="relative">
           <input
             type="text"
             placeholder="Search discussions..."
@@ -43,7 +43,7 @@ const ForumSystem = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Navigation Tabs - with dark theme styling */}
