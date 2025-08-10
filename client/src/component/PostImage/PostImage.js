@@ -6,9 +6,12 @@ import { LoginContext } from "../ContextProvider/context";
 import { PostContext } from "./PostContext";
 import { useCroppedFile } from "./PostUtils";
 import PostProvider from "./PostContext";
+import { Link, useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashids";
 // import  PostContext  from "./PostContext";
 
 const PostImageContent = () => {
+  const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const { loginData } = useContext(LoginContext);
   const { file, fileType, desc, completedCrop, aiMetadata } = useContext(PostContext);
@@ -111,6 +114,8 @@ const PostImageContent = () => {
         setRefreshKey(oldKey => oldKey + 1);
 
         alert("Post uploaded successfully!");
+        console.log("this is post image id", res?.storePost?._id,res.storePost);
+        navigate(`/userPost/${res?.storePost?._id}`);
       } else {
         console.error("Upload failed:", res);
         alert(`Failed to upload post: ${res.error || "Unknown error"}`);

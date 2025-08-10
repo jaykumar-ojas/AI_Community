@@ -31,6 +31,7 @@ export default function Navbar() {
   const { loginData, setLoginData } = useContext(LoginContext);
   const [showNotification, setShowNotification] = useState(false);
   const navigate = useNavigate();
+  console.log(loginData?.validuserone?.profilePictureUrl,"this is porfile picture url");
 
   const handleLogout = () => {
     logout();
