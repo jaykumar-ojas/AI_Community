@@ -62,15 +62,18 @@ const Page = () => {
   };
 
   return (
-    <div className="relative min-h-screen">
-      {/* Content - no background needed as it inherits from Layout */}
-      <div className="relative z-10 min-h-screen">
-        <div className="mx-auto px-4 py-4">
-          <div className="flex gap-8">
-            <div className="flex-1">
-              {isLoading ? (
-                <MasonrySkeletonGrid />
-              ) : allPosts.length > 0 ? (
+  <div className="relative h-[calc(100vh-4rem)]"> {/* Define explicit height */}
+    <div className="relative z-10 h-full">
+      <div className="mx-auto px-4 h-full"> {/* Add h-full */}
+        <div className="flex gap-8 h-full"> {/* Add h-full */}
+          <div className="flex-1 h-full"> {/* Add h-full */}
+            {isLoading ? (
+              <MasonrySkeletonGrid />
+            ) : allPosts.length > 0 ? (
+              <div
+                id="scrollableDiv"
+                className="h-full overflow-y-auto no-scrollbar pt-2" 
+              >
                 <InfiniteScroll
                   dataLength={allPosts.length}
                   next={fetchNextPage}
@@ -83,41 +86,37 @@ const Page = () => {
                   scrollThreshold="90%"
                   scrollableTarget="scrollableDiv"
                 >
-                  <div
-                    id="scrollableDiv"
-                    className="h-[calc(100vh-7rem)] overflow-y-auto no-scrollbar pt-2"
+                  <Masonry
+                    breakpointCols={breakpointColumnsObj}
+                    className="flex gap-2"
+                    columnClassName="flex flex-col gap-0"
                   >
-                    <Masonry
-                      breakpointCols={breakpointColumnsObj}
-                      className="flex gap-2"
-                      columnClassName="flex flex-col gap-0"
-                    >
-                      {allPosts.map((post) => (
-                        <div key={post._id}>
-                          <Card post={post} />
-                        </div>
-                      ))}
-                    </Masonry>
-                  </div>
+                    {allPosts.map((post) => (
+                      <div key={post._id}>
+                        <Card post={post} />
+                      </div>
+                    ))}
+                  </Masonry>
                 </InfiniteScroll>
-              ) : (
-                <div className="text-center text-gray-300 text-lg">
-                  No posts available
-                </div>
-              )}
-            </div>
-
-            {/* Forum section */}
-            <div className="w-96 relative hidden md:block">
-              <div className="sticky top-4 pt-2 h-[calc(100vh-7rem)] overflow-hidden">
-                <ForumSystem />
               </div>
+            ) : (
+              <div className="text-center text-gray-300 text-lg">
+                No posts available
+              </div>
+            )}
+          </div>
+
+          {/* Forum section */}
+          <div className="w-96 relative hidden md:block h-full"> {/* Add h-full */}
+            <div className="sticky top-4 pt-2 pb-2 h-full overflow-hidden">
+              <ForumSystem />
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default Page;
