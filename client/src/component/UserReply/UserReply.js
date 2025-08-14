@@ -15,6 +15,8 @@ import {
   handleAuthError,
 } from "../AiForumPage/components/ForumUtils";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const UserReply = () => {
   const { loginData } = useContext(LoginContext);
@@ -50,7 +52,7 @@ const UserReply = () => {
       console.log(`Calling describe-images API for reply: ${replyId}`);
       
       const response = await axios.put(
-        `/describe-images/${replyId}`,
+        `${baseUrl}/describe-images/${replyId}`,
         {},
         {
           headers: getAuthHeaders()
@@ -74,7 +76,7 @@ const UserReply = () => {
       console.log(`Calling /aimodels/search API for model: ${modelName}`);
       
       const response = await axios.get(
-        `/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
+        `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
         {
           headers: getAuthHeaders()
         }
@@ -146,7 +148,7 @@ const UserReply = () => {
       console.log("Calling /generate API with payload:", generatePayload);
       
       const response = await axios.post(
-        "/generate", // Updated endpoint
+        `${baseUrl}/generate`, // Updated endpoint
         generatePayload
       );
       
@@ -189,7 +191,7 @@ const UserReply = () => {
       console.log("Calling /suggest API for context awareness");
       
       const suggestResponse = await axios.post(
-        `/suggest/${replyIdForContext || topicId}`,
+        `${baseUrl}/suggest/${replyIdForContext || topicId}`,
         {
           text: newReply.trim(),
           contextType: 'forumReply',

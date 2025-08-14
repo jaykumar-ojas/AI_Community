@@ -6,6 +6,8 @@ import "react-loading-skeleton/dist/skeleton.css";
 const UserNameCard = ({ id }) => {
   const [userName, setUserName] = useState();
   const [loading, setLoading] = useState(true);
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   useEffect(() => {
     if (!id) return;
@@ -22,7 +24,7 @@ const UserNameCard = ({ id }) => {
 
   const getUserName = async () => {
     try {
-      const res = await fetch(`/getUserById/${id}`);
+      const res = await fetch(`${baseUrl}/getUserById/${id}`);
       const json = await res.json();
 
       if (json.status === 200) {

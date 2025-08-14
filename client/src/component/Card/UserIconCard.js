@@ -7,6 +7,8 @@ import { encodeId } from "../../utils/hashids";
 const UserIconCard = ({ id }) => {
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(true);
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,7 +30,7 @@ const UserIconCard = ({ id }) => {
     try {
 
       console.log("i m goint to backend to fetch url");
-      const res = await fetch(`/getUserById/${id}`);
+      const res = await fetch(`${baseUrl}/getUserById/${id}`);
       const json = await res.json();
 
       if (json.status === 200) {

@@ -40,6 +40,7 @@ const LazyImageWithBlurAndSpinner = ({ post, lowResUrl, alt }) => {
         <video
           src={post?.imgUrl}
           className="h-full w-full object-cover"
+          onLoad={() => setHighResLoaded(true)}
           autoPlay
           loop
           muted

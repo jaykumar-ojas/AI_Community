@@ -11,6 +11,7 @@ const Cropper = () => {
         setCompletedCrop, setCrop, setShowCropper, setFile, setPreviewUrl,
         imageRef, canvasRef
     } = useContext(PostContext);
+    console.log(previewUrl,"this i smy preview url form cropper");
 
     const getCroppedFile = useCroppedFile();
 

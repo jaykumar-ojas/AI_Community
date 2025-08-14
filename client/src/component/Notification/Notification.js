@@ -9,10 +9,12 @@ import {LoginContext} from "../ContextProvider/context";
 const NotificationComponent = ({ onClose }) => {
   const {loginData} = useContext(LoginContext);
   const userId = loginData?.validuserone?._id;
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   const fetchNotifications = async () => {
     const token = localStorage.getItem('userdatatoken');
-    const res = await fetch(`/getNotification/${userId}`, {
+    const res = await fetch(`${baseUrl}/getNotification/${userId}`, {
       method:'GET',
       headers: {
         'Content-Type': 'application/json',

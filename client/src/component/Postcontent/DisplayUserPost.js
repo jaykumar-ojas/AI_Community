@@ -30,7 +30,8 @@ const ThumbsDownIcon = ({ filled = false }) => (
 );
 
 const RenderUserPosts = () => {
-  
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const { loginData } = useContext(LoginContext);  
   const [userPosts, setUserPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false); 
@@ -59,7 +60,7 @@ const RenderUserPosts = () => {
     }
     
     try {
-      const response = await fetch(`/delete/${postId}`, {
+      const response = await fetch(`${baseUrl}/delete/${postId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -89,7 +90,7 @@ const RenderUserPosts = () => {
     }
 
     try {
-      const response = await axios.post(`/${postId}/like`, {
+      const response = await axios.post(`${baseUrl}/${postId}/like`, {
         userId: currentUser.id
       });
       
@@ -110,7 +111,7 @@ const RenderUserPosts = () => {
     }
 
     try {
-      const response = await axios.post(`/${postId}/dislike`, {
+      const response = await axios.post(`${baseUrl}/${postId}/dislike`, {
         userId: currentUser.id
       });
       
@@ -131,7 +132,7 @@ const RenderUserPosts = () => {
     
     setIsLoading(true);
     try {
-      const response = await fetch('/get', {
+      const response = await fetch(`${baseUrl}/get`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

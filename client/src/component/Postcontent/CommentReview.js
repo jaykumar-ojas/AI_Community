@@ -6,9 +6,11 @@ import axios from "axios";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 import ReplySkeletonLayout from "../TopicComponent/ReplyComponent/ReplySkeletonLayout";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const fetchComments = async (postId) => {
-  const response = await axios.get(`/comments/replies?postId=${postId}`);
+  const response = await axios.get(`${baseUrl}/comments/replies?postId=${postId}`);
   if (response.data?.comments) {
     return response.data.comments;
   }
