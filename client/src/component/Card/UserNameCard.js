@@ -1,50 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Skeleton from "react-loading-skeleton";
-import { getUserFromCache, saveUserToCache } from "../../utils/cacheUtils"; // adjust path
+import { useQuery } from "@tanstack/react-query";
 import "react-loading-skeleton/dist/skeleton.css";
 
+
+const fetchUserById = async (id) => {
+  const res = await fetch(`/getUserById/${id}`);
+  const json = await res.json();
+  if (json.status !== 200) throw new Error("Failed to fetch user");
+  return json.user;
+};
+
+
 const UserNameCard = ({ id }) => {
-  const [userName, setUserName] = useState();
-  const [loading, setLoading] = useState(true);
-  const baseUrl = process.env.REACT_APP_BASE_URL;
-
-
-  useEffect(() => {
-    if (!id) return;
-
-    const cachedUser = getUserFromCache(id);
-
-    if (cachedUser?.userName) {
-      setUserName(cachedUser.userName);
-      setLoading(false);
-    } else {
-      getUserName();
-    }
-  }, [id]);
-
-  const getUserName = async () => {
-    try {
-      const res = await fetch(`${baseUrl}/getUserById/${id}`);
-      const json = await res.json();
-
-      if (json.status === 200) {
-        const { userName, profilePictureUrl } = json.user;
-        saveUserToCache(id, { userName, profilePictureUrl });
-        setUserName(userName);
-      }
-    } catch (err) {
-      console.log("Failed to fetch username");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["user", id],
+    queryFn: () => fetchUserById(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
 
   return (
     <div className="relative min-w-[60px]">
-      {loading ? (
+      {isLoading ? (
         <Skeleton width={60} height={14} baseColor="#d1d5db" highlightColor="#6b7280" />
       ) : (
-        <span>{userName}</span>
+        <span>{user?.userName}</span>
       )}
     </div>
   );

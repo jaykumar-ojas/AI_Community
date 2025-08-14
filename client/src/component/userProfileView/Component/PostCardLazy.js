@@ -36,17 +36,19 @@ const LazyImageWithBlurAndSpinner = ({ post, lowResUrl, alt }) => {
       />
       )}
 
-      {post?.fileType === "video" && (
-        <video
-          src={post?.imgUrl}
-          className="h-full w-full object-cover"
-          onLoad={() => setHighResLoaded(true)}
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
-      )}
+
+{post?.fileType === "video" && (
+  <video
+    src={post?.imgUrl}
+    className="h-full w-full object-cover"
+    onLoadedData={() => setHighResLoaded(true)} // ✅ instead of onLoad
+    autoPlay
+    loop
+    muted
+    playsInline
+  />
+)}
+
 
       {post?.fileType === "audio" && (
         <div className="h-full w-full flex items-center justify-center bg-gray-800 p-4">

@@ -124,9 +124,9 @@ const AIContentFile = () => {
         const result = await response.json();
         console.log("Result from backend:", result);
 
-        if (result.status === 200) {
-            alert("i m generating very full");
-        }
+        // if (result.status === 200) {
+        //     alert("i m generating very full");
+        // }
 
         if (result.enhancedPrompt) {
             // setEnhancedPrompt(result.enhancedPrompt);

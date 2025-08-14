@@ -255,6 +255,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
     }
   };
 
+
   const isOwnProfile = loginData?.validuserone?._id ? encodeId(loginData.validuserone._id) === id : false;
 
   return (

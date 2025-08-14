@@ -17,8 +17,8 @@ const AIModelInfo = ({ aiMetadata }) => {
   const [modelIcon, setModelIcon] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const {loginData} = useContext(LoginContext);
-  const baseUrl = process.env.REACT_APP_BASE_URL;
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
     const fetchModelInfo = async () => {
@@ -124,7 +124,7 @@ const UserContent = ({ post }) => {
   const [postData, setPostData] = useState(post);
   const [userLiked, setUserLiked] = useState(false);
   const [userDisliked, setUserDisliked] = useState(false);
-
+  const isauthor = loginData?.validuserone?._id==postData?.userId;
   useEffect(() => {
     console.log("UserContent received post:", post);
     if (post) {
@@ -318,6 +318,7 @@ const UserContent = ({ post }) => {
     return <UserContentSkeleton />;
   }
 
+  
   // Render different media types
   const renderMedia = () => {
     if (!postData?.imgUrl) {
@@ -448,7 +449,7 @@ const UserContent = ({ post }) => {
 
         {/* this is for openpanel */}
         <div className="px-2">
-          <Menu as="div" className="relative z-10">
+         {isauthor && <Menu as="div" className="relative z-10">
             <MenuButton className="flex gap-1 text-time_header font-extrabold items-center focus:outline-none">
               <p>.</p>
               <p>.</p>
@@ -467,7 +468,7 @@ const UserContent = ({ post }) => {
                   </button>
                 )}
               </MenuItem>
-              <MenuItem>
+              {/* <MenuItem>
                 {({ active }) => (
                   <button
                     className={`block border rounded-md px-4 py-2 w-full text-sm font-extrabold text-red-700 ${
@@ -477,9 +478,9 @@ const UserContent = ({ post }) => {
                     check
                   </button>
                 )}
-              </MenuItem>
+              </MenuItem> */}
             </MenuItems>
-          </Menu>
+          </Menu>}
         </div>
         </div>
       </div>
@@ -516,7 +517,7 @@ const UserContent = ({ post }) => {
           </button>
 
           {/* Dislike button */}
-          <button
+          {/* <button
             className="flex items-center gap-1"
             onClick={handleDislikePost}
             title={userDisliked ? "Remove dislike" : "Dislike this post"}
@@ -525,7 +526,7 @@ const UserContent = ({ post }) => {
             <span className="text-sm font-medium">
               {postData?.dislikes ? postData?.dislikes.length : 0}
             </span>
-          </button>
+          </button> */}
          <BookMark postId={postData?._id} userId={loginData?.validuserone?._id} isBookmarked={postData?.BookMark?.includes(loginData?.validuserone?._id)}/>
 
         </div>

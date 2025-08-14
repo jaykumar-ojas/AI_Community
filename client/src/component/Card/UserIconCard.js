@@ -1,57 +1,40 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
-import { getUserFromCache, saveUserToCache } from "../../utils/cacheUtils"; // adjust path
-import "react-loading-skeleton/dist/skeleton.css";
 import { encodeId } from "../../utils/hashids";
-const UserIconCard = ({ id }) => {
-  const [imageUrl, setImageUrl] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const baseUrl = process.env.REACT_APP_BASE_URL;
 
+import { useQuery } from "@tanstack/react-query";
+import "react-loading-skeleton/dist/skeleton.css";
+
+
+const fetchUserById = async (id) => {
+  const res = await fetch(`/getUserById/${id}`);
+  const json = await res.json();
+  if (json.status !== 200) throw new Error("Failed to fetch user");
+  return json.user;
+};
+
+
+const UserIconCard = ({ id }) => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!id) return;
 
-    const cachedUser = getUserFromCache(id);
-    console.log(cachedUser);
-    if (cachedUser?.profilePictureUrl) {
-     
-      setImageUrl(cachedUser.profilePictureUrl);
-      setLoading(false);
-      console.log("there are url for thsi",imageUrl);
-    } else {
-      getUserInfo();
-    }
-  }, [id]);
-
-  const getUserInfo = async () => {
-    try {
-
-      console.log("i m goint to backend to fetch url");
-      const res = await fetch(`${baseUrl}/getUserById/${id}`);
-      const json = await res.json();
-
-      if (json.status === 200) {
-        const { userName, profilePictureUrl } = json.user;
-        saveUserToCache(id, { userName, profilePictureUrl });
-        setImageUrl(profilePictureUrl);
-      }
-    } catch (err) {
-      console.log("Failed to fetch profile image");
-    } finally {
-      setLoading(false);
-    }
-  };
-  console.log(imageUrl,"this is imageurl");
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["user", id],
+    queryFn: () => fetchUserById(id),
+    enabled: !!id, // only fetch if id exists
+    staleTime: 5 * 60 * 1000, // optional: 5 min cache
+  });
 
   return (
     <div
-      onClick={() => navigate(`/sample-user/${id}`)}
-      className="relative w-full h-full rounded-full overflow-hidden cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate(`/sample-user/${encodeId(id)}`);
+      }}
+      className="relative z-10 w-full h-full rounded-full overflow-hidden cursor-pointer"
     >
-      {loading ? (
+      {isLoading ? (
         <Skeleton
           circle
           width="100%"
@@ -61,7 +44,7 @@ const UserIconCard = ({ id }) => {
         />
       ) : (
         <img
-          src={imageUrl}
+          src={user?.profilePictureUrl}
           alt="User"
           className="w-full h-full object-cover"
         />

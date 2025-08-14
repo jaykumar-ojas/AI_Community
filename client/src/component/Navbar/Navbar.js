@@ -8,7 +8,7 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon } from "@heroicons/react/24/outline";
-import logo from "./logo.svg";
+import logo from "./logo.png";
 import { useContext } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate } from "react-router-dom";
@@ -58,11 +58,11 @@ export default function Navbar() {
 
             {/* Logo and Navigation Links */}
             <div className="relative flex h-full items-center space-x-4 overflow-hidden">
-              <Link to={"/"} className="h-24 w-48 rounded-lg bg-white/10 flex items-center justify-center shadow-md">
+              <Link to={"/"} className="h-24 w-40 bg-white/10 flex items-center justify-center shadow-md">
                 <img
                   src={logo}
                   alt="Logo"
-                  className="h-24 w-48 object-contain"
+                  className="h-24 w-40 object-cover p-2 rounded-xl "
                 />
               </Link>
 
@@ -86,7 +86,7 @@ export default function Navbar() {
             </div>
 
             {/* search icon */}
-            <div className="flex items-center w-[60%] px-4 rounded-full border border-gray-300 shadow-sm bg-bg_comment/70">
+            {/* <div className="flex items-center w-[60%] px-4 rounded-full border border-gray-300 shadow-sm bg-bg_comment/70">
               <input
                 type="text"
                 placeholder="Search..."
@@ -95,7 +95,7 @@ export default function Navbar() {
               <button className="p-2 rounded-full hover:bg-gray-100 transition">
                 <SearchIcon />
               </button>
-            </div>
+            </div> */}
 
             {/* user icon bell icon */}
             <div className="flex items-center space-x-4">

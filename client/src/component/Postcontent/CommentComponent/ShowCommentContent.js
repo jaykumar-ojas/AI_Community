@@ -14,8 +14,8 @@ import { ForumContext } from "../../ContextProvider/ModelContext";
 import ShowMedia from "../../TopicComponent/components/ShowMedia";
 import UserIconCard from "../../Card/UserIconCard";
 import {
-  LikeIcon,
-  DisLikeIcon,
+  UpvoteIcon,
+  DownvoteIcon,
   ReplyIcon,
   DeleteIcon,
 } from "../../../asset/icons";
@@ -335,7 +335,7 @@ const ShowCommentContent = ({reply}) => {
                 isLiked && "text-like_color"
               }`}
             >
-              <LikeIcon isLiked={isLiked} />
+              <UpvoteIcon isLiked={isLiked} />
               {replyLikes?.length || 0}
             </button>
 
@@ -345,7 +345,7 @@ const ShowCommentContent = ({reply}) => {
                 isDisliked && "text-red-600"
               }`}
             >
-              <DisLikeIcon isDisliked={isDisliked} />
+              <DownvoteIcon isDisliked={isDisliked} />
               {replyDislikes?.length || 0}
             </button>
           </div>
