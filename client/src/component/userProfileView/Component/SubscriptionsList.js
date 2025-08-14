@@ -8,6 +8,8 @@ import {encodeId} from '../../../utils/hashids'
 const SubscriptionsList = ({ userId }) => {
     const [subscriptions, setSubscriptions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
     useEffect(() => {
         fetchSubscriptions();
@@ -16,7 +18,7 @@ const SubscriptionsList = ({ userId }) => {
     const fetchSubscriptions = async () => {
         try {
             const token = localStorage.getItem("userdatatoken");
-            const response = await fetch('/subscriptions', {
+            const response = await fetch(`${baseUrl}/subscriptions`, {
                 method: 'GET',
                 headers: {
                     'Authorization': token,

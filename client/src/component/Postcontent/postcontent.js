@@ -5,11 +5,18 @@ import UserContent from "./UserContent";
 import CommentReview from "./CommentReview";
 import RelatedCard from "../Card/RelatedCard";
 import UserCommentReply from "../UserReply/UserCommentReply";
+
+
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
+
+
 import ModelList from "./CommentComponent/Model";
 import AiIcons from "../../asset/AiIcons.png";
+
 // Utility to fetch a post by ID if not found in cache
 const fetchPostById = async (id) => {
-  const res = await fetch("http://localhost:8099/getPostById", {
+  const res = await fetch(`${baseUrl}/getPostById`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ postId: id }),

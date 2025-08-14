@@ -8,6 +8,8 @@ import UserNameCard from "../Card/UserNameCard";
 import BookmarkIcon, { heartSvg, thumbsDownSvg } from "../../asset/icons";
 import UserContentSkeleton from "./UserContentSkeleton";
 import BookMark from "../BookMark/BookMark";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 // AI Model Info Component
 const AIModelInfo = ({ aiMetadata }) => {
@@ -15,6 +17,9 @@ const AIModelInfo = ({ aiMetadata }) => {
   const [modelIcon, setModelIcon] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const {loginData} = useContext(LoginContext);
+
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
     const fetchModelInfo = async () => {
       if (!aiMetadata || !aiMetadata.isAIGenerated) return;
@@ -25,7 +30,7 @@ const AIModelInfo = ({ aiMetadata }) => {
         // Fetch model icon from /aimodels/search API
         if (aiMetadata.aiModel) {
           try {
-            const iconResponse = await fetch(`/aimodels/search?modelName=${encodeURIComponent(aiMetadata.aiModel)}`);
+            const iconResponse = await fetch(`${baseUrl}/aimodels/search?modelName=${encodeURIComponent(aiMetadata.aiModel)}`);
             if (iconResponse.ok) {
               const iconData = await iconResponse.json();
               if (iconData.success && iconData.data.iconUrl) {
@@ -38,7 +43,7 @@ const AIModelInfo = ({ aiMetadata }) => {
         }
         
         // Fetch model display info from /models-info API
-        const response = await fetch("/models-info");
+        const response = await fetch(`${baseUrl}/models-info`);
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -170,7 +175,7 @@ const UserContent = ({ post }) => {
     try {
       console.log("Deleting post:", postId, "with image key:", imgKey);
 
-      const response = await fetch(`/delete/${postId}`, {
+      const response = await fetch(`${baseUrl}/delete/${postId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -205,7 +210,7 @@ const UserContent = ({ post }) => {
 
     try {
       const response = await axios.post(
-        `/${postData?._id}/like`,
+        `${baseUrl}/${postData?._id}/like`,
         {
           userId: currentUser.id,
         }

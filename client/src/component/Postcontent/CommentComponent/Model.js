@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { ForumContext } from '../../ContextProvider/ModelContext';
 // import Context from '../../ContextProvider/CommentModelContext';
 import {CommentContext} from '../../ContextProvider/CommentModelContext';
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 
 function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick }) {
@@ -35,7 +37,7 @@ function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick 
 
 
 const fetchModelConfig = async () => {
-    const res = await fetch("/models-info");
+    const res = await fetch(`${baseUrl}/models-info`);
     if (!res.ok) throw new Error("Failed to fetch model config");
     const data = await res.json();
     if (!data.success) throw new Error("API returned unsuccessful response");
@@ -43,7 +45,7 @@ const fetchModelConfig = async () => {
 };
 
 const fetchIconUrl = async (modelName) => {
-    const res = await fetch(`/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+    const res = await fetch(`${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
     if (!res.ok) return null;
     const data = await res.json();
     return data.success ? data.data.iconUrl : null;

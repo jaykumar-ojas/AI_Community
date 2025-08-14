@@ -2,8 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import { encodeId } from "../../utils/hashids";
+
 import { useQuery } from "@tanstack/react-query";
 import "react-loading-skeleton/dist/skeleton.css";
+
 
 const fetchUserById = async (id) => {
   const res = await fetch(`/getUserById/${id}`);
@@ -12,8 +14,10 @@ const fetchUserById = async (id) => {
   return json.user;
 };
 
+
 const UserIconCard = ({ id }) => {
   const navigate = useNavigate();
+
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["user", id],

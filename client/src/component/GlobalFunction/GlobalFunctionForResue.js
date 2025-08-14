@@ -25,6 +25,8 @@ export const ShowBox = () => {
 
 export const ValidUserForPage = () => {
   const { setLoginData } = useContext(LoginContext);
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const removeData = () => {
     console.log("i m running when you put login by google")
     localStorage.removeItem("userdatatoken");
@@ -43,7 +45,7 @@ export const ValidUserForPage = () => {
     }
 
     try {
-      const response = await fetch("/validuser", {
+      const response = await fetch(`${baseUrl}/validuser`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

@@ -22,13 +22,14 @@ const Card = ({ post }) => {
   });
   const [postData, setPostData] = useState(post);
   const [modelIcon, setModelIcon] = useState(null);
+  const baseUrl = process.env.REACT_APP_BASE_URL;
 
   // Fetch model icon for AI-generated posts
   useEffect(() => {
     const fetchModelIcon = async () => {
       if (post?.isAIGenerated && post?.aiModel) {
         try {
-          const response = await fetch(`/aimodels/search?modelName=${encodeURIComponent(post.aiModel)}`);
+          const response = await fetch(`${baseUrl}/aimodels/search?modelName=${encodeURIComponent(post.aiModel)}`);
           if (response.ok) {
             const data = await response.json();
             if (data.success && data.data.iconUrl) {
@@ -173,7 +174,7 @@ const [sparkles, setSparkles] = useState([]);
       }
   
       try {
-        const response = await axios.post(`/${postData._id}/dislike`, {
+        const response = await axios.post(`${baseUrl}/${postData._id}/dislike`, {
           userId: currentUser.id
         });
         

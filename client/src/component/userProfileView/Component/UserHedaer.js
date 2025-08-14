@@ -33,6 +33,8 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const { loginData, setLoginData } = useContext(LoginContext);
   const [profileUser, setProfileUser] = useState();
   const { id } = useParams();
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   useEffect(() => {
     console.log("Login data:", loginData); // Debug log
@@ -66,7 +68,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const fetchUserProfile = async (userId) => {
     try {
       const response = await fetch(
-        `/get-user-profile/${userId}`,
+        `${baseUrl}/get-user-profile/${userId}`,
         {
           method: "GET",
           headers: {
@@ -92,7 +94,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
     try {
       const token = localStorage.getItem("userdatatoken");
       console.log("Checking subscription with token:", token); // Debug log
-      const response = await fetch(`/check/${userId}`, {
+      const response = await fetch(`${baseUrl}/check/${userId}`, {
         method: "GET",
         headers: {
           Authorization: token,
@@ -111,7 +113,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const fetchSubscriptionStats = async (userId) => {
     try {
       const token = localStorage.getItem("userdatatoken");
-      const response = await fetch(`/stats/${userId}`, {
+      const response = await fetch(`${baseUrl}/stats/${userId}`, {
         method: "GET",
         headers: {
           Authorization: token,
@@ -137,8 +139,8 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
     try {
       const token = localStorage.getItem("userdatatoken");
       const url = isSubscribed
-        ? `/unsubscribe/${id}`
-        : `/subscribe/${id}`;
+        ? `${baseUrl}/unsubscribe/${id}`
+        : `${baseUrl}/subscribe/${id}`;
 
       const method = isSubscribed ? "DELETE" : "POST";
 
@@ -224,7 +226,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
 
       console.log(formData, "this is form data");
 
-      const response = await fetch("/updateProfile", {
+      const response = await fetch(`${baseUrl}/updateProfile`, {
         method: "POST",
         headers: {
           Authorization: token, // only include auth header; don't set Content-Type manually

@@ -77,9 +77,11 @@ export const organizeReplies = (replyList) => {
   
   return topLevelReplies;
 };
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 // API endpoints
-export const API_BASE_URL = '';
+export const API_BASE_URL = baseUrl;
 export const TOPICS_URL = `${API_BASE_URL}/forum/topics`;
 export const REPLIES_URL = `${API_BASE_URL}/forum/replies`;
 

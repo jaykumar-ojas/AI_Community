@@ -2,11 +2,13 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import PostCard from "./PostCard";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const fetchSavedPosts = async ({ queryKey }) => {
   const [, userId, token] = queryKey;
 
-  const response = await fetch(`/savedPost/${userId}`, {
+  const response = await fetch(`${baseUrl}/savedPost/${userId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

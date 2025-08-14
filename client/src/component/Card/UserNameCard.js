@@ -3,12 +3,14 @@ import Skeleton from "react-loading-skeleton";
 import { useQuery } from "@tanstack/react-query";
 import "react-loading-skeleton/dist/skeleton.css";
 
+
 const fetchUserById = async (id) => {
   const res = await fetch(`/getUserById/${id}`);
   const json = await res.json();
   if (json.status !== 200) throw new Error("Failed to fetch user");
   return json.user;
 };
+
 
 const UserNameCard = ({ id }) => {
   const { data: user, isLoading } = useQuery({

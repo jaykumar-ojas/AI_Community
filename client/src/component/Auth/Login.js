@@ -13,6 +13,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [popupType, setPopupType] = useState("error"); // 'success' or 'error'
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   const history = useNavigate();
   const location = useLocation();
@@ -52,7 +54,7 @@ const Login = () => {
     else{
       setIsLoading(true);
       try {
-        const data=await fetch("/login",{
+        const data=await fetch(`${baseUrl}/login`,{
           method:"POST",
           headers:{
             "Content-Type":"application/json"
@@ -93,7 +95,7 @@ const Login = () => {
     const token=localStorage.getItem("userdatatoken");
 
     try{
-    const data = await fetch("/validuser",{
+    const data = await fetch(`${baseUrl}/validuser`,{
       method:"GET",
       headers:{
         "Content-Type":"application/json",

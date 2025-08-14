@@ -6,6 +6,8 @@ import SubscriptionsList from './SubscriptionsList';
 
 import { LoginContext } from "../../ContextProvider/context";
 import { PenIcon } from "../../../asset/icons";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const UserHeaderEdit = () => {
     const [backgroundLoaded, setBackgroundLoaded] = useState(false);
@@ -34,7 +36,7 @@ const UserHeaderEdit = () => {
 
     const fetchUserProfile = async (userId) => {
         try {
-            const response = await fetch(`/get-user-profile/${userId}`, {
+            const response = await fetch(`${baseUrl}/get-user-profile/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -58,7 +60,7 @@ const UserHeaderEdit = () => {
         try {
             const token = localStorage.getItem("userdatatoken");
             console.log("Checking subscription with token:", token); // Debug log
-            const response = await fetch(`/check/${userId}`, {
+            const response = await fetch(`${baseUrl}/check/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': token,
@@ -77,7 +79,7 @@ const UserHeaderEdit = () => {
     const fetchSubscriptionStats = async (userId) => {
         try {
             const token = localStorage.getItem("userdatatoken");
-            const response = await fetch(`/stats/${userId}`, {
+            const response = await fetch(`${baseUrl}/stats/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': token,
@@ -103,8 +105,8 @@ const UserHeaderEdit = () => {
         try {
             const token = localStorage.getItem("userdatatoken");
             const url = isSubscribed
-                ? `/unsubscribe/${id}`
-                : `/subscribe/${id}`;
+                ? `${baseUrl}/unsubscribe/${id}`
+                : `${baseUrl}/subscribe/${id}`;
 
             const method = isSubscribed ? 'DELETE' : 'POST';
 

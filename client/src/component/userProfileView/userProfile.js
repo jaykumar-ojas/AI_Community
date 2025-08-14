@@ -4,9 +4,11 @@ import TabProfile from "./Component/TabProfile";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const fetchUserPosts = async (userId) => {
-  const response = await fetch("/get", {
+  const response = await fetch(`${baseUrl}/get`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

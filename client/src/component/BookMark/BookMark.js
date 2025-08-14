@@ -5,11 +5,13 @@ import { LoginContext } from "../ContextProvider/context";
 const BookMark = ({ userId, postId, isBookmarked: initialState }) => {
   const [isBookmarked, setIsBookmarked] = useState(initialState);
   const token = localStorage.getItem("userdatatoken");
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   const handleBookMark = async () => {
     console.log("i m going to bacend in");
     try {
-      const response = await fetch(`/bookMark/${userId}/${postId}`, {
+      const response = await fetch(`${baseUrl}/bookMark/${userId}/${postId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
