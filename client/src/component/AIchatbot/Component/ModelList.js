@@ -7,7 +7,7 @@ function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick 
     return (
         <li>
             <button
-                className={`w-full text-left px-3 py-2 rounded-md transition-all duration-150 cursor-pointer flex items-center space-x-2 ${
+                className={`w-full text-left px-2 py-2 rounded-md transition-all duration-150 cursor-pointer flex items-center space-x-2 ${
                     active
                         ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
                         : 'text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
@@ -136,8 +136,8 @@ const ModelList = () => {
         <div className="w-full flex flex-col bg-transparent rounded-lg shadow-sm">
             {/* Model Type Selection */}
             <div className="p-4 border-b border-gray-700">
-                <div className="font-semibold mb-3 text-text_header text-sm flex items-center">
-                    <span className="mr-2">🎯</span> MODEL TYPE
+                <div className="font-semibold mb-3 text-text_header text-l flex items-center">
+                    <span className="mr-2">🎯</span> MODELS
                 </div>
                 <div className="flex space-x-3">
                     {['text', 'image'].map(type => (
@@ -158,11 +158,8 @@ const ModelList = () => {
             </div>
 
             {/* AI Models Section */}
-            <div className="p-4">
-                <div className="font-semibold mb-3 text-text_header text-sm flex items-center">
-                    <span className="mr-2">🤖</span> AI MODELS
-                </div>
-                <ul className="space-y-2">
+            <div className="p-4 pt-0">
+                <ul className="space-y-1">
                     {Object.entries(modelConfig[modelType] || {}).map(([modelName, config]) => (
                         <ModelItem
                             key={modelName}

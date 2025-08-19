@@ -266,7 +266,7 @@ const AIContentFile = () => {
 
     return (
         <div className="p-6">
-            <h3 className="text-xl text-text_header px-2 font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <h3 className="text-xl text-text_header px-2 font-bold text-gray-800  flex items-center gap-2">
                 AI Image Generation
             </h3>
             {/* Image Model Selection */}
