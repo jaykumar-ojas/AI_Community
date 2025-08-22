@@ -62,9 +62,10 @@ const ShowCommentContent = ({reply}) => {
   const [error, setError] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
-  const getTrimmedContent = (text) => {
-    const words = text?.split?.(/\s+/) || [];
-    return words.slice(0, 100).join(" ");
+  const getTrimmedContent = (text, wordLimit = 100) => {
+    const words = text.split(" ");
+    if (words.length <= wordLimit) return text;
+    return words.slice(0, wordLimit).join(" ") + "...";
   };
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -297,21 +298,7 @@ const ShowCommentContent = ({reply}) => {
         </div>
 
         <div>
-           {typeof reply?.content === "string" ? (
-          <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
-            {showFullContent ? reply.content : getTrimmedContent(reply.content)}
-            {reply.content.length > 100 && (
-              <button
-                onClick={() => setShowFullContent(!showFullContent)}
-                className="ml-2 text-blue-600 hover:underline font-medium"
-              >
-                {showFullContent ? "View Less" : "View More"}
-              </button>
-            )}
-          </div>
-        ) : Array.isArray(reply?.content) ? (
           <ReplyData content={reply?.content} />
-        ) : null}
           {/* Display media attachments */}
           {reply?.mediaAttachments?.length > 0 && (
             <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">

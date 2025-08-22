@@ -34,7 +34,11 @@ const BookMark = ({ userId, postId, isBookmarked: initialState }) => {
   return (
     <button onClick={handleBookMark} className="p-2">
       {/* You can conditionally show filled/outlined icon */}
-      <BookmarkIcon fill={isBookmarked ? "#000" : "#ffff"} stroke="#000" strokeWidth={1.5} />
+      <BookmarkIcon
+  fill={isBookmarked ? "#ffffff" : "rgba(255,255,255,0.3)"}
+  stroke={isBookmarked ? "#ffffff" : "rgba(255,255,255,0.5)"}
+  strokeWidth={2}
+/>
     </button>
   );
 };

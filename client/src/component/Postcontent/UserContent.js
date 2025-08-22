@@ -10,27 +10,30 @@ import UserContentSkeleton from "./UserContentSkeleton";
 import BookMark from "../BookMark/BookMark";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-
 // AI Model Info Component
 const AIModelInfo = ({ aiMetadata }) => {
   const [modelInfo, setModelInfo] = useState(null);
   const [modelIcon, setModelIcon] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const {loginData} = useContext(LoginContext);
+  const { loginData } = useContext(LoginContext);
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
     const fetchModelInfo = async () => {
       if (!aiMetadata || !aiMetadata.isAIGenerated) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // Fetch model icon from /aimodels/search API
         if (aiMetadata.aiModel) {
           try {
-            const iconResponse = await fetch(`${baseUrl}/aimodels/search?modelName=${encodeURIComponent(aiMetadata.aiModel)}`);
+            const iconResponse = await fetch(
+              `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(
+                aiMetadata.aiModel
+              )}`
+            );
             if (iconResponse.ok) {
               const iconData = await iconResponse.json();
               if (iconData.success && iconData.data.iconUrl) {
@@ -41,7 +44,7 @@ const AIModelInfo = ({ aiMetadata }) => {
             console.error("Error fetching model icon:", iconError);
           }
         }
-        
+
         // Fetch model display info from /models-info API
         const response = await fetch(`${baseUrl}/models-info`);
         if (response.ok) {
@@ -70,14 +73,14 @@ const AIModelInfo = ({ aiMetadata }) => {
       const model = modelInfo.image[aiMetadata.aiModel];
       return {
         displayName: model.displayName,
-        emoji: model.emoji
+        emoji: model.emoji,
       };
     }
-    
+
     // Fallback for unknown models
     return {
       displayName: aiMetadata.aiModel,
-      emoji: "🤖"
+      emoji: "🤖",
     };
   };
 
@@ -87,12 +90,12 @@ const AIModelInfo = ({ aiMetadata }) => {
     <div className="bg-gradient-to-r from-purple-100 to-blue-100  rounded-lg ">
       <div className="flex flex-row items-center justify-center gap-2 mb-2">
         {modelIcon ? (
-          <img 
-            src={modelIcon} 
+          <img
+            src={modelIcon}
             alt={`${aiMetadata.aiModel} icon`}
             className="w-6 h-6 rounded-full object-cover"
             onError={(e) => {
-              e.target.style.display = 'none';
+              e.target.style.display = "none";
             }}
           />
         ) : (
@@ -103,13 +106,11 @@ const AIModelInfo = ({ aiMetadata }) => {
           {displayName}
         </span> */}
         <div className="flex items-center gap-2 mt-1">
-        <span className="text-xs text-gray-500">
-          Generated with {aiMetadata.aiProvider || 'Unknown Provider'}
-        </span>
+          <span className="text-xs text-gray-500">
+            {aiMetadata.aiProvider || "Unknown Provider"}
+          </span>
+        </div>
       </div>
-      </div>
-    
-      
     </div>
   );
 };
@@ -124,7 +125,15 @@ const UserContent = ({ post }) => {
   const [postData, setPostData] = useState(post);
   const [userLiked, setUserLiked] = useState(false);
   const [userDisliked, setUserDisliked] = useState(false);
-  const isauthor = loginData?.validuserone?._id==postData?.userId;
+  const isauthor = loginData?.validuserone?._id == postData?.userId;
+
+  // for expansion of words
+  const [expanded, setExpanded] = useState(false);
+  const words = postData?.desc ? postData.desc.split(" ") : [];
+  const isLong = words.length > 20;
+  // Show only first 20 words if not expanded
+  const displayText = expanded ? words.join(" ") : words.slice(0, 20).join(" ");
+
   useEffect(() => {
     console.log("UserContent received post:", post);
     if (post) {
@@ -136,7 +145,7 @@ const UserContent = ({ post }) => {
         aiModel: post?.aiModel,
         aiProvider: post?.aiProvider,
         aiPrompt: post?.aiPrompt,
-        aiGeneratedAt: post?.aiGeneratedAt
+        aiGeneratedAt: post?.aiGeneratedAt,
       });
       setPostData(post);
 
@@ -209,12 +218,9 @@ const UserContent = ({ post }) => {
     }
 
     try {
-      const response = await axios.post(
-        `${baseUrl}/${postData?._id}/like`,
-        {
-          userId: currentUser.id,
-        }
-      );
+      const response = await axios.post(`${baseUrl}/${postData?._id}/like`, {
+        userId: currentUser.id,
+      });
 
       if (response.status === 200) {
         // Update local state to reflect the change
@@ -260,12 +266,9 @@ const UserContent = ({ post }) => {
     }
 
     try {
-      const response = await axios.post(
-        `/${postData?._id}/dislike`,
-        {
-          userId: currentUser.id,
-        }
-      );
+      const response = await axios.post(`/${postData?._id}/dislike`, {
+        userId: currentUser.id,
+      });
 
       if (response.status === 200) {
         // Update local state to reflect the change
@@ -318,7 +321,6 @@ const UserContent = ({ post }) => {
     return <UserContentSkeleton />;
   }
 
-  
   // Render different media types
   const renderMedia = () => {
     if (!postData?.imgUrl) {
@@ -428,47 +430,49 @@ const UserContent = ({ post }) => {
     <div className="w-full rounded-lg bg-transparent relative shadow-lg flex flex-col gap-0">
       {/* user header */}
       <div className="flex justify-between items-center px-2 w-full h-full">
-        <div className="flex justify-between items-center">
-            <div className="w-8 h-8 flex-shrink-0 m-2">
-              <UserIconCard id={postData?.userId}></UserIconCard>
-            </div>
-            <div className="text-white">
-               <UserNameCard id={postData?.userId}></UserNameCard>
-            </div>
-            
+        <div className="flex justify-between items-center sm:mx-2">
+          <div className="w-10 h-10 flex-shrink-0 m-2">
+            <UserIconCard id={postData?.userId}></UserIconCard>
+          </div>
+          <div className="text-white">
+            <UserNameCard id={postData?.userId}></UserNameCard>
+          </div>
         </div>
 
-      <div className="flex flex-row gap-2 justify-center items-center">
+        <div className="flex flex-row gap-2 justify-center items-center">
+          {postData?.isAIGenerated && (
+            <div className="px-2">
+              <AIModelInfo aiMetadata={postData} />
+            </div>
+          )}
 
-      
-        {postData?.isAIGenerated && (
-        <div className="px-2">
-          <AIModelInfo aiMetadata={postData} />
-        </div>
-      )}
-
-        {/* this is for openpanel */}
-        <div className="px-2">
-         {isauthor && <Menu as="div" className="relative z-10">
-            <MenuButton className="flex gap-1 text-time_header font-extrabold items-center focus:outline-none">
-              <p>.</p>
-              <p>.</p>
-              <p>.</p>
-            </MenuButton>
-            <MenuItems className="absolute right-0 mt-2 w-24 bg-white shadow-md rounded-md  ring-1 ring-black ring-opacity-5 focus:outline-none">
-              <MenuItem>
-                {({ active }) => (
-                  <button
-                    className={`block border rounded-md px-4 py-2 w-full text-sm font-extrabold text-red-700 ${
-                      active ? "bg-red-100 border-red-300" : " text-gray-700"
-                    }`}
-                    onClick={() => handleDelete(postData?._id, postData?.imgKey)}
-                  >
-                    Delete
-                  </button>
-                )}
-              </MenuItem>
-              {/* <MenuItem>
+          {/* this is for openpanel */}
+          <div className="px-2">
+            {isauthor && (
+              <Menu as="div" className="relative z-10">
+                <MenuButton className="flex gap-1 text-time_header font-extrabold items-center focus:outline-none">
+                  <p>.</p>
+                  <p>.</p>
+                  <p>.</p>
+                </MenuButton>
+                <MenuItems className="absolute right-0 mt-2 w-24 bg-white shadow-md rounded-md  ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <MenuItem>
+                    {({ active }) => (
+                      <button
+                        className={`block border rounded-md px-4 py-2 w-full text-sm font-extrabold text-red-700 ${
+                          active
+                            ? "bg-red-100 border-red-300"
+                            : " text-gray-700"
+                        }`}
+                        onClick={() =>
+                          handleDelete(postData?._id, postData?.imgKey)
+                        }
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </MenuItem>
+                  {/* <MenuItem>
                 {({ active }) => (
                   <button
                     className={`block border rounded-md px-4 py-2 w-full text-sm font-extrabold text-red-700 ${
@@ -479,14 +483,14 @@ const UserContent = ({ post }) => {
                   </button>
                 )}
               </MenuItem> */}
-            </MenuItems>
-          </Menu>}
-        </div>
+                </MenuItems>
+              </Menu>
+            )}
+          </div>
         </div>
       </div>
 
       {/* AI Model Info */}
-      
 
       {/* user media content */}
       <div className="w-full min-h-[300px]  bg-transparent relative flex justify-center items-center">
@@ -502,40 +506,58 @@ const UserContent = ({ post }) => {
 
       {/* user description and interaction */}
       <div>
-        <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
-        <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
-          {/* Like button */}
-          <button
-            className="flex items-center gap-1"
-            onClick={handleLikePost}
-            title={userLiked ? "Remove like" : "Like this post"}
-          >
-            {heartSvg(userLiked)}
-            <span className="text-xs font-medium">
-              {postData?.likes ? postData?.likes.length : 0}
-            </span>
-          </button>
-
-          {/* Dislike button */}
-          {/* <button
-            className="flex items-center gap-1"
-            onClick={handleDislikePost}
-            title={userDisliked ? "Remove dislike" : "Dislike this post"}
-          >
-            {thumbsDownSvg(userDisliked)}
-            <span className="text-sm font-medium">
-              {postData?.dislikes ? postData?.dislikes.length : 0}
-            </span>
-          </button> */}
-         <BookMark postId={postData?._id} userId={loginData?.validuserone?._id} isBookmarked={postData?.BookMark?.includes(loginData?.validuserone?._id)}/>
-
-        </div>
-        </div>
-
-        <div className="p-2 pt-1 text-sm text-time_header">
-          {postData?.desc || "No description available"}
-        </div>
+  <div className="p-1 sm:mx-2 flex items-center justify-between gap-2 text-xs text-gray-500">
+    {/* Outer wrapper with justify-between */}
+    <div className="bg-something flex justify-between items-center px-2 rounded-xl w-full">
+      
+      {/* Left side (Like button) */}
+      <div className="flex items-center gap-2">
+        <button
+          className="flex items-center gap-1"
+          onClick={handleLikePost}
+          title={userLiked ? "Remove like" : "Like this post"}
+        >
+          {heartSvg(userLiked)}
+          <span className="text-lg font-medium">
+            {postData?.likes ? postData?.likes.length : 0}
+          </span>
+        </button>
       </div>
+
+      {/* Right side (Bookmark) */}
+      <div>
+        <BookMark
+          postId={postData?._id}
+          userId={loginData?.validuserone?._id}
+          isBookmarked={postData?.BookMark?.includes(
+            loginData?.validuserone?._id
+          )}
+        />
+      </div>
+    </div>
+  </div>
+
+  {/* Description */}
+  <div className="p-2 pt-1 text-sm text-time_header">
+    {postData?.desc ? (
+      <>
+        {displayText}
+        {isLong && !expanded && " ..."}
+        {isLong && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="ml-2 text-blue-500 hover:underline"
+          >
+            {expanded ? "View Less" : "View More"}
+          </button>
+        )}
+      </>
+    ) : (
+      "No description available"
+    )}
+  </div>
+</div>
+
     </div>
   );
 };
