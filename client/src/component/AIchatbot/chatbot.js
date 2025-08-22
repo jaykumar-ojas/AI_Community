@@ -37,6 +37,8 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
   const [error, setError] = useState(null);
   const [selectedModel, setSelectedModel] = useState('GPT-4');
   const {viewBox,setViewBox,replyId,model,replyIdForContext,setReplyIdForContext} = useContext(ForumContext);
+  const [showModels, setShowModels] = useState(false);
+  const [showPopular, setShowPopular] = useState(false);
   
   
   // Fetch topic and replies when topicId changes
@@ -47,30 +49,67 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] relative overflow-hidden bg-transparent">
-      {/* Sidebar */}
-      <div className='h-[calc(100vh-3.5rem)] bg-bg_sidebar/50 border-r border-black w-[18%]'>
-        <ModelList></ModelList>
+      <div className='hidden md:block h-[calc(100vh-3.5rem)] bg-bg_sidebar/50 border-r border-black w-[18%]'>
+        <ModelList />
       </div>
-      
-      
-      {/* Main Content */}
-      <div className="flex-1 px-4 flex flex-col w-[%]">
-        
-        {/* Chat Container */}
-        <div className="flex-1 overflow-y-auto ">
-          <TopicContent/>
+
+      <div className="flex-1 px-2 sm:px-4 flex flex-col">
+        <div className="md:hidden sticky top-0 z-10 bg-black/40 backdrop-blur-sm border-b border-gray-800 px-2 py-2 flex gap-2">
+          <button
+            onClick={() => setShowModels(true)}
+            className="flex-1 py-2 text-sm rounded-md bg-btn_bg text-text_header"
+          >
+            Models
+          </button>
+          <button
+            onClick={() => setShowPopular(true)}
+            className="flex-1 py-2 text-sm rounded-md bg-btn_bg text-text_header"
+          >
+            Popular
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          <TopicContent />
         </div>
       </div>
-      <div className="text-lg text-text_header h-[calc(100vh-3.5rem)]  bg-bg_sidebar/50 w-[22%] flex flex-col">
-  <div className="font-semibold text-lg  p-2">
-    Popular discussions you may like
-  </div>
-  <div className="flex-1 overflow-y-auto no-scrollbar">
-    <PopularTopics />
-  </div>
-</div>
 
+      <div className="hidden md:flex text-lg text-text_header h-[calc(100vh-3.5rem)] bg-bg_sidebar/50 w-[22%] flex-col">
+        <div className="font-semibold text-lg p-2">Popular discussions you may like</div>
+        <div className="flex-1 overflow-y-auto no-scrollbar">
+          <PopularTopics />
+        </div>
+      </div>
 
+      {showModels && (
+        <div className="md:hidden fixed inset-0 z-20">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowModels(false)} />
+          <div className="absolute left-0 top-0 h-full w-10/12 max-w-xs bg-bg_sidebar/95 border-r border-black shadow-xl">
+            <div className="flex items-center justify-between p-3 border-b border-gray-800">
+              <div className="text-text_header">Models</div>
+              <button className="text-text_header" onClick={() => setShowModels(false)}>✕</button>
+            </div>
+            <div className="h-[calc(100%-3rem)] overflow-y-auto">
+              <ModelList />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPopular && (
+        <div className="md:hidden fixed inset-0 z-20">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowPopular(false)} />
+          <div className="absolute right-0 top-0 h-full w-10/12 max-w-sm bg-bg_sidebar/95 border-l border-black shadow-xl flex flex-col">
+            <div className="flex items-center justify-between p-3 border-b border-gray-800">
+              <div className="text-text_header">Popular</div>
+              <button className="text-text_header" onClick={() => setShowPopular(false)}>✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto no-scrollbar">
+              <PopularTopics />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { formatDate } from '../AiForumPage/components/ForumUtils';
 import UserIconCard from '../Card/UserIconCard';
 import UserNameCard from '../Card/UserNameCard';
 import {LoginContext} from "../ContextProvider/context";
+import { encodeId } from  "../../utils/hashids"
 
 const NotificationComponent = ({ onClose }) => {
   const {loginData} = useContext(LoginContext);
@@ -44,8 +45,8 @@ const NotificationComponent = ({ onClose }) => {
     let url = '#';
     if (postId && commentId) url = `/userPost/${postId}?comment=${commentId}`;
     else if (postId) url = `/userPost/${postId}`;
-    else if (topicId && commentId) url = `/forum/topic/${topicId}?comment=${commentId}`;
-    else if (topicId) url = `/forum/topic/${topicId}`;
+    else if (topicId && commentId) url = `/forum/topic/${encodeId(topicId)}?comment=${encodeId(commentId)}`;
+    else if (topicId) url = `/forum/topic/${encodeId(topicId)}`;
     window.location.href = url;
     onClose?.();
   };
