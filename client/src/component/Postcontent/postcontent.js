@@ -47,6 +47,7 @@ const PostContent = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [showIcon,setShowICon] = useState(false);
+  const [showCommentsMobile, setShowCommentsMobile] = useState(false);
   // Try to find the post in the existing cached posts list (from useInfiniteQuery)
   const postFromCache = queryClient.getQueryData(['posts'])?.pages
     ?.flatMap((page) => page.posts || []) // Adjust according to your actual structure
@@ -111,15 +112,43 @@ const PostContent = () => {
             </div>
           <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box md:px-24 sm:px-0">
             <div className="mb-6">
-              <UserContent post={post} />
+              <UserContent
+                post={post}
+                onToggleComments={() => setShowCommentsMobile((v) => !v)}
+                areCommentsOpen={showCommentsMobile}
+              />
             </div>
 
-            <div className="flex-1 bg-bg_comment_box p-4 rounded-xl">
+            {/* Comments (desktop always visible, mobile toggled) */}
+            <div className={`flex-1 bg-bg_comment_box p-4 rounded-xl ${showCommentsMobile ? "block" : "hidden"} md:block`}>
               <CommentReview />
+            </div>
+
+            {/* Mobile only: Related content when comments are hidden */}
+            <div className={`md:hidden ${showCommentsMobile ? "hidden" : "block"}`}>
+              <div className="border border-gray-300 rounded-lg">
+                <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold">
+                  More Related Content
+                </div>
+                <div className="grid grid-cols-1">
+                  {isRelatedLoading ? (
+                    <div className="p-4 text-center text-gray-500">Loading...</div>
+                  ) : relevantPost.length > 0 ? (
+                    relevantPost.map((item, index) => (
+                      <RelatedCard key={item?._id || index} post={item} />
+                    ))
+                  ) : (
+                    <div className="col-span-3 text-center bg-bg_comment text-gray-500">
+                      No related content found
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="px-24">
+          {/* Reply box (desktop always visible, mobile only when comments open) */}
+          <div className={`px-24 ${showCommentsMobile ? "block" : "hidden"} md:block`}>
             <UserCommentReply />
           </div>
         </div>

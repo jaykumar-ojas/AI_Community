@@ -11,7 +11,7 @@ const RenderPreview = () => {
             <img
                 src={previewUrl}
                 alt="Preview"
-                className="h-full max-h-[58vh] w-full max-w-5xl  object-contain"
+                className="h-full md:max-h-[58vh] max-h-[30vh] w-full max-w-5xl  object-contain"
             />
         );
     } else if (fileType === 'video') {
