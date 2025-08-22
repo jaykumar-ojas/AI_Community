@@ -15,6 +15,8 @@ import {
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 import CommentModelProvider, { CommentContext } from "../ContextProvider/CommentModelContext";
 import UserAndModel from "./Comment/UserAndModelComment";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const UserCommentReply = () => {
   const { id } = useParams();
@@ -50,7 +52,7 @@ const UserCommentReply = () => {
       console.log(`Calling describe-images API for comment reply: ${replyId}`);
       
       const response = await axios.put(
-        `/describe-images/${replyId}`,
+        `${baseUrl}/describe-images/${replyId}`,
         {},
         {
           headers: getAuthHeaders()
@@ -74,7 +76,7 @@ const UserCommentReply = () => {
       console.log(`Calling /aimodels/search API for model: ${modelName}`);
       
       const response = await axios.get(
-        `/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
+        `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
         {
           headers: getAuthHeaders()
         }
@@ -146,7 +148,7 @@ const UserCommentReply = () => {
       console.log("Calling /generate API with payload:", generatePayload);
       
       const response = await axios.post(
-        "/generate", // Updated endpoint
+        `${baseUrl}/generate`, // Updated endpoint
         generatePayload
       );
       
@@ -188,7 +190,7 @@ const UserCommentReply = () => {
       console.log("Calling /suggest API for context awareness");
       
       const suggestResponse = await axios.post(
-        `/suggest/${replyIdForContext || id}`,
+        `${baseUrl}/suggest/${replyIdForContext || id}`,
         {
           text: newReply.trim(),
           contextType: 'comment', // Updated context type
@@ -269,7 +271,7 @@ const UserCommentReply = () => {
         formData.append("media", file);
       });
 
-      const response = await axios.post('/comments/post', formData, {
+      const response = await axios.post(`${baseUrl}/comments/post`, formData, {
         headers: {
           ...getAuthHeaders(),
           "Content-Type": "multipart/form-data",

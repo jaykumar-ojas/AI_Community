@@ -66,6 +66,8 @@ const ShowCommentContent = ({reply}) => {
     const words = text?.split?.(/\s+/) || [];
     return words.slice(0, 100).join(" ");
   };
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   useEffect(() => {
     if (reply && loginData) {
@@ -125,7 +127,7 @@ const ShowCommentContent = ({reply}) => {
 
       // Then delete the parent comment
       const response = await axios.delete(
-        `/comments/${reply?._id}`,
+        `${baseUrl}/comments/${reply?._id}`,
         {
           headers: getAuthHeaders(),
         }
@@ -157,7 +159,7 @@ const ShowCommentContent = ({reply}) => {
 
     try {
       const response = await axios.post(
-        `/comments/${reply?._id}/like`,{},{
+        `${baseUrl}/comments/${reply?._id}/like`,{},{
           headers: getAuthHeaders(),
         }
       );
@@ -197,7 +199,7 @@ const ShowCommentContent = ({reply}) => {
 
     try {
       const response = await axios.post(
-        `/comments/${reply?._id}/dislike`,
+        `${baseUrl}/comments/${reply?._id}/dislike`,
         {},
         {
           headers: getAuthHeaders(),

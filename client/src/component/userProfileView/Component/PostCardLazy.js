@@ -36,6 +36,7 @@ const LazyImageWithBlurAndSpinner = ({ post, lowResUrl, alt }) => {
       />
       )}
 
+
 {post?.fileType === "video" && (
   <video
     src={post?.imgUrl}
@@ -47,6 +48,7 @@ const LazyImageWithBlurAndSpinner = ({ post, lowResUrl, alt }) => {
     playsInline
   />
 )}
+
 
       {post?.fileType === "audio" && (
         <div className="h-full w-full flex items-center justify-center bg-gray-800 p-4">

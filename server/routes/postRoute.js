@@ -288,6 +288,7 @@ router.get('/allget', async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 9;
         const skip = (page - 1) * limit;
+        console.log("page no for post", page);
 
         // Find posts with pagination - only fetch the posts for the requested page
         const userposts = await postdb.find()

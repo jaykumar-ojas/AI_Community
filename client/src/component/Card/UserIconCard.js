@@ -2,18 +2,22 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import { encodeId } from "../../utils/hashids";
+
 import { useQuery } from "@tanstack/react-query";
 import "react-loading-skeleton/dist/skeleton.css";
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const fetchUserById = async (id) => {
-  const res = await fetch(`/getUserById/${id}`);
+  const res = await fetch(`${baseUrl}/getUserById/${id}`);
   const json = await res.json();
   if (json.status !== 200) throw new Error("Failed to fetch user");
   return json.user;
 };
 
+
 const UserIconCard = ({ id }) => {
   const navigate = useNavigate();
+
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["user", id],

@@ -172,7 +172,8 @@ const generateSignedUrl = async(keys)=>{
             Key: keys,
         }
         const command = new GetObjectCommand(getObjectParams);
-        const url = await getSignedUrl(s3, command, { expiresIn: 3600 * 24 * 7 }); // URL valid for 7 days
+        // const url = await getSignedUrl(s3, command, { expiresIn: 120 }); // URL valid for 7 days
+        const url =`https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/${keys}`;
         return url;
     }catch (error) {
         console.error("Error generating signed URL:", error);
@@ -231,7 +232,7 @@ const uploadImageFromUrl = async (imageUrl) => {
         const fileUrl = await generateSignedUrl(fileName);
         console.log(`Image uploaded successfully: ${fileName}`);
         return {
-            fileName,
+            fileName : fileName,
             fileType: "image",
             fileUrl,
             fileSize: "",

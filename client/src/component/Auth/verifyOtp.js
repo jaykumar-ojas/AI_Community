@@ -8,10 +8,12 @@ const EmailVerification = () => {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
   const [timer, setTimer] = useState(120);
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   const otpPageValid = async () => {
     console.log("second i am");
-    const data = await fetch("/isvalid", {
+    const data = await fetch(`${baseUrl}/isvalid`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -50,7 +52,7 @@ const EmailVerification = () => {
     e.preventDefault();
     const enteredOtp = otp.join("");
     console.log("Entered OTP:", enteredOtp);
-    const data = await fetch("/verify-otp", {
+    const data = await fetch(`${baseUrl}/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

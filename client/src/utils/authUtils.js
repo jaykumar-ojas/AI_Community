@@ -1,4 +1,6 @@
 import { getAuthHeaders } from '../component/AiForumPage/components/ForumUtils';
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 export const handleGoogleLogin = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -20,7 +22,7 @@ export const validateToken = async () => {
   }
 
   try {
-    const response = await fetch("/validuser", {
+    const response = await fetch(`${baseUrl}/validuser`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

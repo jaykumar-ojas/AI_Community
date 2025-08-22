@@ -6,9 +6,14 @@ import { LoginContext } from "../ContextProvider/context";
 import { PostContext } from "./PostContext";
 import { useCroppedFile } from "./PostUtils";
 import PostProvider from "./PostContext";
-// import  PostContext  from "./PostContext";
+import { Link, useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashids";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
+
 
 const PostImageContent = () => {
+  const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const { loginData } = useContext(LoginContext);
   const { file, fileType, desc, completedCrop, aiMetadata } = useContext(PostContext);
@@ -40,11 +45,7 @@ const PostImageContent = () => {
       }
 
       setIsUploading(true);
-      console.log("Starting upload for file:", file?.name);
-      console.log("File type:", file?.type);
-      console.log("User ID:", loginData.validuserone?._id || loginData.validateUser?._id);
-      console.log("AI Metadata:", aiMetadata);
-
+      
       // Process crop for images only
       let fileToUpload = file;
       if (completedCrop && fileType === 'image') {
@@ -69,7 +70,7 @@ const PostImageContent = () => {
       }
 
       // Choose the appropriate upload endpoint
-      const uploadEndpoint = aiMetadata ? '/upload-ai' : '/upload';
+      const uploadEndpoint = aiMetadata ? `${baseUrl}/upload-ai` : `${baseUrl}/upload`;
 
       const data = await fetch(uploadEndpoint, {
         method: 'POST',
@@ -111,6 +112,8 @@ const PostImageContent = () => {
         setRefreshKey(oldKey => oldKey + 1);
 
         alert("Post uploaded successfully!");
+        console.log("this is post image id", res?.storePost?._id,res.storePost);
+        navigate(`/userPost/${res?.storePost?._id}`);
       } else {
         console.error("Upload failed:", res);
         alert(`Failed to upload post: ${res.error || "Unknown error"}`);

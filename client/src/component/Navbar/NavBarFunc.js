@@ -6,6 +6,8 @@ export const LogOutUser = () => {
     
   const { setLoginData } = useContext(LoginContext);
   const validate = ValidUserForPage();
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -21,7 +23,7 @@ export const LogOutUser = () => {
       alert("user not login");
       return;
     }
-    const data = await fetch("/logout",{
+    const data = await fetch(`${baseUrl}/logout`,{
       method:"GET",
       headers:{
         "Content-Type":"application/json",

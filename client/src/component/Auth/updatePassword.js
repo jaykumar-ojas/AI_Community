@@ -13,6 +13,8 @@ const ChangePassword = () => {
   const [popupMessage, setPopupMessage] = useState("");
   const [popupType, setPopupType] = useState("error"); // 'success' or 'error'
   const [passwordError, setPasswordError] = useState("");
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   useEffect(() => {
     if (popupMessage) {
@@ -51,7 +53,7 @@ const ChangePassword = () => {
     }
 
     try {
-      const response = await fetch("/update-password", {
+      const response = await fetch(`${baseUrl}/update-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

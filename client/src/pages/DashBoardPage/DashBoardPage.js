@@ -9,9 +9,11 @@ import { MasonrySkeletonGrid } from "./MansorySkeletonGrid";
 import { LoginContext } from "../../component/ContextProvider/context";
 import { handleGoogleLogin, validateToken } from "../../utils/authUtils";
 import { useNavigate, useOutletContext } from "react-router-dom";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const fetchPosts = async ({ pageParam = 1 }) => {
-  const res = await fetch(`/allget?page=${pageParam}&limit=9`);
+  const res = await fetch(`${baseUrl}/allget?page=${pageParam}&limit=9`);
   return res.json();
 };
 

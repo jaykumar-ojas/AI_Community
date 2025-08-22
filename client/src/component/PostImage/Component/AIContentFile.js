@@ -1,5 +1,7 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
 import { PostContext } from "../PostContext";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const AIContentFile = () => {
     const { setPreviewUrl, setShowCropper, setFileType, setFile, aiPrompt, setAiPrompt, selectedImageModel, setSelectedImageModel, setAiMetadata } = useContext(PostContext);
@@ -18,7 +20,7 @@ const AIContentFile = () => {
         const fetchModels = async () => {
             try {
                 setIsLoadingModels(true);
-                const response = await fetch("/models-info");
+                const response = await fetch(`${baseUrl}/models-info`);
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
@@ -83,6 +85,7 @@ const AIContentFile = () => {
             // Create preview for images and videos
             if (type === "image" || type === "video") {
                 const preview = URL.createObjectURL(uploadedFile);
+                console.log("htis is my preview url for that",preview);
                 setPreviewUrl(preview);
 
                 // Show cropper for images only
@@ -106,7 +109,7 @@ const AIContentFile = () => {
 
     try {
         setIsEnhancing(true);
-        const response = await fetch("/enhance-prompt", {
+        const response = await fetch(`${baseUrl}/enhance-prompt`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -154,7 +157,7 @@ const AIContentFile = () => {
             console.log("Generating AI image with prompt:", aiPrompt, "model:", selectedImageModel);
 
             // Call /generate with model and prompt
-            const response = await fetch("/generate", {
+            const response = await fetch(`${baseUrl}/generate`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -205,7 +208,8 @@ const AIContentFile = () => {
                 }
 
                 console.log("Final image URL for proxy:", imageUrl);
-                const proxyUrl = `/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+                const proxyUrl = `${baseUrl}/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+                console.log("proxy url",proxyUrl);
                 
                 const imageResponse = await fetch(proxyUrl);
                 if (!imageResponse.ok) {
@@ -262,7 +266,7 @@ const AIContentFile = () => {
 
     return (
         <div className="p-6">
-            <h3 className="text-xl text-text_header px-2 font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <h3 className="text-xl text-text_header px-2 font-bold text-gray-800  flex items-center gap-2">
                 AI Image Generation
             </h3>
             {/* Image Model Selection */}

@@ -22,13 +22,15 @@ const Card = ({ post }) => {
   });
   const [postData, setPostData] = useState(post);
   const [modelIcon, setModelIcon] = useState(null);
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+  
 
   // Fetch model icon for AI-generated posts
   useEffect(() => {
     const fetchModelIcon = async () => {
       if (post?.isAIGenerated && post?.aiModel) {
         try {
-          const response = await fetch(`/aimodels/search?modelName=${encodeURIComponent(post.aiModel)}`);
+          const response = await fetch(`${baseUrl}/aimodels/search?modelName=${encodeURIComponent(post.aiModel)}`);
           if (response.ok) {
             const data = await response.json();
             if (data.success && data.data.iconUrl) {
@@ -44,46 +46,6 @@ const Card = ({ post }) => {
     fetchModelIcon();
   }, [post?.isAIGenerated, post?.aiModel]);
 
-  // const handleLikePost = async () => {
-  //     if (!currentUser.id) {
-  //       alert("Please log in to like posts");
-  //       return;
-  //     }
-  
-  //     try {
-  //       const response = await axios.post(`/${postData._id}/like`, {
-  //         userId: currentUser.id
-  //       });
-        
-  //       if (response.status === 200) {
-  //         // Update local state to reflect the change
-  //         const updatedPost = { ...postData };
-          
-  //         if (userLiked) {
-  //           // Remove like
-  //           updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
-  //         } else {
-  //           // Add like and remove dislike if exists
-  //           if (!updatedPost.likes) updatedPost.likes = [];
-  //           if (!updatedPost.likes.includes(currentUser.id)) {
-  //             updatedPost.likes.push(currentUser.id);
-  //           }
-            
-  //           // Remove from dislikes if present
-  //           if (updatedPost.dislikes && updatedPost.dislikes.includes(currentUser.id)) {
-  //             updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
-  //           }
-  //         }
-          
-  //         setPostData(updatedPost);
-  //         setUserLiked(!userLiked);
-  //         if (userDisliked) setUserDisliked(false);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error liking post:', error);
-  //       alert("Error liking post. Please try again.");
-  //     }
-  //   };
   
 const [sparkles, setSparkles] = useState([]);
 
@@ -131,7 +93,7 @@ const [sparkles, setSparkles] = useState([]);
     }
 
     try {
-      const response = await axios.post(`/${postData._id}/like`, {
+      const response = await axios.post(`${baseUrl}/${postData._id}/like`, {
         userId: currentUser.id
       });
       
@@ -173,7 +135,7 @@ const [sparkles, setSparkles] = useState([]);
       }
   
       try {
-        const response = await axios.post(`/${postData._id}/dislike`, {
+        const response = await axios.post(`${baseUrl}/${postData._id}/dislike`, {
           userId: currentUser.id
         });
         

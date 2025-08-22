@@ -41,6 +41,8 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
   const [isGeneratingFinal, setIsGeneratingFinal] = useState(false);
   const [currentModelInfo, setCurrentModelInfo] = useState(null);
   const messagesEndRef = useRef(null);
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
   // Scroll to bottom of messages when new messages are added
   useEffect(() => {

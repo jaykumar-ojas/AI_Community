@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Svg from "./svg";
 import Svg2 from "./Svg2";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const Register = () => {
   const history = useNavigate();
@@ -103,7 +105,7 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const data = await fetch("/send-otp", {
+      const data = await fetch(`${baseUrl}/send-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -141,7 +143,7 @@ const Register = () => {
     
     setIsLoading(true);
     try {
-      const data = await fetch("/verify-otp", {
+      const data = await fetch(`${baseUrl}/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -184,7 +186,7 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const data = await fetch("/register", {
+      const data = await fetch(`${baseUrl}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

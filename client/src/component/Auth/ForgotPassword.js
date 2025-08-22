@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 
 const ForgotPassword = () => {
   const [email,setEmail]= useState("");
@@ -11,7 +13,7 @@ const ForgotPassword = () => {
   const handleSubmit = async(e) => {
     console.log(email,"this is email");
     e.preventDefault();
-    const data =await fetch("/forget-password",{
+    const data =await fetch(`${baseUrl}/forget-password`,{
       method:'POST',
       headers:{
         "Content-Type":"application/json"
