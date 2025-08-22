@@ -8,7 +8,7 @@ import Register from "./component/Auth/Register";
 import Error from "./component/Error/error";
 import UpdatePassword from "./component/Auth/updatePassword";
 import { createBrowserRouter, RouterProvider, useLocation, useNavigate,Outlet } from "react-router-dom";
-import React from "react";
+import React, { useState } from "react";
 import Context from "./component/ContextProvider/context";
 import ForgotPassword from "./component/Auth/ForgotPassword";
 import VerfiyOtp from "./component/Auth/verifyOtp";
@@ -28,6 +28,7 @@ import {BackgroundBeams} from "./component/ui/background-beams";
 
 const Layout = () => {
   const location = useLocation();
+  const [showForum, setShowForum] = useState(false);
   
   // Paths where you do NOT want the Navbar to appear
   const noNavbarPaths = ["/login", "/register", "/forgot-password"];
@@ -40,9 +41,9 @@ const Layout = () => {
       
       {/* Content overlay - make sure it's above the background */}
       <div className="relative z-10 flex flex-col h-screen">
-        {!shouldHideNavbar && <Navbar />}
+        {!shouldHideNavbar && <Navbar showForum={showForum} setShowForum={setShowForum} />}
         <main className="flex-1 overflow-auto">
-          <Outlet />
+          <Outlet context={{ showForum, setShowForum }} />
         </main>
       </div>
     </div>

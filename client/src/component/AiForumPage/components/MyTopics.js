@@ -36,7 +36,7 @@ const MyTopics = () => {
   });
 
   if (!validuserone) {
-    return <TopicListSkeleton />;
+    return (<div className="p-4 text-center text-red-500">you are not logged in...</div>)
   }
 
   if (isLoading) {

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
@@ -29,13 +29,31 @@ const fetchTopic = async (topicId) => {
 const TopicContent = () => {
   const { topicId } = useParams();
   const { loginData } = useContext(LoginContext);
-  const { setReplyIdForContext,setUserName } =useContext(ForumContext);
+  const { setReplyIdForContext,setUserName, viewBox, setViewBox } =useContext(ForumContext);
+  const mobileReplyRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(()=>{
     setReplyIdForContext(null);
     setUserName(null);
+    setViewBox(false);
   },[]);
+
+  // Close mobile reply box when clicking outside
+  useEffect(() => {
+    if (!viewBox) return;
+    function handleOutside(event) {
+      if (mobileReplyRef.current && !mobileReplyRef.current.contains(event.target)) {
+        setViewBox(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('touchstart', handleOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('touchstart', handleOutside);
+    };
+  }, [viewBox, setViewBox]);
 
   const {
     data: topic,
@@ -127,10 +145,15 @@ const TopicContent = () => {
         </div>
       </div>
 
-      {/* Fixed Bottom Reply Input */}
-      <div className="px-4 py-2 bg-transparent">
+      {/* Reply Input - Desktop always visible; Mobile shown only when Reply tapped */}
+      <div className="px-4 py-2 bg-transparent hidden md:block">
         <UserReply />
       </div>
+      {viewBox && (
+        <div ref={mobileReplyRef} className="px-4 py-2 bg-transparent md:hidden">
+          <UserReply />
+        </div>
+      )}
     </div>
   );
 };

@@ -26,6 +26,10 @@ const UserIconCard = ({ id }) => {
     staleTime: 5 * 60 * 1000, // optional: 5 min cache
   });
 
+  const [imgError, setImgError] = React.useState(false);
+  const profileUrl = !imgError ? (user?.profilePictureUrl || user?.image || "") : "";
+  const initial = (user?.userName || "").trim().charAt(0).toUpperCase();
+
   return (
     <div
       onClick={(e) => {
@@ -42,12 +46,19 @@ const UserIconCard = ({ id }) => {
           baseColor="#d1d5db"
           highlightColor="#6b7280"
         />
-      ) : (
+      ) : profileUrl ? (
         <img
-          src={user?.profilePictureUrl}
+          src={profileUrl}
           alt="User"
           className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
         />
+      ) : (
+        <div className="w-full h-full bg-gray-300 text-gray-700 flex items-center justify-center">
+          <span className="text-lg font-semibold">
+            {initial || ""}
+          </span>
+        </div>
       )}
     </div>
   );

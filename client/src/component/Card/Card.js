@@ -226,7 +226,7 @@ const [sparkles, setSparkles] = useState([]);
 >
   <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type} />
 
-  <div className="absolute flex flex-col bottom-0 h-full w-full justify-between left-0 right-0 bg-black bg-opacity-60 text-white text-sm p-2 opacity-0 group-hover:opacity-100 transition duration-500">
+  <div className="absolute flex flex-col bottom-0 h-full w-full justify-between left-0 right-0 bg-black bg-opacity-20 sm:bg-opacity-60 text-white text-sm p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition duration-500">
     {/* User info row (with AI model if AI generated) */}
     <div className="flex justify-between flex-row gap-2 pb-1 items-center">
       <div className="flex flex-row justify-start gap-2">
@@ -255,7 +255,7 @@ const [sparkles, setSparkles] = useState([]);
     </div>
 
     {/* Description */}
-    <div className="overflow-y-auto items-center.g justify-center no-scrollbar">
+    <div className="opacity-0 group-hover:opacity-100 group-active:opacity-100 transition duration-300 overflow-y-auto items-center.g justify-center no-scrollbar">
       {post?.desc}
     </div>
 
