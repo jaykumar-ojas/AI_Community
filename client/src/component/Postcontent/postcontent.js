@@ -93,13 +93,7 @@ const PostContent = () => {
     );
   }
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-lg text-gray-500">Loading post...</div>
-  //     </div>
-  //   );
-  // }
+  
   const handleIconClick = () => {
     setShowICon(!showIcon);
   }
@@ -107,15 +101,15 @@ const PostContent = () => {
 
   return (
     <div className="bg-transparent w-full overflow-x-hidden h-full">
-      <div className="w-full justify-center flex flex-col lg:flex-row">
+      <div className="w-full justify-center flex flex-col md:flex-row">
         {/* Left Section */}
-        <div className="relative w-full rounded-xl lg:w-[70%] h-[calc(100vh-3.5rem)] flex flex-col">
+        <div className="relative w-full rounded-xl sm:w-[100%] md:w-[70%] h-[calc(100vh-3.5rem)] flex flex-col">
           {/* model icon list */}
           <div className="absolute z-50 left-0 m-4  mb-8 bottom-0">
             {showIcon && <ModelList/> }
             <button onClick={handleIconClick} className="justify-center m-2 items-center"><img src={AiIcons} alt="model" className="w-10 h-10 rounded-full"></img></button>
             </div>
-          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box px-24">
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box md:px-24 sm:px-0">
             <div className="mb-6">
               <UserContent post={post} />
             </div>
@@ -131,7 +125,7 @@ const PostContent = () => {
         </div>
 
         {/* Right Section - Sticky Sidebar */}
-        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar bg-bg_comment_box rounded-xl lg:w-[30%]">
+        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar bg-bg_comment_box rounded-xl hidden md:block md:w-[30%]">
           <div className="border border-gray-300 rounded-lg">
             <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold">
               More Related Content

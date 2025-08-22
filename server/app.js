@@ -53,7 +53,7 @@ app.use(express.json());
 // for cors
 app.use(
   cors({
-      origin: "http://localhost:3000", // Frontend URL
+      origin: ["http://localhost:3000","http://192.168.54.207:3000"], // Frontend URL
       methods:"GET,PUT,POST,DELETE,UPDATE",
       credentials: true,
   })

@@ -163,19 +163,20 @@ export const SearchIcon = ({ isActive }) => {
 
 export const heartSvg = (filled) => (
   <svg
-    width="16"
-    height="16"
+    width="24"
+    height="24"
     viewBox="0 0 24 24"
-    fill={filled ? "#ff4757" : "none"}
-    stroke={filled ? "#ff4757" : "currentColor"}
+    fill={filled ? "#ff4757" : "none"}   // red fill if liked, none otherwise
+    stroke={filled ? "#ff4757" : "rgba(255,255,255,0.5)"} // outline red if filled, otherwise uses Tailwind color
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={`transition-all duration-300 ${filled ? 'scale-110' : 'scale-100'}`}
+    className={`transition-all duration-300 ${filled ? "scale-110" : "scale-100"} text-bg_btn`}
   >
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
   </svg>
 );
+
 
 export const Sparkle = ({ style, color }) => (
   <div

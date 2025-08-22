@@ -130,7 +130,9 @@ export const BackgroundBeams = React.memo(({
     //     </defs>
     //   </svg>
     // </div>
-    <div className="bg-white"></div>
+    <div className="absolute insert-0 bg-black h-full w-full">
+      
+    </div>
   );
 });
 
