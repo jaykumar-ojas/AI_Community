@@ -161,6 +161,23 @@ export const SearchIcon = ({ isActive }) => {
 //   );
 // };
 
+export const CommentIcon = ({ size = 24, color = "currentColor", ...props }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    fill="none"
+    stroke="rgba(255,255,255,0.5)"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M21 6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11l4 4V6z" />
+  </svg>
+);
+
 export const heartSvg = (filled) => (
   <svg
     width="24"

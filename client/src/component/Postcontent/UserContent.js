@@ -5,7 +5,7 @@ import axios from "axios";
 import { LoginContext } from "../ContextProvider/context";
 import UserIconCard from "../Card/UserIconCard";
 import UserNameCard from "../Card/UserNameCard";
-import BookmarkIcon, { heartSvg, thumbsDownSvg } from "../../asset/icons";
+import BookmarkIcon, { heartSvg, thumbsDownSvg, ReplyIcon, CommentIcon } from "../../asset/icons";
 import UserContentSkeleton from "./UserContentSkeleton";
 import BookMark from "../BookMark/BookMark";
 const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -115,7 +115,7 @@ const AIModelInfo = ({ aiMetadata }) => {
   );
 };
 
-const UserContent = ({ post }) => {
+const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   const history = useNavigate();
   const { loginData } = useContext(LoginContext);
   const [currentUser, setCurrentUser] = useState({
@@ -510,7 +510,7 @@ const UserContent = ({ post }) => {
     {/* Outer wrapper with justify-between */}
     <div className="bg-something flex justify-between items-center px-2 rounded-xl w-full">
       
-      {/* Left side (Like button) */}
+      {/* Left side (Like + Comment toggle on mobile) */}
       <div className="flex items-center gap-2">
         <button
           className="flex items-center gap-1"
@@ -522,6 +522,18 @@ const UserContent = ({ post }) => {
             {postData?.likes ? postData?.likes.length : 0}
           </span>
         </button>
+
+        {/* Mobile: Comment toggle button */}
+        {onToggleComments && (
+          <button
+            className="md:hidden flex items-center gap-1 px-2 py-1 rounded-lg  text-time_header"
+            onClick={onToggleComments}
+            title={areCommentsOpen ? "Hide comments" : "Show comments"}
+          >
+            <CommentIcon/>
+            
+          </button>
+        )}
       </div>
 
       {/* Right side (Bookmark) */}

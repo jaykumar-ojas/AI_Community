@@ -91,7 +91,7 @@ const DragAndDrop = () => {
             ) : (
                 <label
                     htmlFor="dropzone-file"
-                    className="w-full h-[67vh] cursor-pointer relative bg-transparent flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-400"
+                    className="w-full md:h-[67vh] h-[30vh]   cursor-pointer relative bg-transparent flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-400"
                 >
                     <DragAndDropIcon />
                     <p className="mb-2 text-sm text-text_header dark:text-gray-400">

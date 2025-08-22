@@ -8,20 +8,32 @@ import { useCroppedFile } from "./PostUtils";
 import PostProvider from "./PostContext";
 import { Link, useNavigate } from "react-router-dom";
 import { encodeId } from "../../utils/hashids";
+import { ChevronDown } from "lucide-react";
 const baseUrl = process.env.REACT_APP_BASE_URL;
-
-
 
 const PostImageContent = () => {
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const { loginData } = useContext(LoginContext);
-  const { file, fileType, desc, completedCrop, aiMetadata } = useContext(PostContext);
-  const { setFile, setDesc, setFileType, setPreviewUrl, setShowCropper, setCompletedCrop, setRefreshKey,setAiPrompt, setAiMetadata } = useContext(PostContext);
+  const { file, fileType, desc, completedCrop, aiMetadata } =
+    useContext(PostContext);
+  const {
+    setFile,
+    setDesc,
+    setFileType,
+    setPreviewUrl,
+    setShowCropper,
+    setCompletedCrop,
+    setRefreshKey,
+    setAiPrompt,
+    setAiMetadata,
+  } = useContext(PostContext);
+
+  const [showGenerateAI, setShowGenerateAI] = useState(false);
 
   const getCroppedFile = useCroppedFile();
- 
-  const handleClear = () =>{
+
+  const handleClear = () => {
     setFile(null);
     setDesc("");
     setPreviewUrl(null);
@@ -30,7 +42,7 @@ const PostImageContent = () => {
     setCompletedCrop(null);
     setAiPrompt("");
     setAiMetadata(null);
-  }
+  };
 
   const handleSubmit = async (e) => {
     try {
@@ -45,36 +57,43 @@ const PostImageContent = () => {
       }
 
       setIsUploading(true);
-      
+
       // Process crop for images only
       let fileToUpload = file;
-      if (completedCrop && fileType === 'image') {
+      if (completedCrop && fileType === "image") {
         fileToUpload = await getCroppedFile();
       }
 
       const formData = new FormData();
       formData.append("file", fileToUpload);
-      formData.append("userId", loginData.validuserone?._id || loginData.validateUser?._id);
+      formData.append(
+        "userId",
+        loginData.validuserone?._id || loginData.validateUser?._id
+      );
       formData.append("desc", desc);
-      
+
       // Add AI metadata if present
       if (aiMetadata) {
         formData.append("aiModel", aiMetadata.model);
         formData.append("aiProvider", aiMetadata.provider);
         formData.append("aiPrompt", aiMetadata.prompt);
       }
-      
+
       // Log form data for debugging
       for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+        console.log(
+          pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
+        );
       }
 
       // Choose the appropriate upload endpoint
-      const uploadEndpoint = aiMetadata ? `${baseUrl}/upload-ai` : `${baseUrl}/upload`;
+      const uploadEndpoint = aiMetadata
+        ? `${baseUrl}/upload-ai`
+        : `${baseUrl}/upload`;
 
       const data = await fetch(uploadEndpoint, {
-        method: 'POST',
-        body: formData
+        method: "POST",
+        body: formData,
       });
 
       // Check if the response is valid
@@ -96,7 +115,7 @@ const PostImageContent = () => {
             isAIGenerated: res.storePost.isAIGenerated,
             aiModel: res.storePost.aiModel,
             aiProvider: res.storePost.aiProvider,
-            aiPrompt: res.storePost.aiPrompt
+            aiPrompt: res.storePost.aiPrompt,
           });
         }
 
@@ -109,10 +128,14 @@ const PostImageContent = () => {
         setAiMetadata(null);
 
         // Trigger refresh of posts list
-        setRefreshKey(oldKey => oldKey + 1);
+        setRefreshKey((oldKey) => oldKey + 1);
 
         alert("Post uploaded successfully!");
-        console.log("this is post image id", res?.storePost?._id,res.storePost);
+        console.log(
+          "this is post image id",
+          res?.storePost?._id,
+          res.storePost
+        );
         navigate(`/userPost/${res?.storePost?._id}`);
       } else {
         console.error("Upload failed:", res);
@@ -127,41 +150,96 @@ const PostImageContent = () => {
   };
 
   return (
-    <div className="w-full h-full  relative bg-transparent p-2 pt-0">
-      <div className=" flex flex-col ">
-        <div className="text-xl text-text_header p-4 pt-2">
-           Upload your creativity
+    <>
+      <div className="hidden md:block">
+        <div className="w-full h-full  relative bg-transparent p-2 pt-0">
+          <div className="flex flex-col">
+            <div className="flex justify-between items-center mx-2 mb-2">
+              <div className="text-md text-text_header">
+                Upload your creativity
+              </div>
+              <div className="relative bg-transparent flex justify-end gap-4 ">
+                <button
+                  onClick={handleClear}
+                  className="border border-gray-700 mt-2 bg-gray-500 p-2 px-8 text-white font-bold rounded-md hover:bg-gray-800 disabled:opacity-50"
+                  disabled={isUploading}
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="border border-blue-700 mt-2 bg-like_color px-8 p-2 text-white font-bold rounded-md hover:bg-blue-800 disabled:opacity-50 "
+                  disabled={isUploading}
+                >
+                  {isUploading ? "Uploading..." : "Post"}
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-row gap-2">
+              <div className="w-2/5 h-full rounded-lg  bg-transparent">
+                <AIContentFile />
+                <Description />
+              </div>
+              <div className="w-3/5 h-full relative bg-transparent">
+                <DragAndDrop />
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-row gap-2 ">
-          <div className="w-2/5 h-full rounded-lg  bg-transparent">
-            <AIContentFile />
+      </div>
+
+      <div className="block md:hidden p-2">
+        {/* upload creativity */}
+        <div className="flex justify-between items-center mx-2">
+          <div className="text-md text-text_header">Upload your creativity</div>
+          <div className="flex justify-between gap-2">
+            <button
+              onClick={handleClear}
+              className="border border-gray-700 p-1 px-2 bg-gray-500 text-white font-bold rounded-md disabled:opacity-50"
+              disabled={isUploading}
+            >
+              Clear
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="border border-blue-700 p-1 px-2 bg-like_color text-white font-bold rounded-md 7disabled:opacity-50 "
+              disabled={isUploading}
+            >
+              {isUploading ? "Uploading..." : "Post"}
+            </button>
+          </div>
+        </div>
+
+        {/* drag and drop and other things */}
+        <div className="mt-4">
+          <DragAndDrop />
+
+          <div className="mt-2">
+            <button
+              onClick={() => setShowGenerateAI(!showGenerateAI)}
+              className="flex w-full items-center justify-between px-4 py-2 bg-like_color text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition-all"
+            >
+              <span>Generate with AI</span>
+              <ChevronDown
+                className={`h-5 w-5 transform transition-transform duration-300 ${
+                  showGenerateAI ? "rotate-180" : "rotate-0"
+                }`}
+              />
+            </button>
+            {showGenerateAI && (
+              <div className="mt-2">
+                <AIContentFile />
+              </div>
+            )}
+          </div>
+          <div className="mt-2">
             <Description />
           </div>
-          <div className="w-3/5 h-full relative bg-transparent">
-            <DragAndDrop />
-          </div>
         </div>
       </div>
-      <div className="relative bg-transparent flex justify-end gap-4 mx-4 mt-4">
-        <button
-          onClick={handleClear}
-          className="border border-gray-700 mt-2 bg-gray-500 p-2 px-8 text-white font-bold rounded-md hover:bg-gray-800 disabled:opacity-50"
-          disabled={isUploading}
-        >
-          Clear
-        </button>
-        <button
-          onClick={handleSubmit}
-          className="border border-blue-700 mt-2 bg-like_color px-8 p-2 text-white font-bold rounded-md hover:bg-blue-800 disabled:opacity-50 "
-          disabled={isUploading}
-        >
-          {isUploading ? "Uploading..." : "Post"}
-        </button>
-      </div>
-      
-    </div>
+    </>
   );
-}
+};
 
 const PostImage = () => (
   <PostProvider>
