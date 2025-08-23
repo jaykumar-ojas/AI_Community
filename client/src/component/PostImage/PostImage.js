@@ -188,7 +188,7 @@ const PostImageContent = () => {
         </div>
       </div>
 
-      <div className="block md:hidden p-2">
+      <div className="block md:hidden p-2 mb-16">
         {/* upload creativity */}
         <div className="flex justify-between items-center mx-2">
           <div className="text-md text-text_header">Upload your creativity</div>
