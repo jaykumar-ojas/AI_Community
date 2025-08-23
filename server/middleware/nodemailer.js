@@ -85,3 +85,5 @@ const generateOtp = async (req, res, next) => {
         });
     }
 };
+
+module.exports = generateOtp;
