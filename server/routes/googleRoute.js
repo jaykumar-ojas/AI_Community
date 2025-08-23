@@ -24,7 +24,7 @@ passport.use(
     {
       clientID: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
-      callbackURL: "http://localhost:8099/auth/google/callback",
+      callbackURL: "https://api.pixxelmind.com/auth/google/callback",
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -63,7 +63,7 @@ router.get("/",passport.authenticate("google", { scope: ["profile", "email"] })
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:3000/login",
+    failureRedirect: "https://www.pixxelmind.com/login",
   }),
   async (req, res) => {
     try {
@@ -83,10 +83,10 @@ router.get(
 
       // Redirect to frontend with token
       console.log("we redirect to dashboard");
-      res.redirect(`http://localhost:3000?token=${token}`);
+      res.redirect(`https://www.pixxelmind.com?token=${token}`);
       console.log("we are succesfully redirect")
     } catch (error) {
-      res.redirect("http://localhost:3000/login");
+      res.redirect("https://www.pixxelmind.com/login");
     }
   }
 );
