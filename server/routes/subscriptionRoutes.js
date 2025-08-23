@@ -29,7 +29,7 @@ router.post('/subscribe/:userId', authenticate, async (req, res) => {
     console.log("subscribe to user");
     try {
         const subscriberId = req.rootuser._id;
-        const subscribedToId = req.params.userId;
+        const subscribedToId = decodeId(req.params.userId);
 
         if (!subscriberId || !subscribedToId) {
             return res.status(400).json({ error: "Invalid user IDs" });
@@ -41,7 +41,7 @@ router.post('/subscribe/:userId', authenticate, async (req, res) => {
         }
 
         // Check if user exists
-        const userToSubscribe = await userdb.findById(subscribedToId) || await googledb.findById(subscribedToId);;
+        const userToSubscribe = await userdb.findById(subscribedToId) || await googledb.findById(subscribedToId);
         
 
 
@@ -91,7 +91,7 @@ router.post('/subscribe/:userId', authenticate, async (req, res) => {
 router.delete('/unsubscribe/:userId', authenticate, async (req, res) => {
     try {
         const subscriberId = req.rootuser._id;
-        const subscribedToId = req.params.userId;
+        const subscribedToId = decodeId(req.params.userId);
 
         if (!subscriberId || !subscribedToId) {
             return res.status(400).json({ error: "Invalid user IDs" });
