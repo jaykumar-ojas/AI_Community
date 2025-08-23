@@ -111,7 +111,7 @@ const ShowCommentContent = ({reply}) => {
           
           // Then delete the child comment
           await axios.delete(
-            `/comments/${child._id}`,
+            `${baseUrl}/comments/${child._id}`,
             {
               headers: getAuthHeaders(),
             }
