@@ -448,8 +448,8 @@ export const PlusIcon = ({ isActive }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
+      width="20"
+      height="20"
       viewBox="0 0 122.881 122.88"
       fill={isActive ? "#10b981" : "currentColor"} // Green when active
     >

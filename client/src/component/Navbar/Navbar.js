@@ -60,12 +60,12 @@ export default function Navbar({ showForum, setShowForum }) {
       onClick: () => setShowForum(false), // Close forum when Home is clicked
     },
     {
-      name: "Add Post",
+      name: "Post",
       href: "/post",
       icon: PlusIcon,
       iconSolid: PlusIcon,
       isActive: location.pathname === "/post",
-      isSpecial: true, // Special styling for add button
+      // isSpecial: true, // Special styling for add button
     },
     {
       name: "Forum",
@@ -220,10 +220,10 @@ export default function Navbar({ showForum, setShowForum }) {
       </Disclosure>
 
       {/* Mobile Top Bar - Desktop Style */}
-      <div className="sm:hidden sticky top-0 z-50 min-h-[4rem] bg-black">
+      <div className="sm:hidden sticky top-0 z-50 h-12 bg-yellow">
         <div className="relative min-h-[4rem]">
           <div className="relative z-10 px-4">
-            <div className="flex justify-between items-center h-14">
+            <div className="flex justify-between items-center h-12">
               {/* Logo and Navigation Links */}
               <div className="relative flex h-full items-center space-x-4 overflow-hidden">
                 <Link to={"/"} className="h-12 w-12 bg-black flex items-center justify-center shadow-md rounded-md">
@@ -240,7 +240,7 @@ export default function Navbar({ showForum, setShowForum }) {
               {/* User icon bell icon */}
               <div className="flex items-center space-x-4">
                 {/* Notification and Profile Dropdown */}
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center ">
                   <Menu as="div" className="relative z-10">
                     <MenuButton className="flex items-center focus:outline-none p-2 hover:bg-gray-800 rounded-full transition">
                       <BellIcon className="h-6 w-6 text-white" />
@@ -320,7 +320,7 @@ export default function Navbar({ showForum, setShowForum }) {
 
       {/* Mobile Bottom Navigation */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
-        <div className="flex items-center justify-around py-2 px-1">
+        <div className="flex items-center justify-around">
           {mobileNavItems.map((item, index) => {
             const Component = item.isTab ? 'button' : Link;
             const props = item.isTab 
