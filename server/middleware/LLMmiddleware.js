@@ -4,8 +4,11 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const ForumReply = require('../models/forumReplySchema');
 const Comment = require('../models/commentsModel');
+const ForumTopic = require('../models/forumTopicSchema');
+const Post = require('../models/postSchema');
 const axios = require('axios');
 const { ObjectId } = require('mongodb');
+const { decodeId } = require('../utils/hashids');
 
 
 
@@ -272,7 +275,7 @@ const addImageDescriptions = async (objectId, db) => {
     console.log("Processing document with ObjectId:", objectId);
     
     // Validate ObjectId
-    if (!ObjectId.isValid(objectId)) {
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
       throw new Error("Invalid ObjectId provided");
     }
     
@@ -297,7 +300,7 @@ const addImageDescriptions = async (objectId, db) => {
     for (const collectionName of possibleCollections) {
       try {
         collection = db.collection(collectionName);
-        document = await collection.findOne({ _id: new ObjectId(objectId) });
+        document = await collection.findOne({ _id: new mongoose.Types.ObjectId(objectId) });
         if (document) {
           console.log(`Found document in collection: ${collectionName}`);
           break;
@@ -469,6 +472,47 @@ const handleImageDescriptionRequest = async (req, res) => {
         error: "ObjectId is required"
       });
     }
+
+    // For image description requests, check if it's a topic or forum reply
+    // Only decode hashids for topics, not for forum replies
+    let decodedObjectId;
+    
+    // Check if this is a topic by looking for a flag in the request
+    const isTopic = req.body && req.body.isTopic;
+    
+    if (isTopic) {
+      // Decode hashid for topics
+      try {
+        decodedObjectId = decodeId(objectId);
+        console.log('Decoded topic objectId:', { original: objectId, decoded: decodedObjectId });
+        
+        // Handle case where decodeId returns an array
+        if (Array.isArray(decodedObjectId) && decodedObjectId.length > 0) {
+          decodedObjectId = decodedObjectId[0];
+          console.log('Extracted first ID from array:', decodedObjectId);
+        }
+        
+      } catch (error) {
+        console.log('Failed to decode topic hashid:', objectId, error.message);
+        return res.status(400).json({
+          success: false,
+          error: "Invalid hashid format for topic"
+        });
+      }
+
+      // Validate the decoded ObjectId for topics
+      if (!mongoose.Types.ObjectId.isValid(decodedObjectId)) {
+        console.log('Invalid decoded ObjectId for topic:', decodedObjectId);
+        return res.status(400).json({
+          success: false,
+          error: "Invalid ID format after decoding topic"
+        });
+      }
+    } else {
+      // For forum replies, use the ID as-is (no decoding)
+      decodedObjectId = objectId;
+      console.log('Using forum reply ID as-is (no decoding):', decodedObjectId);
+    }
     
     // Check if mongoose connection is ready
     if (!mongoose.connection || !mongoose.connection.db) {
@@ -479,11 +523,16 @@ const handleImageDescriptionRequest = async (req, res) => {
       });
     }
     
-    // Use mongoose connection instead of req.db
-    const db = mongoose.connection.db;
-    console.log("Database connection obtained, calling addImageDescriptions...");
+         // Use mongoose connection instead of req.db
+     const db = mongoose.connection.db;
+     console.log("Database connection obtained, calling addImageDescriptions...");
+     if (isTopic) {
+       console.log("Using decoded ObjectId for topic database query:", decodedObjectId);
+     } else {
+       console.log("Using forum reply ID as-is for database query:", decodedObjectId);
+     }
     
-    const result = await addImageDescriptions(objectId, db);
+    const result = await addImageDescriptions(decodedObjectId, db);
     console.log("addImageDescriptions result:", result);
     
     if (result && result.success) {
@@ -587,15 +636,51 @@ async function fetchAncestorContext(req, res, next) {
 
     const maxDepth = 10;
     const maxWordsPerNode = 50;
-    const maxTotalContextWords = 500;
+    const maxTotalContextWords = 800; // Increased to accommodate topic/post context
 
     // Validation
-    if (!startId || !mongoose.Types.ObjectId.isValid(startId)) {
-      console.log('Invalid ID:', startId);
+    if (!startId) {
+      console.log('Missing ID');
       return res.status(400).json({
         success: false,
-        message: 'Invalid or missing ID for context fetching'
+        message: 'Missing ID for context fetching'
       });
+    }
+
+    // Decode the hashid only for topics, not for forum replies or post comments
+    let decodedId;
+    if (contextType === 'forumReply' && req.body.isTopic) {
+      // Only decode if this is a topic (not a forum reply)
+      try {
+        decodedId = decodeId(startId);
+        console.log('Decoded topic ID:', { original: startId, decoded: decodedId });
+        
+        // Handle case where decodeId returns an array
+        if (Array.isArray(decodedId) && decodedId.length > 0) {
+          decodedId = decodedId[0];
+          console.log('Extracted first ID from array:', decodedId);
+        }
+        
+      } catch (error) {
+        console.log('Failed to decode topic hashid:', startId, error.message);
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid hashid format for topic'
+        });
+      }
+
+      // Validate the decoded ObjectId for topics
+      if (!mongoose.Types.ObjectId.isValid(decodedId)) {
+        console.log('Invalid decoded ObjectId for topic:', decodedId);
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid ID format after decoding topic'
+        });
+      }
+    } else {
+      // For forum replies and post comments, use the ID as-is (no decoding needed)
+      decodedId = startId;
+      console.log('Using ID as-is (no decoding):', decodedId);
     }
 
     if (!contextType || (contextType !== 'forumReply' && contextType !== 'comment')) {
@@ -608,101 +693,281 @@ async function fetchAncestorContext(req, res, next) {
 
     let SelectedModel;
     let parentIdField;
+    let parentContextModel;
+    let parentIdFieldName;
+    let parentContext = null; // Initialize parentContext variable
     
     if (contextType === 'forumReply') {
       SelectedModel = ForumReply;
       parentIdField = 'parentReplyId';
+      parentContextModel = ForumTopic;
+      parentIdFieldName = 'topicId';
     } else if (contextType === 'comment') {
       SelectedModel = Comment;
-      parentIdField = 'parentReplyId'; // Changed this line - assuming comments use 'parentCommentId'
+      parentIdField = 'parentReplyId';
+      parentContextModel = Post;
+      parentIdFieldName = 'postId';
     }
 
     console.log('Selected model configuration:', { 
       modelName: SelectedModel.modelName,
-      parentIdField
+      parentIdField,
+      parentContextModel: parentContextModel.modelName,
+      parentIdFieldName,
+      originalId: startId,
+      decodedId: decodedId,
+      hashidDecoded: contextType === 'forumReply' && req.body.isTopic
     });
 
+    // First, try to fetch the starting node to get the parent topic/post ID
+    let startingNode = await SelectedModel.findById(decodedId)
+      .select(`${parentIdFieldName} _id`)
+      .lean();
+    
+    // If starting node not found, it might be a direct topic comment
+    // Try to fetch the topic/post directly to see if this is a new comment
+    if (!startingNode) {
+      console.log('Starting node not found, checking if this is a direct topic/post comment');
+      
+      try {
+        // Try to fetch the topic/post directly using the decoded ID
+        const directParent = await parentContextModel.findById(decodedId)
+          .select('_id title content desc imgUrl mediaAttachments userName userId createdAt')
+          .lean();
+        
+        if (directParent) {
+          console.log('Found direct parent (topic/post), treating as new comment');
+          
+          // Create a mock starting node for new comments
+          startingNode = {
+            _id: decodedId,
+            [parentIdFieldName]: decodedId, // Self-reference for new comments
+            isDirectComment: true
+          };
+          
+          // Set parent context directly
+          parentContext = directParent;
+          
+          console.log('Created mock starting node for direct comment:', {
+            id: startingNode._id,
+            parentId: startingNode[parentIdFieldName],
+            isDirectComment: startingNode.isDirectComment
+          });
+        } else {
+          console.log('Neither starting node nor direct parent found');
+          return res.status(404).json({
+            success: false,
+            message: 'Starting node not found and not a valid topic/post for commenting'
+          });
+        }
+      } catch (error) {
+        console.error('Error checking for direct parent:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error checking for direct parent context'
+        });
+      }
+    }
+
+    // Fetch the parent topic/post context (if not already fetched from direct comment)
+    if (!parentContext && startingNode[parentIdFieldName]) {
+      try {
+        parentContext = await parentContextModel.findById(startingNode[parentIdFieldName])
+          .select('title content desc imgUrl mediaAttachments userName userId createdAt _id')
+          .lean();
+        
+        if (parentContext) {
+          console.log('Parent context fetched:', {
+            type: contextType === 'forumReply' ? 'Topic' : 'Post',
+            id: parentContext._id,
+            title: parentContext.title || 'No title',
+            contentLength: parentContext.content?.length || parentContext.desc?.length || 0
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching parent context:', error);
+      }
+    }
+
     const ancestorNodes = [];
-    let currentId = startId;
+    let currentId = decodedId;
     let totalWords = 0;
 
-    // Build ancestor chain from bottom to top
-    for (let depth = 0; depth <= maxDepth; depth++) {
-      console.log(`Fetching node at depth ${depth}, currentId:`, currentId);
+    // Check if this is a direct comment (no existing reply/comment to build ancestors from)
+    if (startingNode.isDirectComment) {
+      console.log('Direct comment detected, skipping ancestor chain building');
       
-      const currentNode = await SelectedModel.findById(currentId)
-        .select(`content description mediaAttachments userName userId createdAt ${parentIdField} _id`)
-      .lean();
+             // Create a mock current node for direct comments
+       const mockCurrentNode = {
+         id: startingNode._id.toString(),
+         depth: 0,
+         priority: 20, // Highest priority for depth 0
+         content: 'New comment being created',
+         userName: 'Current User',
+         userId: null,
+         createdAt: new Date(),
+         mediaCount: 0,
+         mediaAttachments: [],
+         contentImages: 0,
+         isStartNode: true,
+         isDirectComment: true
+       };
       
-      if (!currentNode) {
-        console.log(`Node not found at depth ${depth}`);
-        break;
+      ancestorNodes.push(mockCurrentNode);
+      console.log('Added mock current node for direct comment');
+      
+    } else {
+      // Build ancestor chain from bottom to top for existing replies/comments
+      for (let depth = 0; depth <= maxDepth; depth++) {
+        console.log(`Fetching node at depth ${depth}, currentId:`, currentId);
+        
+        const currentNode = await SelectedModel.findById(currentId)
+          .select(`content description mediaAttachments userName userId createdAt ${parentIdField} _id`)
+        .lean();
+        
+        if (!currentNode) {
+          console.log(`Node not found at depth ${depth}`);
+          break;
+        }
+
+              // Extract text content (same logic for both types since they have same structure)
+        let textContent = '';
+        if (currentNode.content) {
+          textContent = extractContentText(currentNode.content);
+        } else {
+          textContent = currentNode.description || '';
+        }
+
+        // Extract media descriptions from mediaAttachments
+        const mediaDescriptions = extractMediaDescriptions(currentNode.mediaAttachments);
+        
+        // Count images in content array (same logic for both types)
+        let contentImageCount = 0;
+        if (currentNode.content) {
+          contentImageCount = currentNode.content.filter(item => item.imageUrl).length;
+        }
+        
+        // Combine text and media descriptions
+        const fullText = [textContent, mediaDescriptions].filter(t => t.length > 0).join(' ');
+        
+        // Truncate to word limit
+        const truncatedText = getFirstNWords(fullText, maxWordsPerNode);
+        
+        // Count words for total limit
+        const wordCount = truncatedText.split(/\s+/).filter(word => word.length > 0).length;
+        
+        if (totalWords + wordCount > maxTotalContextWords && depth > 0) {
+          console.log('Reached maximum total context words limit');
+          break;
+        }
+
+        totalWords += wordCount;
+
+        // Create structured ancestor node
+        const ancestorNode = {
+          id: currentNode._id.toString(),
+          depth: depth,
+          priority: 20 - depth, // Higher priority for lower depth (depth 0 = priority 20, depth 10 = priority 10)
+          content: truncatedText,
+          userName: currentNode.userName || 'Unknown',
+          userId: currentNode.userId?.toString(),
+          createdAt: currentNode.createdAt,
+          mediaCount: (currentNode.mediaAttachments ? currentNode.mediaAttachments.length : 0) + contentImageCount,
+          mediaAttachments: currentNode.mediaAttachments || [],
+          contentImages: contentImageCount,
+          isStartNode: depth === 0
+        };
+
+        ancestorNodes.push(ancestorNode);
+
+        console.log(`Added ancestor at depth ${depth}:`, {
+          priority: ancestorNode.priority,
+          content: ancestorNode.content.substring(0, 100) + '...',
+          mediaCount: ancestorNode.mediaCount,
+          userName: ancestorNode.userName
+        });
+
+        // Check for parent
+        if (!currentNode[parentIdField]) {
+          console.log('No parent found, reached root');
+          break;
+        }
+
+        currentId = currentNode[parentIdField];
+      } // End of for loop
+    } // End of else block
+
+    // Add parent context as the highest priority node if available
+    if (parentContext) {
+      let parentText = '';
+      let parentMediaCount = 0;
+      
+             if (contextType === 'forumReply') {
+         // Forum topic context
+         parentText = parentContext.content || '';
+         parentMediaCount = parentContext.mediaAttachments ? parentContext.mediaAttachments.length : 0;
+         
+         const parentNode = {
+           id: parentContext._id.toString(),
+           depth: -1, // Special depth for parent context
+           priority: 25, // Highest priority for parent context
+           content: getFirstNWords(parentText, maxWordsPerNode),
+          userName: parentContext.userName || 'Unknown',
+          userId: parentContext.userId?.toString(),
+          createdAt: parentContext.createdAt,
+          mediaCount: parentMediaCount,
+          mediaAttachments: parentContext.mediaAttachments || [],
+          contentImages: 0,
+          isStartNode: false,
+          isParentContext: true,
+          title: parentContext.title || 'No title'
+        };
+        
+        ancestorNodes.unshift(parentNode); // Add to beginning
+        totalWords += parentNode.content.split(/\s+/).filter(word => word.length > 0).length;
+        
+        console.log('Added parent topic context:', {
+          priority: parentNode.priority,
+          content: parentNode.content.substring(0, 100) + '...',
+          mediaCount: parentNode.mediaCount,
+          title: parentNode.title
+        });
+             } else {
+         // Post context
+         parentText = parentContext.desc || '';
+         parentMediaCount = parentContext.imgUrl ? 1 : 0;
+         
+         const parentNode = {
+           id: parentContext._id.toString(),
+           depth: -1, // Special depth for parent context
+           priority: 25, // Highest priority for parent context
+           content: getFirstNWords(parentText, maxWordsPerNode),
+          userName: parentContext.userName || 'Unknown',
+          userId: parentContext.userId?.toString(),
+          createdAt: parentContext.createdAt,
+          mediaCount: parentMediaCount,
+          mediaAttachments: parentContext.imgUrl ? [{
+            fileName: 'Post Image',
+            fileType: 'image',
+            fileUrl: parentContext.imgUrl,
+            fileSize: 0,
+            uploadedAt: parentContext.createdAt
+          }] : [],
+          contentImages: 0,
+          isStartNode: false,
+          isParentContext: true,
+          title: 'Post Content'
+        };
+        
+        ancestorNodes.unshift(parentNode); // Add to beginning
+        totalWords += parentNode.content.split(/\s+/).filter(word => word.length > 0).length;
+        
+        console.log('Added parent post context:', {
+          priority: parentNode.priority,
+          content: parentNode.content.substring(0, 100) + '...',
+          mediaCount: parentNode.mediaCount
+        });
       }
-
-      // Extract text content (same logic for both types since they have same structure)
-      let textContent = '';
-      if (currentNode.content) {
-        textContent = extractContentText(currentNode.content);
-      } else {
-        textContent = currentNode.description || '';
-      }
-
-      // Extract media descriptions from mediaAttachments
-      const mediaDescriptions = extractMediaDescriptions(currentNode.mediaAttachments);
-      
-      // Count images in content array (same logic for both types)
-      let contentImageCount = 0;
-      if (currentNode.content) {
-        contentImageCount = currentNode.content.filter(item => item.imageUrl).length;
-      }
-      
-      // Combine text and media descriptions
-      const fullText = [textContent, mediaDescriptions].filter(t => t.length > 0).join(' ');
-      
-      // Truncate to word limit
-      const truncatedText = getFirstNWords(fullText, maxWordsPerNode);
-      
-      // Count words for total limit
-      const wordCount = truncatedText.split(/\s+/).filter(word => word.length > 0).length;
-      
-      if (totalWords + wordCount > maxTotalContextWords && depth > 0) {
-        console.log('Reached maximum total context words limit');
-        break;
-      }
-
-      totalWords += wordCount;
-
-      // Create structured ancestor node
-      const ancestorNode = {
-        id: currentNode._id.toString(),
-        depth: depth,
-        priority: 10 - depth, // Higher priority for closer ancestors
-        content: truncatedText,
-        userName: currentNode.userName || 'Unknown',
-        userId: currentNode.userId?.toString(),
-        createdAt: currentNode.createdAt,
-        mediaCount: (currentNode.mediaAttachments ? currentNode.mediaAttachments.length : 0) + contentImageCount,
-        mediaAttachments: currentNode.mediaAttachments || [],
-        contentImages: contentImageCount,
-        isStartNode: depth === 0
-      };
-
-      ancestorNodes.push(ancestorNode);
-
-      console.log(`Added ancestor at depth ${depth}:`, {
-        priority: ancestorNode.priority,
-        content: ancestorNode.content.substring(0, 100) + '...',
-        mediaCount: ancestorNode.mediaCount,
-        userName: ancestorNode.userName
-      });
-
-      // Check for parent
-      if (!currentNode[parentIdField]) {
-        console.log('No parent found, reached root');
-        break;
-      }
-
-      currentId = currentNode[parentIdField];
     }
 
     // Sort by priority (highest first - closest ancestors)
@@ -711,11 +976,25 @@ async function fetchAncestorContext(req, res, next) {
     // Create structured context string
     const contextString = ancestorNodes
       .map(node => {
-        const prefix = node.isStartNode ? 'CURRENT' : `ANCESTOR_${node.depth}`;
+        let prefix;
+        if (node.isParentContext) {
+          prefix = contextType === 'forumReply' ? 'TOPIC' : 'POST';
+        } else if (node.isStartNode) {
+          if (node.isDirectComment) {
+            prefix = 'NEW_COMMENT';
+          } else {
+            prefix = 'CURRENT';
+          }
+        } else {
+          prefix = `ANCESTOR_${node.depth}`;
+        }
+        
         const mediaInfo = node.mediaCount > 0 ? ` [${node.mediaCount} media]` : '';
         const contentImgInfo = node.contentImages > 0 ? ` [${node.contentImages} inline images]` : '';
         const userInfo = ` (by ${node.userName})`;
-        return `${prefix}${userInfo}${mediaInfo}${contentImgInfo}: ${node.content}`;
+        const titleInfo = node.title ? ` [${node.title}]` : '';
+        
+        return `${prefix}${titleInfo}${userInfo}${mediaInfo}${contentImgInfo}: ${node.content}`;
       })
       .join(' | ');
 
@@ -734,11 +1013,44 @@ async function fetchAncestorContext(req, res, next) {
       totalWords: totalWords,
       totalMedia: allMediaAttachments.length,
       depthReached: Math.max(...ancestorNodes.map(n => n.depth)),
-      rootUserName: ancestorNodes.length > 0 ? ancestorNodes[ancestorNodes.length - 1].userName : null
+      rootUserName: ancestorNodes.length > 0 ? ancestorNodes[ancestorNodes.length - 1].userName : null,
+      hasParentContext: !!parentContext,
+      parentContextType: contextType === 'forumReply' ? 'Topic' : 'Post',
+      parentContextId: parentContext?._id?.toString() || null,
+      isDirectComment: startingNode?.isDirectComment || false
     };
 
     console.log('Context fetching complete:', contextSummary);
     console.log('Final context string length:', contextString.length);
+    
+    if (contextType === 'forumReply' && req.body.isTopic) {
+      console.log('ID mapping (Topic - Hashid decoded):', { 
+        originalHashid: startId, 
+        decodedObjectId: decodedId 
+      });
+    } else if (contextType === 'forumReply') {
+      console.log('ID mapping (Forum Reply - No decoding):', { 
+        originalId: startId, 
+        usedAsIs: decodedId 
+      });
+    } else {
+      console.log('ID mapping (Post Comment - No decoding):', { 
+        originalId: startId, 
+        usedAsIs: decodedId 
+      });
+    }
+    
+    if (startingNode?.isDirectComment) {
+      console.log('Direct comment mode - no existing reply/comment found, providing topic/post context only');
+    }
+    
+    if (parentContext) {
+      console.log('Parent context included:', {
+        type: contextSummary.parentContextType,
+        id: contextSummary.parentContextId,
+        title: contextType === 'forumReply' ? parentContext.title : 'Post Content'
+      });
+    }
 
     // Attach to request object
     req.ancestorContext = {
@@ -767,7 +1079,17 @@ function formatContextForAI(ancestorContext) {
   let prompt = `CONVERSATION CONTEXT (${summary.totalNodes} messages, depth: ${summary.depthReached}):\n\n`;
   
   nodes.forEach(node => {
-    const label = node.isStartNode ? '🎯 CURRENT MESSAGE' : `📖 ${node.depth} levels back`;
+    let label;
+    if (node.isStartNode) {
+      if (node.isDirectComment) {
+        label = '🆕 NEW COMMENT';
+      } else {
+        label = '🎯 CURRENT MESSAGE';
+      }
+    } else {
+      label = `📖 ${node.depth} levels back`;
+    }
+    
     const mediaInfo = node.mediaCount > 0 ? ` 📎${node.mediaCount}` : '';
     
     prompt += `${label}${mediaInfo} - ${node.userName}:\n`;
