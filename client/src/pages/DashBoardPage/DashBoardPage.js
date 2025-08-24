@@ -109,7 +109,7 @@ const Page = () => {
                           columnClassName="flex flex-col gap-0"
                         >
                           {allPosts.map((post) => (
-                            <div key={post._id}>
+                            <div key={post?._id}>
                               <Card post={post} />
                             </div>
                           ))}
@@ -119,7 +119,7 @@ const Page = () => {
                       {/* Mobile: Single column without spacing */}
                       <div className="sm:hidden">
                         {allPosts.map((post) => (
-                          <div key={post._id} className="w-full">
+                          <div key={post?._id} className="w-full">
                             <Card post={post} />
                           </div>
                         ))}

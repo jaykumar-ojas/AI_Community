@@ -95,11 +95,11 @@ const TopicContent = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Fixed Topic Header */}
-      <div className="bg-bg_comment_box px-4 py-2 flex items-center flex-shrink-0">
-        <button className="mr-3 text-gray-500 hover:text-time_header">
+      <div className="bg-bg_comment_box md:px-4 px-2 py-2 flex items-center flex-shrink-0">
+        <button className="md:mr-3 mr-1 text-gray-500 hover:text-time_header">
           <BackArrow />
         </button>
-        <h2 className="font-semibold text-lg text-text_header flex-1">
+        <h2 className="font-semibold text-sm md:text-lg text-text_header flex-1">
           {threadView ? "Thread" : topic?.title}
         </h2>
         {!threadView && (
