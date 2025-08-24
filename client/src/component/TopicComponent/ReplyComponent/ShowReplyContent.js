@@ -19,7 +19,7 @@ import {
   LikeIcon,
   DisLikeIcon,
   UpvoteIcon,
-  DownvoteIcon
+  DownvoteIcon,
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
 
@@ -31,7 +31,11 @@ const ModelIcon = ({ modelName }) => {
     if (!modelName) return;
     const fetchIcon = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+        const response = await axios.get(
+          `${API_BASE_URL}/aimodels/search?modelName=${encodeURIComponent(
+            modelName
+          )}`
+        );
         if (response.data.success) {
           setIconUrl(response.data.data.iconUrl);
         }
@@ -45,7 +49,12 @@ const ModelIcon = ({ modelName }) => {
   if (!iconUrl) return null;
   return (
     <div className="flex items-center gap-1 bg-black-50 px-2 py-1 rounded-md">
-      <img src={iconUrl} alt={modelName} style={{ width: 24, height: 24, borderRadius: '50%' }} />
+      <img
+        src={iconUrl}
+        alt={modelName}
+        className="w-4 h-4 md:w-6 md:h-6 rounded-full"
+        // style={{ width: 24, height: 24, borderRadius: "50%" }}
+      />
       <span className="text-xs text-blue-700 font-medium">{modelName}</span>
     </div>
   );
@@ -132,7 +141,6 @@ const ShowReplyContent = ({
 
         // Set local deleted state for immediate UI feedback
         setIsDeleted(true);
-
       }
     } catch (error) {
       console.error("Error deleting reply:", error);
@@ -241,8 +249,7 @@ const ShowReplyContent = ({
 
   return (
     <div key={reply?._id} className="flex justify-start">
-      {/* User Icon Outside */}
-      <div className="w-8 h-8 flex-shrink-0 z-30">
+      <div className="md:w-8 md:h-8 w-6 h-6 flex-shrink-0">
         <UserIconCard id={reply?.userId} />
       </div>
 
@@ -250,27 +257,34 @@ const ShowReplyContent = ({
       <div className="flex flex-col px-2 p-4 pt-0 w-full">
         {/* User Info & Delete Button */}
         <div className="flex items-center justify-between">
-          <div className="flex justify-start items-center gap-2 text-sm text-gray-700">
-            <span className="text-text_header text-sm font-normal text-base">
+          <div className="flex justify-start items-center">
+            <div className="text-text_header font-normal mr-2 text-xs md:text-sm">
               {reply?.userName}
-            </span>
-            <div className="w-1 h-1 bg-time_header rounded-full"></div>
-            <span className="text-time_header text-xs">
-              {formatDate(reply?.createdAt)}
-            </span>
+            </div>
+            <div className="mr-2 flex justify-center items-center">
+              <div className="w-1 h-1 mr-1 rounded-full bg-time_header"></div>
+              <div className="text-time_header font-thin text-xs">
+                {formatDate(reply?.createdAt)}
+              </div>
+            </div>
           </div>
+          {/* Move ModelIcon to the right corner, after the delete button */}
           <div className="flex items-center gap-2">
-            {/* Model Icon */}
-            {firstModelName && <ModelIcon modelName={firstModelName} />}
+            {firstModelName && (
+              <div className="ml-2">
+                <ModelIcon modelName={firstModelName} />
+              </div>
+            )}
+
             {isAuthor && (
-              <div className="ml-2 relative">
+              <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
                   className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
                 >
-                  ⋯
+                  ⋮
                 </button>
-
+                {/* Dropdown menu */}
                 {isOpen && (
                   <div className="absolute left-0 w-full bg-white shadow-lg rounded-md z-10">
                     <button
@@ -290,67 +304,55 @@ const ShowReplyContent = ({
         </div>
 
         {/* Reply Content */}
-        {typeof reply?.content === "string" ? (
-          <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
-            {showFullContent ? reply.content : getTrimmedContent(reply.content)}
-            {reply.content.length > 100 && (
-              <button
-                onClick={() => setShowFullContent(!showFullContent)}
-                className="ml-2 text-blue-600 hover:underline font-medium"
-              >
-                {showFullContent ? "View Less" : "View More"}
-              </button>
-            )}
-          </div>
-        ) : Array.isArray(reply?.content) ? (
-          <ReplyData content={reply?.content} />
-        ) : null}
+
+        <ReplyData content={reply?.content} />
 
         {/* Media Attachments */}
         {reply?.mediaAttachments?.length > 0 && (
           <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
             {reply?.mediaAttachments.map((attachment, index) => (
-                <ShowMedia attachment={attachment} />
+              <ShowMedia attachment={attachment} />
             ))}
           </div>
         )}
 
         {/* Actions Section */}
-        <div className="pt-4 flex items-center gap-2 text-xs text-gray-500">
-          <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
-            <button
-              onClick={handleReplyLike}
-              className={`flex items-center gap-1 hover:text-like_color transition ${
-                isLiked && "text-like_color"
-              }`}
-            >
-              <UpvoteIcon isLiked={isLiked} />
-              {replyLikes?.length || 0}
-            </button>
-
-            <button
-              onClick={handleReplyDislike}
-              className={`flex items-center gap-1 hover:text-red-600 transition ${
-                isDisliked && "text-red-600"
-              }`}
-            >
-              <DownvoteIcon isDisliked={isDisliked} />
-              {replyDislikes?.length || 0}
-            </button>
-          </div>
-
-          <button
-            onClick={() => {
-              setReplyIdForContext(reply?._id);
-              setUserName(reply?.userName);
-              setViewBox(true);
-            }}
-            className="flex items-center gap-1 text-like_color hover:text-like_color transition"
-          >
-            <ReplyIcon />
-            <div className="text-xs">Reply</div>
-          </button>
-        </div>
+        <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
+                  <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
+                    <button
+                      onClick={handleReplyLike}
+                      className={`flex items-center gap-0.5 hover:text-like_color transition ${
+                        isLiked && "text-like_color"
+                      }`}
+                    >
+                      <UpvoteIcon isLiked={isLiked} />
+                      {replyLikes?.length || 0}
+                    </button>
+        
+                    <button
+                      onClick={handleReplyDislike}
+                      className={`flex items-center gap-1 hover:text-red-600 transition ${
+                        isDisliked && "text-red-600"
+                      }`}
+                    >
+                      <DownvoteIcon isDisliked={isDisliked} />
+                      {replyDislikes?.length || 0}
+                    </button>
+                  </div>
+                  <button
+                    // onClick={() => setShowReplyBox(true)}
+                    onClick={() => {
+                      setReplyIdForContext(reply?._id);
+                      setUserName(reply?.userName);
+                      setViewBox(true);
+                    }}
+                    className="flex items-center gap-1  text-like_color hover:text-like_color transition"
+                  >
+                    <ReplyIcon />
+        
+                    <div className="text-xs">Reply</div>
+                  </button>
+                </div>
       </div>
     </div>
   );

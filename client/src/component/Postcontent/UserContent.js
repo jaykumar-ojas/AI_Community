@@ -429,31 +429,29 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   return (
     <div className="w-full rounded-lg bg-transparent relative shadow-lg flex flex-col gap-0">
       {/* user header */}
-      <div className="flex justify-between items-center px-2 w-full h-full">
+      <div className="flex justify-between items-center md:px-2 w-full h-full">
         <div className="flex justify-between items-center sm:mx-2">
-          <div className="w-10 h-10 flex-shrink-0 m-2">
+          <div className="md:w-10 md:h-10 w-6 h-6 flex-shrink-0 m-2">
             <UserIconCard id={postData?.userId}></UserIconCard>
           </div>
-          <div className="text-white">
+          <div className="text-white text-sm">
             <UserNameCard id={postData?.userId}></UserNameCard>
           </div>
         </div>
 
         <div className="flex flex-row gap-2 justify-center items-center">
           {postData?.isAIGenerated && (
-            <div className="px-2">
+            <div className="md:px-2">
               <AIModelInfo aiMetadata={postData} />
             </div>
           )}
 
           {/* this is for openpanel */}
-          <div className="px-2">
+          <div className="px-2 ">
             {isauthor && (
               <Menu as="div" className="relative z-10">
-                <MenuButton className="flex gap-1 text-time_header font-extrabold items-center focus:outline-none">
-                  <p>.</p>
-                  <p>.</p>
-                  <p>.</p>
+                <MenuButton className="flex flex-col text-time_header font-extrabold items-center focus:outline-none">
+                  ⋮
                 </MenuButton>
                 <MenuItems className="absolute right-0 mt-2 w-24 bg-white shadow-md rounded-md  ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <MenuItem>
@@ -550,7 +548,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   </div>
 
   {/* Description */}
-  <div className="p-2 pt-1 text-sm text-time_header">
+  <div className="p-2 pt-1 md:text-sm text-xs text-time_header">
     {postData?.desc ? (
       <>
         {displayText}

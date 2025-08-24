@@ -165,16 +165,16 @@ const HeaderContent = ({ topic, onDelete }) => {
   return (
     <div className="flex justify-start mb-0">
       {/* User Icon Outside */}
-      <div className="w-8 h-8 flex-shrink-0">
+      <div className="md:w-8 md:h-8 w-6 h-6 flex-shrink-0">
         <UserIconCard id={topic?.userId} />
       </div>
 
       {/* Content Section */}
-      <div className="flex flex-col p-4 pt-0 ml-2 rounded-xl w-full">
+      <div className="flex flex-col  p-1 pt-0 md:ml-2 rounded-xl w-full">
         {/* Header: User Info */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2  text-gray-700">
-            <span className="font-normal text-sm text-text_header">
+            <span className="font-normal text-xs md:text-sm text-text_header">
               <UserNameCard id={topic?.userId} />
             </span>
             <div className="w-1 h-1 bg-time_header rounded-full"></div>
@@ -213,7 +213,7 @@ const HeaderContent = ({ topic, onDelete }) => {
         {/* Content */}
         <div
           ref={contentRef}
-          className={`pt-2 text-sm text-text_content whitespace-pre-wrap leading-snug [&>p]:my-0.5 [&>ul]:my-0.5 [&>li]:my-0.5 ${
+          className={`md:pt-2 pt-1 md:text-sm text-xs text-text_content whitespace-pre-wrap leading-snug [&>p]:my-0.5 [&>ul]:my-0.5 [&>li]:my-0.5 ${
             expanded ? "" : "line-clamp-4"
           }`}
         >
