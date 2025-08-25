@@ -193,12 +193,7 @@ const [sparkles, setSparkles] = useState([]);
     // This is a regular post, navigate to the post view
     navigate(`/userPost/${post?._id}`);
   };
-
-  const handleUserClick = (e) => {
-    e.stopPropagation(); // Prevent card click when clicking user profile
-    navigate(`/userprofile/${encodeId(post.userId)}`);
-  };
-
+  
   // Determine the media URL and type
   const getMediaInfo = () => {
     if (post.mediaAttachments && post.mediaAttachments.length > 0) {
@@ -226,14 +221,14 @@ const [sparkles, setSparkles] = useState([]);
 >
   <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type} />
 
-  <div className="absolute flex flex-col bottom-0 h-full w-full justify-between left-0 right-0 bg-black bg-opacity-20 sm:bg-opacity-60 text-white text-sm p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition duration-500">
+  <div className="absolute flex flex-col bottom-0 h-full w-full justify-between left-0 right-0 bg-black bg-opacity-0 sm:bg-opacity-60 text-white text-sm p-2 sm:opacity-0 sm:group-hover:opacity-100 transition duration-500">
     {/* User info row (with AI model if AI generated) */}
-    <div className="flex justify-between flex-row gap-2 pb-1 items-center">
-      <div className="flex flex-row justify-start gap-2">
-          <div className="h-6 w-6 flex-shrink-0" onClick={handleUserClick}>
+    <div className="flex justify-between bg-black/5 flex-row gap-2 pb-1 items-center">
+      <div className="flex flex-row  justify-start gap-2">
+          <div className="h-6 w-6  flex-shrink-0">
             <UserIconCard id={post?.userId} />
           </div>
-          <div onClick={handleUserClick}>
+          <div>
             <UserNameCard id={post?.userId} />
           </div>
       </div>
@@ -243,13 +238,13 @@ const [sparkles, setSparkles] = useState([]);
             <img 
               src={modelIcon} 
               alt={`${post.aiModel} icon`}
-              className="w-3 h-3 rounded-full object-cover"
+              className="w-6 h-6 rounded-full object-cover"
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
             />
           ) : null}
-          <span>{post.aiModel}</span>
+          <span className="text-sm">{post.aiModel}</span>
         </div>
       )}
     </div>
@@ -261,9 +256,9 @@ const [sparkles, setSparkles] = useState([]);
 
     {/* Like/Dislike Buttons */}
    <div>
-  <div className="flex items-center gap-4 p-2 pb-1">
+  <div className="flex  items-center gap-4 p-2 pb-1">
     <button
-      className="flex items-center gap-1"
+      className="flex bg-black/10 items-center gap-1"
       onClick={(e) => {
         e.stopPropagation();
         handleLikePost();
@@ -297,7 +292,7 @@ const [sparkles, setSparkles] = useState([]);
       </div>
     </div>
   </div>
-  <style jsx>{`
+  {/* <style jsx>{`
         @keyframes sparkle {
           0% {
             transform: scale(0) rotate(0deg);
@@ -316,7 +311,7 @@ const [sparkles, setSparkles] = useState([]);
         .animate-ping {
           animation: sparkle 0.8s ease-out forwards;
         }
-      `}</style>
+      `}</style> */}
 </div>
 
   );

@@ -431,10 +431,10 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
       {/* user header */}
       <div className="flex justify-between items-center md:px-2 w-full h-full">
         <div className="flex justify-between items-center sm:mx-2">
-          <div className="md:w-10 md:h-10 w-6 h-6 flex-shrink-0 m-2">
+          <div className="md:w-10 md:h-10 w-8 h-8 flex-shrink-0 m-2">
             <UserIconCard id={postData?.userId}></UserIconCard>
           </div>
-          <div className="text-white text-sm">
+          <div className="text-white">
             <UserNameCard id={postData?.userId}></UserNameCard>
           </div>
         </div>
@@ -548,7 +548,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   </div>
 
   {/* Description */}
-  <div className="p-2 pt-1 md:text-sm text-xs text-time_header">
+  <div className="p-2 pt-1 leading-snug text-[14px] text-time_header">
     {postData?.desc ? (
       <>
         {displayText}

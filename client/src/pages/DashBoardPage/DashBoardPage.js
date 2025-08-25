@@ -74,7 +74,7 @@ const Page = () => {
      <div className="relative min-h-screen overflow-hidden">
         {/* Content */}
         <div className="relative z-10 min-h-screen overflow-hidden">
-          <div className="mx-auto px-4 py-4 pb-20 sm:pb-4">
+          <div className="mx-auto md:px-4  pb-20 sm:pb-4">
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
               {/* Main content area */}
               <div className={classNames(

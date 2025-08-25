@@ -335,7 +335,7 @@ export default function Navbar({ showForum, setShowForum }) {
                 key={item.name}
                 {...props}
                 className={classNames(
-                  "flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all duration-200",
+                  "flex flex-col items-center justify-center pt-1 px-3 rounded-xl transition-all duration-200",
                   item.isActive 
                     ? "text-blue-600" 
                     : "text-gray-600 hover:text-gray-900",
