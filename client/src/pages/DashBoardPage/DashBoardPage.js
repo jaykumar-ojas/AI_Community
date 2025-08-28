@@ -74,7 +74,7 @@ const Page = () => {
      <div className="relative min-h-screen overflow-hidden">
         {/* Content */}
         <div className="relative z-10 min-h-screen overflow-hidden">
-          <div className="mx-auto md:px-4  pb-20 sm:pb-4">
+          <div className="mx-auto md:px-4 md:pb-0 pb-20 ">
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
               {/* Main content area */}
               <div className={classNames(
@@ -99,7 +99,7 @@ const Page = () => {
                   >
                     <div
                       id="scrollableDiv"
-                      className="sm:h-[calc(100vh-7rem)] overflow-y-auto no-scrollbar pt-2"
+                      className="sm:h-[calc(100vh-4rem)] overflow-y-auto no-scrollbar pt-2" // i change it dont know the effect on infinite scroll
                     >
                       {/* Desktop: Multi-column masonry */}
                       <div className="hidden sm:block">

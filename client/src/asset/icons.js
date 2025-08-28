@@ -288,27 +288,57 @@ export const GenerateIcon = ({ isActive }) => (
   </svg>
 );
 
-export const SparkIcon = ({ isActive }) => {
+export const SparklesIcon = ({ size = 24, className = "" }) => {
   return (
     <svg
-      className="w-5 h-5 text-gray-800"
-      aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="#FFD700"
+  width={size}
+  height={size}
+  className={className}
+>
+  {/* big sparkle */}
+  <path d="M12 2 14.4 8.8 22 11.9 14.4 15.2 12 22 9.6 15.2 2 11.9 9.6 8.8 12 2Z" />
+  {/* small sparkle */}
+  <path d="M18 3 19.3 6.4 23 7.8 19.3 9.1 18 12.5 16.7 9.1 13 7.8 16.7 6.4 18 3Z" />
+  {/* tiny sparkle */}
+  <path d="M6 6 6.9 8.3 9.3 9.2 6.9 10.1 6 12.4 5.1 10.1 2.7 9.2 5.1 8.3 6 6Z" />
+</svg>
+
+  );
+};
+
+
+
+
+export const MindIcon = ({ size = 24, className = "" }) => {
+  return (
+    <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="none"
       viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
     >
-      <path
-        stroke={isActive ? "#f59e0b" : "currentColor"} // Amber when active
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M16.872 9.687 20 6.56 17.44 4 4 17.44 6.56 20 16.873 9.687Zm0 0-2.56-2.56M6 7v2m0 0v2m0-2H4m2 0h2m7 7v2m0 0v2m0-2h-2m2 0h2M8 4h.01v.01H8V4Zm2 2h.01v.01H10V6Zm2-2h.01v.01H12V4Zm8 8h.01v.01H20V12Zm-2 2h.01v.01H18V14Zm2 2h.01v.01H20V16Z"
-      />
+      {/* left brain */}
+      <path d="M9 3c-1.5 0-3 .7-3 2.5S7.5 8 9 8v8c-1.5 0-3 .7-3 2.5S7.5 21 9 21" />
+      {/* right brain */}
+      <path d="M15 3c1.5 0 3 .7 3 2.5S16.5 8 15 8v8c1.5 0 3 .7 3 2.5S16.5 21 15 21" />
+      {/* connections */}
+      <path d="M9 8h6M9 16h6" />
     </svg>
   );
 };
+
+
+
+
 
 export const BrainIcon = ({ isActive }) => {
   return (

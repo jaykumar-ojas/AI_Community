@@ -55,7 +55,7 @@ const ReplyData = ({ content }) => {
       {!expanded ? (
         <>
           {collapsedSummary && (
-            <p className="mb-1 text-text_header">
+            <p className="mb-1 leading-snug text-text_header">
               {collapsedSummary}
             </p>
           )}

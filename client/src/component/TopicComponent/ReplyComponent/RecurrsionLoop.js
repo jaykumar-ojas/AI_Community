@@ -57,13 +57,13 @@ const RecurrsionLoop = ({
         <div
           className={`absolute ${
             view ? "top-12 left-0" : "top-6 left-4"
-          } left-0 h-full z-30`}
+          } left-0 h-full z-0`}
           style={{ marginLeft: "0rem" }}
         >
           {view && (
             <button
               onClick={() => setView(!view)}
-              className="w-6 h-6 rounded-full text-text_header bg-btn_bg cursor-pointer"
+              className="w-6 h-6 rounded-full z-10 text-text_header bg-btn_bg cursor-pointer"
             >
               -
             </button>
@@ -96,7 +96,7 @@ const RecurrsionLoop = ({
         <div className="text-white flex items-center gap-2 z-40 pb-4">
           <button
             onClick={() => setView(!view)}
-            className="w-6 h-6 z-40 flex items-center justify-center rounded-full text-text_header bg-btn_bg cursor-pointer"
+            className="w-6 h-6 z-0 flex items-center justify-center rounded-full text-text_header bg-btn_bg cursor-pointer"
           >
             +
           </button>

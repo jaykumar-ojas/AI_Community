@@ -54,7 +54,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
       </div>
 
       <div className="flex-1 px-2 sm:px-4 flex flex-col">
-        <div className="md:hidden sticky top-0 z-10 bg-black/40 backdrop-blur-sm border-b border-gray-800 px-2 py-2 flex gap-2">
+        {/* <div className="md:hidden sticky top-0 z-10 bg-black/40 backdrop-blur-sm border-b border-gray-800 px-2 py-2 flex gap-2">
           <button
             onClick={() => setShowModels(true)}
             className="flex-1 py-2 text-sm rounded-md bg-btn_bg text-text_header"
@@ -67,9 +67,9 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
           >
             Popular
           </button>
-        </div>
+        </div> */}
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 mb-8 md:mb-0 overflow-y-auto">
           <TopicContent />
         </div>
       </div>
@@ -81,22 +81,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
         </div>
       </div>
 
-      {showModels && (
-        <div className="md:hidden fixed inset-0 z-20">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setShowModels(false)} />
-          <div className="absolute left-0 top-0 h-full w-10/12 max-w-xs bg-bg_sidebar/95 border-r border-black shadow-xl">
-            <div className="flex items-center justify-between p-3 border-b border-gray-800">
-              <div className="text-text_header">Models</div>
-              <button className="text-text_header" onClick={() => setShowModels(false)}>✕</button>
-            </div>
-            <div className="h-[calc(100%-3rem)] overflow-y-auto">
-              <ModelList />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showPopular && (
+      {/* {showPopular && (
         <div className="md:hidden fixed inset-0 z-20">
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowPopular(false)} />
           <div className="absolute right-0 top-0 h-full w-10/12 max-w-sm bg-bg_sidebar/95 border-l border-black shadow-xl flex flex-col">
@@ -109,7 +94,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
