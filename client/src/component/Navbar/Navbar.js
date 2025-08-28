@@ -319,7 +319,7 @@ export default function Navbar({ showForum, setShowForum }) {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-200">
         <div className="flex items-center justify-around">
           {mobileNavItems.map((item, index) => {
             const Component = item.isTab ? 'button' : Link;
@@ -335,7 +335,7 @@ export default function Navbar({ showForum, setShowForum }) {
                 key={item.name}
                 {...props}
                 className={classNames(
-                  "flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all duration-200",
+                  "flex flex-col items-center justify-center pt-1 px-3 rounded-xl transition-all duration-200",
                   item.isActive 
                     ? "text-blue-600" 
                     : "text-gray-600 hover:text-gray-900",

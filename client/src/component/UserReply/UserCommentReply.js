@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import ShowSelectedFile from "./Component/ShowSelectedFiie";
 import {
   AttachIcon,
+  Sparkle, SparklesIcon
 } from "../../asset/icons";
 import axios from "axios";
 import ShowGeneratedContent from "./Component/ShowGeneratedContent";
@@ -15,6 +16,9 @@ import {
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 import CommentModelProvider, { CommentContext } from "../ContextProvider/CommentModelContext";
 import UserAndModel from "./Comment/UserAndModelComment";
+import { BrainIcon, ChevronDown, Send } from "lucide-react";
+import modelIcon from "../../asset/IconImage/ModelIcon.png"
+import ModelContent from "./Comment/ModelContentComment";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 
@@ -37,6 +41,8 @@ const UserCommentReply = () => {
   // Context aware functionality
   const [contextLoading, setContextLoading] = useState(false);
   const [aiGenerated, setAiGenerated] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   // Background function to describe images
   const describeImagesInBackground = async (replyId, postingData) => {
@@ -350,7 +356,7 @@ const UserCommentReply = () => {
   };
 
   return (
-    <div className="relative bottom-0 left-0 right-0 bg-transparent relative shadow-lg z-50 p-2">
+    <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-2">
       {/* Error display */}
       {error && (
         <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-md text-sm">
@@ -366,56 +372,24 @@ const UserCommentReply = () => {
       {/* for showing model and userName */}
       <UserAndModel/>
       
-      <form>
-        <div className="flex mb-2">
-          <input
+     <form>
+        <div className="flex md:mb-2">
+          <textarea
             type="text"
-            className="flex-1 border border-gray-200 rounded-md p-3 mr-2 text-sm"
+           className="flex-1 p-1 min-h-8 text-sm md:text-sm 
+             bg-transparent focus:outline-none focus:ring-0 border border-gray-300 rounded-md 
+             resize-none overflow-y-auto break-words"
             placeholder="Write your reply..."
             value={newReply}
             onChange={(e) => setNewReply(e.target.value)}
             disabled={isLoading || loading || contextLoading}
           />
-          
-          {/* Context Aware Generate Button - Only show when model is selected */}
-          {model && (
-            <button
-              type="button"
-              onClick={handleContextAwareGenerate}
-              className="bg-purple-600 text-white rounded-md px-4 py-2 text-sm hover:bg-purple-700 disabled:opacity-50 mr-2"
-              disabled={contextLoading || loading || !newReply.trim()}
-              title="Generate with context awareness from conversation history"
-            >
-              {contextLoading ? "Context..." : "Context Aware"}
-            </button>
-          )}
-          
-          {/* Regular Generate Button */}
-          {model && (
-            <button
-              type="button"
-              onClick={handleGenerateSubmit}
-              className="bg-green-600 text-white rounded-md px-4 py-2 text-sm hover:bg-green-700 disabled:opacity-50 mr-2"
-              disabled={loading || contextLoading || !newReply.trim()}
-            >
-              {loading ? "Generating..." : `Generate ${modelType === 'image' ? 'Image' : 'Text'}`}
-            </button>
-          )}
-          
-          {/* Post Button */}
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading || loading || contextLoading || (!newReply.trim() && postingData.length === 0) || (model && !aiGenerated)}
-          >
-            {isLoading ? "Posting..." : "Post"}
-          </button>
         </div>
 
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <label className="text-gray-500 hover:text-gray-700 cursor-pointer text-sm flex items-center">
+        {/* lower button */}
+        <div className="flex justify-between">
+          <div className="flex justify-start items-center gap-2 px-1">
+            <label className="text-gray-500 hover:text-gray-700 cursor-pointer text-xs md:text-sm flex items-center">
               <input
                 type="file"
                 multiple
@@ -424,23 +398,82 @@ const UserCommentReply = () => {
                 className="hidden"
                 disabled={isLoading}
               />
-              <AttachIcon /> Attach
+              <AttachIcon />
             </label>
-            
-            {/* Display current model info */}
-            <div className="text-xs text-gray-500 ml-4">
-              Current: {model} ({modelType})
-            </div>
-            
-            {/* Context Aware Info */}
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2 border border-gray-300  px-2 py-1  rounded-lg shadow-sm hover:shadow-md transition-all"
+            >
+              {model ? (
+                <>
+                  <span className="font-medium text-xs text-black">
+                    {model}
+                  </span>
+                </>
+              ) : (
+                <span className="text-gray-500">
+                  <img
+                    className="h-5 w-full object-cover bg-white rounded-full"
+                    src={modelIcon}
+                  />
+                </span>
+              )}
+              <ChevronDown
+                className={`h-4 w-4 text-gray-600 transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {isDropdownOpen && <ModelContent  closeDropdown={() => setIsDropdownOpen(false)} />}
+          </div>
+          <div className="flex ">
             {model && (
-              <div className="text-xs text-purple-600 ml-2">
-                💡 Context Aware available
-              </div>
+              <button
+                type="button"
+                onClick={handleContextAwareGenerate}
+                className="bg-purple-600 text-black rounded-md px-4 py-2 text-sm hover:bg-purple-700 disabled:opacity-50 "
+                disabled={contextLoading || loading || !newReply.trim()}
+                title="Generate with context awareness from conversation history"
+              >
+                {contextLoading ? "Context..." : <BrainIcon />}
+              </button>
             )}
+
+            {/* Regular Generate Button */}
+            {model && (
+              <button
+                type="button"
+                onClick={handleGenerateSubmit}
+                className="text-white rounded-md px-4 py-2 text-sm  disabled:opacity-50"
+                disabled={loading || contextLoading || !newReply.trim()}
+              >
+                {/* {loading ? "Generating..." : `Generate ${modelType === 'image' ? 'Image' : 'Text'}`} */}
+                {loading ? <Sparkle/> : <SparklesIcon />}
+              </button>
+            )}
+            {/* Post Button */}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="text-black rounded-full p-2 text-sm hover:bg-blue-700 disabled:opacity-50 "
+              disabled={
+                isLoading ||
+                loading ||
+                contextLoading ||
+                (!newReply.trim() && postingData.length === 0) ||
+                (model && !aiGenerated)
+              }
+            >
+              {isLoading ? (
+                "Posting..."
+              ) : (
+                <Send size={20} className="rotate-45 mr-1 text-" />
+              )}
+            </button>
           </div>
         </div>
-        
+
         <ShowSelectedFile
           selectedFiles={selectedFiles}
           setSelectedFiles={setSelectedFiles}

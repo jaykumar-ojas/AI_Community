@@ -4,9 +4,9 @@ const ShowGeneratedContent = ({ postingData }) => {
   if (!postingData || postingData.length === 0) return null;
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6 md:p-4">
       {postingData.map((item, index) => (
-        <div key={index} className="border p-4 rounded-lg shadow-md bg-white">
+        <div key={index} className="border md:p-4 p-2 rounded-lg shadow-md bg-white">
           <ShowUserText userText={item.userText} />
           <ShowPrompt prompt={item.prompt} />
           <ShowAiText aiText={item.aiText} modelInfo={item.modelInfo} />

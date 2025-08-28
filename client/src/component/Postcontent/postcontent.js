@@ -104,9 +104,9 @@ const PostContent = () => {
     <div className="bg-transparent w-full overflow-x-hidden h-full">
       <div className="w-full justify-center flex flex-col md:flex-row">
         {/* Left Section */}
-        <div className="relative w-full rounded-xl sm:w-[100%] md:w-[70%] h-[calc(100vh-3.5rem)] flex flex-col">
+        <div className="relative w-full rounded-xl sm:w-[100%] md:w-[70%] mb-24 md:mb-0 h-[calc(100vh-3.5rem)] flex flex-col">
           {/* model icon list */}
-          <div className="absolute z-50 left-0 m-4  mb-8 bottom-0">
+          <div className="absolute z-50 left-0 m-4 hidden md:block mb-8 bottom-0">
             {showIcon && <ModelList/> }
             <button onClick={handleIconClick} className="justify-center m-2 items-center"><img src={AiIcons} alt="model" className="w-10 h-10 rounded-full"></img></button>
             </div>
@@ -148,9 +148,15 @@ const PostContent = () => {
           </div>
 
           {/* Reply box (desktop always visible, mobile only when comments open) */}
-          <div className={`px-24 ${showCommentsMobile ? "block" : "hidden"} md:block`}>
+          <div className={`md:px-24 hidden md:block`}>
             <UserCommentReply />
           </div>
+
+          <div className={`fixed bg-white left-0 right-0 ${showCommentsMobile ? "block" : "hidden"} z-30 bottom-0 block md:hidden`}>
+            <UserCommentReply />
+          </div>
+
+          
         </div>
 
         {/* Right Section - Sticky Sidebar */}

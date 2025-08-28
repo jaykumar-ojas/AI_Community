@@ -260,7 +260,7 @@ const ShowCommentContent = ({ reply }) => {
 
   return (
     <div key={reply?._id} className="relative flex justify-start ">
-      <div className="md:w-8 md:h-8 w-6 h-6 flex-shrink-0 z-30">
+      <div className="w-8 h-8 flex-shrink-0 z-30">
         <UserIconCard id={reply?.userId} />
       </div>
       {/* user icon outside */}
@@ -268,7 +268,7 @@ const ShowCommentContent = ({ reply }) => {
       <div className="flex flex-col md: p-1 px-2 pt-0 w-full md:mb-2 mb-1">
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-            <div className="text-text_header font-normal mr-2 text-xs md:text-sm">
+            <div className="text-text_header font-normal mr-2 text-sm">
               {reply?.userName}
             </div>
             <div className="mr-2 flex justify-center items-center">
