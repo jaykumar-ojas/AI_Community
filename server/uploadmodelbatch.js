@@ -8,23 +8,23 @@ dotenv.config();
 // Model icon URLs mapping
 const modelIcons = {
     // Text Models
-    "grok-3-mini": "https://registry.npmmirror.com/@lobehub/icons-static-png/1.49.0/files/dark/openai.png",
+    "grok-3-mini": "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/grok.png",
     "gpt-4.1": "https://registry.npmmirror.com/@lobehub/icons-static-png/1.49.0/files/dark/openai.png",
-    "gemini-2.0-flash": "https://custom.typingmind.com/assets/models/gemini.png",
-    "deepseek-chat": "https://custom.typingmind.com/assets/models/deepseek.png",
+    "gemini-2.0-flash": "https://registry.npmmirror.com/@lobehub/icons-static-png/1.62.0/files/dark/gemini-color.png",
+    "deepseek-chat": "https://registry.npmmirror.com/@lobehub/icons-static-png/1.62.0/files/dark/deepseek-color.png",
     "claude-3-7-sonnet-20250219": "https://registry.npmmirror.com/@lobehub/icons-static-png/1.49.0/files/dark/claude-color.png",
-    "llama-3.3-70b-versatile": "file:///C:/Users/hp/Downloads/meta%20ai.webp",
-    "meta-llama/llama-4-scout-17b-16e-instruct": "file:///C:/Users/hp/Downloads/meta%20ai.webp",
+    "llama-3.3-70b-versatile": "https://custom.typingmind.com/assets/models/llama.png",
+    "meta-llama/llama-4-scout-17b-16e-instruct": "https://custom.typingmind.com/assets/models/llama.png",
     
     // Image Models
     "dall-e-3": "https://registry.npmmirror.com/@lobehub/icons-static-png/1.49.0/files/dark/openai.png",
-    "grok-2-image-1212": "https://www.google.com/url?sa=i&url=https%3A%2F%2Flobehub.com%2Ficons%2Fgrok&psig=AOvVaw1O26WJLMCzbD6BPBPwh8sX&ust=1750963253456000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKDxje2cjY4DFQAAAAAdAAAAABAE",
-    "imagen-3.0-generate-002": "https://custom.typingmind.com/assets/models/gemini.png",
+    "grok-2-image-1212": "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/grok.png",
+    "imagen-3.0-generate-002": "https://registry.npmmirror.com/@lobehub/icons-static-png/1.62.0/files/dark/gemini-color.png",
     "stable-diffusion-xl": "https://custom.typingmind.com/assets/models/stability.png",
     "stable-diffusion-3-5": "https://custom.typingmind.com/assets/models/stability.png",
-    "runway-sd": "file:///C:/Users/hp/Downloads/Runway.jpg",
-    "flux-schnell": "file:///C:/Users/hp/Downloads/ai-technology.png",
-    "flux-dev": "file:///C:/Users/hp/Downloads/ai-technology.png"
+    "runway-sd": "https://images.seeklogo.com/logo-png/49/1/runway-logo-png_seeklogo-496519.png",
+    "flux-schnell": "https://tjzk.replicate.delivery/models_organizations_avatar/01ed70be-0d47-4a4a-85fb-32c02cdd4ab5/bfl.png",
+    "flux-dev": "https://tjzk.replicate.delivery/models_organizations_avatar/01ed70be-0d47-4a4a-85fb-32c02cdd4ab5/bfl.png"
 };
 
 // Provider display names mapping

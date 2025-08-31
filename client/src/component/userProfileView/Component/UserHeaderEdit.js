@@ -19,6 +19,7 @@ const UserHeaderEdit = () => {
         subscribersCount: 0,
         subscribedToCount: 0
     });
+    const [showFollowingList, setShowFollowingList] = useState(false);
 
 
     const { loginData, setLoginData } = useContext(LoginContext);
@@ -106,8 +107,8 @@ const UserHeaderEdit = () => {
         try {
             const token = localStorage.getItem("userdatatoken");
             const url = isSubscribed
-                ? `${baseUrl}/unsubscribe/${decodeId(id)}`
-                : `${baseUrl}/subscribe/${decodeId(id)}`;
+                ? `${baseUrl}/unsubscribe/${id}`
+                : `${baseUrl}/subscribe/${id}`;
 
             const method = isSubscribed ? 'DELETE' : 'POST';
 
@@ -276,7 +277,18 @@ const UserHeaderEdit = () => {
                                     <div className="text-md font-bold text-gray-900 tracking-wide  md:text-2xl  sm:text-xl lg:text-3xl">
                                         {subscriptionStats.subscribedToCount}
                                     </div>
-                                    <div className="text-base font-small md:font-medium text-gray-600">Following</div>
+                                    {isOwnProfile && showFollowingList ? (
+                                        <div className="mt-2">
+                                            <SubscriptionsList userId={id} />
+                                        </div>
+                                    ) : (
+                                        <div 
+                                            className="text-base font-small md:font-medium text-gray-600 cursor-pointer hover:text-blue-500 transition-colors"
+                                            onClick={() => isOwnProfile && setShowFollowingList(prev => !prev)}
+                                        >
+                                            Following
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         ) : (

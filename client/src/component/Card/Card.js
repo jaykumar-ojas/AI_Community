@@ -249,7 +249,24 @@ const [sparkles, setSparkles] = useState([]);
               }}
             />
           ) : null}
-          <span>{post.aiModel}</span>
+          <span className="truncate">{post.aiModel}</span>
+        </div>
+      )}
+      
+      {/* Mobile AI model badge - positioned below user info */}
+      {post?.isAIGenerated && post?.aiModel && (
+        <div className="sm:hidden absolute top-12 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-semibold z-10">
+          {modelIcon ? (
+            <img 
+              src={modelIcon} 
+              alt={`${post.aiModel} icon`}
+              className="w-3 h-3 rounded-full object-cover inline mr-1"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          ) : null}
+          <span className="truncate">{post.aiModel}</span>
         </div>
       )}
     </div>

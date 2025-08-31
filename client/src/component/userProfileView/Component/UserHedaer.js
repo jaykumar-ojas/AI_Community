@@ -7,6 +7,7 @@ import SubscriptionsList from "./SubscriptionsList";
 import { LoginContext } from "../../ContextProvider/context";
 import { AttachIcon, DragAndDropIcon, PenIcon } from "../../../asset/icons";
 import { encodeId, decodeId} from "../../../utils/hashids"
+
 const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const [backgroundLoaded, setBackgroundLoaded] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -22,8 +23,10 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const navigate = useNavigate();
   const [showSubscriptions, setShowSubscriptions] = useState(false);
   const subscriptionsRef = useRef();
+  const followingRef = useRef();
   const [isUploadingBackground, setIsUploadingBackground] = useState(false);
   const [isUploadingProfile, setIsUploadingProfile] = useState(false);
+  const cacheBust = (url) => (url ? `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}` : url);
 
   const [subscriptionStats, setSubscriptionStats] = useState({
     subscribersCount: 0,
@@ -35,9 +38,8 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const { id } = useParams();
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
-
   useEffect(() => {
-    console.log("Login data:", loginData); // Debug log
+    console.log("Login data:", loginData);
     fetchUserProfile(id);
     if (loginData?.validuserone?._id && id !== loginData?.validuserone?._id) {
       checkSubscriptionStatus(id);
@@ -51,11 +53,11 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
     }
   }, [profileUser]);
 
-  // Close popover when clicking outside
   useEffect(() => {
     if (!showSubscriptions) return;
     function handleClickOutside(event) {
-      if (subscriptionsRef.current && !subscriptionsRef.current.contains(event.target)) {
+      if (subscriptionsRef.current && !subscriptionsRef.current.contains(event.target) &&
+          followingRef.current && !followingRef.current.contains(event.target)) {
         setShowSubscriptions(false);
       }
     }
@@ -65,8 +67,9 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
     };
   }, [showSubscriptions]);
 
-  const fetchUserProfile = async (userId) => {
+   const fetchUserProfile = async (userId) => {
     try {
+      console.log("Fetching user profile for user ID:", userId);
       const response = await fetch(
         `${baseUrl}/get-user-profile/${userId}`,
         {
@@ -90,10 +93,16 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
     }
   };
 
+
+  const handleCancel = () => {
+    // Just refresh the page to get fresh state
+    window.location.reload();
+  };
+
   const checkSubscriptionStatus = async (userId) => {
     try {
       const token = localStorage.getItem("userdatatoken");
-      console.log("Checking subscription with token:", token); // Debug log
+      console.log("Checking subscription with token:", token);
       const response = await fetch(`${baseUrl}/check/${userId}`, {
         method: "GET",
         headers: {
@@ -103,7 +112,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
       });
 
       const data = await response.json();
-      console.log("Subscription status:", data); // Debug log
+      console.log("Subscription status:", data);
       setIsSubscribed(data.isSubscribed);
     } catch (error) {
       console.error("Error checking subscription status:", error);
@@ -156,7 +165,6 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
 
       if (response.ok) {
         setIsSubscribed(!isSubscribed);
-        // Update follower count
         setSubscriptionStats((prev) => ({
           ...prev,
           subscribersCount: isSubscribed
@@ -229,7 +237,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
       const response = await fetch(`${baseUrl}/updateProfile`, {
         method: "POST",
         headers: {
-          Authorization: token, // only include auth header; don't set Content-Type manually
+          Authorization: token,
         },
         body: formData,
       });
@@ -238,11 +246,17 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
 
       if (data.status === 200) {
         alert("Profile updated successfully!");
-        setIsUpdating(false); // Hide upload button after successful upload
+      //   setProfileUser(data.user);
+
+        //console.log("Profile user:", profileUser);
+        setIsUpdating(false);
         setProfilePicture(null);
         setProfilePicturePreview(null);
         setBackGroundImage(null);
         setBackgroundPreview(null);
+        
+        // Refresh the profile data
+        fetchUserProfile(id);
       } else {
         alert(data.message || "Update failed");
       }
@@ -256,156 +270,189 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   };
 
 
+  const handleFollowingClick = () => {
+    if (isOwnProfile || loginData?.validuserone) {
+      setShowSubscriptions((prev) => !prev);
+    }
+  };
+
   const isOwnProfile = loginData?.validuserone?._id ? encodeId(loginData.validuserone._id) === id : false;
 
   return (
     <>
-      <div
-        className="relative h-36 md:h-52 bg-cover bg-center group"
-        style={{
-          backgroundImage: `url(${
-            backgroundPreview || profileUser?.backgroundImageUrl
-          })`,
-        }}
-      >
-        {/* Edit button (top-right) */}
-        {isOwnProfile && (
-          <div className="absolute z-50 right-8 top-8">
-            {!isUpdating && (
-              <button onClick={() => { setIsUpdating(true); }} className="bg-gray-300 p-2 rounded-full cursor-pointer">
-                <PenIcon />
-              </button>
-            )}
-            {isUpdating &&
-              <div>
-                {/* Only show upload button if a file is selected */}
-                {(backgroundImage || profilePicture) && (
-                  <button
-                    className="p-2 pt-1 text-like_color bg-gray-300 rounded-md"
-                    onClick={handleUpdateProfileData}
-                    disabled={isUploadingBackground || isUploadingProfile || (!backgroundImage && !profilePicture)}
+      {/* Background Section */}
+      <div className="relative">
+        <div
+          className="relative h-36 md:h-52 bg-cover bg-center bg-gray-200 overflow-hidden"
+          style={{
+            backgroundImage: backgroundLoaded && (backgroundPreview || profileUser?.backgroundImageUrl) ? 
+              `url(${backgroundPreview || profileUser?.backgroundImageUrl})` : 'none',
+          }}
+        >
+          {/* Background Loading Skeleton - Only show when not loaded */}
+          {!backgroundLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-400 z-10">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-3 border-gray-500 border-t-transparent mx-auto mb-2"></div>
+                <span className="text-sm text-gray-600 font-medium">Loading background...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Background Upload Overlay - Only show when loaded and updating */}
+          {isOwnProfile && isUpdating && backgroundLoaded && (
+            <label className="absolute inset-0 z-20 flex items-center justify-center bg-black bg-opacity-60 cursor-pointer transition-all duration-300 hover:bg-opacity-70 group">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleBackgroundChange}
+                className="hidden"
+              />
+              <div className="text-center text-white transform transition-transform duration-200 group-hover:scale-105">
+                <DragAndDropIcon className="mx-auto mb-2 w-8 h-8" />
+                <span className="text-sm font-medium">
+                  {backgroundImage ? 'Change Background' : 'Upload Background'}
+                </span>
+              </div>
+            </label>
+          )}
+
+          {/* Edit Controls - Highest z-index */}
+          {isOwnProfile && (
+            <div className="absolute right-4 top-4 z-40 flex items-center space-x-2">
+              {!isUpdating ? (
+                <button 
+                  onClick={() => setIsUpdating(true)} 
+                  className="bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105"
+                >
+                  <PenIcon className="w-4 h-4 text-gray-700" />
+                </button>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  {(backgroundImage || profilePicture) && (
+                    <button
+                      onClick={handleUpdateProfileData}
+                      disabled={isUploadingBackground || isUploadingProfile}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-3 py-1 text-white text-sm rounded-lg font-medium shadow-lg transition-all duration-200"
+                    >
+                      {isUploadingBackground || isUploadingProfile ? (
+                        <span className="flex items-center">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                          Uploading...
+                        </span>
+                      ) : (
+                        "Save"
+                      )}
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => {
+                      setProfilePicture(null);
+                      setProfilePicturePreview(null);
+                      setBackGroundImage(null);
+                      setBackgroundPreview(null);
+                      setUserName(profileUser?.userName);
+                      setIsUpdating(false);
+                      window.location.reload()
+                    }}
+                    className="bg-gray-600 hover:bg-gray-700 px-3 py-1 text-white text-sm rounded-lg font-medium shadow-lg transition-all duration-200"
                   >
-                    {isUploadingBackground || isUploadingProfile ? (
-                      <span className="flex items-center"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></span>Uploading...</span>
-                    ) : (
-                      "upload"
-                    )}
+                    Cancel
                   </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Hidden image for load detection */}
+          <img
+            src={profileUser?.backgroundImageUrl}
+            alt=""
+            className="hidden"
+            onLoad={() => setBackgroundLoaded(true)}
+            onError={() => setBackgroundLoaded(true)}
+          />
+        </div>
+
+        {/* Profile Picture - Positioned relative to background with proper spacing */}
+        <div className="absolute -bottom-14 left-1/2 transform -translate-x-1/2 sm:left-[8%] sm:translate-x-0 sm:-bottom-16 lg:-bottom-24 z-30">
+          <div className="relative group">
+            {/* Profile Picture Container - Only show when loaded */}
+            {profileLoaded && (
+              <div
+                className="w-28 h-28 md:w-36 md:h-36 sm:w-32 sm:h-32 lg:w-48 lg:h-48 rounded-[30px] border-4 border-white shadow-xl bg-cover bg-center bg-gray-200 overflow-hidden"
+                style={{
+                  backgroundImage: `url(${
+                    profilePicturePreview || profileUser?.profilePictureUrl
+                  })`,
+                }}
+              >
+                {/* Profile Upload Overlay */}
+                {isOwnProfile && isUpdating && (
+                  <label className="absolute inset-0 z-40 flex items-center justify-center bg-black bg-opacity-60 cursor-pointer transition-all duration-300 hover:bg-opacity-70 rounded-[26px] opacity-0 group-hover:opacity-100">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfileChange}
+                      className="hidden"
+                    />
+                    <div className="text-center text-white transform transition-transform duration-200 hover:scale-105">
+                      <DragAndDropIcon className="mx-auto mb-1 w-6 h-6" />
+                      <span className="text-xs font-medium">
+                        {profilePicture ? 'Change' : 'Upload'}
+                      </span>
+                    </div>
+                  </label>
                 )}
-                <button className="p-2 pt-1 text-white bg-gray-300 rouned-md"
-                  onClick={() => {
-                    setProfilePicture(null);
-                    setProfilePicturePreview(null);
-                    setBackGroundImage(null);
-                    setBackgroundPreview(null);
-                    setUserName(profileUser?.userName);
-                    setIsUpdating(false);
-                  }}>Cancel</button>
               </div>
-            }
-          </div>
-        )}
+            )}
 
-        {/* Background Hover Overlay */}
-        {isOwnProfile && isUpdating && (
-          <label className="absolute inset-0 z-10 hidden group-hover:flex items-center justify-center bg-black bg-opacity-50 cursor-pointer transition-all duration-300">
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleBackgroundChange}
-              className="hidden"
-              //    disabled={isLoading}
-            />
-            <DragAndDropIcon />
-          </label>
-        )}
-
-        {/* Loading Spinner for Background */}
-        {!backgroundLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-200 animate-pulse">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
-          </div>
-        )}
-
-        {/* Hidden Background Load Checker */}
-        <img
-          src={profileUser?.backgroundImageUrl}
-          alt=""
-          className="hidden"
-          onLoad={() => setBackgroundLoaded(true)}
-          onError={() => setBackgroundLoaded(true)}
-        />
-
-        {/* Profile Section */}
-        <div className="absolute z-50 bottom-0 transform left-1/2 translate-y-1/2 sm:left-[8%] sm:translate-x-0 sm:translate-y-2/3 lg:translate-y-3/4">
-          <div className="relative group/profile">
-            {/* Profile Skeleton */}
+            {/* Profile Loading Skeleton - Only show when not loaded */}
             {!profileLoaded && (
-              <div className="w-28 h-28 md:w-36 md:h-36 sm:w-32 sm:h-32 lg:w-48 lg:h-48 rounded-[30px] border-4 border-white shadow-lg bg-gray-200 animate-pulse transform -translate-x-1/2 sm:translate-x-0 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
+              <div className="w-28 h-28 md:w-36 md:h-36 sm:w-32 sm:h-32 lg:w-48 lg:h-48 rounded-[30px] border-4 border-white shadow-xl bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-500 border-t-transparent mx-auto mb-1"></div>
+                  <span className="text-xs text-gray-600 font-medium">Loading...</span>
+                </div>
               </div>
             )}
 
-            {/* Hover Overlay for Profile */}
-            {isOwnProfile && isUpdating && (
-              <label className="absolute inset-0 z-50 hidden group-hover/profile:flex items-center justify-center bg-black bg-opacity-50 cursor-pointer transition-all duration-300 rounded-[30px]">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,video/*,audio/*"
-                  onChange={handleProfileChange}
-                  className="hidden"
-                  //    disabled={isLoading}
-                />
-                <DragAndDropIcon />
-              </label>
-            )}
-
-            {/* Actual Profile Image */}
-            <div
-              className={`relative w-28 h-28 md:w-36 md:h-36 sm:w-32 sm:h-32 lg:w-48 lg:h-48 rounded-[30px] border-4 border-white shadow-lg bg-cover bg-center transform -translate-x-1/2 sm:translate-x-0 ${
-                profileLoaded ? "block" : "hidden"
-              }`}
-              style={{
-                backgroundImage: `url(${
-                  profilePicturePreview || profileUser?.profilePictureUrl
-                })`,
-              }}
-            ></div>
-
-            {/* Hidden Profile Load Checker */}
+            {/* Hidden image for load detection */}
             <img
               src={profileUser?.profilePictureUrl}
               alt=""
               className="hidden"
               onLoad={() => setProfileLoaded(true)}
-              onError={() => setBackgroundLoaded(true)}
+              onError={() => setProfileLoaded(true)}
             />
           </div>
         </div>
       </div>
 
-      {/* Background Loader Overlay */}
+      {/* Global Upload Overlays */}
       {isUploadingBackground && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-          <span className="text-white ml-4">Uploading...</span>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-[100]">
+          <div className="bg-white rounded-lg p-6 flex items-center space-x-4 shadow-2xl">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="text-gray-800 font-medium">Uploading background...</span>
+          </div>
         </div>
       )}
 
-      {/* Profile Loader Overlay */}
       {isUploadingProfile && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 rounded-[30px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-          <span className="text-white ml-4">Uploading...</span>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-[100]">
+          <div className="bg-white rounded-lg p-6 flex items-center space-x-4 shadow-2xl">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="text-gray-800 font-medium">Uploading profile picture...</span>
+          </div>
         </div>
       )}
 
-      <div className="it not needed for flexibilty it is here">
-        <div className="relative flex flex-col justify-end md:items-center md:gap-8 md:pt-4 md:gap-0 sm:gap-4 sm:justify-end sm:flex sm:pt-1 sm:flex-row lg:gap-0">
+      {/* Content Section */}
+      <div className="bg-gradient-to-b from-transparent via-black/20 to-black/40 pt-16">
+        <div className="relative flex flex-col justify-end md:items-center md:gap-8 md:pt-4 sm:gap-4 sm:justify-end sm:flex sm:pt-1 sm:flex-row">
           {/* Left: Name & Bio */}
-          <div className="pt-20 w-full md:mb-0 md:p-4 md:p-0 sm:py-2 sm:px-0 sm:w-1/3">
+          <div className="pt-20 w-full md:mb-0 md:p-4 sm:py-2 sm:px-0 sm:w-1/3">
             {profileUser ? (
               <>
                 {isOwnProfile && isUpdating ? (
@@ -413,27 +460,28 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    className="text-medium text-center sm:text-start font-bold text-gray-800 md:text-2xl sm:text-2xl lg:text-3xl border-none rounded px-2 py-1"
+                    className="text-center sm:text-start font-bold text-gray-800 md:text-2xl sm:text-2xl lg:text-3xl border-2 border-blue-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:border-blue-500 bg-white shadow-lg"
+                    placeholder="Enter your name"
                   />
                 ) : (
-                  <h1 className="text-medium text-center justify-center font-bold text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl">
+                  <h1 className="text-center justify-center font-bold text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
                     {profileUser?.userName}
                   </h1>
                 )}
-                <p className="pt-1 text-center justify-center text-sm text-white sm:text-md sm:text-start md:text-lg">
+                <p className="pt-2 text-center justify-center text-sm text-white/90 sm:text-md sm:text-start md:text-lg drop-shadow-lg">
                   {profileUser?.email}
                 </p>
 
                 {/* Subscription Button */}
                 {!isOwnProfile && loginData?.validuserone && (
-                  <div className="flex justify-center sm:justify-start mt-3">
+                  <div className="flex justify-center sm:justify-start mt-4">
                     <button
                       onClick={handleSubscription}
                       disabled={isSubscribing}
-                      className={`px-6 py-2 rounded-full font-medium text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`px-6 py-2 rounded-full font-medium text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg ${
                         isSubscribed
-                          ? "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500"
-                          : "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-lg"
+                          ? "bg-white/90 text-gray-700 hover:bg-white focus:ring-gray-500"
+                          : "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
                       }`}
                     >
                       {isSubscribing ? (
@@ -449,67 +497,85 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                     </button>
                   </div>
                 )}
-                {/* Show Subscriptions Button (only for own profile) */}
-                {isOwnProfile && (
-                  <button
-                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                    onClick={() => setShowSubscriptions((prev) => !prev)}
-                  >
-                    {showSubscriptions ? "Hide Subscriptions" : "Show Subscriptions"}
-                  </button>
-                )}
-                {/* Subscriptions Popover */}
-                {isOwnProfile && showSubscriptions && (
-                  <div
-                    ref={subscriptionsRef}
-                    className="absolute z-50 left-1/2 top-24 transform -translate-x-1/2 bg-gray-700 text-black rounded-lg shadow-lg p-4 w-80 border border-gray-200"
-                  >
-                    <SubscriptionsList userId={id} />
-                  </div>
-                )}
               </>
             ) : (
-              <>
+              <div className="space-y-2">
                 <Skeleton height={30} width={150} />
                 <Skeleton count={2} />
                 <div className="mt-3">
                   <Skeleton height={40} width={100} />
                 </div>
-              </>
+              </div>
             )}
           </div>
 
           {/* Right: Stats */}
-          <div className="w-full p-4 pb-0 px-12 md:mb-0 flex flex-row gap-2 text-center justify-between md:mr-8 md:gap-6 md:p-0 sm:gap-2 sm:px-1 sm:pr-4 sm:py-3 sm:w-1/3 lg:p-12 lg:gap-8">
+          <div className="w-full p-4 pb-6 px-12 md:mb-0 flex flex-row gap-2 text-center justify-between md:mr-8 md:gap-6 sm:gap-2 sm:px-1 sm:pr-4 sm:py-3 sm:w-1/3 lg:gap-8">
             {profileUser ? (
               <>
                 <div>
-                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
-                    { isError ? (
+                  <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+                    {isError ? (
                       <span>!</span>
                     ) : (
-                      posts?.length
+                      posts?.length || 0
                     )}
                   </div>
-                  <div className="text-base font-small md:font-medium text-white">
+                  <div className="text-sm font-medium text-white/90 drop-shadow">
                     Posts
                   </div>
                 </div>
                 <div>
-                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
-                    {subscriptionStats?.subscribersCount}
+                  <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+                    {subscriptionStats?.subscribersCount || 0}
                   </div>
-                  <div className="text-base font-small md:font-medium text-white">
+                  <div className="text-sm font-medium text-white/90 drop-shadow">
                     Followers
                   </div>
                 </div>
-                <div>
-                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
-                    {subscriptionStats?.subscribedToCount}
+                <div className="relative">
+                  <div 
+                    ref={followingRef}
+                    className={`text-center ${isOwnProfile ? 'cursor-pointer' : ''}`}
+                    onClick={isOwnProfile ? handleFollowingClick : undefined}
+                  >
+                    <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+                      {subscriptionStats?.subscribedToCount || 0}
+                    </div>
+                    {isOwnProfile ? (
+                      <button className="mt-1 px-3 py-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/30">
+                        Following
+                      </button>
+                    ) : (
+                      <div className="text-sm font-medium text-white/90 drop-shadow">
+                        Following
+                      </div>
+                    )}
                   </div>
-                  <div className="text-base font-small md:font-medium text-white">
-                    Following
-                  </div>
+                  
+                  {/* Subscriptions Popover */}
+                  {showSubscriptions && isOwnProfile && (
+                    <>
+                      <div className="fixed inset-0 z-40 bg-black/25" />
+                      <div
+                        ref={subscriptionsRef}
+                        className="absolute z-50 top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-80 overflow-hidden w-64 sm:w-72 md:w-80 max-w-[calc(100vw-2rem)]"
+                      >
+                        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                          <h3 className="font-semibold text-gray-800">Following</h3>
+                          <button
+                            onClick={() => setShowSubscriptions(false)}
+                            className="text-gray-400 hover:text-gray-600 p-1 text-xl leading-none"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <div className="max-h-64 overflow-y-auto">
+                          <SubscriptionsList userId={id} />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </>
             ) : (
@@ -531,13 +597,6 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
           </div>
         </div>
       </div>
-
-      {/* Show subscriptions list only on own profile */}
-      {/* {isOwnProfile && (
-        <div className="mt-8 border-t border-gray-200">
-          <SubscriptionsList userId={id} />
-        </div>
-      )} */}
     </>
   );
 };
