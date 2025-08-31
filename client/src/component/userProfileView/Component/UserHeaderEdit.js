@@ -4,9 +4,14 @@
 // import 'react-loading-skeleton/dist/skeleton.css';
 // import SubscriptionsList from './SubscriptionsList';
 
+
 // import { LoginContext } from "../../ContextProvider/context";
 // import { PenIcon } from "../../../asset/icons";
 // const baseUrl = process.env.REACT_APP_BASE_URL;
+import { LoginContext } from "../../ContextProvider/context";
+import { PenIcon } from "../../../asset/icons";
+import { encodeId, decodeId } from "../../../utils/hashids";
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 
 // const UserHeaderEdit = () => {
@@ -107,6 +112,12 @@
 //             const url = isSubscribed
 //                 ? `${baseUrl}/unsubscribe/${id}`
 //                 : `${baseUrl}/subscribe/${id}`;
+
+        try {
+            const token = localStorage.getItem("userdatatoken");
+            const url = isSubscribed
+                ? `${baseUrl}/unsubscribe/${decodeId(id)}`
+                : `${baseUrl}/subscribe/${decodeId(id)}`;
 
 //             const method = isSubscribed ? 'DELETE' : 'POST';
 
