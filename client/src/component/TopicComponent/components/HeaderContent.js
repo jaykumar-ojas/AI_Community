@@ -174,11 +174,11 @@ const HeaderContent = ({ topic, onDelete }) => {
         {/* Header: User Info */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2  text-gray-700">
-            <span className="font-normal text-sm text-text_header">
+            <span className="font-normal text-sm text-black dark:text-text_header">
               <UserNameCard id={topic?.userId} />
             </span>
-            <div className="w-1 h-1 bg-time_header rounded-full"></div>
-            <span className="text-xs text-time_header">
+            <div className="w-1 h-1 bg-gray-800 dark:bg-time_header rounded-full"></div>
+            <span className="text-xs text-gray-700 dark:text-time_header">
               {formatDate(topic?.createdAt)}
             </span>
           </div>
@@ -213,7 +213,7 @@ const HeaderContent = ({ topic, onDelete }) => {
         {/* Content */}
         <div
           ref={contentRef}
-          className={`md:pt-2 pt-1 md:text-sm text-[14px] text-text_content whitespace-pre-wrap leading-snug [&>p]:my-0.5 [&>ul]:my-0.5 [&>li]:my-0.5 ${
+          className={`md:pt-2 pt-1 md:text-sm text-[14px]text-black dark:text-text_content whitespace-pre-wrap leading-snug [&>p]:my-0.5 [&>ul]:my-0.5 [&>li]:my-0.5 ${
             expanded ? "" : "line-clamp-4"
           }`}
         >
@@ -258,10 +258,10 @@ const HeaderContent = ({ topic, onDelete }) => {
 
         {/* Actions Section */}
         <div className="pt-4 flex items-center gap-2 text-xs text-gray-500">
-          <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
+          <div className="bg-gray-200 dark:bg-btn_bg border border-gray-300 dark:border-none flex p-1 px-2 rounded-xl gap-2">
             <button
               onClick={handleTopicLike}
-              className={`flex items-center gap-1 hover:text-like_color transition ${
+              className={`flex items-center gap-1 hover:text-like_color text-black dark:text-gray-500 transition ${
                 isLiked && "text-like_color"
               }`}
             >
@@ -271,7 +271,7 @@ const HeaderContent = ({ topic, onDelete }) => {
 
             <button
               onClick={handleTopicDislike}
-              className={`flex items-center gap-1 hover:text-red-600 transition ${
+              className={`flex items-center gap-1 hover:text-red-600 text-black dark:text-gray-500 transition ${
                 isDisliked && "text-red-600"
               }`}
             >

@@ -23,10 +23,10 @@ const TabProfile = ({ posts = [], isLoading, isError, error }) => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`pb-2 text-lg font-semibold transition-colors duration-200 ${
+            className={`pb-2 sm:text-lg text-xs font-semibold transition-colors duration-200 ${
               activeTab === tab
-                ? "border-b-4 border-gray-600 text-white"
-                : "text-white hover:text-gray-700"
+                ? "border-b-4 border-gray-600 text-gray-600 dark:text-white"
+                : "text-gray-800 dark:text-white hover:text-gray-700"
             }`}
           >
             {tab}

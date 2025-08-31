@@ -416,11 +416,11 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                     className="text-medium text-center sm:text-start font-bold text-gray-800 md:text-2xl sm:text-2xl lg:text-3xl border-none rounded px-2 py-1"
                   />
                 ) : (
-                  <h1 className="text-medium text-center justify-center font-bold text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl">
+                  <h1 className="text-medium text-center justify-center font-bold text-gray-900 dark:text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl">
                     {profileUser?.userName}
                   </h1>
                 )}
-                <p className="pt-1 text-center justify-center text-sm text-white sm:text-md sm:text-start md:text-lg">
+                <p className="pt-1 text-center justify-center text-sm text-gray-800 dark:text-white sm:text-md sm:text-start md:text-lg">
                   {profileUser?.email}
                 </p>
 
@@ -484,30 +484,30 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
             {profileUser ? (
               <>
                 <div>
-                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
+                  <div className="text-md font-bold text-gray-800 dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
                     { isError ? (
                       <span>!</span>
                     ) : (
                       posts?.length
                     )}
                   </div>
-                  <div className="text-base font-small md:font-medium text-white">
+                  <div className="text-base font-small md:font-medium text-gray-800 dark:text-white">
                     Posts
                   </div>
                 </div>
                 <div>
-                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
+                  <div className="text-md font-bold text-gray-800 dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
                     {subscriptionStats?.subscribersCount}
                   </div>
-                  <div className="text-base font-small md:font-medium text-white">
+                  <div className="text-base font-small md:font-medium text-gray-800 dark:text-white">
                     Followers
                   </div>
                 </div>
                 <div>
-                  <div className="text-md font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
+                  <div className="text-md font-bold text-gray-800 dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl">
                     {subscriptionStats?.subscribedToCount}
                   </div>
-                  <div className="text-base font-small md:font-medium text-white">
+                  <div className="text-base font-small md:font-medium text-gray-800 dark:text-white">
                     Following
                   </div>
                 </div>
