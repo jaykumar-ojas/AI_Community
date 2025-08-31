@@ -110,7 +110,7 @@ const PostContent = () => {
             {showIcon && <ModelList/> }
             <button onClick={handleIconClick} className="justify-center m-2 items-center"><img src={AiIcons} alt="model" className="w-10 h-10 rounded-full"></img></button>
             </div>
-          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box md:px-24 sm:px-0">
+          <div className="flex-1 overflow-y-auto scrollbar-thin dakr:scrollbar-thumb-gray-500 scrollbar-thumb-gray-300 dark:scrollbar-track-bg_comment_box md:px-24 sm:px-0">
             <div className="mb-6">
               <UserContent
                 post={post}
@@ -120,7 +120,7 @@ const PostContent = () => {
             </div>
 
             {/* Comments (desktop always visible, mobile toggled) */}
-            <div className={`flex-1 bg-bg_comment_box p-4 rounded-xl ${showCommentsMobile ? "block" : "hidden"} md:block`}>
+            <div className={`flex-1 bg-gray-100 dark:bg-bg_comment_box p-4 rounded-xl ${showCommentsMobile ? "block" : "hidden"} md:block`}>
               <CommentReview />
             </div>
 
@@ -160,9 +160,9 @@ const PostContent = () => {
         </div>
 
         {/* Right Section - Sticky Sidebar */}
-        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar bg-bg_comment_box rounded-xl hidden md:block md:w-[30%]">
+        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar dark:bg-bg_comment_box rounded-xl hidden md:block md:w-[30%]">
           <div className="border border-gray-300 rounded-lg">
-            <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold">
+            <div className="text-lg text-md justify-center text-gray-800 dark:text-text_comment p-2 font-semibold">
               More Related Content
             </div>
             <div className="grid grid-cols-1">
@@ -173,7 +173,7 @@ const PostContent = () => {
                   <RelatedCard key={item?._id || index} post={item} />
                 ))
               ) : (
-                <div className="col-span-3 text-center bg-bg_comment text-gray-500">
+                <div className="col-span-3 text-center dark:bg-bg_comment text-gray-500">
                   No related content found
                 </div>
               )}

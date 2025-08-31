@@ -35,7 +35,7 @@ const Layout = () => {
   const shouldHideNavbar = noNavbarPaths.includes(location.pathname);
 
   return (
-    <div className="flex flex-col h-screen relative bg-black">
+    <div className="flex flex-col h-screen relative">
       {/* Single BackgroundBeams for the entire layout */}
       <BackgroundBeams className="absolute inset-0 z-0" />
       
@@ -52,7 +52,7 @@ const Layout = () => {
 
 const BackgroundWrapper = ({ children }) => {
   return (
-    <div className="min-h-screen relative bg-black">
+    <div className="min-h-screen relative">
       <BackgroundBeams className="absolute inset-0 z-0" />
       <div className="relative z-10 min-h-screen">
         {children}

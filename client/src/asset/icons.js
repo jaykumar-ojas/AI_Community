@@ -161,41 +161,46 @@ export const SearchIcon = ({ isActive }) => {
 //   );
 // };
 
-export const CommentIcon = ({ filled = false, ...props }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    stroke="rgba(255,255,255,0.5)"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    viewBox="0 0 24 24"
-    className="h-5 w-5 md:h-6 md:w-6 transition-all duration-300"
-    {...props}
-  >
-    <path d="M21 6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11l4 4V6z" />
-  </svg>
-);
+export const CommentIcon = ({ h = 5, w = 5, ...props }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      stroke="rgba(0,0,0,0.6)"          // default light mode stroke
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+      className={`h-${h} w-${w} transition-all duration-300 dark:stroke-time_header`}
+      {...props}
+    >
+      <path d="M21 6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11l4 4V6z" />
+    </svg>
+  );
+};
 
 
-export const heartSvg = (filled) => (
+
+
+export const heartSvg = ({ filled }) => (
   <svg
     viewBox="0 0 24 24"
-    fill={filled ? "#ff4757" : "none"} // red fill if liked, none otherwise
-    stroke={filled ? "#ff4757" : "rgba(255,255,255,0.5)"} // outline red if filled, otherwise uses Tailwind color
+    fill={filled ? "#ff4757" : "none"} // red fill if liked
+    stroke={filled ? "#ff4757" : "white"} // use currentColor so Tailwind text classes apply
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
     className={`
       transition-all duration-300 
       ${filled ? "scale-110" : "scale-100"} 
-      text-bg_btn 
       h-5 w-5 md:h-6 md:w-6
+      ${!filled ? "text-gray-600 dark:text-gray-300" : ""} 
     `}
   >
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
   </svg>
 );
+
 
 
 
@@ -409,7 +414,7 @@ export const PenIcon = ({ isActive }) => {
 export const DragAndDropIcon = () => {
   return (
     <svg
-      className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+      className="w-8 h-8 mb-4 text-gray-800 dark:text-gray-400"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -508,15 +513,17 @@ export const BookmarkIcon = ({ isBookmarked, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 50 50"
-    fill={isBookmarked ? "#fbbf24" : "#FFFFFF"} // Yellow when bookmarked
-    stroke={isBookmarked ? "#fbbf24" : "#000000"}
-    strokeWidth="1"
+    fill={isBookmarked ? "currentColor" : "none"} // Filled with currentColor when bookmarked
+    stroke="currentColor" // Always follows current text color
+    strokeWidth="2"
     className="h-5 w-5 md:h-6 md:w-6 transition-all duration-300"
     {...props}
   >
     <path d="M 13 2 A 1.0001 1.0001 0 0 0 12 3 L 12 47 A 1.0001 1.0001 0 0 0 13.503906 47.863281 L 25 41.158203 L 36.496094 47.863281 A 1.0001 1.0001 0 0 0 38 47 L 38 3 A 1.0001 1.0001 0 0 0 37 2 L 13 2 z M 14 4 L 36 4 L 36 45.259766 L 25.503906 39.136719 A 1.0001 1.0001 0 0 0 24.496094 39.136719 L 14 45.259766 L 14 4 z" />
   </svg>
 );
+
+
 
 
 export default BookmarkIcon;

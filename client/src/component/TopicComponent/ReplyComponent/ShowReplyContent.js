@@ -258,12 +258,12 @@ const ShowReplyContent = ({
         {/* User Info & Delete Button */}
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-            <div className="text-text_header font-normal mr-2 text-[14px] md:text-sm">
+            <div className="text-black dark:text-text_header font-normal mr-2 text-[14px] md:text-sm">
               {reply?.userName}
             </div>
             <div className="mr-2 flex justify-center items-center">
-              <div className="w-1 h-1 mr-1 rounded-full bg-time_header"></div>
-              <div className="text-time_header font-thin text-xs">
+              <div className="w-1 h-1 mr-1 rounded-full bg-gray-800 dark:bg-time_header"></div>
+              <div className="text-gray-800 dark:text-time_header font-semibold text-xs">
                 {formatDate(reply?.createdAt)}
               </div>
             </div>
@@ -318,10 +318,10 @@ const ShowReplyContent = ({
 
         {/* Actions Section */}
         <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
-                  <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
+                  <div className="bg-gray-200 border border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
                     <button
                       onClick={handleReplyLike}
-                      className={`flex items-center gap-0.5 hover:text-like_color transition ${
+                      className={`flex items-center gap-0.5 hover:text-like_color text-black dark:text-gray-500 transition ${
                         isLiked && "text-like_color"
                       }`}
                     >
@@ -331,7 +331,7 @@ const ShowReplyContent = ({
         
                     <button
                       onClick={handleReplyDislike}
-                      className={`flex items-center gap-1 hover:text-red-600 transition ${
+                      className={`flex items-center gap-1 hover:text-red-600 text-black dark:text-gray-500 transition ${
                         isDisliked && "text-red-600"
                       }`}
                     >

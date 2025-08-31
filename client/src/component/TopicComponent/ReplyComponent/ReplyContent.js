@@ -153,7 +153,7 @@ const ReplyContent = () => {
   return (
     <div>
       <div className="relative flex items-center md:p-2 mb-2">
-        <h1 className="my-1 md: my-0 text-md md:text-xl w-full font-semibold text-text_comment tracking-wide">
+        <h1 className="my-1 md: my-0 text-md md:text-xl w-full font-semibold text-gray-900 dark:text-text_comment tracking-wide">
           Replies
         </h1>
       </div>

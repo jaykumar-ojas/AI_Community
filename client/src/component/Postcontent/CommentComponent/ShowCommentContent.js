@@ -268,7 +268,7 @@ const ShowCommentContent = ({ reply }) => {
       <div className="flex flex-col md: p-1 px-2 pt-0 w-full md:mb-2 mb-1">
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-            <div className="text-text_header font-normal mr-2 text-sm">
+            <div className="text-black dark:text-text_header font-normal mr-2 text-sm">
               {reply?.userName}
             </div>
             <div className="mr-2 flex justify-center items-center">
@@ -291,7 +291,7 @@ const ShowCommentContent = ({ reply }) => {
               <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
+                  className="px-1 py-0 text-gray-600 dark:text-time_header hover:bg-btn_bg rounded-full"
                 >
                   ⋮
                 </button>
@@ -331,8 +331,8 @@ const ShowCommentContent = ({ reply }) => {
           )}
         </div>
 
-        <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
-          <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
+        <div className="pt-1 flex items-center gap-2 text-xs text-black dark:text-gray-500">
+          <div className="bg-gray-200 border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
             <button
               onClick={handleReplyLike}
               className={`flex items-center gap-0.5 hover:text-like_color transition ${

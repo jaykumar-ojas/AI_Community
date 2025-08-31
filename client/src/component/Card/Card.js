@@ -216,7 +216,7 @@ const [sparkles, setSparkles] = useState([]);
 
   return (
     <div
-  className="group relative cursor-pointer"
+  className="group relative cursor-pointer pb-2 md:pb-0"
   onClick={handleCardClick}
 >
   <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type} />

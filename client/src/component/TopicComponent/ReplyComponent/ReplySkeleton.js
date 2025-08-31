@@ -19,7 +19,7 @@ const ReplySkeleton = ({ indent = false, lines = 3 }) => {
       </div>
 
       {/* Reply Content Skeleton */}
-      <div className="flex flex-col px-2 p-4 pt-0 w-full bg-bg_comment_box rounded-xl">
+      <div className="flex flex-col px-2 p-4 pt-0 w-full bg-gray-100 dark:bg-bg_comment_box rounded-xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
