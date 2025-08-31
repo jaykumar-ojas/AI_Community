@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useParams } from 'react-router-dom';
-import Skeleton from "react-loading-skeleton";
-import 'react-loading-skeleton/dist/skeleton.css';
-import SubscriptionsList from './SubscriptionsList';
+// import React, { useState, useEffect, useContext } from "react";
+// import { useParams } from 'react-router-dom';
+// import Skeleton from "react-loading-skeleton";
+// import 'react-loading-skeleton/dist/skeleton.css';
+// import SubscriptionsList from './SubscriptionsList';
 
+
+// import { LoginContext } from "../../ContextProvider/context";
+// import { PenIcon } from "../../../asset/icons";
+// const baseUrl = process.env.REACT_APP_BASE_URL;
 import { LoginContext } from "../../ContextProvider/context";
 import { PenIcon } from "../../../asset/icons";
 import { encodeId, decodeId } from "../../../utils/hashids";
@@ -104,12 +108,12 @@ const UserHeaderEdit = () => {
 
         setIsSubscribing(true);
 
+
         try {
             const token = localStorage.getItem("userdatatoken");
             const url = isSubscribed
                 ? `${baseUrl}/unsubscribe/${id}`
                 : `${baseUrl}/subscribe/${id}`;
-
             const method = isSubscribed ? 'DELETE' : 'POST';
 
             const response = await fetch(url, {

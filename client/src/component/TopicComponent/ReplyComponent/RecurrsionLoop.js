@@ -41,14 +41,14 @@ const RecurrsionLoop = ({
       {/* for those comment those dont have child */}
       {!hasChildren &&  (
         <div
-          className="absolute top-0 left-0  h-full border-l border-bg_comment_box"
+          className="absolute top-0 left-0 h-full border-l border-gray-100 dark:border-bg_comment_box"
           style={{ marginLeft: "0.75rem" }} // align to margin
         />
       )}
       {/* for those comment those dont have child */}
       {!view &&  (
         <div
-          className="absolute top-0 left-0 h-full border-l border-bg_comment_box"
+          className="absolute top-0 left-0 h-full border-l bg-gray-100 dark:border-bg_comment_box"
           style={{ marginLeft: "0.75rem" }} // align to margin
         />
       )}
@@ -57,13 +57,13 @@ const RecurrsionLoop = ({
         <div
           className={`absolute ${
             view ? "top-12 left-0" : "top-6 left-4"
-          } left-0 h-full z-30`}
+          } left-0 h-full z-0`}
           style={{ marginLeft: "0rem" }}
         >
           {view && (
             <button
               onClick={() => setView(!view)}
-              className="w-6 h-6 rounded-full text-text_header bg-btn_bg cursor-pointer"
+              className="w-6 h-6 rounded-full z-10 text-black dark:text-text_header bg-blue-200 dark:bg-btn_bg cursor-pointer"
             >
               -
             </button>
@@ -85,7 +85,7 @@ const RecurrsionLoop = ({
 
       {isLastChild && (
         <div
-          className="absolute left-0 w-1  h-full bg-bg_comment_box z-10"
+          className="absolute left-0 w-1  h-full bg-gray-100 dark:bg-bg_comment_box z-10"
           style={{
             marginLeft: "-1.25rem",
           }}
@@ -96,7 +96,7 @@ const RecurrsionLoop = ({
         <div className="text-white flex items-center gap-2 z-40 pb-4">
           <button
             onClick={() => setView(!view)}
-            className="w-6 h-6 z-40 flex items-center justify-center rounded-full text-text_header bg-btn_bg cursor-pointer"
+            className="w-6 h-6 z-0 flex items-center justify-center rounded-full text-text_header bg-btn_bg cursor-pointer"
           >
             +
           </button>

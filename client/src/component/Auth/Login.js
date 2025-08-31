@@ -153,7 +153,7 @@ const Login = () => {
             <p className="text-lg text-gray-300">Login</p>
           </div>
     
-          <div className="w-full max-w-sm mt-6">
+          <div className="w-full md:max-w-sm mt-6">
             {/* Google Login */}
             <GoogleLogin />
     

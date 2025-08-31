@@ -464,11 +464,13 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                     placeholder="Enter your name"
                   />
                 ) : (
+
                   <h1 className="text-center justify-center font-bold text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
                     {profileUser?.userName}
                   </h1>
                 )}
                 <p className="pt-2 text-center justify-center text-sm text-white/90 sm:text-md sm:text-start md:text-lg drop-shadow-lg">
+
                   {profileUser?.email}
                 </p>
 
@@ -514,19 +516,22 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
             {profileUser ? (
               <>
                 <div>
+
                   <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
                     {isError ? (
+
                       <span>!</span>
                     ) : (
                       posts?.length || 0
                     )}
                   </div>
+
                   <div className="text-sm font-medium text-white/90 drop-shadow">
                     Posts
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+    <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
                     {subscriptionStats?.subscribersCount || 0}
                   </div>
                   <div className="text-sm font-medium text-white/90 drop-shadow">
@@ -551,6 +556,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                         Following
                       </div>
                     )}
+
                   </div>
                   
                   {/* Subscriptions Popover */}

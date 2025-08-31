@@ -20,7 +20,7 @@ import {
   DeleteIcon,
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
-import {CommentContext} from "../../ContextProvider/CommentModelContext";
+import { CommentContext } from "../../ContextProvider/CommentModelContext";
 
 const ModelIcon = ({ modelName }) => {
   const [iconUrl, setIconUrl] = useState(null);
@@ -29,7 +29,11 @@ const ModelIcon = ({ modelName }) => {
     if (!modelName) return;
     const fetchIcon = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
+        const response = await axios.get(
+          `${API_BASE_URL}/aimodels/search?modelName=${encodeURIComponent(
+            modelName
+          )}`
+        );
         if (response.data.success) {
           setIconUrl(response.data.data.iconUrl);
         }
@@ -43,15 +47,21 @@ const ModelIcon = ({ modelName }) => {
   if (!iconUrl) return null;
   return (
     <div className="flex items-center gap-1 bg-black-50 px-2 py-1 rounded-md">
-      <img src={iconUrl} alt={modelName} style={{ width: 24, height: 24, borderRadius: '50%' }} />
+      <img
+        src={iconUrl}
+        alt={modelName}
+        className="w-4 h-4 md:w-6 md:h-6 rounded-full"
+        // style={{ width: 24, height: 24, borderRadius: "50%" }}
+      />
       <span className="text-xs text-blue-700 font-medium">{modelName}</span>
     </div>
   );
 };
 
-const ShowCommentContent = ({reply}) => {
-  const { setReplyIdForContext, setViewBox, setUserName } =useContext(CommentContext);
-  const [isOpen,setIsOpen] = useState(false);
+const ShowCommentContent = ({ reply }) => {
+  const { setReplyIdForContext, setViewBox, setUserName } =
+    useContext(CommentContext);
+  const [isOpen, setIsOpen] = useState(false);
   const { emitCommentReaction, emitDeleteComment } = useWebSocket();
   const { loginData } = useContext(LoginContext);
   const [isLiked, setIsLiked] = useState();
@@ -68,7 +78,6 @@ const ShowCommentContent = ({reply}) => {
     return words.slice(0, wordLimit).join(" ") + "...";
   };
   const baseUrl = process.env.REACT_APP_BASE_URL;
-
 
   useEffect(() => {
     if (reply && loginData) {
@@ -92,7 +101,11 @@ const ShowCommentContent = ({reply}) => {
     }
 
     // Ask for confirmation before deleting
-    if (!window.confirm("Are you sure you want to delete this reply? This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this reply? This action cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -102,20 +115,17 @@ const ShowCommentContent = ({reply}) => {
       // Function to recursively delete child comments
       const deleteChildComments = async (children) => {
         if (!children || children.length === 0) return;
-        
+
         for (const child of children) {
           // First delete all grandchildren
           if (child.children && child.children.length > 0) {
             await deleteChildComments(child.children);
           }
-          
+
           // Then delete the child comment
-          await axios.delete(
-            `${baseUrl}/comments/${child._id}`,
-            {
-              headers: getAuthHeaders(),
-            }
-          );
+          await axios.delete(`${baseUrl}/comments/${child._id}`, {
+            headers: getAuthHeaders(),
+          });
           // Emit delete event for child
           emitDeleteComment(child._id, child.postId);
         }
@@ -127,12 +137,9 @@ const ShowCommentContent = ({reply}) => {
       }
 
       // Then delete the parent comment
-      const response = await axios.delete(
-        `${baseUrl}/comments/${reply?._id}`,
-        {
-          headers: getAuthHeaders(),
-        }
-      );
+      const response = await axios.delete(`${baseUrl}/comments/${reply?._id}`, {
+        headers: getAuthHeaders(),
+      });
 
       if (response.status === 200) {
         // Emit delete comment event through WebSocket
@@ -160,7 +167,9 @@ const ShowCommentContent = ({reply}) => {
 
     try {
       const response = await axios.post(
-        `${baseUrl}/comments/${reply?._id}/like`,{},{
+        `${baseUrl}/comments/${reply?._id}/like`,
+        {},
+        {
           headers: getAuthHeaders(),
         }
       );
@@ -169,8 +178,10 @@ const ShowCommentContent = ({reply}) => {
         const updatedLikes = response.data.liked
           ? [...replyLikes, loginData.validuserone._id]
           : replyLikes.filter((id) => id !== loginData.validuserone._id);
-        const updatedDislikes = replyDislikes.filter((id) => id !== loginData.validuserone._id);
-        
+        const updatedDislikes = replyDislikes.filter(
+          (id) => id !== loginData.validuserone._id
+        );
+
         setReplyLikes(updatedLikes);
         setReplyDislikes(updatedDislikes);
         setIsLiked(!isLiked);
@@ -181,7 +192,7 @@ const ShowCommentContent = ({reply}) => {
           commentId: reply._id,
           postId: reply.postId,
           likes: updatedLikes,
-          dislikes: updatedDislikes
+          dislikes: updatedDislikes,
         });
       }
     } catch (error) {
@@ -211,8 +222,10 @@ const ShowCommentContent = ({reply}) => {
         const updatedDislikes = response.data.disliked
           ? [...replyDislikes, loginData.validuserone._id]
           : replyDislikes.filter((id) => id !== loginData.validuserone._id);
-        const updatedLikes = replyLikes.filter((id) => id !== loginData.validuserone._id);
-        
+        const updatedLikes = replyLikes.filter(
+          (id) => id !== loginData.validuserone._id
+        );
+
         setReplyDislikes(updatedDislikes);
         setReplyLikes(updatedLikes);
         setIsDisLiked(!isDisliked);
@@ -223,7 +236,7 @@ const ShowCommentContent = ({reply}) => {
           commentId: reply._id,
           postId: reply.postId,
           likes: updatedLikes,
-          dislikes: updatedDislikes
+          dislikes: updatedDislikes,
         });
       }
     } catch (error) {
@@ -247,35 +260,40 @@ const ShowCommentContent = ({reply}) => {
 
   return (
     <div key={reply?._id} className="relative flex justify-start ">
-      
       <div className="w-8 h-8 flex-shrink-0 z-30">
         <UserIconCard id={reply?.userId} />
       </div>
       {/* user icon outside */}
-      
 
-      <div className="flex flex-col p-4 px-2 pt-0 w-full mb-2">
+      <div className="flex flex-col md: p-1 px-2 pt-0 w-full md:mb-2 mb-1">
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-             <div className="text-text_header font-normal mr-2 text-md">
-            {reply?.userName}
-          </div>
-          <div className="mr-2 item-center justify-center">
-            <div className="w-1 h-1 rounded-full bg-time_header"></div>
-          </div>
-          <div className="text-time_header font-thin text-xs">
-            {formatDate(reply?.createdAt)}
-          </div>
+            <div className="text-black dark:text-text_header font-normal mr-2 text-sm">
+              {reply?.userName}
+            </div>
+            <div className="mr-2 flex justify-center items-center">
+              <div className="w-1 h-1 mr-1 rounded-full bg-time_header"></div>
+              <div className="text-time_header font-thin text-xs">
+              {formatDate(reply?.createdAt)}
+            </div>
+            </div>
+            
           </div>
           {/* Move ModelIcon to the right corner, after the delete button */}
           <div className="flex items-center gap-2">
+            {firstModelName && (
+              <div className="ml-2">
+                <ModelIcon modelName={firstModelName} />
+              </div>
+            )}
+
             {isAuthor && (
-              <div className="ml-2 relative">
+              <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
+                  className="px-1 py-0 text-gray-600 dark:text-time_header hover:bg-btn_bg rounded-full"
                 >
-                  ⋯
+                  ⋮
                 </button>
                 {/* Dropdown menu */}
                 {isOpen && (
@@ -287,13 +305,12 @@ const ShowCommentContent = ({reply}) => {
                       }}
                       className="w-full p-2 bg-bg_comment_box text-red-600 hover:bg-btn_bg"
                     >
-                      <DeleteIcon/>
+                      <DeleteIcon />
                     </button>
                   </div>
                 )}
               </div>
             )}
-            {firstModelName && <div className="ml-2"><ModelIcon modelName={firstModelName} /></div>}
           </div>
         </div>
 
@@ -314,8 +331,8 @@ const ShowCommentContent = ({reply}) => {
           )}
         </div>
 
-        <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
-          <div className="bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
+        <div className="pt-1 flex items-center gap-2 text-xs text-black dark:text-gray-500">
+          <div className="bg-gray-200 border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
             <button
               onClick={handleReplyLike}
               className={`flex items-center gap-0.5 hover:text-like_color transition ${

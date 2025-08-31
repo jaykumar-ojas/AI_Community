@@ -10,7 +10,7 @@ function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick 
                 className={`w-full text-left px-2 py-2 rounded-md transition-all duration-150 cursor-pointer flex items-center space-x-2 ${
                     active
                         ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
-                        : 'text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
+                        : 'text-black dark:text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
                 }`}
                 onClick={() => onClick(name)}
             >
@@ -26,7 +26,7 @@ function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick 
                     />
                 ) : null}
                 <span className="text-xl" style={{ display: iconUrl ? 'none' : 'inline' }}>{emoji}</span>
-                <span>{displayName}</span>
+                <span className='text-md'>{displayName}</span>
             </button>
         </li>
     );
@@ -135,18 +135,18 @@ const ModelList = () => {
     return (
         <div className="w-full flex flex-col bg-transparent rounded-lg shadow-sm">
             {/* Model Type Selection */}
-            <div className="p-4 border-b border-gray-700">
-                <div className="font-semibold mb-3 text-text_header text-l flex items-center">
-                    <span className="mr-2">🎯</span> MODELS
+            <div className="p-2 border-b border-gray-700">
+                <div className="font-semibold mb-2 text-gray-900 dark:text-text_header text-l flex items-center">
+                    <span className="mr-1">🎯</span> MODELS
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex justify-between items-center">
                     {['text', 'image'].map(type => (
                         <button
                             key={type}
-                            className={`px-4 py-2 rounded-md text-sm flex items-center space-x-2 transition-all duration-150 ${
+                            className={`px-4 py-1 rounded-md w-full  text-sm flex items-center space-x-2 transition-all duration-150 ${
                                 modelType === type
                                     ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
-                                    : 'text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
+                                    : 'text-black dark:text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
                             }`}
                             onClick={() => handleTypeSelect(type)}
                         >
