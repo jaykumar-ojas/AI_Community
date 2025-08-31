@@ -44,25 +44,25 @@ const SubscriptionsList = ({ userId }) => {
     }
 
     return (
-        <div className="p-4">
-            <h2 className="text-xl font-semibold mb-4 text-white">Following</h2>
+        <div className="p-2 bg-gray-800 rounded-lg border border-gray-600 max-h-48 overflow-y-auto">
+            <h3 className="text-sm font-semibold mb-2 text-white text-center">Following</h3>
             {subscriptions.length === 0 ? (
-                <p className="text-white">Not following anyone yet</p>
+                <p className="text-gray-300 text-xs text-center">Not following anyone yet</p>
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-2">
                     {subscriptions.map((user) => (
                         <Link 
                             to={`/sample-user/${encodeId(user._id)}`} 
                             key={user._id}
-                            className="flex items-center space-x-3 p-2 hover:bg-gray-50 text-white hover:text-gray-700 rounded-lg transition-colors"
+                            className="flex items-center space-x-2 p-1 hover:bg-gray-700 text-white rounded transition-colors"
                         >
-                            <div className="w-8 h-8 rounded-full overflow-hidden">
+                            <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
                                 < UserIconCard
                                     id = {user._id}
                                 />
                             </div>
-                            <div>
-                                <p className="font-medium">{user.userName}</p>
+                            <div className="min-w-0 flex-1">
+                                <p className="font-medium text-xs truncate">{user.userName}</p>
                             </div>
                         </Link>
                     ))}
