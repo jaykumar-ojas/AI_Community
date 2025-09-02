@@ -54,8 +54,8 @@ const Page = () => {
 
   const breakpointColumnsObj = {
     default: 3,
-    1024: 2,
-    768: 1,
+    1024: 3,
+    768: 3,
   };
 
   // Mobile breakpoint for single column
@@ -69,7 +69,7 @@ const Page = () => {
         {/* Content */}
         <div className="relative z-10 min-h-screen overflow-hidden">
           <div className="mx-auto  md:pb-0 pb-20 ">
-            <div className="flex flex-col lg:flex-row gap-4 lg:gap-2">
+            <div className="flex flex-col md:flex-row gap-4 lg:gap-2">
               {/* Main content area */}
               <div
                 className={classNames(
@@ -132,8 +132,8 @@ const Page = () => {
               {/* Desktop Forum Sidebar */}
               <div
                 className={classNames(
-                  "w-full lg:w-96 relative  transition-all duration-300 ease-in-out",
-                  "hidden lg:block"
+                  "lg:w-[25%] md:w-[30%] relative  transition-all duration-300 ease-in-out",
+                  
                 )}
               >
                 <div className="sticky h-[calc(100vh-3.5rem)] overflow-hidden">
@@ -143,7 +143,7 @@ const Page = () => {
 
               {/* Mobile Forum Overlay - Solution 1 */}
               <div
-                className="sm:hidden fixed inset-0 z-40 transition-all duration-300 ease-in-out"
+                className="sm:hidden block fixed inset-0 z-40 transition-all duration-300 ease-in-out"
                 style={{
                   transform: showForum ? "translateX(0)" : "translateX(100%)",
                   visibility: "visible", // Always visible during transitions
