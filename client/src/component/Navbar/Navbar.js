@@ -22,11 +22,13 @@ import { useContext, createContext, useEffect } from "react";
 import { LoginContext } from "../ContextProvider/context";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { isAuthenticated, logout } from "../../utils/authUtils";
-import { PlusIcon, SearchIcon } from "../../asset/icons";
+import { DynamicNumberSVG, PlusIcon, SearchIcon } from "../../asset/icons";
 import NotificationComponent from "../Notification/Notification";
 import { useState } from "react";
 import { encodeId } from "../../utils/hashids";
 import UserIconCard from "../Card/UserIconCard";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 // Create context for forum visibility
 export const ForumContext = createContext();
@@ -47,6 +49,19 @@ export default function Navbar({ showForum, setShowForum }) {
   const location = useLocation();
 
   const [darkMode, setDarkMode] = useState(false);
+
+  const { data: userData, isLoading, isError } = useQuery({
+  queryKey: ["userCredit", loginData?.validuserone?._id],
+  queryFn: async () => {
+    const { data } = await axios.get(
+      `/api/getCredit/${loginData?.validuserone?._id}`
+    );
+    return data; // { credit: 120 }
+  },
+  enabled: !!loginData?.validuserone?._id, // only run when userId exists
+});
+
+
 
   useEffect(() => {
     if (darkMode) {
@@ -168,6 +183,7 @@ export default function Navbar({ showForum, setShowForum }) {
 
               {/* User icon bell icon */}
               <div className="flex items-center space-x-4">
+                <DynamicNumberSVG value={20}/>
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
                   <Menu as="div" className="relative z-10">

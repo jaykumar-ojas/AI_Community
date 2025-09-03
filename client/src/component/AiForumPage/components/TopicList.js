@@ -170,7 +170,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                 <div className="flex-1">
                   <h3 className="text-md font-medium text-gray-800 line-clamp-2 dark:text-text_comment mb-1">{topic.title}</h3>
                   <p className="text-gray-600 dark:text-text_header text-sm  line-clamp-2">{topic.content}</p>
-                  <div className="mt-2 flex flex-row items-center text-sm justify-between">
+                  <div className="mt-1 flex flex-row items-center text-sm justify-between">
                     <div className='w-6 h-6 flex-shrink-0'><UserIconCard id={topic?.userId}/></div>
                     <div className='flex items-center gap-1'>
                     <div className="text_time_header dark:text-gray-500">•</div>

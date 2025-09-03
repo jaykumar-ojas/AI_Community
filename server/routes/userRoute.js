@@ -504,4 +504,24 @@ router.post(
   }
 );
 
+router.get("/getCredit/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find user by ID
+    const user = await userdb.findById(userId) || await googledb.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return credit value
+    return res.json({ credit: user.credit });
+  } catch (error) {
+    console.error("Error fetching credit:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 module.exports=router;
