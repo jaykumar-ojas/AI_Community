@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import BookmarkIcon from "../../asset/icons"; // assuming this supports filled and outlined mode
+import {BookmarkIcon} from "../../asset/icons"; // assuming this supports filled and outlined mode
 import { LoginContext } from "../ContextProvider/context";
 
 const BookMark = ({ userId, postId, isBookmarked: initialState }) => {
