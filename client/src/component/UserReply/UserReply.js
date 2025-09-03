@@ -397,6 +397,7 @@ const UserReply = () => {
               />
               <AttachIcon />
             </label>
+
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -425,19 +426,6 @@ const UserReply = () => {
             {isDropdownOpen && <ModelContent  closeDropdown={() => setIsDropdownOpen(false)} />}
           </div>
           <div className="flex ">
-            {model && (
-              <button
-                type="button"
-                onClick={handleContextAwareGenerate}
-                className="bg-purple-600 text-black rounded-md px-4 py-2 text-sm hover:bg-purple-700 disabled:opacity-50 "
-                disabled={contextLoading || loading || !newReply.trim()}
-                title="Generate with context awareness from conversation history"
-              >
-                {contextLoading ? "Context..." : <BrainIcon />}
-              </button>
-            )}
-
-            {/* Regular Generate Button */}
             {model && (
               <button
                 type="button"

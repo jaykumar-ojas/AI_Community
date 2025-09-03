@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const llmService = require('../services/llmService');
-const { llmConfig } = require('../config/llmConfig');
+// const { llmConfig } = require('../config/llmConfig');
+const { llmConfig } = require('../config/modelconfig');
 // const {GoogleGenerativeAI} = require("@google/generative-ai");
 // Middleware to validate request
 const validateRequest = (req, res, next) => {
@@ -185,5 +186,39 @@ router.get('/models-info', (req, res) => {
         });
     }
 });
+
+router.post('/generateaires', async (req, res) => {
+    try {
+        const { model, prompt, type, provider } = req.body;
+        let func;
+        if(type==text){
+            func = llmConfig.text[provider][model];
+        }
+        // Better error handling
+ 
+        //const func = llmConfig[type][provider][model];
+        if (!func) {
+            return res.status(400).json({ 
+                error: `Model '${model}' not found. Available models for ${provider}: ${Object.keys(llmConfig[type][provider]).join(', ')}` 
+            });
+        }
+
+        console.log("Function found for model:", model);
+        const response = await func(prompt, model);
+        
+        res.json({
+            success: true,
+            data: response
+        });
+
+    } catch (error) {
+        console.error('Error in generate route:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+});
+
 
 module.exports = router; 
