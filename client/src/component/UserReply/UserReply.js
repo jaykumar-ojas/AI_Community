@@ -423,6 +423,7 @@ const UserReply = () => {
               />
               <AttachIcon /> Attach
             </label>
+<<<<<<< Updated upstream
             
             {/* Display current model info */}
             <div className="text-xs text-gray-500 ml-4">
@@ -430,6 +431,36 @@ const UserReply = () => {
             </div>
             
             {/* Context Aware Info */}
+=======
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex sm:hidden items-center gap-2 border border-gray-300  px-2 py-1  rounded-lg shadow-sm hover:shadow-md transition-all"
+            >
+              {model ? (
+                <>
+                  <span className="font-medium text-xs text-black">
+                    {model}
+                  </span>
+                </>
+              ) : (
+                <span className="text-gray-500">
+                  <img
+                    className="h-5 w-full object-cover bg-white rounded-full"
+                    src={modelIcon}
+                  />
+                </span>
+              )}
+              <ChevronDown
+                className={`h-4 w-4 text-gray-600 transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {isDropdownOpen && <ModelContent  closeDropdown={() => setIsDropdownOpen(false)} />}
+          </div>
+          <div className="flex ">
+>>>>>>> Stashed changes
             {model && (
               <div className="text-xs text-purple-600 ml-2">
                 💡 Context Aware available

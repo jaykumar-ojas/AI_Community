@@ -449,7 +449,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
       )}
 
       {/* Content Section */}
-      <div className="bg-gradient-to-b from-transparent via-black/20 to-black/40 pt-16">
+      <div className=" from-transparent  pt-16">
         <div className="relative flex flex-col justify-end md:items-center md:gap-8 md:pt-4 sm:gap-4 sm:justify-end sm:flex sm:pt-1 sm:flex-row">
           {/* Left: Name & Bio */}
           <div className="pt-20 w-full md:mb-0 md:p-4 sm:py-2 sm:px-0 sm:w-1/3">
@@ -464,13 +464,23 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                     placeholder="Enter your name"
                   />
                 ) : (
+<<<<<<< Updated upstream
                   <h1 className="text-center justify-center font-bold text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
                     {profileUser?.userName}
                   </h1>
                 )}
                 <p className="pt-2 text-center justify-center text-sm text-white/90 sm:text-md sm:text-start md:text-lg drop-shadow-lg">
+=======
+
+                  <h1 className="text-start justify-center font-bold text-black dark:text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
+                    {profileUser?.userName}
+                  </h1>
+                )}
+                {/* <p className="pt-2 text-center justify-center text-sm text-white/90 sm:text-md sm:text-start md:text-lg drop-shadow-lg">
+
+>>>>>>> Stashed changes
                   {profileUser?.email}
-                </p>
+                </p> */}
 
                 {/* Subscription Button */}
                 {!isOwnProfile && loginData?.validuserone && (
@@ -514,22 +524,36 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
             {profileUser ? (
               <>
                 <div>
+<<<<<<< Updated upstream
                   <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+=======
+
+                  <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+>>>>>>> Stashed changes
                     {isError ? (
                       <span>!</span>
                     ) : (
                       posts?.length || 0
                     )}
                   </div>
+<<<<<<< Updated upstream
                   <div className="text-sm font-medium text-white/90 drop-shadow">
+=======
+
+                  <div className="text-sm font-medium text-black dark:text-white  drop-shadow">
+>>>>>>> Stashed changes
                     Posts
                   </div>
                 </div>
                 <div>
+<<<<<<< Updated upstream
                   <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+=======
+    <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+>>>>>>> Stashed changes
                     {subscriptionStats?.subscribersCount || 0}
                   </div>
-                  <div className="text-sm font-medium text-white/90 drop-shadow">
+                  <div className="text-sm font-medium text-black dark:text-gray-200 drop-shadow">
                     Followers
                   </div>
                 </div>
@@ -539,15 +563,15 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                     className={`text-center ${isOwnProfile ? 'cursor-pointer' : ''}`}
                     onClick={isOwnProfile ? handleFollowingClick : undefined}
                   >
-                    <div className="text-lg font-bold text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+                    <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
                       {subscriptionStats?.subscribedToCount || 0}
                     </div>
                     {isOwnProfile ? (
-                      <button className="mt-1 px-3 py-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/30">
+                      <button className="mt-1 px-3 py-1 bg-gray-400 hover:bg-white/30 hover:dark:bg-gray-200 backdrop-blur-sm text-black dark:text-white  text-xs rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/30">
                         Following
                       </button>
                     ) : (
-                      <div className="text-sm font-medium text-white/90 drop-shadow">
+                      <div className="text-sm font-medium text-black dark:text-white text-sm drop-shadow">
                         Following
                       </div>
                     )}
