@@ -51,18 +51,18 @@ const ReplyData = ({ content }) => {
   );
 
   return (
-    <div className="pt-2 text-sm text-text_content whitespace-pre-wrap leading-relaxed">
+    <div className="text-sm text-text_content whitespace-pre-wrap leading-relaxed">
       {!expanded ? (
         <>
           {collapsedSummary && (
-            <p className="mb-1 text-text_header">
+            <p className="mb-1 leading-snug text-black dark:text-text_header">
               {collapsedSummary}
             </p>
           )}
           {showSeeMore && (
             <button
               onClick={() => setExpanded(true)}
-              className="ml-2 text-blue-600 hover:underline font-medium"
+              className="ml-2 text-blue-600 text-xs md:text-md font-small hover:underline md:font-medium"
             >
               View More
             </button>
@@ -71,23 +71,23 @@ const ReplyData = ({ content }) => {
       ) : (
         <>
           {content?.map((item, index) => (
-            <div key={index} className="mb-4">
+            <div key={index} className="mb-1">
               {item.userText && (
                 <div className="mb-1">
                   <span className="mr-2 text-xs text-time_header">User</span>
-                  <p className="inline text-text_header">{item.userText}</p>
+                  <p className="leading-snug text-gray-900 dark:text-text_header">{item.userText}</p>
                 </div>
               )}
               {item.prompt && (
                 <div className="mb-1">
                   <span className="mr-2 text-xs text-time_header">Prompt</span>
-                  <p className="inline text-text_header">{item.prompt}</p>
+                  <p className="leading-snug text-gray-900 dark:text-text_header">{item.prompt}</p>
                 </div>
               )}
               {item.aiText && (
                 <div className="mb-1">
                   <span className="mr-2 text-xs text-time_header">AI</span>
-                  <p className="inline text-text_header">{item.aiText}</p>
+                  <p className="leading-sung text-gray-900 dark:text-text_header">{item.aiText}</p>
                 </div>
               )}
               {item.imageUrl?.fileUrl && (
@@ -103,7 +103,7 @@ const ReplyData = ({ content }) => {
           {showSeeMore && (
             <button
               onClick={() => setExpanded(false)}
-              className="ml-2 text-blue-600 hover:underline font-medium"
+              className="ml-2 text-xs md:text-md  text-blue-600 hover:underline font-medium"
             >
               View Less
             </button>

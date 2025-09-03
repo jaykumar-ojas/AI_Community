@@ -8,7 +8,7 @@ const MasonryMediaGrid = ({ url, type }) => {
   console.log(url);
 
   return (
-    <div className="mb-4 break-inside-avoid rounded-lg overflow-hidden bg-white shadow-sm relative">
+    <div className="break-inside-avoid md:rounded-lg overflow-hidden bg-white shadow-sm relative">
       {/* Show Skeleton while media loads */}
       {!mediaLoaded && (
         <div className="absolute top-0 left-0 w-full h-full z-0">
@@ -26,7 +26,7 @@ const MasonryMediaGrid = ({ url, type }) => {
         <img
           src={url}
           alt="media"
-          className={`w-full rounded-lg transition-opacity duration-300 ${mediaLoaded ? "opacity-100" : "opacity-0"}`}
+          className={`w-full md:rounded-lg transition-opacity duration-300 ${mediaLoaded ? "opacity-100" : "opacity-0"}`}
           onLoad={() => setMediaLoaded(true)}
           loading="lazy"
         />

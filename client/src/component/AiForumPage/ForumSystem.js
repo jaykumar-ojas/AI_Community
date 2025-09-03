@@ -16,9 +16,7 @@ const ForumSystem = () => {
   const {subscribeToEvent} = useWebSocket();
 
   useEffect(() => {
-    console.log("coming to hre");
     const unsubscribe = subscribeToEvent('topic_created', (topic) => {
-      console.log("i m coming but not set my tab");
       setCurrentTab("my");
     });
     
@@ -28,10 +26,10 @@ const ForumSystem = () => {
   }, []);
 
   return (
-    <div className="rounded-lg overflow-hidden flex flex-col h-full bg-transparent">
+    <div className="overflow-hidden md:border-x-2 dark:border-gray-700 dark:bg-black flex flex-col h-full">
       {/* Header with search - now with transparent/dark background */}
-      <div className="p-4 border-b border-gray-800 sticky top-0 bg-black/40 backdrop-blur-sm">
-        <h2 className="text-xl text-gray-300 font-bold mb-4">AI Forum</h2>
+      <div className="p-2 border-b border-gray-800 sticky top-0  backdrop-blur-sm">
+        <h2 className="text-xl text-gray-900 dark:text-gray-300 font-bold mb-2">AI Forum</h2>
         {/* <div className="relative">
           <input
             type="text"
@@ -47,12 +45,12 @@ const ForumSystem = () => {
       </div>
 
       {/* Navigation Tabs - with dark theme styling */}
-      <div className="flex sticky top-[88px] z-10 bg-black/40 backdrop-blur-sm border-b border-gray-800">
+      <div className="flex dark:bg-black/40 backdrop-blur-sm border-b border-gray-800">
         <button
           className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
             currentTab === 'popular' 
-              ? 'text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-400 hover:text-gray-300'
+              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
+              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
           }`}
           onClick={() => setCurrentTab('popular')}
         >
@@ -61,8 +59,8 @@ const ForumSystem = () => {
         <button
           className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
             currentTab === 'recent' 
-              ? 'text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-400 hover:text-gray-300'
+              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
+              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
           }`}
           onClick={() => setCurrentTab('recent')}
         >
@@ -71,8 +69,8 @@ const ForumSystem = () => {
         <button
           className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
             currentTab === 'my' 
-              ? 'text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-400 hover:text-gray-300'
+              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
+              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
           }`}
           onClick={() => setCurrentTab('my')}
         >
@@ -83,7 +81,7 @@ const ForumSystem = () => {
       {isNewTopicModalOpen && <NewTopicModal onClose={() => setIsNewTopicModalOpen(false)} />}
 
       {/* Main Content Area - transparent background */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1 overflow-y-auto">
         {currentTab === 'popular' && (
           <PopularTopics />
         )}
@@ -96,7 +94,7 @@ const ForumSystem = () => {
       </div>
 
       {/* Create Topic Button - with dark theme styling */}
-      <div className="p-4 border-t border-slate-700/50 sticky bottom-0 bg-slate-900/80 backdrop-blur-sm">
+      <div className="p-2 border-t border-slate-700/50 sticky bottom-0 bg-slate-300 dark:bg-slate-900/90 backdrop-blur-sm">
           <button
             onClick={() => setIsNewTopicModalOpen(true)}
             className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"

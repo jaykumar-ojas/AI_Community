@@ -5,11 +5,11 @@ import { CommentContext } from "../../ContextProvider/CommentModelContext";
 const UserAndModel = () => {
     const { replyIdForContext,setReplyIdForContext, userName,model,setModel } = useContext(CommentContext);
   return (
-    <div className="p-2">
+    <div className="md:p-1 pb-1 px-2">
       {replyIdForContext && (
-        <span className="text-time_header">
+        <span className="text-xs text-time_header">
           Replying to{" "}
-          <span className="font-medium text-like_color">
+          <span className="md:font-medium font-bold text-xs md:text-sm text-like_color">
             @{userName}
             <button
               onClick={() => setReplyIdForContext(null)}
@@ -22,7 +22,7 @@ const UserAndModel = () => {
         </span>
       )}
       {model && (
-        <span className="inline-flex items-center font-medium  ml-4 rounded-lg text-time_header bg-btn_bg px-1">
+        <span className="inline-flex items-center md:font-medium font-bold md:text-sm text-xs md:ml-2 rounded-lg text-like_color px-1">
           @{model}
           <button
             onClick={() => setModel(null)}

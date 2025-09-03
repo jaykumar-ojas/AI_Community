@@ -152,15 +152,15 @@ const ReplyContent = () => {
 
   return (
     <div>
-      <div className="relative flex items-center p-2 mb-2">
-        <h1 className="sticky fixed text-xl w-full font-semibold text-text_comment tracking-wide">
+      <div className="relative flex items-center md:p-2 mb-2">
+        <h1 className="my-1 md: my-0 text-md md:text-xl w-full font-semibold text-gray-900 dark:text-text_comment tracking-wide">
           Replies
         </h1>
       </div>
       <div className="replyContent">
         {replies?.length > 0 ? (
           replies.map((reply, index) => (
-            <div key={reply._id || index} className="ml-2">
+            <div key={reply._id || index} className="md:ml-2">
               <RecurrsionLoop
                 reply={reply}
                 expandedThreads={expandedThreads}

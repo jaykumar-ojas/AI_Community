@@ -5,7 +5,12 @@ import axios from "axios";
 import { LoginContext } from "../ContextProvider/context";
 import UserIconCard from "../Card/UserIconCard";
 import UserNameCard from "../Card/UserNameCard";
-import BookmarkIcon, { heartSvg, thumbsDownSvg, ReplyIcon, CommentIcon } from "../../asset/icons";
+import BookmarkIcon, {
+  heartSvg,
+  thumbsDownSvg,
+  ReplyIcon,
+  CommentIcon,
+} from "../../asset/icons";
 import UserContentSkeleton from "./UserContentSkeleton";
 import BookMark from "../BookMark/BookMark";
 const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -88,7 +93,7 @@ const AIModelInfo = ({ aiMetadata }) => {
 
   return (
     <div className="bg-gradient-to-r from-purple-100 to-blue-100  rounded-lg ">
-      <div className="flex flex-row items-center justify-center gap-2 mb-2">
+      <div className="flex flex-row  items-center justify-center gap-2 mb-2">
         {modelIcon ? (
           <img
             src={modelIcon}
@@ -106,7 +111,7 @@ const AIModelInfo = ({ aiMetadata }) => {
           {displayName}
         </span> */}
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs md:text-lg text-gray-800">
             {aiMetadata.aiProvider || "Unknown Provider"}
           </span>
         </div>
@@ -137,16 +142,6 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   useEffect(() => {
     console.log("UserContent received post:", post);
     if (post) {
-      console.log("Post file URL:", post?.signedUrl);
-      console.log("Post file type:", post?.fileType);
-      console.log("Post user image:", post?.image);
-      console.log("AI Metadata:", {
-        isAIGenerated: post?.isAIGenerated,
-        aiModel: post?.aiModel,
-        aiProvider: post?.aiProvider,
-        aiPrompt: post?.aiPrompt,
-        aiGeneratedAt: post?.aiGeneratedAt,
-      });
       setPostData(post);
 
       // Check if current user has liked or disliked this post
@@ -182,8 +177,6 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
     }
 
     try {
-      console.log("Deleting post:", postId, "with image key:", imgKey);
-
       const response = await fetch(`${baseUrl}/delete/${postId}`, {
         method: "DELETE",
         headers: {
@@ -193,20 +186,16 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
       });
 
       const result = await response.json();
-      console.log("Delete response:", result);
 
       if (response.ok) {
-        console.log("Post deleted successfully:", result);
         history("/");
 
         // Refresh the page or redirect
         window.location.reload();
       } else {
-        console.error("Failed to delete post:", result.error);
         alert("Failed to delete post: " + (result.error || "Unknown error"));
       }
     } catch (error) {
-      console.error("Error occurred while deleting post:", error);
       alert("Error occurred while deleting post. Please try again.");
     }
   };
@@ -254,7 +243,6 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         if (userDisliked) setUserDisliked(false);
       }
     } catch (error) {
-      console.error("Error liking post:", error);
       alert("Error liking post. Please try again.");
     }
   };
@@ -300,7 +288,6 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
       }
     } catch (error) {
       console.error("Error disliking post:", error);
-      alert("Error disliking post. Please try again.");
     }
   };
 
@@ -427,33 +414,31 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   };
 
   return (
-    <div className="w-full rounded-lg bg-transparent relative shadow-lg flex flex-col gap-0">
+    <div className="w-full rounded-lg dark:bg-transparent relative shadow-lg flex flex-col gap-0">
       {/* user header */}
-      <div className="flex justify-between items-center px-2 w-full h-full">
+      <div className="flex justify-between items-center md:px-2 w-full h-full">
         <div className="flex justify-between items-center sm:mx-2">
-          <div className="w-10 h-10 flex-shrink-0 m-2">
+          <div className="w-8 h-8 flex-shrink-0 m-2">
             <UserIconCard id={postData?.userId}></UserIconCard>
           </div>
-          <div className="text-white">
+          <div className="dark:text-white text-black">
             <UserNameCard id={postData?.userId}></UserNameCard>
           </div>
         </div>
 
         <div className="flex flex-row gap-2 justify-center items-center">
           {postData?.isAIGenerated && (
-            <div className="px-2">
+            <div className="md:px-2">
               <AIModelInfo aiMetadata={postData} />
             </div>
           )}
 
           {/* this is for openpanel */}
-          <div className="px-2">
+          <div className="px-2 ">
             {isauthor && (
               <Menu as="div" className="relative z-10">
-                <MenuButton className="flex gap-1 text-time_header font-extrabold items-center focus:outline-none">
-                  <p>.</p>
-                  <p>.</p>
-                  <p>.</p>
+                <MenuButton className="flex flex-col text-time_header font-extrabold items-center focus:outline-none">
+                  ⋮
                 </MenuButton>
                 <MenuItems className="absolute right-0 mt-2 w-24 bg-white shadow-md rounded-md  ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <MenuItem>
@@ -505,71 +490,68 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
       </div>
 
       {/* user description and interaction */}
-      <div>
-  <div className="p-1 sm:mx-2 flex items-center justify-between gap-2 text-xs text-gray-500">
-    {/* Outer wrapper with justify-between */}
-    <div className="bg-something flex justify-between items-center px-2 rounded-xl w-full">
-      
-      {/* Left side (Like + Comment toggle on mobile) */}
-      <div className="flex items-center gap-2">
-        <button
-          className="flex items-center gap-1"
-          onClick={handleLikePost}
-          title={userLiked ? "Remove like" : "Like this post"}
-        >
-          {heartSvg(userLiked)}
-          <span className="text-lg font-medium">
-            {postData?.likes ? postData?.likes.length : 0}
-          </span>
-        </button>
+      <div className="">
+        <div className="p-1 sm:mx-2 flex items-center justify-between gap-2 text-xs ">
+          {/* Outer wrapper with justify-between */}
+          <div className="bg-something flex justify-between items-center px-2 rounded-xl w-full">
+            {/* Left side (Like + Comment toggle on mobile) */}
+            <div className="flex items-center gap-2">
+              <button
+                className="flex items-center gap-1"
+                onClick={handleLikePost}
+                title={userLiked ? "Remove like" : "Like this post"}
+              >
+                {heartSvg(userLiked)}
+                <span className="text-lg font-medium">
+                  {postData?.likes ? postData?.likes.length : 0}
+                </span>
+              </button>
 
-        {/* Mobile: Comment toggle button */}
-        {onToggleComments && (
-          <button
-            className="md:hidden flex items-center gap-1 px-2 py-1 rounded-lg  text-time_header"
-            onClick={onToggleComments}
-            title={areCommentsOpen ? "Hide comments" : "Show comments"}
-          >
-            <CommentIcon/>
-            
-          </button>
-        )}
-      </div>
+              {/* Mobile: Comment toggle button */}
+              {onToggleComments && (
+                <button
+                  className="md:hidden flex items-center gap-1 px-2 py-1 rounded-lg  text-time_header"
+                  onClick={onToggleComments}
+                  title={areCommentsOpen ? "Hide comments" : "Show comments"}
+                >
+                  <CommentIcon />
+                </button>
+              )}
+            </div>
 
-      {/* Right side (Bookmark) */}
-      <div>
-        <BookMark
-          postId={postData?._id}
-          userId={loginData?.validuserone?._id}
-          isBookmarked={postData?.BookMark?.includes(
-            loginData?.validuserone?._id
+            {/* Right side (Bookmark) */}
+            <div className="text-red-700 dark:text-gray-500">
+              <BookMark
+                postId={postData?._id}
+                userId={loginData?.validuserone?._id}
+                isBookmarked={postData?.BookMark?.includes(
+                  loginData?.validuserone?._id
+                )}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="p-2 pt-1 leading-snug text-[14px] text-gray-800 dark:text-time_header">
+          {postData?.desc ? (
+            <>
+              {displayText}
+              {isLong && !expanded && " ..."}
+              {isLong && (
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="ml-2 text-blue-500 hover:underline"
+                >
+                  {expanded ? "View Less" : "View More"}
+                </button>
+              )}
+            </>
+          ) : (
+            "No description available"
           )}
-        />
+        </div>
       </div>
-    </div>
-  </div>
-
-  {/* Description */}
-  <div className="p-2 pt-1 text-sm text-time_header">
-    {postData?.desc ? (
-      <>
-        {displayText}
-        {isLong && !expanded && " ..."}
-        {isLong && (
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="ml-2 text-blue-500 hover:underline"
-          >
-            {expanded ? "View Less" : "View More"}
-          </button>
-        )}
-      </>
-    ) : (
-      "No description available"
-    )}
-  </div>
-</div>
-
     </div>
   );
 };

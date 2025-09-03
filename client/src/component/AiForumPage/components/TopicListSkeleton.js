@@ -2,7 +2,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
 const TopicSkeletonCard = () => (
-  <div className="p-4 hover:bg-bg_comment_box transition-colors cursor-pointer divide-y">
+  <div className="p-4 hover:dark:bg-bg_comment_box hover:bg-gray-200  transition-colors cursor-pointer divide-y">
     <div className="flex items-start justify-between">
       <div className="flex-1">
         {/* Title */}
@@ -24,7 +24,7 @@ const TopicSkeletonCard = () => (
 
       {/* Like/Dislike/Delete */}
       <div className="flex items-center space-x-4 ml-4">
-        <div className="flex items-center space-x-1 bg-btn_bg rounded-lg px-2 py-0.5">
+        <div className="flex items-center space-x-1 bg-gray-300 dark:bg-btn_bg rounded-lg px-2 py-0.5">
           <Skeleton   width={24} />
           <Skeleton width={16} />
           <Skeleton  width={24} />
