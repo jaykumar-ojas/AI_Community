@@ -1,54 +1,69 @@
-const { GoogleGenerativeAI } = require("@google/genai");
-
+const {Modality} = require("@google/genai");
 const dotenv = require('dotenv');
 const {fs} =  require("node:fs");
 
 dotenv.config();
 
-// Use dynamic import since @google/genai is ESM-only
-async function getAI() {
-  const { GoogleGenerativeAI } = await import("@google/genai");
-  return new GoogleGenerativeAI({
-    apiKey: process.env.GEMINI_API_KEY,
-  });
+async function getGemini() {
+  const { GoogleGenerativeAI,  Modality } = await import("@google/generative-ai");
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+}
+// const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+async function getImagen() {
+  const { GoogleGenAI } = await import("@google/genai");
+  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 }
 
+
 async function googletext(prompt, model) {
-  const ai = await getAI();
-  const genModel = ai.getGenerativeModel({ model });
-  const response = await genModel.generateContent(prompt);
-  return response.response.text();
+  const ai = await getGemini();
+  const response = await ai.models.generateContent({
+    model: model,
+    contents: prompt,
+  });
+  console.log(response.text);
+  return response.text;
 }
 
 async function google_imagen(prompt, model) {
-  const ai = await getAI();
-  const genModel = ai.getGenerativeModel({ model });
-  const response = await genModel.generateContent(prompt);
+  const ai = await getImagen();
 
-  // extract inlineData (image)
-  const parts = response.response.candidates?.[0]?.content?.parts || [];
-  const inlinePart = parts.find((part) => part.inlineData?.data);
-
-  if (!inlinePart) {
-    throw new Error("No image data found in response.");
-  }
-
-  return Buffer.from(inlinePart.inlineData.data, "base64");
+const response = await ai.models.generateImages({
+    model: model,
+    prompt: prompt,
+    config: {
+      numberOfImages: 1,
+    },
+  });
+  const generatedImage = response.generatedImages[0]; 
+      const imgBytes = generatedImage.image.imageBytes;
+     return  Buffer.from(imgBytes, "base64");
 }
 
 async function generateGeminibanana(prompt, model) {
-  const ai = await getAI();
-  const genModel = ai.getGenerativeModel({ model });
-  const response = await genModel.generateContent(prompt);
+  const ai = await getImagen();
 
-  const parts = response.response.candidates?.[0]?.content?.parts || [];
-  const inlinePart = parts.find((part) => part.inlineData?.data);
+  const response = await ai.models.generateContent({
+    model: model,
+    contents: prompt,
+     config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      },
+  });
 
-  if (!inlinePart) {
-    throw new Error("No image data found in response.");
+  for (const part of response.candidates[0].content.parts) {
+    if (part.text) {
+      console.log(part.text);
+    } else if (part.inlineData) {
+      const imageData = part.inlineData.data;
+      const buffer = Buffer.from(imageData, "base64");
+      // fs.writeFileSync("gemini-native-image.png", buffer);
+      // console.log("Image saved as gemini-native-image.png");
+
+      return buffer; // Return the image buffer
+    }
   }
-
-  return Buffer.from(inlinePart.inlineData.data, "base64");
 }
 
 module.exports = {

@@ -15,7 +15,7 @@
     "@google/genai": "^1.16.0",
     "@google/generative-ai": "^0.24.1",
     "aws-sdk": "^2.1692.0",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",

@@ -61,9 +61,12 @@
 
 // llmConfig.js
 
-const { generateTextopenai, generateImageBase64openai } = require('../services/Modelservice/openaiservice');
+const { generateTextopenai, generateImageBase64openai, generateImageBase64 } = require('../services/Modelservice/openaiservice');
 const {googletext, google_imagen, generateGeminibanana} = require('../services/Modelservice/googleaiservice');
 const {getGrokResponse, generateGrokImage} = require('../services/Modelservice/xaiservice');
+const { ultra, core, sd3 } = require('../services/Modelservice/stabilityservice');
+const { generateBFL } = require('../services/Modelservice/fluxservice');
+const { metagen } = require('../services/Modelservice/metaservice');
 
 const llmConfig = {
   text: {
@@ -80,17 +83,18 @@ const llmConfig = {
       "gemini-2.5-flash":  googletext,
       "gemini-2.0-flash-lite":  googletext,
     },
-    // "meta": {
-    //   "meta-llama/llama-4-scout":  
-    //   "meta-llama/llama-4-maverick":  
-    //   "meta-llama/Llama-3.3-70B-Instruct-Turbo":  
-    //   "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo":  
-    // },
+    "meta": {
+      "llama-3.1-8b-instant": metagen,
+      "llama-3.3-70b-versatile": metagen, 
+      "meta-llama/llama-4-maverick-17b-128e-instruct": metagen, 
+      "meta-llama/llama-4-scout-17b-16e-instruct": metagen, 
+      "meta-llama/llama-guard-4-12b": metagen,
+    },
     "grok": {
       "grok-3-mini":  getGrokResponse,
       "grok-3-mini-fast":  getGrokResponse,
       "grok-4":  getGrokResponse,
-    }
+    },
     // "mistralai": {
     //   "mistralai/Mixtral-8x7B-Instruct-v0.1":  
     //   "mistralai/Mistral-7B-Instruct-v0.3":  
@@ -107,21 +111,20 @@ const llmConfig = {
     //   "deepseek/deepseek-chat-v3.1":  
     //   "deepseek-chat":  
     // },
-    // "qwen": {
-    //   "qwen-max":  
-    //   "qwen-turbo":  
-    // }
+    "qwen": {
+      "qwen/qwen3-32b": metagen,
+    }
   },
 
   image: {
     "openai": {
       "dall-e-3": generateImageBase64openai,
-      "dall-e-2":  generateImageBase64openai,
-      "gpt-5":  generateImageBase64openai,
-      "gpt-image-1":  generateImageBase64openai,
+      "dall-e-2": generateImageBase64openai,
+      "gpt-5": generateImageBase64,
+      "gpt-image-1": generateImageBase64openai,
     },
     "grok": {
-      "grok-2-image":  generateGrokImage
+      "grok-2-image": generateGrokImage
     },
     "google": {
       "imagen-4.0-generate-001":  google_imagen,
@@ -130,21 +133,23 @@ const llmConfig = {
       "imagen-3.0-generate-002":  google_imagen,
       "gemini-2.5-flash-image-preview":  generateGeminibanana,
       "gemini-2.0-flash-preview-image-generation":  generateGeminibanana,
-    }
-    // "stable": {
-    //   "ultra":  
-    //   "core":  
-    //   "sd3.5-large":  
-    //   "sd3.5-large-turbo":  
-    //   "sd3.5-medium":  
-    //   "sd3.5-flash":  
-    // },
-    // "flux": {
-    //   "flux-pro":  
-    //   "flux-pro/v1.1":  
-    //   "flux-pro/v1.1-ultra":  
-    //   "flux-realism":  
-    // },
+    },
+    "stable": {
+       "ultra": ultra,
+      "core": core, 
+      "sd3.5-large": sd3,
+      "sd3.5-large-turbo": sd3, 
+      "sd3.5-medium": sd3, 
+      "sd3.5-flash": sd3, 
+     },
+    "flux": {
+      "flux-kontext-pro": generateBFL,
+      "flux-kontext-max": generateBFL,
+      "flux-pro-1.1-ultra": generateBFL,
+      "flux-pro-1.1": generateBFL,
+      "flux-pro": generateBFL,
+      "flux-dev": generateBFL,
+    },
     // "alibaba": {
     //   "alibaba/qwen-image":  
     // },
@@ -154,6 +159,6 @@ const llmConfig = {
     // }
   }
 };
-
+console.log("Loaded model configuration:", llmConfig);
 module.exports = llmConfig;
 

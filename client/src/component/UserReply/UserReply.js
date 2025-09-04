@@ -25,7 +25,7 @@ const UserReply = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const { emitNewReply } = useWebSocket();
-
+  
   const [loading, setLoading] = useState(false);
   const [newReply, setNewReply] = useState("");
   const { topicId } = useParams();
@@ -423,15 +423,7 @@ const UserReply = () => {
               />
               <AttachIcon /> Attach
             </label>
-<<<<<<< Updated upstream
-            
-            {/* Display current model info */}
-            <div className="text-xs text-gray-500 ml-4">
-              Current: {model} ({modelType})
-            </div>
-            
-            {/* Context Aware Info */}
-=======
+
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -460,7 +452,6 @@ const UserReply = () => {
             {isDropdownOpen && <ModelContent  closeDropdown={() => setIsDropdownOpen(false)} />}
           </div>
           <div className="flex ">
->>>>>>> Stashed changes
             {model && (
               <div className="text-xs text-purple-600 ml-2">
                 💡 Context Aware available

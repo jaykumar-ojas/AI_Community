@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useParams } from 'react-router-dom';
-import Skeleton from "react-loading-skeleton";
-import 'react-loading-skeleton/dist/skeleton.css';
-import SubscriptionsList from './SubscriptionsList';
+// import React, { useState, useEffect, useContext } from "react";
+// import { useParams } from 'react-router-dom';
+// import Skeleton from "react-loading-skeleton";
+// import 'react-loading-skeleton/dist/skeleton.css';
+// import SubscriptionsList from './SubscriptionsList';
 
-<<<<<<< Updated upstream
-import { LoginContext } from "../../ContextProvider/context";
-import { PenIcon } from "../../../asset/icons";
-import { encodeId, decodeId } from "../../../utils/hashids";
-const baseUrl = process.env.REACT_APP_BASE_URL;
-=======
+// <<<<<<< Updated upstream
+// import { LoginContext } from "../../ContextProvider/context";
+// import { PenIcon } from "../../../asset/icons";
+// import { encodeId, decodeId } from "../../../utils/hashids";
+// const baseUrl = process.env.REACT_APP_BASE_URL;
+// =======
 
 // import { LoginContext } from "../../ContextProvider/context";
 // import { PenIcon } from "../../../asset/icons";
@@ -18,7 +18,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 // import { PenIcon } from "../../../asset/icons";
 // import { encodeId, decodeId } from "../../../utils/hashids";
 // //const baseUrl = process.env.REACT_APP_BASE_URL;
->>>>>>> Stashed changes
+// >>>>>>> Stashed changes
 
 
 // const UserHeaderEdit = () => {
@@ -115,15 +115,15 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 
 //         setIsSubscribing(true);
 
-<<<<<<< Updated upstream
-        try {
-            const token = localStorage.getItem("userdatatoken");
-            const url = isSubscribed
-                ? `${baseUrl}/unsubscribe/${id}`
-                : `${baseUrl}/subscribe/${id}`;
+// <<<<<<< Updated upstream
+//         try {
+//             const token = localStorage.getItem("userdatatoken");
+//             const url = isSubscribed
+//                 ? `${baseUrl}/unsubscribe/${id}`
+//                 : `${baseUrl}/subscribe/${id}`;
 
-            const method = isSubscribed ? 'DELETE' : 'POST';
-=======
+//             const method = isSubscribed ? 'DELETE' : 'POST';
+// =======
 
 //         try {
 //             const token = localStorage.getItem("userdatatoken");
@@ -131,7 +131,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 //                 ? `${baseUrl}/unsubscribe/${id}`
 //                 : `${baseUrl}/subscribe/${id}`;
 //             const method = isSubscribed ? 'DELETE' : 'POST';
->>>>>>> Stashed changes
+// >>>>>>> Stashed changes
 
 //             const response = await fetch(url, {
 //                 method: method,
@@ -336,8 +336,8 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 //     );
 // };
 
-<<<<<<< Updated upstream
-export default UserHeaderEdit;
-=======
+// <<<<<<< Updated upstream
 // export default UserHeaderEdit;
->>>>>>> Stashed changes
+// =======
+// // export default UserHeaderEdit;
+// >>>>>>> Stashed changes
