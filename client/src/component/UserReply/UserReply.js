@@ -1,10 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { ForumContext } from "../ContextProvider/ModelContext";
 import UserAndModel from "./Component/UserAndModel";
 import ShowSelectedFile from "./Component/ShowSelectedFiie";
-import {
-  AttachIcon,
-} from "../../asset/icons";
+import { AttachIcon, MindIcon, Sparkle, SparklesIcon } from "../../asset/icons";
 import axios from "axios";
 import ShowGeneratedContent from "./Component/ShowGeneratedContent";
 import { LoginContext } from "../ContextProvider/context";
@@ -15,12 +13,15 @@ import {
   handleAuthError,
 } from "../AiForumPage/components/ForumUtils";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
+import { BrainIcon, ChevronDown, Send } from "lucide-react";
+import modelIcon from "../../asset/IconImage/ModelIcon.png"
+import ModelContent from "./Component/ModelContent";
 const baseUrl = process.env.REACT_APP_BASE_URL;
-
 
 const UserReply = () => {
   const { loginData } = useContext(LoginContext);
-  const { replyIdForContext,setReplyIdForContext, model, modelType } = useContext(ForumContext);
+  const { replyIdForContext, setReplyIdForContext, model, modelType } =
+    useContext(ForumContext);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -30,10 +31,12 @@ const UserReply = () => {
   const [newReply, setNewReply] = useState("");
   const { topicId } = useParams();
   const [postingData, setPostingData] = useState([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
   // Track posted replies to call describe-images API
   const [postedReplies, setPostedReplies] = useState([]);
-  
+
   // Context aware functionality
   const [isContextAware, setIsContextAware] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
@@ -41,26 +44,27 @@ const UserReply = () => {
   // Background function to describe images
   const describeImagesInBackground = async (replyId, postingData) => {
     // Check if there are any images in the posting data
-    const hasImages = postingData.some(entry => 
-      entry.imageUrl || 
-      selectedFiles.some(file => file.type.startsWith('image/'))
+    const hasImages = postingData.some(
+      (entry) =>
+        entry.imageUrl ||
+        selectedFiles.some((file) => file.type.startsWith("image/"))
     );
 
     if (!hasImages) return;
 
     try {
       console.log(`Calling describe-images API for reply: ${replyId}`);
-      
+
       const response = await axios.put(
         `${baseUrl}/describe-images/${replyId}`,
         {},
         {
-          headers: getAuthHeaders()
+          headers: getAuthHeaders(),
         }
       );
 
       console.log("Image description API response:", response.data);
-      
+
       if (response.data.success) {
         console.log("Images described successfully for reply:", replyId);
       }
@@ -74,16 +78,16 @@ const UserReply = () => {
   const fetchModelInfo = async (modelName) => {
     try {
       console.log(`Calling /aimodels/search API for model: ${modelName}`);
-      
+
       const response = await axios.get(
         `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
         {
-          headers: getAuthHeaders()
+          headers: getAuthHeaders(),
         }
       );
 
       console.log("AI model search API response:", response.data);
-      
+
       if (response.data.success) {
         return response.data.data;
       } else {
@@ -102,14 +106,12 @@ const UserReply = () => {
     postedReplies.forEach(({ replyId, postingData, processed }) => {
       if (!processed) {
         // Mark as processed to avoid multiple calls
-        setPostedReplies(prev => 
-          prev.map(item => 
-            item.replyId === replyId 
-              ? { ...item, processed: true }
-              : item
+        setPostedReplies((prev) =>
+          prev.map((item) =>
+            item.replyId === replyId ? { ...item, processed: true } : item
           )
         );
-        
+
         // Call the describe-images API in background
         describeImagesInBackground(replyId, postingData);
       }
@@ -122,12 +124,16 @@ const UserReply = () => {
   };
 
   // handle generate Submit - calls the /generate API
-  const handleGenerateSubmit = async (e, enhancedPrompt = null, originalUserText = null) => {
+  const handleGenerateSubmit = async (
+    e,
+    enhancedPrompt = null,
+    originalUserText = null
+  ) => {
     e?.preventDefault();
     const promptToUse = enhancedPrompt || newReply.trim();
     const textToRender = originalUserText || newReply.trim();
     if (!promptToUse) return;
-    
+
     setLoading(true);
     setError(null);
 
@@ -139,25 +145,25 @@ const UserReply = () => {
         options: {
           // Add any additional options here based on your requirements
           temperature: 0.7,
-          maxTokens: modelType === 'text' ? 1000 : undefined,
+          maxTokens: modelType === "text" ? 1000 : undefined,
           n: 1,
-          size: modelType === 'image' ? '1024x1792' : undefined,
-        }
+          size: modelType === "image" ? "1024x1792" : undefined,
+        },
       };
 
       console.log("Calling /generate API with payload:", generatePayload);
-      
+
       const response = await axios.post(
         `${baseUrl}/generate`, // Updated endpoint
         generatePayload
       );
-      
+
       console.log("Generate API response:", response.data);
-      
+
       if (response.data.success) {
         // Fetch model information after successful generation
         const modelInfo = await fetchModelInfo(model);
-        
+
         // Always render the original user text, not the enhanced prompt
         handleGeneratedResult(response.data.data, textToRender, modelInfo);
         if (!enhancedPrompt) {
@@ -177,32 +183,31 @@ const UserReply = () => {
     }
   };
 
-  
   // Handle context-aware generation
   const handleContextAwareGenerate = async (e) => {
     e.preventDefault();
     if (!newReply.trim()) return;
-    
+
     setContextLoading(true);
     setError(null);
 
     try {
       // First call the suggest API to get context-aware enhancement
       console.log("Calling /suggest API for context awareness");
-      
+
       const suggestResponse = await axios.post(
         `${baseUrl}/suggest/${replyIdForContext || topicId}`,
         {
           text: newReply.trim(),
-          contextType: 'forumReply',
+          contextType: "forumReply",
           options: {
             // Add any specific options for suggestion
             temperature: 0.7,
-            maxTokens: 500
-          }
+            maxTokens: 500,
+          },
         },
         {
-          headers: getAuthHeaders()
+          headers: getAuthHeaders(),
         }
       );
 
@@ -211,13 +216,12 @@ const UserReply = () => {
       if (suggestResponse.data.success) {
         const enhancedPrompt = suggestResponse.data.data.suggestion;
         const originalUserText = newReply.trim();
-        
+
         console.log("Original user input:", originalUserText);
         console.log("Enhanced prompt (for generation only):", enhancedPrompt);
-        
+
         // Use enhanced prompt for generation but render original user text
         handleGenerateSubmit(null, enhancedPrompt, originalUserText);
-        
       } else {
         setError("Failed to generate context-aware suggestion");
       }
@@ -225,8 +229,8 @@ const UserReply = () => {
       console.error("Error in context-aware generation:", err);
       setError(
         err.response?.data?.message ||
-        err.response?.data?.error ||
-        "An error occurred while generating context-aware content"
+          err.response?.data?.error ||
+          "An error occurred while generating context-aware content"
       );
     } finally {
       setContextLoading(false);
@@ -243,7 +247,7 @@ const UserReply = () => {
 
     // Ensure all entries in postingData have the model field if they are AI-generated
     const updatedPostingData = [
-      ...postingData.map(entry => {
+      ...postingData.map((entry) => {
         if (entry.modelInfo && model) {
           return { ...entry, model };
         }
@@ -292,13 +296,13 @@ const UserReply = () => {
         // Add to posted replies for background image description
         const replyId = response.data.reply._id || response.data.reply.id;
         if (replyId) {
-          setPostedReplies(prev => [
+          setPostedReplies((prev) => [
             ...prev,
             {
               replyId: replyId,
               postingData: updatedPostingData,
-              processed: false
-            }
+              processed: false,
+            },
           ]);
         }
 
@@ -321,23 +325,23 @@ const UserReply = () => {
     setAiGenerated(false);
     console.log("Handling generated result:", data);
     console.log("Model info received:", modelInfo);
-    
+
     let newEntry = {
       userText: originalPrompt,
       aiText: "",
       prompt: "",
       imageUrl: "",
       model: model,
-      modelInfo: modelInfo
+      modelInfo: modelInfo,
     };
 
     // Since we're passing response.data.data, the structure is:
     // data.type, data.result.text, etc.
-    if (data.type === 'text' && data.result?.text) {
+    if (data.type === "text" && data.result?.text) {
       newEntry.aiText = data.result.text;
-    } else if (data.type === 'image' && data.result?.images?.[0]?.url) {
+    } else if (data.type === "image" && data.result?.images?.[0]?.url) {
       newEntry.imageUrl = data.result.images[0].url;
-    } else if (data.type === 'image' && data.result?.images) {
+    } else if (data.type === "image" && data.result?.images) {
       // Alternative structure for image URLs
       newEntry.imageUrl = data.result.images;
     }
@@ -349,10 +353,10 @@ const UserReply = () => {
   };
 
   return (
-    <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-2">
+    <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-1">
       {/* Error display */}
       {error && (
-        <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-md text-sm">
+        <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-md text-xs md:text-sm">
           {error}
         </div>
       )}
@@ -361,58 +365,28 @@ const UserReply = () => {
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box">
         <ShowGeneratedContent postingData={postingData} />
       </div>
-      
+
       {/* for showing model and userName */}
       <UserAndModel />
-      
+
       <form>
-        <div className="flex mb-2">
-          <input
+        <div className="flex md:mb-2">
+          <textarea
             type="text"
-            className="flex-1 border border-gray-200 rounded-md p-3 mr-2 text-sm"
+           className="flex-1 p-1 min-h-8 text-sm md:text-sm 
+             bg-transparent focus:outline-none focus:ring-0 border border-gray-300 rounded-md 
+             resize-none overflow-y-auto break-words"
             placeholder="Write your reply..."
             value={newReply}
             onChange={(e) => setNewReply(e.target.value)}
             disabled={isLoading || loading || contextLoading}
           />
-          
-          {/* Context Aware Generate Button - Only show when model is selected */}
-          {model && (
-            <button
-              type="button"
-              onClick={handleContextAwareGenerate}
-              className="bg-purple-600 text-white rounded-md px-4 py-2 text-sm hover:bg-purple-700 disabled:opacity-50 mr-2"
-              disabled={contextLoading || loading || !newReply.trim()}
-              title="Generate with context awareness from conversation history"
-            >
-              {contextLoading ? "Context..." : "Context Aware"}
-            </button>
-          )}
-          
-          {/* Regular Generate Button */}
-          {model && <button
-            type="button"
-            onClick={handleGenerateSubmit}
-            className="bg-green-600 text-white rounded-md px-4 py-2 text-sm hover:bg-green-700 disabled:opacity-50 mr-2"
-            disabled={loading || contextLoading || !newReply.trim()}
-          >
-            {loading ? "Generating..." : `Generate ${modelType === 'image' ? 'Image' : 'Text'}`}
-          </button>
-            }
-          {/* Post Button */}
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading || loading || contextLoading || (!newReply.trim() && postingData.length === 0 || (model && !aiGenerated ))}
-          >
-            {isLoading ? "Posting..." : "Post"}
-          </button>
         </div>
 
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <label className="text-gray-500 hover:text-gray-700 cursor-pointer text-sm flex items-center">
+        {/* lower button */}
+        <div className="flex justify-between">
+          <div className="flex justify-start items-center gap-2 px-1">
+            <label className="text-gray-500 hover:text-gray-700 cursor-pointer text-xs md:text-sm flex items-center">
               <input
                 type="file"
                 multiple
@@ -421,13 +395,13 @@ const UserReply = () => {
                 className="hidden"
                 disabled={isLoading}
               />
-              <AttachIcon /> Attach
+              <AttachIcon />
             </label>
 
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex sm:hidden items-center gap-2 border border-gray-300  px-2 py-1  rounded-lg shadow-sm hover:shadow-md transition-all"
+              className="flex items-center gap-2 border border-gray-300  px-2 py-1  rounded-lg shadow-sm hover:shadow-md transition-all"
             >
               {model ? (
                 <>
@@ -453,13 +427,38 @@ const UserReply = () => {
           </div>
           <div className="flex ">
             {model && (
-              <div className="text-xs text-purple-600 ml-2">
-                💡 Context Aware available
-              </div>
+              <button
+                type="button"
+                onClick={handleGenerateSubmit}
+                className="text-white rounded-md px-4 py-2 text-sm  disabled:opacity-50"
+                disabled={loading || contextLoading || !newReply.trim()}
+              >
+                {/* {loading ? "Generating..." : `Generate ${modelType === 'image' ? 'Image' : 'Text'}`} */}
+                {loading ? <Sparkle /> : <SparklesIcon />}
+              </button>
             )}
+            {/* Post Button */}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="text-black rounded-full p-2 text-sm hover:bg-blue-700 disabled:opacity-50 "
+              disabled={
+                isLoading ||
+                loading ||
+                contextLoading ||
+                (!newReply.trim() && postingData.length === 0) ||
+                (model && !aiGenerated)
+              }
+            >
+              {isLoading ? (
+                "Posting..."
+              ) : (
+                <Send size={20} className="rotate-45 mr-1 text-" />
+              )}
+            </button>
           </div>
         </div>
-        
+
         <ShowSelectedFile
           selectedFiles={selectedFiles}
           setSelectedFiles={setSelectedFiles}

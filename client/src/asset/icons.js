@@ -161,38 +161,47 @@ export const SearchIcon = ({ isActive }) => {
 //   );
 // };
 
-export const CommentIcon = ({ size = 24, color = "currentColor", ...props }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={size}
-    height={size}
-    fill="none"
-    stroke="rgba(255,255,255,0.5)"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path d="M21 6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11l4 4V6z" />
-  </svg>
-);
+export const CommentIcon = ({ h = 5, w = 5, ...props }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      stroke="rgba(0,0,0,0.6)"          // default light mode stroke
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+      className={`h-${h} w-${w} transition-all duration-300 dark:stroke-time_header`}
+      {...props}
+    >
+      <path d="M21 6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11l4 4V6z" />
+    </svg>
+  );
+};
 
-export const heartSvg = (filled) => (
+
+
+
+export const heartSvg = ({ filled }) => (
   <svg
-    width="24"
-    height="24"
     viewBox="0 0 24 24"
-    fill={filled ? "#ff4757" : "none"}   // red fill if liked, none otherwise
-    stroke={filled ? "#ff4757" : "rgba(255,255,255,0.5)"} // outline red if filled, otherwise uses Tailwind color
+    fill={filled ? "#ff4757" : "none"} // red fill if liked
+    stroke={filled ? "#ff4757" : "white"} // use currentColor so Tailwind text classes apply
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={`transition-all duration-300 ${filled ? "scale-110" : "scale-100"} text-bg_btn`}
+    className={`
+      transition-all duration-300 
+      ${filled ? "scale-110" : "scale-100"} 
+      h-5 w-5 md:h-6 md:w-6
+      ${!filled ? "text-gray-600 dark:text-gray-300" : ""} 
+    `}
   >
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
   </svg>
 );
+
+
 
 
 export const Sparkle = ({ style, color }) => (
@@ -284,27 +293,57 @@ export const GenerateIcon = ({ isActive }) => (
   </svg>
 );
 
-export const SparkIcon = ({ isActive }) => {
+export const SparklesIcon = ({ size = 24, className = "" }) => {
   return (
     <svg
-      className="w-5 h-5 text-gray-800"
-      aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="#FFD700"
+  width={size}
+  height={size}
+  className={className}
+>
+  {/* big sparkle */}
+  <path d="M12 2 14.4 8.8 22 11.9 14.4 15.2 12 22 9.6 15.2 2 11.9 9.6 8.8 12 2Z" />
+  {/* small sparkle */}
+  <path d="M18 3 19.3 6.4 23 7.8 19.3 9.1 18 12.5 16.7 9.1 13 7.8 16.7 6.4 18 3Z" />
+  {/* tiny sparkle */}
+  <path d="M6 6 6.9 8.3 9.3 9.2 6.9 10.1 6 12.4 5.1 10.1 2.7 9.2 5.1 8.3 6 6Z" />
+</svg>
+
+  );
+};
+
+
+
+
+export const MindIcon = ({ size = 24, className = "" }) => {
+  return (
+    <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="none"
       viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
     >
-      <path
-        stroke={isActive ? "#f59e0b" : "currentColor"} // Amber when active
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M16.872 9.687 20 6.56 17.44 4 4 17.44 6.56 20 16.873 9.687Zm0 0-2.56-2.56M6 7v2m0 0v2m0-2H4m2 0h2m7 7v2m0 0v2m0-2h-2m2 0h2M8 4h.01v.01H8V4Zm2 2h.01v.01H10V6Zm2-2h.01v.01H12V4Zm8 8h.01v.01H20V12Zm-2 2h.01v.01H18V14Zm2 2h.01v.01H20V16Z"
-      />
+      {/* left brain */}
+      <path d="M9 3c-1.5 0-3 .7-3 2.5S7.5 8 9 8v8c-1.5 0-3 .7-3 2.5S7.5 21 9 21" />
+      {/* right brain */}
+      <path d="M15 3c1.5 0 3 .7 3 2.5S16.5 8 15 8v8c1.5 0 3 .7 3 2.5S16.5 21 15 21" />
+      {/* connections */}
+      <path d="M9 8h6M9 16h6" />
     </svg>
   );
 };
+
+
+
+
 
 export const BrainIcon = ({ isActive }) => {
   return (
@@ -375,7 +414,7 @@ export const PenIcon = ({ isActive }) => {
 export const DragAndDropIcon = () => {
   return (
     <svg
-      className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+      className="w-8 h-8 mb-4 text-gray-800 dark:text-gray-400"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -470,19 +509,79 @@ export const PlusIcon = ({ isActive }) => {
   );
 };
 
-export const BookmarkIcon = ({ isBookmarked, ...props }) => (
+export const BookmarkIcon = ({ isBookmarked, ...props }) => {
+  return (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 50 50"
-    width="28"
-    height="24"
-    fill={isBookmarked ? "#fbbf24" : "#FFFFFF"} // Yellow when bookmarked
-    stroke={isBookmarked ? "#fbbf24" : "#000000"}
-    strokeWidth="1"
+    fill={isBookmarked ? "currentColor" : "none"} // Filled with currentColor when bookmarked
+    stroke="currentColor" // Always follows current text color
+    strokeWidth="2"
+    className="h-5 w-5 md:h-6 md:w-6 transition-all duration-300"
     {...props}
   >
     <path d="M 13 2 A 1.0001 1.0001 0 0 0 12 3 L 12 47 A 1.0001 1.0001 0 0 0 13.503906 47.863281 L 25 41.158203 L 36.496094 47.863281 A 1.0001 1.0001 0 0 0 38 47 L 38 3 A 1.0001 1.0001 0 0 0 37 2 L 13 2 z M 14 4 L 36 4 L 36 45.259766 L 25.503906 39.136719 A 1.0001 1.0001 0 0 0 24.496094 39.136719 L 14 45.259766 L 14 4 z" />
   </svg>
-);
+  );
+};
 
-export default BookmarkIcon;
+
+
+
+
+export const DynamicNumberSVG = ({ value }) => {
+  return (
+    <svg
+      width={36}
+      height={36}
+      xmlns="http://www.w3.org/2000/svg"
+      shapeRendering="geometricPrecision"
+      textRendering="geometricPrecision"
+      imageRendering="optimizeQuality"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      viewBox="0 0 512 512"
+    >
+      {/* Background shapes */}
+      <path
+        fill="#ECCA43"
+        fillRule="nonzero"
+        d="M256 0c70.685 0 134.689 28.659 181.015 74.984C483.341 121.306 512 185.311 512 256c0 70.684-28.659 134.689-74.985 181.015-46.326 46.322-110.33 74.98-181.015 74.98-70.685 0-134.689-28.658-181.015-74.98C28.659 390.689 0 326.684 0 256c0-70.689 28.659-134.694 74.985-181.016C121.307 28.659 185.311 0 256 0z"
+      />
+      <ellipse fill="#F7E259" cx="256" cy="255.998" rx="250.992" ry="250.991" />
+      <path
+        fill="#F8D548"
+        d="M503.753 215.692A252.691 252.691 0 01506.989 256c0 138.614-112.371 250.988-250.989 250.988S5.007 394.614 5.007 256c0-21.858 2.801-43.056 8.051-63.271l246.435 183.476 244.26-160.513z"
+      />
+      <path
+        fill="#D7925B"
+        fillRule="nonzero"
+        d="M256 58.922c54.414 0 103.688 22.061 139.353 57.725 35.664 35.661 57.725 84.935 57.725 139.349 0 54.414-22.061 103.688-57.725 139.352-35.665 35.664-84.939 57.726-139.353 57.726-54.414 0-103.688-22.062-139.349-57.726-35.664-35.664-57.725-84.938-57.725-139.352s22.061-103.688 57.725-139.349C152.312 80.983 201.586 58.922 256 58.922z"
+      />
+      <path
+        fill="#EDA140"
+        d="M256 63.929c106.076 0 192.071 85.994 192.071 192.067 0 106.076-85.995 192.071-192.071 192.071-106.073 0-192.067-85.995-192.067-192.071 0-106.073 85.994-192.067 192.067-192.067z"
+      />
+
+      {/* Remove the old rupee path here */}
+
+      {/* Dynamic Number */}
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize="200"
+        fill="#7b3e17ff"
+        fontFamily="Arial, sans-serif"
+                // fill="#C26A34"
+      >
+        {value}
+      </text>
+    </svg>
+  );
+};
+
+
+
+

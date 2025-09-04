@@ -8,8 +8,9 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
+    origin: ["https://pixxelmind.com", "http://localhost:3000"],
+    methods: ["GET", "POST"],
+    credentials:true
   }
 });
 
@@ -53,7 +54,7 @@ app.use(express.json());
 // for cors
 app.use(
   cors({
-      origin: ["http://localhost:3000","http://192.168.54.207:3000"], // Frontend URL
+      origin: ["http://localhost:3000","http://192.168.54.207:3000","http://192.168.43.202:3000","http://10.126.13.207:3000"], // Frontend URL
       methods:"GET,PUT,POST,DELETE,UPDATE",
       credentials: true,
   })

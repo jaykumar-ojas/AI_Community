@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
     profilePictureUrl :{ type: String, default:""},
     backgroundImage:{ type:String, default:""},
     backgroundImageUrl:{ type: String, default:""},
+    credit:{type:Number,default:10},
     email:{ type:String, required:true,unique:true,
         validate(value){
             if(!validator.isEmail(value)){

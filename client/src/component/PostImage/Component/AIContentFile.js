@@ -170,12 +170,12 @@ const AIContentFile = () => {
     <div className="md:px-6">
       <div className="relative flex justify-between items-center mb-4" ref={dropdownRef}>
         {/* Title */}
-        <div className="text-lg font-bold text-text_header">AI Image Generation</div>
+        <div className="text-lg font-semibold text-gray-700 dark:text-text_header">AI Image Generation</div>
 
         {/* Dropdown Button */}
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-2 border border-gray-300 bg-black px-3 py-1.5 rounded-lg shadow-sm hover:shadow-md transition-all"
+          className="flex items-center gap-2 border border-gray-300 dark:bg-black bg-white px-3 py-1.5 rounded-lg shadow-sm hover:shadow-md transition-all"
         >
           {selectedImageModel ? (
             <>
@@ -224,7 +224,7 @@ const AIContentFile = () => {
           value={aiPrompt}
           onChange={(e) => setAiPrompt(e.target.value)}
           placeholder="Describe the image you want to create..."
-          className="flex-1 p-4 bg-bg_comment border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none text-time_header text-sm"
+          className="flex-1 p-4 bg-gray-200 dark:bg-bg_comment placeholder-gray-600 border border-gray-400 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:dark:ring-purple-400 focus:ring-ring-purple-400 resize-none text-gray-800 dark:text-time_header text-sm"
           rows="5"
         />
         <div className="flex flex-row gap-4">

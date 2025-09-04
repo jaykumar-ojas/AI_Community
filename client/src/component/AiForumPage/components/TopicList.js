@@ -4,9 +4,10 @@ import axios from 'axios';
 import { LoginContext } from '../../ContextProvider/context';
 import { useWebSocket } from './WebSocketContext';
 import { formatDate, getAuthHeaders, handleAuthError, API_BASE_URL, TOPICS_URL } from './ForumUtils';
-import { DisLikeIcon, LikeIcon, UpvoteIcon, DownvoteIcon } from '../../../asset/icons';
+import { DisLikeIcon, LikeIcon, UpvoteIcon, DownvoteIcon, CommentIcon } from '../../../asset/icons';
 import UserIconCard from '../../Card/UserIconCard';
 import { encodeId } from '../../../utils/hashids';
+import { EyeIcon } from 'lucide-react';
 
 const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   const { loginData } = useContext(LoginContext);
@@ -162,46 +163,35 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
           return (
             <div
               key={topic._id}
-              className="p-4 hover:bg-bg_comment_box transition-colors cursor-pointer"
+              className="p-2 w-full hover:bg-gray-200 hover:dark:bg-bg_comment_box transition-colors cursor-pointer"
               onClick={() => handleTopicClick(topic)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-md font-medium text-text_comment mb-1">{topic.title}</h3>
-                  <p className="text-text_header text-sm  line-clamp-2">{topic.content}</p>
-                  <div className="mt-2 flex flex-row items-center text-sm justify-between">
+                  <h3 className="text-md font-medium text-gray-800 line-clamp-2 dark:text-text_comment mb-1">{topic.title}</h3>
+                  <p className="text-gray-600 dark:text-text_header text-sm  line-clamp-2">{topic.content}</p>
+                  <div className="mt-1 flex flex-row items-center text-sm justify-between">
                     <div className='w-6 h-6 flex-shrink-0'><UserIconCard id={topic?.userId}/></div>
-                    <div className="">•</div>
-                    <div className='text-text_header text-xs'>{topic.userName}</div>
-                    <div className="">•</div>
-                    <div className='text-time_header text-xs'>{formatDate(topic.createdAt)}</div>
-                    <div className="">•</div>
-                    <div className='text-text_header text-xs'>{topic.replyCount} replies</div>
-                    <div className="">•</div>
-                    <div className='text-time_header text-xs'>{topic.viewCount} views</div>
+                    <div className='flex items-center gap-1'>
+                    <div className="text_time_header dark:text-gray-500">•</div>
+                    <div className='text-blue-500 dark:text-time_header text-xs'>{topic.userName}</div>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                    <div className="text_time_header dark:text-gray-500">•</div>
+                    <div className='text-gray-800 dark:text-time_header text-xs'>{formatDate(topic.createdAt)}</div>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                    <div className="text_time_header dark:text-gray-500">•</div>
+                    <div className='text-gray-800 flex flex-row items-center gap-1 dark:text-time_header text-xs'>{topic.replyCount} <CommentIcon h={4} w={4}/></div>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                    <div className="text_time_header dark:text-gray-500">•</div>
+                    <div className='text-gray-800 dark:text-time_header flex flex-row gap-1 text-xs'>{topic.viewCount} <EyeIcon size={16}/></div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4 ">
-                  <div className="flex items-center space-x-1 bg-btn_bg rounded-lg px-2 py-0.5">
-                    <button
-                      onClick={(e) => handleTopicLike(topic._id, e)}
-                      className={`rounded-full  hover:bg-bg_comment ${
-                        isLiked ? 'text-like_color' : 'none'
-                      }`}
-                    >
-                      <UpvoteIcon isLiked={isLiked}/>
-                    </button>
-                    <span className="text-xs text-gray-500">{topic.likes?.length || 0}</span>
-                    <button
-                      onClick={(e) => handleTopicDislike(topic._id, e)}
-                      className={`p-1 rounded-full hover:bg-gray-100 ${
-                        isDisliked ? 'text-red-500' : 'text-gray-500'
-                      }`}
-                    >
-                     <DownvoteIcon isDisliked={isDisliked}/>
-                    </button>
-                    <span className="text-sm text-gray-500">{topic.dislikes?.length || 0}</span>
-                  </div>
+                <div className="flex items-center ">
+                  
                   {canDelete && (
                     <div className="relative">
                       <button
@@ -236,6 +226,26 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                       )}
                     </div>
                   )}
+                  <div className="flex items-center space-x-1 bg-gray-300 dark:bg-btn_bg rounded-lg px-2 py-0.5">
+                    <button
+                      onClick={(e) => handleTopicLike(topic._id, e)}
+                      className={`rounded-full  hover:bg-bg_comment ${
+                        isLiked ? 'text-like_color' : 'none dark:text-gray-400'
+                      }`}
+                    >
+                      <UpvoteIcon isLiked={isLiked}/>
+                    </button>
+                    <span className="text-xs dark:text-gray-500 text-black">{topic.likes?.length || 0}</span>
+                    <button
+                      onClick={(e) => handleTopicDislike(topic._id, e)}
+                      className={`p-1 rounded-full hover:bg-gray-100 ${
+                        isDisliked ? 'text-red-500' : 'none dark:text-gray-400'
+                      }`}
+                    >
+                     <DownvoteIcon isDisliked={isDisliked}/>
+                    </button>
+                    <span className="text-sm dark:text-gray-500 text-black">{topic.dislikes?.length || 0}</span>
+                  </div>
                 </div>
               </div>
             </div>

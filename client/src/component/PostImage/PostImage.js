@@ -152,16 +152,16 @@ const PostImageContent = () => {
   return (
     <>
       <div className="hidden md:block">
-        <div className="w-full h-full  relative bg-transparent p-2 pt-0">
+        <div className="w-full h-full relative bg-transparent p-2 pt-0">
           <div className="flex flex-col">
             <div className="flex justify-between items-center mx-2 mb-2">
-              <div className="text-md text-text_header">
+              <div className="text-md text-gray-900 dark:text-text_header">
                 Upload your creativity
               </div>
               <div className="relative bg-transparent flex justify-end gap-4 ">
                 <button
                   onClick={handleClear}
-                  className="border border-gray-700 mt-2 bg-gray-500 p-2 px-8 text-white font-bold rounded-md hover:bg-gray-800 disabled:opacity-50"
+                  className="border dark:border-gray-700 border-gray-400 mt-2 bg-gray-300 dark:bg-gray-500 p-2 px-8 text-gray-500 dark:text-white font-bold rounded-md hover:bg-gray-800 disabled:opacity-50"
                   disabled={isUploading}
                 >
                   Clear

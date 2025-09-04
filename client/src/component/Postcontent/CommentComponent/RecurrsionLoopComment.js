@@ -32,14 +32,14 @@ const RecurrsionLoopComment = ({ reply, depth = 0, isLastChild, scrollToId }) =>
       {/* for those comment those dont have child */}
       {!hasChildren &&  (
         <div
-          className="absolute top-0 left-0 h-full border-l border-bg_comment_box"
+          className="absolute top-0 left-0 h-full border-l border-gray-100 dark:border-bg_comment_box"
           style={{ marginLeft: "0.75rem" }} // align to margin
         />
       )}
       {/* for those comment those dont have child */}
       {!view &&  (
         <div
-          className="absolute top-0 left-0 h-full border-l border-bg_comment_box"
+          className="absolute top-0 left-0 h-full border-l boder-gray-100 dark:border-bg_comment_box"
           style={{ marginLeft: "0.75rem" }} // align to margin
         />
       )}
@@ -54,7 +54,7 @@ const RecurrsionLoopComment = ({ reply, depth = 0, isLastChild, scrollToId }) =>
           {view && (
             <button
               onClick={() => setView(!view)}
-              className="w-6 h-6 rounded-full text-text_header bg-btn_bg cursor-pointer"
+              className="w-6 h-6 rounded-full text-black dark:text-text_header bg-blue-200 dark:bg-btn_bg cursor-pointer"
             >
               -
             </button>
@@ -76,7 +76,7 @@ const RecurrsionLoopComment = ({ reply, depth = 0, isLastChild, scrollToId }) =>
 
       {isLastChild && (
         <div
-          className="absolute left-0 w-1  h-full bg-bg_comment_box z-10"
+          className="absolute left-0 w-1  h-full bg-gray-100 dark:bg-bg_comment_box z-10"
           style={{
             marginLeft: "-1.25rem",
           }}
@@ -86,10 +86,10 @@ const RecurrsionLoopComment = ({ reply, depth = 0, isLastChild, scrollToId }) =>
       {reply && view && <ShowCommentContent reply={reply} />}
 
       {!view && (
-        <div className="text-white flex items-center gap-2 z-40 pb-4">
+        <div className="dark:text-white text-black  flex items-center gap-2 z-40 pb-4">
           <button
             onClick={() => setView(!view)}
-            className="w-6 h-6 z-40 flex items-center justify-center rounded-full text-text_header bg-btn_bg cursor-pointer"
+            className="w-6 h-6 z-40 flex items-center justify-center rounded-full text-black dark:text-text_header bg-blue-200 dark:bg-btn_bg cursor-pointer"
           >
             +
           </button>

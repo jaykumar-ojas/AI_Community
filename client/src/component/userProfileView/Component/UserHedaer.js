@@ -522,6 +522,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                   <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
 
                     {isError ? (
+
                       <span>!</span>
                     ) : (
                       posts?.length || 0
@@ -562,6 +563,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                         Following
                       </div>
                     )}
+
                   </div>
                   
                   {/* Subscriptions Popover */}
