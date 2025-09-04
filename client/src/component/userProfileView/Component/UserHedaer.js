@@ -466,12 +466,12 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                 ) : (
 
 
-
                   <h1 className="text-start justify-center font-bold text-black dark:text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
                     {profileUser?.userName}
                   </h1>
                 )}
                 {/* <p className="pt-2 text-center justify-center text-sm text-white/90 sm:text-md sm:text-start md:text-lg drop-shadow-lg">
+
                   {profileUser?.email}
                 </p> */}
 
@@ -520,6 +520,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
 
 
                   <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+
                     {isError ? (
 
                       <span>!</span>
@@ -530,12 +531,14 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
 
 
                   <div className="text-sm font-medium text-black dark:text-white  drop-shadow">
+
                     Posts
                   </div>
                 </div>
                 <div>
 
     <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+
                     {subscriptionStats?.subscribersCount || 0}
                   </div>
                   <div className="text-sm font-medium text-black dark:text-gray-200 drop-shadow">

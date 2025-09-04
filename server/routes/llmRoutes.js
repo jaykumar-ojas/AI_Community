@@ -2,7 +2,69 @@ const express = require('express');
 const router = express.Router();
 const llmService = require('../services/llmService');
 // const { llmConfig } = require('../config/llmConfig');
-const { llmConfig } = require('../config/modelconfig');
+const  llmConfig  = require('../config/modelconfig');
+
+console.log('llmConfig import check:', {
+    isObject: typeof llmConfig === 'object',
+    isEmpty: Object.keys(llmConfig || {}).length === 0,
+    structure: llmConfig
+});
+
+router.post('/generateaires', async (req, res) => {
+    try {
+
+// Add a verification log after the import
+console.log('Available types in llmConfig:', Object.keys(llmConfig));
+        const { model, prompt, type, provider } = req.body;
+
+        // Validate required fields
+        if (!type || !provider || !model || !prompt) {
+            return res.status(400).json({
+                error: 'Missing required fields: type, provider, model, and prompt are required'
+            });
+        }
+
+        // Validate type
+        if (!['text', 'image'].includes(type)) {
+            return res.status(400).json({
+                error: 'Type must be either "text" or "image"'
+            });
+        }
+
+        // Check if provider exists in the config for the given type
+        if (!llmConfig[type] || !llmConfig[type][provider]) {
+            return res.status(400).json({
+                error: `Provider '${provider}' not found for type '${type}'`,
+                availableProviders: Object.keys(llmConfig[type] || {})
+            });
+        }
+
+        // Get the function for the specific model from the provider
+        const modelFunctions = llmConfig[type][provider];
+        if (!modelFunctions || !modelFunctions[model]) {
+            return res.status(400).json({
+                error: `Model '${model}' not found for provider '${provider}'`,
+                availableModels: Object.keys(modelFunctions || {})
+            });
+        }
+
+        const func = modelFunctions[model];
+        console.log("Function found for model:", model);
+        const response = await func(prompt, model);
+        
+        res.json({
+            success: true,
+            data: response
+        });
+
+    } catch (error) {
+        console.error('Error in generateaires route:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+});
 // const {GoogleGenerativeAI} = require("@google/generative-ai");
 // Middleware to validate request
 const validateRequest = (req, res, next) => {
@@ -187,38 +249,7 @@ router.get('/models-info', (req, res) => {
     }
 });
 
-router.post('/generateaires', async (req, res) => {
-    try {
-        const { model, prompt, type, provider } = req.body;
-        let func;
-        if(type==text){
-            func = llmConfig.text[provider][model];
-        }
-        // Better error handling
- 
-        //const func = llmConfig[type][provider][model];
-        if (!func) {
-            return res.status(400).json({ 
-                error: `Model '${model}' not found. Available models for ${provider}: ${Object.keys(llmConfig[type][provider]).join(', ')}` 
-            });
-        }
 
-        console.log("Function found for model:", model);
-        const response = await func(prompt, model);
-        
-        res.json({
-            success: true,
-            data: response
-        });
-
-    } catch (error) {
-        console.error('Error in generate route:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message || 'Internal server error'
-        });
-    }
-});
 
 
 module.exports = router; 
