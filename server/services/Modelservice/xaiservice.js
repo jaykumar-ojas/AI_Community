@@ -24,7 +24,7 @@ async function getGrokResponse( prompt, model) {
     ],
   });
 
-  return completion.choices[0]?.message?.content || "";
+  return {text: completion.choices[0]?.message?.content || ""};
 }
 
 

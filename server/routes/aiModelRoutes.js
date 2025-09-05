@@ -13,7 +13,7 @@ router.get("/aimodels/search", async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Model name is required as a query parameter"
-      });
+            });
     }
 
     // Search for the model (case-insensitive search)

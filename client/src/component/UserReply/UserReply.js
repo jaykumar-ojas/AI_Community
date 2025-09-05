@@ -14,25 +14,38 @@ import {
 } from "../AiForumPage/components/ForumUtils";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 import { BrainIcon, ChevronDown, Send } from "lucide-react";
-import modelIcon from "../../asset/IconImage/ModelIcon.png"
+import modelIcon from "../../asset/IconImage/ModelIcon.png";
 import ModelContent from "./Component/ModelContent";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const UserReply = () => {
+  // other states for genral use
   const { loginData } = useContext(LoginContext);
-  const { replyIdForContext, setReplyIdForContext, model, modelType } =
-    useContext(ForumContext);
+  const { emitNewReply } = useWebSocket();
+  const { topicId } = useParams();
+
+  // model related states
+  const {
+    replyIdForContext,
+    setReplyIdForContext,
+    model,
+    modelType,
+    provider,
+  } = useContext(ForumContext);
+
+  // post related states
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [postingData, setPostingData] = useState([]);
+  const [newReply, setNewReply] = useState("");
+
+  // loading related states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
-  const { emitNewReply } = useWebSocket();
-  
   const [loading, setLoading] = useState(false);
-  const [newReply, setNewReply] = useState("");
-  const { topicId } = useParams();
-  const [postingData, setPostingData] = useState([]);
+
+  // for mobileView model button state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   // Track posted replies to call describe-images API
   const [postedReplies, setPostedReplies] = useState([]);
@@ -41,65 +54,6 @@ const UserReply = () => {
   const [isContextAware, setIsContextAware] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
   const [aiGenerated, setAiGenerated] = useState(false);
-  // Background function to describe images
-  const describeImagesInBackground = async (replyId, postingData) => {
-    // Check if there are any images in the posting data
-    const hasImages = postingData.some(
-      (entry) =>
-        entry.imageUrl ||
-        selectedFiles.some((file) => file.type.startsWith("image/"))
-    );
-
-    if (!hasImages) return;
-
-    try {
-      console.log(`Calling describe-images API for reply: ${replyId}`);
-
-      const response = await axios.put(
-        `${baseUrl}/describe-images/${replyId}`,
-        {},
-        {
-          headers: getAuthHeaders(),
-        }
-      );
-
-      console.log("Image description API response:", response.data);
-
-      if (response.data.success) {
-        console.log("Images described successfully for reply:", replyId);
-      }
-    } catch (err) {
-      console.error("Error describing images:", err);
-      // Don't show this error to user since it's a background operation
-    }
-  };
-
-  // Function to fetch model information
-  const fetchModelInfo = async (modelName) => {
-    try {
-      console.log(`Calling /aimodels/search API for model: ${modelName}`);
-
-      const response = await axios.get(
-        `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
-        {
-          headers: getAuthHeaders(),
-        }
-      );
-
-      console.log("AI model search API response:", response.data);
-
-      if (response.data.success) {
-        return response.data.data;
-      } else {
-        console.warn(`No model info found for: ${modelName}`);
-        return null;
-      }
-    } catch (err) {
-      console.error("Error fetching model info:", err);
-      // Return null if model info fetch fails, don't break the flow
-      return null;
-    }
-  };
 
   // Effect to monitor posted replies and trigger image description
   useEffect(() => {
@@ -123,13 +77,53 @@ const UserReply = () => {
     setSelectedFiles(Array.from(e.target.files));
   };
 
+  // Background function to describe images
+  const describeImagesInBackground = async (replyId, postingData) => {
+    // Check if there are any images in the posting data
+    const hasImages = postingData.some(
+      (entry) =>
+        entry.imageUrl ||
+        selectedFiles.some((file) => file.type.startsWith("image/"))
+    );
+
+    if (!hasImages) return;
+
+    try {
+      const response = await axios.put(
+        `${baseUrl}/describe-images/${replyId}`,
+        {},
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+    } catch (err) {
+      console.error("Error describing images:", err);
+      // Don't show this error to user since it's a background operation
+    }
+  };
+
+  // Function to fetch model information
+  const fetchModelInfo = async (modelName) => {
+    try {
+      const response = await axios.get(
+        `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        return null;
+      }
+    } catch (err) {
+      return null;
+    }
+  };
+
   // handle generate Submit - calls the /generate API
-  const handleGenerateSubmit = async (
-    e,
-    enhancedPrompt = null,
-    originalUserText = null
-  ) => {
-    e?.preventDefault();
+  const handleGenerateSubmit = async (e, enhancedPrompt = null,originalUserText = null) => {
+    e.preventDefault();
     const promptToUse = enhancedPrompt || newReply.trim();
     const textToRender = originalUserText || newReply.trim();
     if (!promptToUse) return;
@@ -142,28 +136,15 @@ const UserReply = () => {
         model: model,
         prompt: promptToUse,
         type: modelType,
-        options: {
-          // Add any additional options here based on your requirements
-          temperature: 0.7,
-          maxTokens: modelType === "text" ? 1000 : undefined,
-          n: 1,
-          size: modelType === "image" ? "1024x1792" : undefined,
-        },
+        provider: provider,
       };
 
-      console.log("Calling /generate API with payload:", generatePayload);
-
-      const response = await axios.post(
-        `${baseUrl}/generate`, // Updated endpoint
-        generatePayload
-      );
-
-      console.log("Generate API response:", response.data);
+      const response = await axios.post(`${baseUrl}/generateContent`,generatePayload);
 
       if (response.data.success) {
         // Fetch model information after successful generation
         const modelInfo = await fetchModelInfo(model);
-
+        console.log("this is response",response);
         // Always render the original user text, not the enhanced prompt
         handleGeneratedResult(response.data.data, textToRender, modelInfo);
         if (!enhancedPrompt) {
@@ -173,11 +154,7 @@ const UserReply = () => {
         setError("Failed to generate content");
       }
     } catch (err) {
-      console.error("Error:", err);
-      setError(
-        err.response?.data?.error ||
-          "An error occurred while generating content"
-      );
+      setError(err.response?.data?.error || "An error occurred while generating content");
     } finally {
       setLoading(false);
     }
@@ -193,7 +170,6 @@ const UserReply = () => {
 
     try {
       // First call the suggest API to get context-aware enhancement
-      console.log("Calling /suggest API for context awareness");
 
       const suggestResponse = await axios.post(
         `${baseUrl}/suggest/${replyIdForContext || topicId}`,
@@ -211,14 +187,9 @@ const UserReply = () => {
         }
       );
 
-      console.log("Suggest API response:", suggestResponse.data);
-
       if (suggestResponse.data.success) {
         const enhancedPrompt = suggestResponse.data.data.suggestion;
         const originalUserText = newReply.trim();
-
-        console.log("Original user input:", originalUserText);
-        console.log("Enhanced prompt (for generation only):", enhancedPrompt);
 
         // Use enhanced prompt for generation but render original user text
         handleGenerateSubmit(null, enhancedPrompt, originalUserText);
@@ -239,7 +210,6 @@ const UserReply = () => {
 
   // handle submit to post
   const handleSubmit = async (e) => {
-    console.log("Direct post submit");
     e.preventDefault();
     if (!newReply.trim() && postingData.length === 0) return;
     setIsLoading(true);
@@ -323,30 +293,36 @@ const UserReply = () => {
 
   const handleGeneratedResult = (data, originalPrompt, modelInfo = null) => {
     setAiGenerated(false);
-    console.log("Handling generated result:", data);
-    console.log("Model info received:", modelInfo);
 
     let newEntry = {
       userText: originalPrompt,
       aiText: "",
       prompt: "",
       imageUrl: "",
+      imageBlob:"",
       model: model,
       modelInfo: modelInfo,
     };
 
     // Since we're passing response.data.data, the structure is:
     // data.type, data.result.text, etc.
-    if (data.type === "text" && data.result?.text) {
-      newEntry.aiText = data.result.text;
-    } else if (data.type === "image" && data.result?.images?.[0]?.url) {
-      newEntry.imageUrl = data.result.images[0].url;
+    if (data?.text) {
+      newEntry.aiText = data.text;
+    } else if (data?.imageData) {
+      const binary = atob(data.imageData); // decode base64 to binary string
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      // const bytes = new Uint8Array(data.imageData); 
+      const blob = new Blob([bytes], { type: "image/png" });
+
+      newEntry.imageUrl = URL.createObjectURL(blob);
+      newEntry.imageBlob = data.imageData;
     } else if (data.type === "image" && data.result?.images) {
       // Alternative structure for image URLs
-      newEntry.imageUrl = data.result.images;
+      // newEntry.imageUrl = data.result.images;
     }
-
-    console.log("New Entry:", newEntry);
     setPostingData((prev) => [...prev, newEntry]);
 
     setAiGenerated(true);
@@ -373,7 +349,7 @@ const UserReply = () => {
         <div className="flex md:mb-2">
           <textarea
             type="text"
-           className="flex-1 p-1 min-h-8 text-sm md:text-sm 
+            className="flex-1 p-1 min-h-8 text-sm md:text-sm 
              bg-transparent focus:outline-none focus:ring-0 border border-gray-300 rounded-md 
              resize-none overflow-y-auto break-words"
             placeholder="Write your reply..."
@@ -423,7 +399,9 @@ const UserReply = () => {
                 }`}
               />
             </button>
-            {isDropdownOpen && <ModelContent  closeDropdown={() => setIsDropdownOpen(false)} />}
+            {isDropdownOpen && (
+              <ModelContent closeDropdown={() => setIsDropdownOpen(false)} />
+            )}
           </div>
           <div className="flex ">
             {model && (
