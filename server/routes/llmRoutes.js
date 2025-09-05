@@ -179,75 +179,182 @@ router.get('/models/:type/:model', (req, res) => {
 });
 
 // Route to get model information with display names and emojis
-router.get('/models-info', (req, res) => {
-    try {
-        // Generate model info dynamically from llmConfig
-        const generateModelInfo = (config, type) => {
-            const modelInfo = {};
+// router.get('/models-info', (req, res) => {
+//     try {
+//         // Generate model info dynamically from llmConfig
+//         const generateModelInfo = (config, type) => {
+//             const modelInfo = {};
             
-            // Default emojis for different providers
-            const providerEmojis = {
-                openai: "🤖",
-                google: "✨", 
-                anthropic: "🧠",
-                meta: "🦙",
-                xai: "🚀",
-                deepseek: "🔍",
-                stability: "🖼️",
-                runway: "🎬",
-                flux: "⚡"
-            };
+//             // Default emojis for different providers
+//             const providerEmojis = {
+//                 openai: "🤖",
+//                 google: "✨", 
+//                 anthropic: "🧠",
+//                 meta: "🦙",
+//                 xai: "🚀",
+//                 deepseek: "🔍",
+//                 stability: "🖼️",
+//                 runway: "🎬",
+//                 flux: "⚡"
+//             };
 
-            // Default display names mapping
-            const displayNameMapping = {
-                "dall-e-3": "DALL-E 3",
-                "stable-diffusion-xl": "Stable Diffusion XL",
-                "stable-diffusion-3-5": "Stable Diffusion 3.5",
-                "imagen-3.0-generate-002": "Imagen 3.0",
-                "grok-2-image-1212": "Grok Image",
-                "runway-sd": "Runway SD",
-                "flux-schnell": "Flux Schnell",
-                "gpt-4.1": "GPT-4.1",
-                "gemini-2.0-flash": "Gemini 2.0",
-                "claude-3-7-sonnet-20250219": "Claude 3",
-                "llama-3.3-70b-versatile": "Llama 2",
-                "grok-3-mini": "Grok 3",
-                "deepseek-chat": "Deepseek Chat"
-            };
+//             // Default display names mapping
+//             const displayNameMapping = {
+//                 "dall-e-3": "DALL-E 3",
+//                 "stable-diffusion-xl": "Stable Diffusion XL",
+//                 "stable-diffusion-3-5": "Stable Diffusion 3.5",
+//                 "imagen-3.0-generate-002": "Imagen 3.0",
+//                 "grok-2-image-1212": "Grok Image",
+//                 "runway-sd": "Runway SD",
+//                 "flux-schnell": "Flux Schnell",
+//                 "gpt-4.1": "GPT-4.1",
+//                 "gemini-2.0-flash": "Gemini 2.0",
+//                 "claude-3-7-sonnet-20250219": "Claude 3",
+//                 "llama-3.3-70b-versatile": "Llama 2",
+//                 "grok-3-mini": "Grok 3",
+//                 "deepseek-chat": "Deepseek Chat"
+//             };
 
-            Object.entries(config).forEach(([modelName, modelConfig]) => {
-                const provider = modelConfig.provider;
-                const emoji = providerEmojis[provider] || "🤖";
-                const displayName = displayNameMapping[modelName] || modelName;
+//             Object.entries(config).forEach(([modelName, modelConfig]) => {
+//                 const provider = modelConfig.provider;
+//                 const emoji = providerEmojis[provider] || "🤖";
+//                 const displayName = displayNameMapping[modelName] || modelName;
                 
-                modelInfo[modelName] = {
-                    provider: provider,
-                    displayName: displayName,
-                    emoji: emoji,
-                    type: type
-                };
-            });
+//                 modelInfo[modelName] = {
+//                     provider: provider,
+//                     displayName: displayName,
+//                     emoji: emoji,
+//                     type: type
+//                 };
+//             });
             
-            return modelInfo;
-        };
+//             return modelInfo;
+//         };
 
-        const modelInfo = {
-            text: generateModelInfo(llmConfig.text, 'text'),
-            image: generateModelInfo(llmConfig.image, 'image')
-        };
+//         const modelInfo = {
+//             text: generateModelInfo(llmConfig.text, 'text'),
+//             image: generateModelInfo(llmConfig.image, 'image')
+//         };
         
-        res.json({
-            success: true,
-            data: modelInfo
+//         res.json({
+//             success: true,
+//             data: modelInfo
+//         });
+//     } catch (error) {
+//         console.error('Error getting model info:', error);
+//         res.status(500).json({
+//             success: false,
+//             error: error.message || 'Internal server error'
+//         });
+//     }
+// });
+
+//const llmConfig = require('../config/modelconfig');
+
+router.get('/models-info', (req, res) => {
+  try {
+    const providerEmojis = {
+      openai: "🤖",
+      google: "✨",
+      meta: "🦙",
+      grok: "🚀",
+      qwen: "🐉",
+      flux: "⚡",
+      stable: "🖼️",
+    };
+
+    // Display name mapping built directly from your llmConfig models
+    const displayNameMapping = {
+      // --- openai (text & image) ---
+      "gpt-4.1": "GPT-4.1",
+      "gpt-5": "GPT-5",
+      "gpt-5-mini": "GPT-5 Mini",
+      "gpt-5-nano": "GPT-5 Nano",
+      "o4-mini": "O4 Mini",
+      "dall-e-3": "DALL·E 3",
+      "dall-e-2": "DALL·E 2",
+      "gpt-image-1": "GPT Image 1",
+
+      // --- google ---
+      "gemini-2.0-flash": "Gemini 2.0 Flash",
+      "gemini-2.5-pro": "Gemini 2.5 Pro",
+      "gemini-2.5-flash": "Gemini 2.5 Flash",
+      "gemini-2.0-flash-lite": "Gemini 2.0 Flash Lite",
+      "imagen-4.0-generate-001": "Imagen 4.0",
+      "imagen-4.0-ultra-generate-001": "Imagen 4.0 Ultra",
+      "imagen-4.0-fast-generate-001": "Imagen 4.0 Fast",
+      "imagen-3.0-generate-002": "Imagen 3.0",
+      "gemini-2.5-flash-image-preview": "Gemini 2.5 Image Preview",
+      "gemini-2.0-flash-preview-image-generation": "Gemini 2.0 Image Generation",
+
+      // --- meta ---
+      "llama-3.1-8b-instant": "LLaMA 3.1 8B Instant",
+      "llama-3.3-70b-versatile": "LLaMA 3.3 70B Versatile",
+      "meta-llama/llama-4-maverick-17b-128e-instruct": "LLaMA 4 Maverick 17B",
+      "meta-llama/llama-4-scout-17b-16e-instruct": "LLaMA 4 Scout 17B",
+      "meta-llama/llama-guard-4-12b": "LLaMA Guard 4 12B",
+
+      // --- grok ---
+      "grok-3-mini": "Grok 3 Mini",
+      "grok-3-mini-fast": "Grok 3 Mini Fast",
+      "grok-4": "Grok 4",
+      "grok-2-image": "Grok 2 Image",
+
+      // --- qwen ---
+      "qwen/qwen3-32b": "Qwen3 32B",
+
+      // --- stable ---
+      "ultra": "Stable Diffusion Ultra",
+      "core": "Stable Diffusion Core",
+      "sd3.5-large": "Stable Diffusion 3.5 Large",
+      "sd3.5-large-turbo": "Stable Diffusion 3.5 Large Turbo",
+      "sd3.5-medium": "Stable Diffusion 3.5 Medium",
+      "sd3.5-flash": "Stable Diffusion 3.5 Flash",
+
+      // --- flux ---
+      "flux-kontext-pro": "Flux Kontext Pro",
+      "flux-kontext-max": "Flux Kontext Max",
+      "flux-pro-1.1-ultra": "Flux Pro 1.1 Ultra",
+      "flux-pro-1.1": "Flux Pro 1.1",
+      "flux-pro": "Flux Pro",
+      "flux-dev": "Flux Dev",
+    };
+
+    const buildInfo = (cfg, type) => {
+      const out = {};
+      Object.entries(cfg).forEach(([provider, models]) => {
+        Object.keys(models).forEach((modelName) => {
+          const emoji = providerEmojis[provider] || "🤖";
+          const displayName = displayNameMapping[modelName] || modelName;
+          out[modelName] = {
+            provider,
+            displayName,
+            emoji,
+            type,
+          };
         });
-    } catch (error) {
-        console.error('Error getting model info:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message || 'Internal server error'
-        });
-    }
+      });
+      return out;
+    };
+
+    const modelInfo = {
+      text: buildInfo(llmConfig.text, "text"),
+      image: buildInfo(llmConfig.image, "image"),
+    };
+
+    res.json({
+      success: true,
+      data: modelInfo,
+    });
+  } catch (error) {
+    console.error("Error getting model info:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Internal server error",
+    });
+  }
 });
+
 
 
 

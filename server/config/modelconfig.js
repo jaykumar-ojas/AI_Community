@@ -135,7 +135,7 @@ const llmConfig = {
       "gemini-2.0-flash-preview-image-generation":  generateGeminibanana,
     },
     "stable": {
-       "ultra": ultra,
+      "ultra": ultra,
       "core": core, 
       "sd3.5-large": sd3,
       "sd3.5-large-turbo": sd3, 
