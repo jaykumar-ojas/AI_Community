@@ -60,12 +60,14 @@ const upload = multer({
         }
     },
     limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB limit
+        fileSize: 50 * 1024 * 1024,
+        fieldSize: 50 * 1024 * 1024  // 50MB limit
     } 
 });
 
 const awsuploadMiddleware = async (req, res, next) => {
     console.log("Middleware triggered. Single file:", req.file);
+    console.log("i m here");
 
     try {
         let allFiles = [];
