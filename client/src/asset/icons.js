@@ -182,7 +182,7 @@ export const CommentIcon = ({ h = 5, w = 5, ...props }) => {
 
 
 
-export const heartSvg = ({ filled }) => (
+export const heartSvg = (filled ) => (
   <svg
     viewBox="0 0 24 24"
     fill={filled ? "#ff4757" : "none"} // red fill if liked
