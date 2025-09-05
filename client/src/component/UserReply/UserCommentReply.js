@@ -25,7 +25,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 const UserCommentReply = () => {
   const { id } = useParams();
   const { loginData } = useContext(LoginContext);
-  const { replyIdForContext, setReplyIdForContext, model, setModel, modelType } = useContext(CommentContext);
+  const { replyIdForContext, setReplyIdForContext, model, setModel, modelType, provider } = useContext(CommentContext);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -54,9 +54,7 @@ const UserCommentReply = () => {
 
     if (!hasImages) return;
 
-    try {
-      console.log(`Calling describe-images API for comment reply: ${replyId}`);
-      
+    try {      
       const response = await axios.put(
         `${baseUrl}/describe-images/${replyId}`,
         {},
@@ -64,12 +62,6 @@ const UserCommentReply = () => {
           headers: getAuthHeaders()
         }
       );
-
-      console.log("Image description API response:", response.data);
-      
-      if (response.data.success) {
-        console.log("Images described successfully for comment reply:", replyId);
-      }
     } catch (err) {
       console.error("Error describing images:", err);
       // Don't show this error to user since it's a background operation
@@ -78,18 +70,13 @@ const UserCommentReply = () => {
 
   // Function to fetch model information
   const fetchModelInfo = async (modelName) => {
-    try {
-      console.log(`Calling /aimodels/search API for model: ${modelName}`);
-      
+    try {      
       const response = await axios.get(
         `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
         {
           headers: getAuthHeaders()
         }
-      );
-
-      console.log("AI model search API response:", response.data);
-      
+      );      
       if (response.data.success) {
         return response.data.data;
       } else {
@@ -142,24 +129,16 @@ const UserCommentReply = () => {
         model: model,
         prompt: promptToUse,
         type: modelType,
-        options: {
-          // Add any additional options here based on your requirements
-          temperature: 0.7,
-          maxTokens: modelType === 'text' ? 1000 : undefined,
-          n: 1,
-          size: modelType === 'image' ? '1024x1792' : undefined, // Updated to match UserReply
-        }
+        provider:provider
       };
 
-      console.log("Calling /generate API with payload:", generatePayload);
+      
       
       const response = await axios.post(
-        `${baseUrl}/generate`, // Updated endpoint
+        `${baseUrl}/generateContent`, // Updated endpoint
         generatePayload
       );
-      
-      console.log("Generate API response:", response.data);
-      
+          
       if (response.data.success) {
         // Fetch model information after successful generation
         const modelInfo = await fetchModelInfo(model);
@@ -192,9 +171,7 @@ const UserCommentReply = () => {
     setError(null);
 
     try {
-      // First call the suggest API to get context-aware enhancement
-      console.log("Calling /suggest API for context awareness");
-      
+      // First call the suggest API to get context-aware enhancement      
       const suggestResponse = await axios.post(
         `${baseUrl}/suggest/${replyIdForContext || id}`,
         {
@@ -211,14 +188,9 @@ const UserCommentReply = () => {
         }
       );
 
-      console.log("Suggest API response:", suggestResponse.data);
-
       if (suggestResponse.data.success) {
         const enhancedPrompt = suggestResponse.data.data.suggestion;
         const originalUserText = newReply.trim();
-        
-        console.log("Original user input:", originalUserText);
-        console.log("Enhanced prompt (for generation only):", enhancedPrompt);
         
         // Use enhanced prompt for generation but render original user text
         handleGenerateSubmit(null, enhancedPrompt, originalUserText);
@@ -240,7 +212,6 @@ const UserCommentReply = () => {
 
   // handle submit to post
   const handleSubmit = async (e) => {
-    console.log("Direct post submit");
     e.preventDefault();
     if (!newReply.trim() && postingData.length === 0) return;
     setIsLoading(true);
@@ -326,30 +297,32 @@ const UserCommentReply = () => {
 
   const handleGeneratedResult = (data, originalPrompt, modelInfo = null) => {
     setAiGenerated(false);
-    console.log("Handling generated result:", data);
-    console.log("Model info received:", modelInfo);
-    
+
     let newEntry = {
       userText: originalPrompt,
       aiText: "",
       prompt: "",
       imageUrl: "",
+      imageBlob:"",
       model: model,
-      modelInfo: modelInfo
+      modelInfo: modelInfo,
     };
 
-    // Since we're passing response.data.data, the structure is:
-    // data.type, data.result.text, etc.
-    if (data.type === 'text' && data.result?.text) {
-      newEntry.aiText = data.result.text;
-    } else if (data.type === 'image' && data.result?.images?.[0]?.url) {
-      newEntry.imageUrl = data.result.images[0].url;
-    } else if (data.type === 'image' && data.result?.images) {
-      // Alternative structure for image URLs
-      newEntry.imageUrl = data.result.images;
-    }
+    if (data?.text) {
+      newEntry.aiText = data.text;
+    } else if (data?.imageData) {
+      const binary = atob(data.imageData); // decode base64 to binary string
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: "image/png" });
 
-    console.log("New Entry:", newEntry);
+      newEntry.imageUrl = URL.createObjectURL(blob);
+      newEntry.imageBlob = data.imageData;
+    } else if (data?.imageUrl) {
+      newEntry.imageUrl = data.imageUrl;
+    }
     setPostingData((prev) => [...prev, newEntry]);
 
     setAiGenerated(true);

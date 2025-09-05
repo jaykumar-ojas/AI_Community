@@ -144,7 +144,7 @@ const UserReply = () => {
       if (response.data.success) {
         // Fetch model information after successful generation
         const modelInfo = await fetchModelInfo(model);
-        console.log("this is response",response);
+        
         // Always render the original user text, not the enhanced prompt
         handleGeneratedResult(response.data.data, textToRender, modelInfo);
         if (!enhancedPrompt) {
@@ -304,8 +304,6 @@ const UserReply = () => {
       modelInfo: modelInfo,
     };
 
-    // Since we're passing response.data.data, the structure is:
-    // data.type, data.result.text, etc.
     if (data?.text) {
       newEntry.aiText = data.text;
     } else if (data?.imageData) {
@@ -314,14 +312,12 @@ const UserReply = () => {
       for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
       }
-      // const bytes = new Uint8Array(data.imageData); 
       const blob = new Blob([bytes], { type: "image/png" });
 
       newEntry.imageUrl = URL.createObjectURL(blob);
       newEntry.imageBlob = data.imageData;
-    } else if (data.type === "image" && data.result?.images) {
-      // Alternative structure for image URLs
-      // newEntry.imageUrl = data.result.images;
+    } else if (data?.imageUrl) {
+      newEntry.imageUrl = data.imageUrl;
     }
     setPostingData((prev) => [...prev, newEntry]);
 

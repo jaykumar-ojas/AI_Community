@@ -93,25 +93,6 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
-// Route to generate content (text or image)
-router.post("/generate", validateRequest, async (req, res) => {
-  try {
-    const { model, prompt, type, options } = req.body;
-
-    const response = await llmService.generate(type, model, prompt, options);
-
-    res.json({
-      success: true,
-      data: response,
-    });
-  } catch (error) {
-    console.error("Error in generate route:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message || "Internal server error",
-    });
-  }
-});
 
 // Route to get available models
 router.get("/models", (req, res) => {
@@ -285,6 +266,25 @@ router.get("/models-info", (req, res) => {
 
 module.exports = router;
 
+// Route to generate content (text or image)
+// router.post("/generate", validateRequest, async (req, res) => {
+//   try {
+//     const { model, prompt, type, options } = req.body;
+
+//     const response = await llmService.generate(type, model, prompt, options);
+
+//     res.json({
+//       success: true,
+//       data: response,
+//     });
+//   } catch (error) {
+//     console.error("Error in generate route:", error);
+//     res.status(500).json({
+//       success: false,
+//       error: error.message || "Internal server error",
+//     });
+//   }
+// });
 // Route to get model information with display names and emojis
 // router.get('/models-info', (req, res) => {
 //     try {

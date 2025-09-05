@@ -8,6 +8,7 @@ function ModelItem({
   name,
   displayName,
   iconUrl,
+  provider,
   emoji,
   active = false,
   onClick,
@@ -21,7 +22,7 @@ function ModelItem({
             ? "bg-like_color text-text_header font-medium transform scale-[1.02]"
             : "text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]"
         }`}
-        onClick={() => onClick(name)}
+        onClick={() => onClick(name,provider)}
       >
         {iconUrl ? (
           <img
@@ -64,7 +65,7 @@ const fetchIconUrl = async (modelName) => {
 };
 
 const ModelContent = ({ closeDropdown }) => {
-  const { model, setModel, modelType, setModelType } = useContext(ForumContext);
+  const { model, setModel, modelType, setModelType,setProvider } = useContext(ForumContext);
   const [iconUrls, setIconUrls] = useState({});
   const [isOpen, setIsOpen] = useState(false); // dropdown state
   const containerRef = useRef(null);
@@ -95,8 +96,9 @@ const ModelContent = ({ closeDropdown }) => {
     loadIcons();
   }, [modelConfig, modelType]);
 
-  const handleModelSelect = (modelName) => {
+  const handleModelSelect = (modelName,provider) => {
     setModel(modelName);
+    setProvider(provider);
     const isImageModel = modelType === "image";
     const controlBits = {
       enhancePrompt: false,
@@ -189,6 +191,7 @@ const ModelContent = ({ closeDropdown }) => {
               <ModelItem
                 key={modelName}
                 name={modelName}
+                provider={config.provider}
                 displayName={config.displayName}
                 iconUrl={iconUrls[modelName]}
                 emoji={config.emoji}
