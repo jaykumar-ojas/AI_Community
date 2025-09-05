@@ -414,11 +414,11 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   };
 
   return (
-    <div className="w-full rounded-lg dark:bg-transparent relative shadow-lg flex flex-col gap-0">
+    <div className="w-full border dark:border-gray-700 rounded-lg dark:bg-transparent relative shadow-lg flex flex-col gap-0">
       {/* user header */}
-      <div className="flex justify-between items-center md:px-2 w-full h-full">
-        <div className="flex justify-between items-center sm:mx-2">
-          <div className="w-8 h-8 flex-shrink-0 m-2">
+      <div className="flex justify-between border-b dark:border-gray-700 items-center md:px-2 w-full h-full">
+        <div className="flex justify-between items-center gap-1 sm:mx-2">
+          <div className="w-8 h-8  flex-shrink-0">
             <UserIconCard id={postData?.userId}></UserIconCard>
           </div>
           <div className="dark:text-white text-black">
@@ -478,7 +478,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
       {/* AI Model Info */}
 
       {/* user media content */}
-      <div className="w-full min-h-[300px]  bg-transparent relative flex justify-center items-center">
+      <div className="w-full min-h-[300px]  bg-neutral-100 relative flex justify-center items-center">
         <div
           className={`w-full flex items-center justify-center overflow-hidden ${
             postData?.fileType === "image" ? "cursor-pointer" : ""
@@ -490,7 +490,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
       </div>
 
       {/* user description and interaction */}
-      <div className="">
+      <div className="border-t dark:border-gray-700">
         <div className="p-1 sm:mx-2 flex items-center justify-between gap-2 text-xs ">
           {/* Outer wrapper with justify-between */}
           <div className="bg-something flex justify-between items-center px-2 rounded-xl w-full">

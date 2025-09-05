@@ -7,7 +7,7 @@ const GoogleLogin = () => {
     }
     return (
         <div className="my-6">
-            <button onClick={loginwithGoogle} className="flex md:w-3/4 w-full mx-auto justify-center rounded-3xl bg-white p-2 text-black hover:bg-gray-200">
+            <button onClick={loginwithGoogle} className="flex md:w-full w-full mx-auto justify-center rounded-3xl bg-white p-2 text-black hover:bg-gray-200">
               <img
                 src="https://freesvg.org/img/1534129544.png"
                 className="mr-2 w-6 object-fill"
