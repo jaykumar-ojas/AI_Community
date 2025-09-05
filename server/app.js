@@ -108,13 +108,11 @@ io.on('connection', (socket) => {
 
   // New topic created
   socket.on('new_topic', (topic) => {
-    console.log("New topic created:", topic);
     io.emit('topic_created', topic);
   });
 
   // New reply added
   socket.on('new_reply', (reply) => {
-    console.log("New reply received:", reply);
     const room = `topic_${reply.topicId}`;
     // Broadcast to all clients in the room except the sender
     socket.to(room).emit('reply_created', reply);
@@ -124,13 +122,11 @@ io.on('connection', (socket) => {
 
   // Topic deleted
   socket.on('delete_topic', (topicId) => {
-    console.log("Topic deleted:", topicId);
     io.emit('topic_deleted', topicId);
   });
 
   // Reply deleted
   socket.on('delete_reply', (data) => {
-    console.log("Reply deleted:", data);
     const room = `topic_${data.topicId}`;
     io.to(room).emit('reply_deleted', data.replyId);
   });
@@ -139,19 +135,16 @@ io.on('connection', (socket) => {
   socket.on('join_post', (postId) => {
     const room = `post_${postId}`;
     socket.join(room);
-    console.log(`User joined post room: ${room}`);
   });
 
   // Leave a post room
   socket.on('leave_post', (postId) => {
     const room = `post_${postId}`;
     socket.leave(room);
-    console.log(`User left post room: ${room}`);
   });
 
   // New comment created
   socket.on('new_comment', (comment) => {
-    console.log("New comment received:", comment);
     const room = `post_${comment.postId}`;
     // Broadcast to all clients in the room except the sender
     socket.to(room).emit('comment_created', comment);
@@ -161,14 +154,12 @@ io.on('connection', (socket) => {
 
   // Comment deleted
   socket.on('delete_comment', (data) => {
-    console.log("Comment deleted:", data);
     const room = `post_${data.postId}`;
     io.to(room).emit('comment_deleted', data.commentId);
   });
 
   // Comment liked/disliked
   socket.on('comment_reaction', (data) => {
-    console.log("Comment reaction:", data);
     const room = `post_${data.postId}`;
     io.to(room).emit('comment_reaction_updated', data);
   });

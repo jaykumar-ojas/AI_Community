@@ -17,13 +17,15 @@ async function getImagen() {
 
 
 async function googletext(prompt, model) {
+  console.log("i m coming to generate text");
   const ai = await getGemini();
   const response = await ai.models.generateContent({
     model: model,
     contents: prompt,
   });
+  console.log("text coming");
   console.log(response.text);
-  return response.text;
+  return {text: response.text};
 }
 
 async function google_imagen(prompt, model) {
@@ -38,7 +40,7 @@ const response = await ai.models.generateImages({
   });
   const generatedImage = response.generatedImages[0]; 
       const imgBytes = generatedImage.image.imageBytes;
-     return  Buffer.from(imgBytes, "base64");
+     return  {imageData: imgBytes};
 }
 
 async function generateGeminibanana(prompt, model) {
@@ -57,11 +59,11 @@ async function generateGeminibanana(prompt, model) {
       console.log(part.text);
     } else if (part.inlineData) {
       const imageData = part.inlineData.data;
-      const buffer = Buffer.from(imageData, "base64");
+      
       // fs.writeFileSync("gemini-native-image.png", buffer);
       // console.log("Image saved as gemini-native-image.png");
 
-      return buffer; // Return the image buffer
+      return {imageData: imageData}; // Return the image buffer
     }
   }
 }

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ForumContext } from '../../ContextProvider/ModelContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick }) {
+function ModelItem({ name, displayName, iconUrl, emoji, provider, active = false, onClick }) {
     return (
         <li>
             <button
@@ -12,7 +12,7 @@ function ModelItem({ name, displayName, iconUrl, emoji, active = false, onClick 
                         ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
                         : 'text-black dark:text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
                 }`}
-                onClick={() => onClick(name)}
+                onClick={() => onClick(name,provider)}
             >
                 {iconUrl ? (
                     <img 
@@ -48,7 +48,7 @@ const fetchIconUrl = async (modelName) => {
 };
 
 const ModelList = () => {
-    const { model, setModel, modelType, setModelType } = useContext(ForumContext);
+    const { model, setModel, modelType, setModelType, setProvider } = useContext(ForumContext);
     const [iconUrls, setIconUrls] = useState({});
 
     const {
@@ -60,6 +60,7 @@ const ModelList = () => {
         queryFn: fetchModelConfig,
         staleTime: 1000 * 60 * 5, // 5 mins
     });
+    console.log("this is model data",modelConfig);
 
     // Fetch icons after modelConfig is available
     useEffect(() => {
@@ -79,8 +80,9 @@ const ModelList = () => {
 
     // Removed auto-selection of default model - user must manually select
 
-    const handleModelSelect = (modelName) => {
+    const handleModelSelect = (modelName,provider) => {
         setModel(modelName);
+        setProvider(provider);
         const isImageModel = modelType === 'image';
         const controlBits = {
             enhancePrompt: false,
@@ -158,12 +160,13 @@ const ModelList = () => {
             </div>
 
             {/* AI Models Section */}
-            <div className="p-4 pt-0">
-                <ul className="space-y-1">
+            <div className="p-4 pt-0 overflow-y-auto max-h-[calc(100vh-5rem)]">
+                <ul className="space-y-1 overflow-y-auto">
                     {Object.entries(modelConfig[modelType] || {}).map(([modelName, config]) => (
                         <ModelItem
                             key={modelName}
                             name={modelName}
+                            provider={config.provider}
                             displayName={config.displayName}
                             iconUrl={iconUrls[modelName]}
                             emoji={config.emoji}
