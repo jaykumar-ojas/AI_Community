@@ -10,6 +10,7 @@ import { heartSvg, thumbsDownSvg, Sparkle } from "../../asset/icons";
 import axios from "axios";
 import AIModelInfo from "../Postcontent/UserContent";
 import {encodeId} from "../../utils/hashids"
+import LoginHover from "../Auth/LoginHover";
 
 const Card = ({ post }) => {
   const [showLogin, setShowLogin] = useState(false);
@@ -54,7 +55,8 @@ const [sparkles, setSparkles] = useState([]);
 
  const handleLikePost = async () => {
     if (!currentUser.id) {
-      alert("Please log in to like posts");
+      // alert("Please log in to like posts");
+      setShowLogin(true);
       return;
     }
 
@@ -225,7 +227,9 @@ const [sparkles, setSparkles] = useState([]);
   className="group relative cursor-pointer pb-2 md:pb-0"
   onClick={handleCardClick}
 >
+
   <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type}  onLoad={handleMediaLoad}/>
+
 
   {!isMediaLoaded && (
   <div className="absolute flex flex-col bottom-0 h-full w-full justify-between left-0 right-0 bg-black bg-opacity-0 sm:bg-opacity-60 text-white text-sm p-2 sm:opacity-0 sm:group-hover:opacity-100 transition duration-500">

@@ -2,8 +2,10 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import GoogleLogin from "../Auth//GoogleLogin";
 import { LoginContext } from "../ContextProvider/context";
+import { CloseButton } from "@headlessui/react";
+import { CrossIcon, XIcon } from "lucide-react";
 
-const Login = () => {
+const LoginHover = ({onClose}) => {
   const {loginData,setLoginData} = useContext(LoginContext);
   const [show, setShow] = useState(false);
   const [inpVal,setInpVal]=useState({
@@ -18,13 +20,6 @@ const Login = () => {
 
   const history = useNavigate();
   const location = useLocation();
-
-  // (optional) lock background scroll
-  // useEffect(() => {
-  //   const prev = document.body.style.overflow;
-  //   document.body.style.overflow = "hidden";
-  //   return () => (document.body.style.overflow = prev);
-  // }, []);
 
   useEffect(() => {
     if (popupMessage) {
@@ -78,6 +73,7 @@ const Login = () => {
           localStorage.setItem("userdatatoken",res.token);
           localStorage.setItem("userData", JSON.stringify(res)); 
           setInpVal({...inpVal,email:"",password:""});
+          onClose();
           setTimeout(() => {
             setPopupMessage("");
             if(location.pathname =="/login"){
@@ -133,7 +129,7 @@ const Login = () => {
   },[]);
 
   return (
-    <div className="z-20 fixed inset-0 bg-black/95  flex justify-center items-center p-4">
+    <div className="z-20 fixed inset-0 bg-black/50  flex justify-center items-center" onClick={onClose} >
       {/* Loader Overlay */}
       {isLoading && !popupMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -152,15 +148,21 @@ const Login = () => {
           <span>{popupMessage}</span>
         </div>
       )}
-      <div className="relative flex w-full max-w-4xl flex-col md:flex-row bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Left Section */}
-        <div className="flex flex-col justify-center items-center w-full md:w-1/2 bg-black text-white px-8 py-10">
+        <div className="relative flex flex-col justify-center w-1/4 items-center rounded-lg bg-gray-900 dark:bg-black text-white px-8 py-10" onClick={(e) => e.stopPropagation()} >
+           <button
+          type="button"
+          className="absolute -right-10 top-1 rounded-full bg-black/60 p-1"
+          onClick={onClose}
+          aria-label="Close login"
+        >
+          <XIcon />
+        </button>
           <div className="text-center">
-            <p className="text-3xl font-semibold mb-2">Welcome to PixxelMind</p>
+            <p className="text-2xl font-semibold mb-2">Welcome to PixxelMind</p>
             <p className="text-lg text-gray-300">Login</p>
           </div>
     
-          <div className="w-full md:max-w-sm mt-6">
+          <div className="w-full">
             {/* Google Login */}
             <GoogleLogin />
     
@@ -240,19 +242,9 @@ const Login = () => {
             </form>
           </div>
         </div>
-    
-        {/* Right Section */}
-        <div className="hidden md:block md:w-1/2">
-          <img
-            src="https://images.pexels.com/photos/2523959/pexels-photo-2523959.jpeg"
-            className="h-full w-full object-cover"
-            alt="Login Illustration"
-          />
-        </div>
-      </div>
     </div>
     
   );
 };
 
-export default Login;
+export default LoginHover;

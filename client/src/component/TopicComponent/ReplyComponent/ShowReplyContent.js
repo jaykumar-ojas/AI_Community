@@ -249,7 +249,7 @@ const ShowReplyContent = ({
 
   return (
     <div key={reply?._id} className="flex justify-start">
-      <div className="w-8 h-8  flex-shrink-0">
+      <div className="w-8 h-8 flex-shrink-0">
         <UserIconCard id={reply?.userId} />
       </div>
 
