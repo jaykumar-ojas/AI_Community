@@ -147,9 +147,11 @@ const UserReply = () => {
         
         // Always render the original user text, not the enhanced prompt
         handleGeneratedResult(response.data.data, textToRender, modelInfo);
-        if (!enhancedPrompt) {
-          setNewReply("");
-        }
+        setNewReply("");
+
+        // if (!enhancedPrompt) {
+        //   setNewReply("");
+        // }
       } else {
         setError("Failed to generate content");
       }
@@ -322,6 +324,7 @@ const UserReply = () => {
     setPostingData((prev) => [...prev, newEntry]);
 
     setAiGenerated(true);
+    setNewReply("");
   };
 
   return (
