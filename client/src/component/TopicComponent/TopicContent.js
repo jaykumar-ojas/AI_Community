@@ -18,6 +18,8 @@ import UserReply from "../UserReply/UserReply";
 import HeaderSkeleton from "./components/HeaderSkeleton";
 import { encodeId } from '../../utils/hashids';
 
+
+
 const fetchTopic = async (topicId) => {
   console.log("encodeed", topicId);
   const response = await axios.get(`${API_BASE_URL}/forum/topics/${topicId}`, {
@@ -32,6 +34,8 @@ const TopicContent = () => {
   const { setReplyIdForContext,setUserName, viewBox, setViewBox } =useContext(ForumContext);
   const mobileReplyRef = useRef(null);
   const navigate = useNavigate();
+
+   
 
   useEffect(()=>{
     setReplyIdForContext(null);
