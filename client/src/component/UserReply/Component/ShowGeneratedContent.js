@@ -2,6 +2,7 @@ import React, {useRef} from "react";
 import {parseMarkdown} from "../../../utils/parseMarkdown";
 import { useHighlightTheme } from "../../../hooks/useHighlightTheme";
 import { useMathJax } from "../../../hooks/useMathJax";
+
 const ShowGeneratedContent = ({ postingData }) => {
  const contentRef = useRef(null);
   useHighlightTheme();
@@ -76,6 +77,7 @@ const ShowAiText = ({ aiText, modelInfo }) => {
         )}
       </div>
       <div className="text-sm text-green-800 whitespace-pre-wrap">
+
              dangerouslySetInnerHTML={{
                                    __html: parseMarkdown(aiText),
                                  }}

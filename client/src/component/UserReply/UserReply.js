@@ -181,7 +181,7 @@ const UserReply = () => {
           options: {
             // Add any specific options for suggestion
             temperature: 0.7,
-            maxTokens: 500,
+            maxTokens: 1000,
           },
         },
         {

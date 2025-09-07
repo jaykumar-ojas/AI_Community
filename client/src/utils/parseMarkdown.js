@@ -4,6 +4,21 @@ import hljs from "highlight.js";
 export const parseMarkdown = (text) => {
   let html = text;
 
+  // --- Step 1: protect math blocks ---
+  const mathBlocks = [];
+  html = html.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
+    const id = `__MATH_BLOCK_${mathBlocks.length}__`;
+    mathBlocks.push({ id, tex: `$$${tex}$$` });
+    return id;
+  });
+  html = html.replace(/\$([^\$]+)\$/g, (match, tex) => {
+    const id = `__MATH_BLOCK_${mathBlocks.length}__`;
+    mathBlocks.push({ id, tex: `$${tex}$` });
+    return id;
+  });
+
+  // --- Step 2: normal markdown parsing ---
+
   // Code blocks ```lang ... ```
   html = html.replace(/```(\w+)?([\s\S]*?)```/g, (match, lang, code) => {
     let highlighted;
@@ -87,6 +102,11 @@ export const parseMarkdown = (text) => {
   html = html.replace(/<\/h[1-6]>\s*<\/p>/g, "</h3>");
   html = html.replace(/<p class="[^"]*">\s*<ul/g, "<ul");
   html = html.replace(/<\/ul>\s*<\/p>/g, "</ul>");
+
+  // --- Step 3: restore math blocks ---
+  mathBlocks.forEach(({ id, tex }) => {
+    html = html.replace(id, tex);
+  });
 
   return html;
 };
