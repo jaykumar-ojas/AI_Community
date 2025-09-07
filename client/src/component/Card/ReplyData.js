@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { AiShowIcon } from "../../asset/icons";
 
 const wordCount = (str = "") =>
   String(str).trim() ? String(str).trim().split(/\s+/).length : 0;
@@ -55,7 +56,7 @@ const ReplyData = ({ content }) => {
       {!expanded ? (
         <>
           {collapsedSummary && (
-            <p className="mb-1 leading-snug text-black dark:text-text_header">
+            <p className="mb-1 leading-relaxed text-[13.5px] text-gray-900 dark:text-text_header">
               {collapsedSummary}
             </p>
           )}
@@ -75,20 +76,23 @@ const ReplyData = ({ content }) => {
               {item.userText && (
                 <div className="mb-1">
                   <span className="mr-2 text-xs text-time_header">User</span>
-                  <p className="leading-snug text-gray-900 dark:text-text_header">{item.userText}</p>
+                  <p className="leading-snug text-[13.5px] text-gray-900 dark:text-text_header">{item.userText}</p>
                 </div>
               )}
               {item.prompt && (
                 <div className="mb-1">
                   <span className="mr-2 text-xs text-time_header">Prompt</span>
-                  <p className="leading-snug text-gray-900 dark:text-text_header">{item.prompt}</p>
+                  <p className="leading-snug text-[13.5px] text-gray-900 dark:text-text_header">{item.prompt}</p>
                 </div>
               )}
               {item.aiText && (
-                <div className="mb-1">
-                  <span className="mr-2 text-xs text-time_header">AI</span>
-                  <p className="leading-sung text-gray-900 dark:text-text_header">{item.aiText}</p>
+                <div className="mb-1 relative">
+                  <AiShowIcon className="absolute left-0 top-[2px]  h-6 w-6 text-gray-700 dark:text-gray-100" />
+                  <p className="pl-0 text-[13.5px] leading-relaxed text-gray-900 dark:text-text_header indent-9">
+                    {item.aiText}
+                  </p>
                 </div>
+
               )}
               {item.imageUrl?.fileUrl && (
                 <img
