@@ -15,7 +15,7 @@ const ShowGeneratedContent = ({ postingData }) => {
         <div key={index} className="border md:p-4 p-2 rounded-lg shadow-md bg-white">
           <ShowUserText userText= {item.userText} />
           <ShowPrompt prompt={item.prompt} />
-          <ShowAiText aiText={parseMarkdown(item.aiText)} modelInfo={item.modelInfo} />
+          <ShowAiText aiText={item.aiText} modelInfo={item.modelInfo} />
           <ShowUrl url={item.imageUrl} modelInfo={item.modelInfo} />
         </div>
       ))}
@@ -48,7 +48,7 @@ const ShowPrompt = ({ prompt }) => {
 
 const ShowAiText = ({ aiText, modelInfo }) => {
   if (!aiText) return null;
-
+  console.log("parsemarkdown",parseMarkdown(aiText));
   return (
     <div className="bg-green-50 p-3 rounded-md shadow-sm mb-2">
       <div className="flex items-center justify-between mb-2">
@@ -56,12 +56,12 @@ const ShowAiText = ({ aiText, modelInfo }) => {
         {modelInfo && (
           <div className="flex items-center space-x-2">
             {modelInfo.iconUrl && (
-              <img 
-                src={modelInfo.iconUrl} 
+              <img
+                src={modelInfo.iconUrl}
                 alt={`${modelInfo.providerName} icon`}
                 className="w-5 h-5 rounded-full object-cover"
                 onError={(e) => {
-                  e.target.style.display = 'none';
+                  e.target.style.display = "none";
                 }}
               />
             )}
@@ -76,15 +76,14 @@ const ShowAiText = ({ aiText, modelInfo }) => {
           </div>
         )}
       </div>
-      <div className="text-sm text-green-800 whitespace-pre-wrap">
-
-             dangerouslySetInnerHTML={{
-                                   __html: parseMarkdown(aiText),
-                                 }}
-        </div>
+      <div
+        className="text-sm text-green-800 whitespace-pre-wrap"
+        dangerouslySetInnerHTML={{ __html: parseMarkdown(aiText) }}
+      />
     </div>
   );
 };
+
 
 
 const ShowUrl = ({ url, modelInfo }) => {
@@ -92,7 +91,6 @@ const ShowUrl = ({ url, modelInfo }) => {
 
   return (
     <div className="mb-2">
-      {/ Model Info Header for Images /}
       {modelInfo && (
         <div className="flex items-center justify-between mb-2 bg-purple-50 p-2 rounded-t-md">
           <h3 className="text-purple-700 text-sm font-semibold">Generated Image</h3>

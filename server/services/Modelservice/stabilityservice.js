@@ -53,7 +53,7 @@ async function core(prompt) {
   );
 
   if (response.status === 200) {
-    return Buffer.from(response.data);
+    return {ImageData:response.data};
   } else {
     throw new Error(`${response.status}: ${response.data.toString()}`);
   }
@@ -82,7 +82,7 @@ async function sd3(prompt, model) {
   );
 
   if (response.status === 200) {
-    return Buffer.from(response.data);
+    return {ImageData:response.data};
   } else {
     throw new Error(`${response.status}: ${response.data.toString()}`);
   }
