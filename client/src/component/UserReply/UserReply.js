@@ -307,8 +307,10 @@ const UserReply = () => {
     };
 
     if (data?.text) {
+      
       newEntry.aiText = data.text;
     } else if (data?.imageData) {
+      console.log("recived data image",data.imageData);
       const binary = atob(data.imageData); // decode base64 to binary string
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) {
@@ -318,7 +320,10 @@ const UserReply = () => {
 
       newEntry.imageUrl = URL.createObjectURL(blob);
       newEntry.imageBlob = data.imageData;
+
+
     } else if (data?.imageUrl) {
+      console.log("recived data image url",data.imageUrl);
       newEntry.imageUrl = data.imageUrl;
     }
     setPostingData((prev) => [...prev, newEntry]);

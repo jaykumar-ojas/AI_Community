@@ -5,7 +5,7 @@ const {fs} =  require("node:fs");
 dotenv.config();
 
 async function getGemini() {
-  const { GoogleGenerativeAI,  Modality } = await import("@google/generative-ai");
+  const { GoogleGenerativeAI } = await import("@google/generative-ai");
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 }
 // const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -17,13 +17,11 @@ async function getImagen() {
 
 
 async function googletext(prompt, model) {
-  console.log("i m coming to generate text");
   const ai = await getGemini();
   const response = await ai.models.generateContent({
     model: model,
     contents: prompt,
   });
-  console.log("text coming");
   console.log(response.text);
   return {text: response.text};
 }
@@ -40,12 +38,11 @@ const response = await ai.models.generateImages({
   });
   const generatedImage = response.generatedImages[0]; 
       const imgBytes = generatedImage.image.imageBytes;
-     return  {imageData: imgBytes};
+     return  {imageData:imgBytes};
 }
 
 async function generateGeminibanana(prompt, model) {
   const ai = await getImagen();
-
   const response = await ai.models.generateContent({
     model: model,
     contents: prompt,
@@ -59,11 +56,11 @@ async function generateGeminibanana(prompt, model) {
       console.log(part.text);
     } else if (part.inlineData) {
       const imageData = part.inlineData.data;
-      
+      const buffer = imageData;
       // fs.writeFileSync("gemini-native-image.png", buffer);
       // console.log("Image saved as gemini-native-image.png");
 
-      return {imageData: imageData}; // Return the image buffer
+      return {imageData:buffer}; // Return the image buffer
     }
   }
 }

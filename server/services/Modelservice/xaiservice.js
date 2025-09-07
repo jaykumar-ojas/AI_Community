@@ -38,7 +38,7 @@ async function generateGrokImage(prompt, model, asBuffer = false) {
     const b64 = response.data[0]?.b64_json;
     if (!b64) throw new Error("No image data returned.");
   
-    return asBuffer ? Buffer.from(b64, "base64") : b64;
+    return {imageData:b64};
   }
 
   module.exports = {
