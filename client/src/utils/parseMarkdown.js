@@ -3,22 +3,6 @@ import hljs from "highlight.js";
 
 export const parseMarkdown = (text) => {
   let html = text;
-
-  // --- Step 1: protect math blocks ---
-  const mathBlocks = [];
-  html = html.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
-    const id = `__MATH_BLOCK_${mathBlocks.length}__`;
-    mathBlocks.push({ id, tex: `$$${tex}$$` });
-    return id;
-  });
-  html = html.replace(/\$([^\$]+)\$/g, (match, tex) => {
-    const id = `__MATH_BLOCK_${mathBlocks.length}__`;
-    mathBlocks.push({ id, tex: `$${tex}$` });
-    return id;
-  });
-
-  // --- Step 2: normal markdown parsing ---
-
   // Code blocks ```lang ... ```
   html = html.replace(/```(\w+)?([\s\S]*?)```/g, (match, lang, code) => {
     let highlighted;
@@ -85,6 +69,43 @@ export const parseMarkdown = (text) => {
     '<em class="italic text-gray-700 dark:text-gray-300">$1</em>'
   );
 
+      // Tables
+    html = html.replace(
+      /((?:\|.+\|\r?\n)+)(?=\n|$)/g,
+      (match) => {
+        const rows = match
+          .trim()
+          .split("\n")
+          .filter((line) => line.trim().startsWith("|"));
+
+        if (rows.length < 2) return match; // not a table
+
+        const headers = rows[0]
+          .split("|")
+          .filter(Boolean)
+          .map((h) => `<th class="px-3 py-2 border">${h.trim()}</th>`)
+          .join("");
+
+        const bodyRows = rows
+          .slice(2) // skip header + alignment row
+          .map((row) => {
+            const cols = row
+              .split("|")
+              .filter(Boolean)
+              .map((c) => `<td class="px-3 py-2 border">${c.trim()}</td>`)
+              .join("");
+            return `<tr>${cols}</tr>`;
+          })
+          .join("");
+
+        return `<table class="border-collapse border border-gray-400 dark:border-gray-600 my-4">
+          <thead><tr>${headers}</tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>`;
+      }
+    );
+
+
   // Paragraphs
   html = html.replace(
     /\n\n/g,
@@ -103,30 +124,5 @@ export const parseMarkdown = (text) => {
   html = html.replace(/<p class="[^"]*">\s*<ul/g, "<ul");
   html = html.replace(/<\/ul>\s*<\/p>/g, "</ul>");
 
-  // --- Step 3: restore math blocks ---
-  mathBlocks.forEach(({ id, tex }) => {
-    html = html.replace(id, tex);
-  });
-
   return html;
 };
-
-
-// Paragraphs
-// html = html.replace(
-//   /\n\n/g,
-//   '</p><p class="mb-4 text-gray-800 dark:text-gray-200 leading-relaxed">'
-// );
-
-// // Add wrapper <p> tags, mark the first one with "first-paragraph"
-// html =
-//   '<p class="first-paragraph mb-4 text-gray-800 dark:text-gray-200 leading-relaxed">' +
-//   html +
-//   "</p>";
-
-// // Replace "first-paragraph" with indent-7
-// html = html.replace(
-//   /<p class="first-paragraph (.*?)">/,
-//   '<p class="indent-7 $1">'
-// );
-
