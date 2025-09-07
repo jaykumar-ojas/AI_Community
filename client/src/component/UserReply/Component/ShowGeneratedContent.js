@@ -1,21 +1,28 @@
-import React from "react";
+import React, {useRef} from "react";
+import {parseMarkdown} from "../../../utils/parseMarkdown";
+import { useHighlightTheme } from "../../../hooks/useHighlightTheme";
+import { useMathJax } from "../../../hooks/useMathJax";
 
 const ShowGeneratedContent = ({ postingData }) => {
+ const contentRef = useRef(null);
+  useHighlightTheme();
+  useMathJax(contentRef, [postingData]);
   if (!postingData || postingData.length === 0) return null;
 
   return (
-    <div className="space-y-6 md:p-4">
+ <div ref={contentRef} className="space-y-6 md:p-4">
       {postingData.map((item, index) => (
         <div key={index} className="border md:p-4 p-2 rounded-lg shadow-md bg-white">
-          <ShowUserText userText={item.userText} />
+          <ShowUserText userText= {item.userText} />
           <ShowPrompt prompt={item.prompt} />
-          <ShowAiText aiText={item.aiText} modelInfo={item.modelInfo} />
+          <ShowAiText aiText={parseMarkdown(item.aiText)} modelInfo={item.modelInfo} />
           <ShowUrl url={item.imageUrl} modelInfo={item.modelInfo} />
         </div>
       ))}
     </div>
   );
 };
+
 
 const ShowUserText = ({ userText }) => {
   if (!userText) return null;
@@ -69,10 +76,15 @@ const ShowAiText = ({ aiText, modelInfo }) => {
           </div>
         )}
       </div>
-      <div className="text-sm text-green-800 whitespace-pre-wrap">{aiText}</div>
+      <div className="text-sm text-green-800 whitespace-pre-wrap">
+                                 dangerouslySetInnerHTML={{
+                                   __html: parseMarkdown(aiText),
+                                 }}
+        </div>
     </div>
   );
 };
+
 
 const ShowUrl = ({ url, modelInfo }) => {
   if (!url) return null;

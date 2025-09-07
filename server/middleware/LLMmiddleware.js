@@ -561,7 +561,7 @@ const handleImageDescriptionRequest = async (req, res) => {
 async function generateTextResponse(context, userPrompt) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",
@@ -635,7 +635,7 @@ async function fetchAncestorContext(req, res, next) {
     console.log('fetchAncestorContext - Input:', { startId, contextType });
 
     const maxDepth = 10;
-    const maxWordsPerNode = 50;
+    const maxWordsPerNode = 500;
     const maxTotalContextWords = 800; // Increased to accommodate topic/post context
 
     // Validation
@@ -1112,7 +1112,7 @@ const textSuggestionWithContext = async (text, ancestorContext = null, ancestorM
     const {
       includeContext = true,
       responseStyle = 'conversational',
-      maxTokens = 500,
+      maxTokens = 10000,
       temperature = 0.7,
       focusOnMedia = false,
       contentType = 'general'
@@ -1149,7 +1149,7 @@ ${contentType !== 'general' ? `- Focuses on ${contentType} content` : ''}
 
     // Call OpenAI to get the enhanced prompt
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4.1",
       messages: [{
         role: "system",
         content: "You are a prompt engineering expert. Create enhanced, detailed prompts for content generation. Return ONLY the enhanced prompt, nothing else."
@@ -1211,7 +1211,7 @@ const extractImageDescription = async (context, userPrompt) => {
           content: `Context: ${context}\n\nUser request: ${userPrompt}\n\nCreate a detailed, vivid description of what image should be generated. Focus on visual elements, style, composition, and mood.`
         }
       ],
-      max_tokens: 300,
+      max_tokens: 500,
       temperature: 0.7
     });
     
