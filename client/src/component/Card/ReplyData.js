@@ -68,11 +68,11 @@ const ReplyData = ({ content }) => {
       {!expanded ? (
         <>
 
-//           {collapsedSummary && (
+{/* //           {collapsedSummary && (
 //             <p className="mb-1 leading-relaxed text-[13.5px] text-gray-900 dark:text-text_header">
 //               {collapsedSummary}
 //             </p>
-//           )}
+//           )} */}
 
           {collapsedSummary && <div className="mb-2">{collapsedSummary}</div>}
 
@@ -119,8 +119,8 @@ const ReplyData = ({ content }) => {
               )}
               {item.aiText && (
                 <div className="mb-3">
-                 <AiShowIcon className="absolute left-0 top-[2px]  h-6 w-6 text-gray-700 dark:text-gray-100" />
-                  <div
+                 <AiShowIcon className="h-8 w-8 text-gray-700 dark:text-gray-100" />
+                  <div className=""
                     dangerouslySetInnerHTML={{
                       __html: parseMarkdown(item.aiText),
                     }}
