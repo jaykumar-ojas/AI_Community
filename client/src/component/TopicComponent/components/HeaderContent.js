@@ -20,7 +20,8 @@ import {
   DownvoteIcon
 } from "../../../asset/icons";
 import HeaderSkeleton from "./HeaderSkeleton";
-
+import { parseMarkdown } from "../../../utils/parseMarkdown"; 
+import { useMathJaxAndHighlight } from "../../../utils/useMathJaxAndHighlight";
 // Add a simple three dots icon (vertical ellipsis)
 const ThreeDotsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -46,6 +47,8 @@ const HeaderContent = ({ topic, onDelete }) => {
   const contentRef = useRef();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef();
+
+  // useMathJaxAndHighlight();
 
   useEffect(() => {
     const el = contentRef.current;
@@ -217,7 +220,10 @@ const HeaderContent = ({ topic, onDelete }) => {
             expanded ? "" : "line-clamp-4"
           }`}
         >
-          {topic?.content}
+                  <div
+            className="prose dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: parseMarkdown(topic.content) }}
+          />
         </div>
 
         {showToggle && (

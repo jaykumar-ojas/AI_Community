@@ -1,5 +1,12 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useRef, useState } from "react";
+// import hljs from "highlight.js";
+//import "highlight.js/styles/github.css"; // try "github-dark.css" for dark mode look
+import { parseMarkdown } from "../../utils/parseMarkdown";
+import { useHighlightTheme } from "../../hooks/useHighlightTheme";
+import { useMathJax } from "../../hooks/useMathJax";
 import { AiShowIcon } from "../../asset/icons";
+// ---- local text helpers ----
 
 const wordCount = (str = "") =>
   String(str).trim() ? String(str).trim().split(/\s+/).length : 0;
@@ -10,87 +17,114 @@ const trimToWords = (str = "", limit = 100) => {
   return words.slice(0, limit).join(" ") + "...";
 };
 
+const getPlainTextSummary = (html) => {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+};
+// ----------------------------
+
 const ReplyData = ({ content }) => {
+  const contentRef = useRef(null);
   const [expanded, setExpanded] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
-  // Track viewport to set responsive word limit (sm breakpoint at 640px)
-  useEffect(() => {
-    const checkScreen = () => setIsSmallScreen(window.innerWidth < 640);
-    checkScreen();
-    window.addEventListener("resize", checkScreen);
-    return () => window.removeEventListener("resize", checkScreen);
-  }, []);
+  // Theme + MathJax setup
+  useHighlightTheme();
+  const mathJaxLoaded = useMathJax(contentRef, [expanded, content]);
 
-  const collapsedLimit = isSmallScreen ? 20 : 50;
+  const collapsedLimit = 50;
 
-  // Flatten all fields into one array for combined length calculation
-  const allTexts = content?.map(
-    (item) => `${item.userText || ""} ${item.prompt || ""} ${item.aiText || ""}`
-  );
-  const combinedCount = wordCount(allTexts?.join(" "));
-  const hasImages = Array.isArray(content) && content.some((item) => item?.imageUrl?.fileUrl);
+  // Gather all text for summary + word count
+  const allTexts =
+    Array.isArray(content) && content.length > 0
+      ? content.map(
+          (item) =>
+            `${item.userText || ""} ${item.prompt || ""} ${item.aiText || ""}`
+        )
+      : [];
 
-  // Check if we need the button
+  const combinedCount = wordCount(allTexts.join(" "));
+  const hasImages =
+    Array.isArray(content) && content.some((item) => item?.imageUrl?.fileUrl);
+
   const showSeeMore = combinedCount > collapsedLimit || hasImages;
 
   useEffect(() => {
-    // Auto-expand only when short text and no images to show
     if (combinedCount < collapsedLimit && !hasImages) {
       setExpanded(true);
     }
-  }, [combinedCount, hasImages, collapsedLimit]);
+  }, [combinedCount, hasImages]);
 
-  // Collapsed: show first 50 words from combined fields (userText + prompt + aiText)
   const collapsedSummary = trimToWords(
-    content
-      ?.map((item) =>
-        [item.userText, item.prompt, item.aiText].filter(Boolean).join(" ")
-      )
-      .join(" ") || "",
+    getPlainTextSummary(allTexts.join(" ")),
     collapsedLimit
   );
 
+  const displayContent =
+    content && Array.isArray(content) && content.length > 0 ? content : [];
+
   return (
-    <div className="text-sm text-text_content whitespace-pre-wrap leading-relaxed">
+    <div className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
       {!expanded ? (
         <>
-          {collapsedSummary && (
-            <p className="mb-1 leading-relaxed text-[13.5px] text-gray-900 dark:text-text_header">
-              {collapsedSummary}
-            </p>
-          )}
+
+//           {collapsedSummary && (
+//             <p className="mb-1 leading-relaxed text-[13.5px] text-gray-900 dark:text-text_header">
+//               {collapsedSummary}
+//             </p>
+//           )}
+
+          {collapsedSummary && <div className="mb-2">{collapsedSummary}</div>}
+
           {showSeeMore && (
             <button
               onClick={() => setExpanded(true)}
-              className="ml-2 text-blue-600 text-xs md:text-md font-small hover:underline md:font-medium"
+              className="text-blue-600 dark:text-blue-400 text-xs hover:underline"
             >
               View More
             </button>
           )}
         </>
       ) : (
-        <>
-          {content?.map((item, index) => (
-            <div key={index} className="mb-1">
+        <div ref={contentRef}>
+          {displayContent?.map((item, index) => (
+            <div
+              key={index}
+              className="mb-4 border-l-2 border-gray-200 dark:border-gray-700 pl-3"
+            >
               {item.userText && (
-                <div className="mb-1">
-                  <span className="mr-2 text-xs text-time_header">User</span>
-                  <p className="leading-snug text-[13.5px] text-gray-900 dark:text-text_header">{item.userText}</p>
+
+                <div className="mb-3">
+                  <span className="inline-block mb-2 text-xs font-semibold text-white bg-blue-500 px-2 py-1 rounded">
+                    User
+                  </span>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: parseMarkdown(item.userText),
+                    }}
+                  />
                 </div>
               )}
               {item.prompt && (
-                <div className="mb-1">
-                  <span className="mr-2 text-xs text-time_header">Prompt</span>
-                  <p className="leading-snug text-[13.5px] text-gray-900 dark:text-text_header">{item.prompt}</p>
+                <div className="mb-3">
+                  <span className="inline-block mb-2 text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
+                    Prompt
+                  </span>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: parseMarkdown(item.prompt),
+                    }}
+                  />
                 </div>
               )}
               {item.aiText && (
-                <div className="mb-1 relative">
-                  <AiShowIcon className="absolute left-0 top-[2px]  h-6 w-6 text-gray-700 dark:text-gray-100" />
-                  <p className="pl-0 text-[13.5px] leading-relaxed text-gray-900 dark:text-text_header indent-9">
-                    {item.aiText}
-                  </p>
+                <div className="mb-3">
+                 <AiShowIcon className="absolute left-0 top-[2px]  h-6 w-6 text-gray-700 dark:text-gray-100" />
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: parseMarkdown(item.aiText),
+                    }}
+                  />
                 </div>
 
               )}
@@ -98,8 +132,7 @@ const ReplyData = ({ content }) => {
                 <img
                   src={item.imageUrl.fileUrl}
                   alt={item.imageUrl.fileName || "uploaded"}
-                  className="w-64 h-auto rounded-md mt-2"
-                  loading="lazy"
+                  className="max-w-md h-auto rounded-md shadow-sm border"
                 />
               )}
             </div>
@@ -107,12 +140,18 @@ const ReplyData = ({ content }) => {
           {showSeeMore && (
             <button
               onClick={() => setExpanded(false)}
-              className="ml-2 text-xs md:text-md  text-blue-600 hover:underline font-medium"
+              className="text-blue-600 dark:text-blue-400 text-xs hover:underline"
             >
               View Less
             </button>
           )}
-        </>
+        </div>
+      )}
+
+      {!mathJaxLoaded && expanded && (
+        <div className="text-xs text-gray-500 mt-2">
+          Loading math renderer...
+        </div>
       )}
     </div>
   );
@@ -120,17 +159,3 @@ const ReplyData = ({ content }) => {
 
 export default ReplyData;
 
-// user text 40
-//   ai prompt 70
-//  ai text  80
-// ai generated image
-
-// user text 40
-//   ai prompt 70
-//  ai text  80
-// ai generated image
-
-// user text 40
-//   ai prompt 70
-//  ai text  80
-// ai generated image
