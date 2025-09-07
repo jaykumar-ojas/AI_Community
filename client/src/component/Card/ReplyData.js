@@ -1,10 +1,13 @@
+
 import React, { useEffect, useRef, useState } from "react";
 // import hljs from "highlight.js";
 //import "highlight.js/styles/github.css"; // try "github-dark.css" for dark mode look
 import { parseMarkdown } from "../../utils/parseMarkdown";
 import { useHighlightTheme } from "../../hooks/useHighlightTheme";
 import { useMathJax } from "../../hooks/useMathJax";
+import { AiShowIcon } from "../../asset/icons";
 // ---- local text helpers ----
+
 const wordCount = (str = "") =>
   String(str).trim() ? String(str).trim().split(/\s+/).length : 0;
 
@@ -64,7 +67,15 @@ const ReplyData = ({ content }) => {
     <div className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
       {!expanded ? (
         <>
+
+//           {collapsedSummary && (
+//             <p className="mb-1 leading-relaxed text-[13.5px] text-gray-900 dark:text-text_header">
+//               {collapsedSummary}
+//             </p>
+//           )}
+
           {collapsedSummary && <div className="mb-2">{collapsedSummary}</div>}
+
           {showSeeMore && (
             <button
               onClick={() => setExpanded(true)}
@@ -82,6 +93,7 @@ const ReplyData = ({ content }) => {
               className="mb-4 border-l-2 border-gray-200 dark:border-gray-700 pl-3"
             >
               {item.userText && (
+
                 <div className="mb-3">
                   <span className="inline-block mb-2 text-xs font-semibold text-white bg-blue-500 px-2 py-1 rounded">
                     User
@@ -107,15 +119,14 @@ const ReplyData = ({ content }) => {
               )}
               {item.aiText && (
                 <div className="mb-3">
-                  <span className="inline-block mb-2 text-xs font-semibold text-white bg-green-500 px-2 py-1 rounded">
-                    AI
-                  </span>
+                 <AiShowIcon className="absolute left-0 top-[2px]  h-6 w-6 text-gray-700 dark:text-gray-100" />
                   <div
                     dangerouslySetInnerHTML={{
                       __html: parseMarkdown(item.aiText),
                     }}
                   />
                 </div>
+
               )}
               {item.imageUrl?.fileUrl && (
                 <img
