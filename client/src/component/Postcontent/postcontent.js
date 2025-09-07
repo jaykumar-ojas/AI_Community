@@ -106,10 +106,10 @@ const PostContent = () => {
         {/* Left Section */}
         <div className="relative w-full rounded-xl sm:w-[100%] md:w-[70%] mb-24 md:mb-0 h-[calc(100vh-3.5rem)] flex flex-col">
           {/* model icon list */}
-          <div className="absolute z-50 left-0 m-4 hidden md:block mb-8 bottom-0">
+          {/* <div className="absolute z-50 left-0 m-4 hidden md:block mb-8 bottom-0">
             {showIcon && <ModelList/> }
             <button onClick={handleIconClick} className="justify-center m-2 items-center"><img src={AiIcons} alt="model" className="w-10 h-10 rounded-full"></img></button>
-            </div>
+            </div> */}
           <div className="flex-1 overflow-y-auto scrollbar-thin dakr:scrollbar-thumb-gray-500 scrollbar-thumb-gray-300 dark:scrollbar-track-bg_comment_box md:px-24 sm:px-0">
             <div className="mb-6">
               <UserContent

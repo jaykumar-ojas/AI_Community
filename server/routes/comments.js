@@ -8,14 +8,22 @@ const { deleteCommentById } = require("../middleware/DeleteMiddleware");
 
 // Setup multer for file uploads
 const storage = multer.memoryStorage();
-const upload = multer({ storage: multer.memoryStorage() });
-
+const upload = multer({
+  storage: multer.memoryStorage(),   // keep files in memory buffer
+  limits: {
+    fileSize: 50 * 1024 * 1024,   // 50 MB max per file
+    fieldSize: 100 * 1024 * 1024, // 100 MB max per text field (for base64 strings in req.body)
+    fields: 20,                   // max number of non-file fields
+    files: 10,                    // max number of files
+  }
+});
 // Import AWS middleware for file uploads
 const {
   awsuploadMiddleware,
   generateSignedUrl,
   awsdeleteMiddleware,
   uploadImageFromUrl,
+  uploadImageFromBlob,
 } = require("../middleware/awsmiddleware");
 const notifiyUser = require("../middleware/notification");
 
@@ -23,19 +31,13 @@ const notifiyUser = require("../middleware/notification");
 router.get("/comments/replies", async (req, res) => {
   try {
     const { postId } = req.query;
-    console.log("this is my postId", postId);
     if (!postId) {
       return res
         .status(400)
         .json({ status: 400, error: "Topic ID is required" });
     }
-    console.log("i m coming here to get reply");
 
     const replies = await Comment.find({ postId }).sort({ createdAt: 1 });
-
-    console.log("this is my replies array", replies);
-
-    // Process media attachments to generate signed URLs
 
     res.status(200).json({ status: 200, comments: replies });
   } catch (error) {
@@ -44,234 +46,114 @@ router.get("/comments/replies", async (req, res) => {
   }
 });
 
-// comment a new post
-// router.post("/comments/post",upload.array("media", 5),awsuploadMiddleware,async (req, res) => {
-//     try {
-//       const { postId, parentReplyId, userId, userName } = req.body;
+router.post("/comments/post",authenticate,upload.array("media", 5),awsuploadMiddleware,async (req, res) => {
+    try {
+      const { postId, parentReplyId, userId, userName } = req.body;
+      const contentArray = JSON.parse(req.body.content);
 
-//       const contentArray = JSON.parse(req.body.content);
+      console.log("i m coming here1");
 
-//       if (!Array.isArray(contentArray) || contentArray.length === 0) {
-//         return res.status(400).json({
-//           status: 400,
-//           error: "Content must be a non-empty array",
-//         });
-//       }
-
-//       if (!postId) {
-//         return res
-//           .status(400)
-//           .json({ status: 400, error: "Topic ID is required" });
-//       }
-
-//       const post = await postdb.findById(postId);
-
-//       if (!post) {
-//         return res
-//           .status(404)
-//           .json({ status: 404, error: "post is not found" });
-//       }
-
-//       const actualUserId = userId;
-//       const actualUserName = userName;
-
-//       if (!actualUserId || !actualUserName) {
-//         return res.status(400).json({ status: 400, error: "user not found" });
-//       }
-
-//       let allMediaAttachments = [...(req.uploadedFiles || [])];
-//       let processedContent = [];
-//       for (const block of contentArray) {
-//         const { imageUrl, ...rest } = block;
-
-//         if (imageUrl && imageUrl.length > 0) {
-//           console.log("i m coming here");
-//           const mediaObj = await uploadImageFromUrl(imageUrl);
-//           rest.imageUrl = mediaObj; // rest is also object what ever suitable it also get object so it become nested now update regarding this
-//         }
-
-//         processedContent.push(rest);
-//       }
-
-
-//       const newComment = new Comment({
-//         content: processedContent,
-//         postId,
-//         userId: actualUserId,
-//         userName: actualUserName,
-//         parentReplyId: parentReplyId || null,
-//         mediaAttachments: allMediaAttachments,
-//         likes: [],
-//         dislikes: [],
-//         children: [],
-//       });
-
-//       const savedReply = await newComment.save();
-//       let parentCommentId;
-//       console.log(savedReply);
-//       if (parentReplyId) {
-//         try {
-//           const parentComment = await Comment.findByIdAndUpdate(
-//             parentReplyId,
-//             { $push: { children: savedReply._id } },
-//             { new: true }
-//           );
-//           parentCommentId = parentComment;
-//           if (!updatedParent) {
-//             console.warn(`Parent reply Id ${parentReplyId} not found`);
-//           } else {
-//             console.log(
-//               `succesecfully added reply ${savedReply._id} to parent ${parentReplyId}`
-//             );
-//           }
-//         } catch (parentUpdateError) {
-//           console.log(`Eror updating parent reply: `, parentUpdateError);
-//         }
-//       }
-//        notifiyUser({
-//         parentId: parentCommentId?.userId || post?.userId,
-//         userId,
-//         postId: postId,
-//         commentId: parentReplyId,
-//         desc: parentCommentId?.content[0]?.userText,
-//         type: "comment",
-//         action: "comment"
-//       });    
-//       res.status(201).json({ status: 201, reply: savedReply });
-//     } catch (error) {
-//       console.error("Error creating reply:", error);
-//       res.status(500).json({
-//         status: 500,
-//         error: "Server error",
-//         message: error.message,
-//       });
-//     }
-//   }
-// );
-
-router.post("/comments/post", authenticate, upload.array("media", 5), awsuploadMiddleware, async (req, res) => {
-  try {
-    const { postId, parentReplyId, userId, userName } = req.body;
-
-    // Parse content as array of content blocks
-    const contentArray = JSON.parse(req.body.content);
-    
-    // Validate content
-    if (!Array.isArray(contentArray) || contentArray.length === 0) {
-      return res.status(400).json({
-        status: 400,
-        error: "Content must be a non-empty array",
-      });
-    }
-
-    if (!postId) {
-      return res
-        .status(400)
-        .json({ status: 400, error: "Post ID is required" });
-    }
-
-    // Check if post exists
-    const post = await postdb.findById(postId);
-    if (!post) {
-      return res
-        .status(404)
-        .json({ status: 404, error: "Post not found" });
-    }
-
-    // Use authenticated user info if available, else from request body
-    const actualUserId = req.userId || userId;
-    const actualUserName = req.rootuser?.userName || userName;
-    
-    if (!actualUserId || !actualUserName) {
-      return res.status(400).json({ status: 400, error: "User information is required" });
-    }
-
-    // Collect media attachments from uploaded files
-    let allMediaAttachments = [...(req.uploadedFiles || [])];
-
-    // Process each content block, extract and upload images from URLs
-    const processedContent = [];
-    for (const block of contentArray) {
-      const { imageUrl, ...rest } = block;
-
-      if (imageUrl && imageUrl.length > 0) {
-        console.log("Processing image URL for comment");
-        const mediaObj = await uploadImageFromUrl(imageUrl);
-        rest.imageUrl = mediaObj;
+      // Validate content
+      if (!Array.isArray(contentArray) || contentArray.length === 0) {
+        return res.status(400).json({status: 400,error: "Content must be a non-empty array"});
       }
 
-      processedContent.push(rest);
-    }
+      if (!postId) {
+        return res.status(400).json({ status: 400, error: "Post ID is required" });
+      }
 
-    // Create and save new comment document
-    const newComment = new Comment({
-      content: processedContent,
-      postId,
-      userId: actualUserId,
-      userName: actualUserName,
-      parentReplyId: parentReplyId || null,
-      mediaAttachments: allMediaAttachments,
-      likes: [],
-      dislikes: [],
-      children: [],
-    });
+      // Check if post exists
+      const post = await postdb.findById(postId);
+      if (!post) {
+        return res.status(404).json({ status: 404, error: "Post not found" });
+      }
 
-    const savedReply = await newComment.save();
+      // Use authenticated user info if available, else from request body
+      const actualUserId = req.userId || userId;
+      const actualUserName = req.rootuser?.userName || userName;
 
-    let parentCommentId;
-    // If this comment is a child reply, update parent comment's children array
-    if (parentReplyId) {
-      try {
-        const updatedParent = await Comment.findByIdAndUpdate(
-          parentReplyId,
-          { $push: { children: savedReply._id } },
-          { new: true }
-        );
-        parentCommentId = updatedParent;
+      if (!actualUserId || !actualUserName) {
+        return res.status(400).json({ status: 400, error: "User information is required" });
+      }
 
-        if (!updatedParent) {
-          console.warn(`Parent comment ID ${parentReplyId} not found`);
-        } else {
-          console.log(`Successfully added comment ${savedReply._id} to parent ${parentReplyId}`);
+      // Collect media attachments from uploaded files
+      let allMediaAttachments = [...(req.uploadedFiles || [])];
+
+      // Process each content block, extract and upload images from URLs
+      const processedContent = [];
+      for (const block of contentArray) {
+        const { imageUrl, imageBlob, ...rest } = block;
+
+        if (imageBlob && imageBlob.length > 0) {
+          console.log("i m coming here to upload");
+          const mediaObj = await uploadImageFromBlob(imageBlob);
+          rest.imageUrl = mediaObj; // rest is also object what ever suitable it also get object so it become nested now update regarding this
+        } else if (imageUrl && imageUrl.length > 0) {
+          const mediaObj = await uploadImageFromUrl(imageUrl);
+          rest.imageUrl = mediaObj;
         }
-      } catch (parentUpdateError) {
-        console.error('Error updating parent comment:', parentUpdateError);
+
+        processedContent.push(rest);
       }
+
+      // Create and save new comment document
+      const newComment = new Comment({
+        content: processedContent,
+        postId,
+        userId: actualUserId,
+        userName: actualUserName,
+        parentReplyId: parentReplyId || null,
+        mediaAttachments: allMediaAttachments,
+        likes: [],
+        dislikes: [],
+        children: [],
+      });
+
+      const savedReply = await newComment.save();
+
+      let parentCommentId;
+      // If this comment is a child reply, update parent comment's children array
+      if (parentReplyId) {
+        try {
+          const updatedParent = await Comment.findByIdAndUpdate(parentReplyId,{ $push: { children: savedReply._id } },{ new: true });
+          parentCommentId = updatedParent;
+
+          if (!updatedParent) {
+            console.warn(`Parent comment ID ${parentReplyId} not found`);
+          } 
+        } catch (parentUpdateError) {
+          console.error("Error updating parent comment:", parentUpdateError);
+        }
+      }
+
+      // Increment comment count on the post (if your post schema has commentCount field)
+      // Uncomment and modify if needed:
+      // post.commentCount = (post.commentCount || 0) + 1;
+      // await post.save();
+
+      // Send notification
+      notifiyUser({
+        parentId: parentCommentId?.userId || post?.userId,
+        userId: actualUserId,
+        postId: postId,
+        commentId: parentReplyId ? parentReplyId : "",
+        desc: parentCommentId?.content[0]?.userText,
+        type: "comment",
+        action: "comment",
+      });
+
+      res.status(201).json({ status: 201, reply: savedReply });
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      res.status(500).json({status: 500,error: "Server error",message: error.message,});
     }
-
-    // Increment comment count on the post (if your post schema has commentCount field)
-    // Uncomment and modify if needed:
-    // post.commentCount = (post.commentCount || 0) + 1;
-    // await post.save();
-
-    // Send notification
-    notifiyUser({
-      parentId: parentCommentId?.userId || post?.userId,
-      userId: actualUserId,
-      postId: postId,
-      commentId: parentReplyId ? parentReplyId : "",
-      desc: parentCommentId?.content[0]?.userText,
-      type: "comment",
-      action: "comment"
-    });
-
-    res.status(201).json({ status: 201, reply: savedReply });
-  } catch (error) {
-    console.error("Error creating comment:", error);
-    res.status(500).json({
-      status: 500,
-      error: "Server error",
-      message: error.message,
-    });
   }
-}
 );
 
 // delete a reply on post
 router.delete("/comments/:id", authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("i m pringting ", id);
     const reply = await Comment.findById(id);
 
     if (!reply) {
@@ -288,7 +170,6 @@ router.delete("/comments/:id", authenticate, async (req, res) => {
     // Delete media attachments from S3
     await deleteCommentById(id);
 
-    console.log("delete succefully comment associated with id");
     res
       .status(200)
       .json({ status: 200, message: "Reply deleted successfully" });
@@ -345,7 +226,7 @@ router.post("/comments/:id/like", authenticate, async (req, res) => {
         message: "Reply liked successfully",
         liked: true,
       });
-      if(!alreadyLiked){
+      if (!alreadyLiked) {
         notifiyUser({
           parentId: reply?.userId,
           userId,
@@ -353,10 +234,9 @@ router.post("/comments/:id/like", authenticate, async (req, res) => {
           commentId,
           desc: reply?.content[0]?.userText,
           type: "comment",
-          action: "like"
-        });    
+          action: "like",
+        });
       }
-      
     }
   } catch (error) {
     console.error("Error liking/unliking reply:", error);

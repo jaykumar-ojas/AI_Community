@@ -3,14 +3,22 @@ const router = express.Router();
 const ForumTopic = require('../models/forumTopicSchema');
 const ForumReply = require('../models/forumReplySchema');
 const authenticate = require('../middleware/authenticate');
-const { awsuploadMiddleware, awsdeleteMiddleware, generateSignedUrl,uploadImageFromUrl } = require('../middleware/awsmiddleware');
+const { awsuploadMiddleware, awsdeleteMiddleware, generateSignedUrl,uploadImageFromUrl, uploadImageFromBlob } = require('../middleware/awsmiddleware');
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
 const AWS = require('aws-sdk');
 const { modelSelection } = require('../middleware/LLMmiddleware');
 const {deleteForumById} = require('../middleware/DeleteMiddleware');
 const notifiyUser = require("../middleware/notification");
 const { decodeId, encodeId } = require('../utils/hashids');
+const upload = multer({
+  storage: multer.memoryStorage(),   // keep files in memory buffer
+  limits: {
+    fileSize: 50 * 1024 * 1024,   // 50 MB max per file
+    fieldSize: 100 * 1024 * 1024, // 100 MB max per text field (for base64 strings in req.body)
+    fields: 20,                   // max number of non-file fields
+    files: 10,                    // max number of files
+  }
+});
 
 
 // Configure AWS
@@ -100,7 +108,6 @@ router.get('/topics/:id', async (req, res) => {
     if(!realId)  return res.status(400).json({error: 'invalid ID'});
     
     const topic = await ForumTopic.findById(realId);
-   // console.log("topic ", topic);
     if (!topic) {
       return res.status(404).json({ status: 404, error: 'Topic not found' });
     }
@@ -226,8 +233,6 @@ router.delete('/topics/:id', authenticate, async (req, res) => {
 router.get('/replies', async (req, res) => {
   try {
     const realId = decodeId(req.query.topicId);
-    console.log("realId", realId);
-    console.log("reqquery", req.query);
 
    // const { topicId } = req.query;
     
@@ -235,11 +240,9 @@ router.get('/replies', async (req, res) => {
       return res.status(400).json({ status: 400, error: 'Topic ID is required' });
     }
     
-         const replies = await ForumReply.find({ topicId: realId })
+    const replies = await ForumReply.find({ topicId: realId })
       .sort({ isAnswer: -1, createdAt: 1 });
     
-
-    console.log("replies", replies);
     res.status(200).json({ status: 200, replies: replies});
 
   } catch (error) {
@@ -612,9 +615,9 @@ router.get('/paginated', async(req, res) => {
 router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware,async (req, res) => {
     try {
       const { topicId, parentReplyId, userId, userName } = req.body;
-      console.log("topicId", req.body.topicId);
+
       const realId = decodeId(req.body.topicId);
-      console.log("realId", realId);
+
       // Parse content as array of content blocks
       const contentArray = JSON.parse(req.body.content);
       // Validate content
@@ -652,14 +655,18 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
       // Process each content block, extract and upload images from URLs
       const processedContent = [];
       for (const block of contentArray) {
-        const { imageUrl, ...rest } = block;
+        const { imageBlob,imageUrl, ...rest } = block;
       
-        if (imageUrl &&  imageUrl.length > 0) {
-            const mediaObj = await uploadImageFromUrl(imageUrl);
+        if (imageBlob &&  imageBlob.length > 0) {
+            const mediaObj = await uploadImageFromBlob(imageBlob);
             rest.imageUrl = mediaObj ;// rest is also object what ever suitable it also get object so it become nested now update regarding this
         }
+        else if (imageUrl && imageUrl.length > 0) {
+          const mediaObj = await uploadImageFromUrl(imageUrl);
+          rest.imageUrl = mediaObj;
+        }
 
-        processedContent.push(rest);
+          processedContent.push(rest);
       }
 
       // Create and save new reply document
@@ -690,8 +697,6 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
 
           if (!updatedParent) {
             console.warn(`Parent reply ID ${parentReplyId} not found`);
-          } else {
-            console.log( `Successfully added reply ${savedReply._id} to parent ${parentReplyId}`);
           }
         } catch (parentUpdateError) {
           console.error('Error updating parent reply:', parentUpdateError);

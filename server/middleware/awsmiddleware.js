@@ -60,12 +60,14 @@ const upload = multer({
         }
     },
     limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB limit
+        fileSize: 50 * 1024 * 1024,
+        fieldSize: 50 * 1024 * 1024  // 50MB limit
     } 
 });
 
 const awsuploadMiddleware = async (req, res, next) => {
     console.log("Middleware triggered. Single file:", req.file);
+    console.log("i m here");
 
     try {
         let allFiles = [];
@@ -244,156 +246,53 @@ const uploadImageFromUrl = async (imageUrl) => {
     }
 };
 
+const uploadImageFromBlob = async (blob, fileName = null) => {
+  try {
+    // If no filename is provided, generate a random one
+    const generatedFileName = fileName || `${randomFileName(16)}.png`;
+    const buffer = Buffer.from(blob,"base64");
+
+    // Detect MIME type (optional: default to image/png)
+    
+
+    const params = {
+      Bucket: bucketName,
+      Key: generatedFileName,
+      Body: buffer,
+      ContentType: "image/png",
+    };
+
+    // Upload to S3
+    await s3.send(new PutObjectCommand(params));
+
+    // Get public/signed URL
+    const fileUrl = await generateSignedUrl(generatedFileName);
+
+    return {
+      fileName: generatedFileName,
+      fileType: "image/png",
+      fileUrl,
+      fileSize: buffer.length,
+      uploadedAt: new Date(),
+    };
+  } catch (error) {
+    console.error("Error uploading blob to S3:", error);
+    throw error;
+  }
+};
+
+
 
 module.exports={
     generateSignedUrl,
     awsuploadMiddleware,
     awsdeleteMiddleware,
-    uploadImageFromUrl
+    uploadImageFromUrl,
+    uploadImageFromBlob
 };
 
 
 
 
-// const awsuploadMiddleware = async (req, res, next) => {
-//     console.log("this is after i generate an image from ai", req.file);
 
-//     try {
-//         // Handle single file upload from multer.single()
-//         if (req.file) {
-//             const file = req.file;
-//             const fileType = file.mimetype.split("/")[0]; // 'image', 'video', or 'audio'
-//             let buffer;
 
-//             if (fileType === "image") {
-//                 try {
-//                     const image = sharp(file.buffer);
-//                     const metadata = await image.metadata();
-
-//                     if (metadata.width > 1920 || metadata.height > 1080) {
-//                         buffer = await image
-//                             .resize({
-//                                 width: metadata.width > 1920 ? 1920 : undefined,
-//                                 height: metadata.height > 1080 ? 1080 : undefined,
-//                                 fit: "inside",
-//                             })
-//                             .toBuffer();
-//                     } else {
-//                         buffer = await image.toBuffer();
-//                     }
-//                 } catch (sharpError) {
-//                     console.error("Error processing image with sharp:", sharpError);
-//                     buffer = file.buffer;
-//                 }
-//             } else {
-//                 buffer = file.buffer;
-//             }
-
-//             const fileName = randomFileName();
-//             console.log("Generated file name:", fileName);
-
-//             const params = {
-//                 Bucket: bucketName,
-//                 Key: fileName,
-//                 Body: buffer,
-//                 ContentType: file.mimetype,
-//             };
-
-//             console.log("Uploading to S3 bucket");
-
-//             const command = new PutObjectCommand(params);
-//             await s3.send(command);
-//             console.log("File uploaded successfully");
-
-//             const fileUrl = await generateSignedUrl(fileName);
-//             console.log("Generated signed URL:", fileUrl);
-
-//             req.fileName = fileName;
-//             req.mimetype = file.mimetype;
-//             req.fileUrl = fileUrl;
-//             req.uploadedFiles = [
-//                 {
-//                     fileName,
-//                     fileType: file.mimetype,
-//                     fileUrl,
-//                     fileSize: file.size,
-//                     uploadedAt: new Date(),
-//                 },
-//             ];
-
-//             return next();
-//         }
-
-//         // Handle multiple file upload from multer.array()
-//         if (!req.files || req.files.length === 0) {
-//             console.log("No files to process");
-//             return next();
-//         }
-
-//         req.uploadedFiles = [];
-
-//         for (const file of req.files) {
-//             const fileType = file.mimetype.split("/")[0];
-//             let buffer;
-
-//             if (fileType === "image") {
-//                 try {
-//                     const image = sharp(file.buffer);
-//                     const metadata = await image.metadata();
-
-//                     if (metadata.width > 1920 || metadata.height > 1080) {
-//                         buffer = await image
-//                             .resize({
-//                                 width: metadata.width > 1920 ? 1920 : undefined,
-//                                 height: metadata.height > 1080 ? 1080 : undefined,
-//                                 fit: "inside",
-//                             })
-//                             .toBuffer();
-//                     } else {
-//                         buffer = await image.toBuffer();
-//                     }
-//                 } catch (sharpError) {
-//                     console.error("Error processing image with sharp:", sharpError);
-//                     buffer = file.buffer;
-//                 }
-//             } else {
-//                 buffer = file.buffer;
-//             }
-
-//             const fileName = randomFileName();
-//             console.log("Generated file name:", fileName);
-
-//             const params = {
-//                 Bucket: bucketName,
-//                 Key: fileName,
-//                 Body: buffer,
-//                 ContentType: file.mimetype,
-//             };
-
-//             console.log("Uploading to S3 bucket");
-
-//             const command = new PutObjectCommand(params);
-//             await s3.send(command);
-//             console.log("File uploaded successfully");
-
-//             const fileUrl = await generateSignedUrl(fileName);
-//             console.log("Generated signed URL:", fileUrl);
-
-//             req.uploadedFiles.push({
-//                 fileName,
-//                 originalField: file.fieldname,
-//                 fileType: file.mimetype,
-//                 fileUrl,
-//                 fileSize: file.size,
-//                 uploadedAt: new Date(),
-//             });
-//         }
-
-//         next();
-//     } catch (error) {
-//         console.error("Error uploading file:", error);
-//         return res
-//             .status(500)
-//             .json({ status: 500, error: "Error uploading file: " + error.message });
-//     }
-// };

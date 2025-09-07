@@ -110,3 +110,23 @@ export const parseMarkdown = (text) => {
 
   return html;
 };
+
+
+// Paragraphs
+// html = html.replace(
+//   /\n\n/g,
+//   '</p><p class="mb-4 text-gray-800 dark:text-gray-200 leading-relaxed">'
+// );
+
+// // Add wrapper <p> tags, mark the first one with "first-paragraph"
+// html =
+//   '<p class="first-paragraph mb-4 text-gray-800 dark:text-gray-200 leading-relaxed">' +
+//   html +
+//   "</p>";
+
+// // Replace "first-paragraph" with indent-7
+// html = html.replace(
+//   /<p class="first-paragraph (.*?)">/,
+//   '<p class="indent-7 $1">'
+// );
+

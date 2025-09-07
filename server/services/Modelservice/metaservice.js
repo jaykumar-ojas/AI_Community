@@ -19,7 +19,7 @@ async function metagen(prompt, model) {
     messages: [{ role: "user", content: prompt }],
   });
 
-  return completion.choices[0]?.message?.content || "";
+  return {text : completion.choices[0]?.message?.content || ""};
 }
 
 module.exports = { metagen };

@@ -77,7 +77,8 @@ const ShowAiText = ({ aiText, modelInfo }) => {
         )}
       </div>
       <div className="text-sm text-green-800 whitespace-pre-wrap">
-                                 dangerouslySetInnerHTML={{
+
+             dangerouslySetInnerHTML={{
                                    __html: parseMarkdown(aiText),
                                  }}
         </div>
@@ -91,7 +92,7 @@ const ShowUrl = ({ url, modelInfo }) => {
 
   return (
     <div className="mb-2">
-      {/* Model Info Header for Images */}
+      {/ Model Info Header for Images /}
       {modelInfo && (
         <div className="flex items-center justify-between mb-2 bg-purple-50 p-2 rounded-t-md">
           <h3 className="text-purple-700 text-sm font-semibold">Generated Image</h3>
@@ -119,7 +120,7 @@ const ShowUrl = ({ url, modelInfo }) => {
       )}
       
       {/* Image Container */}
-      <div className={`w-full max-h-[200px] rounded-lg bg-white flex items-center justify-center ${modelInfo ? 'rounded-t-none' : ''}`}>
+      <div className={`w-full max-h-[16px] rounded-lg bg-white flex items-center justify-center ${modelInfo ? 'rounded-t-none' : ''}`}>
         <img
           src={url}
           className="max-h-[200px] w-auto object-contain rounded-lg"

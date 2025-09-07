@@ -21,7 +21,6 @@ import { encodeId } from '../../utils/hashids';
 
 
 const fetchTopic = async (topicId) => {
-  console.log("encodeed", topicId);
   const response = await axios.get(`${API_BASE_URL}/forum/topics/${topicId}`, {
     headers: getAuthHeaders(),
   });

@@ -250,7 +250,7 @@ const ShowReplyContent = ({
 
   return (
     <div key={reply?._id} className="flex justify-start">
-      <div className="w-8 h-8  flex-shrink-0">
+      <div className="w-8 h-8 flex-shrink-0">
         <UserIconCard id={reply?.userId} />
       </div>
 
@@ -259,7 +259,7 @@ const ShowReplyContent = ({
         {/* User Info & Delete Button */}
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-            <div className="text-black dark:text-text_header font-normal mr-2 text-[14px] md:text-sm">
+            <div className="text-black  dark:text-text_header font-normal mr-2 text-[14px] md:text-[13.5px]">
               {reply?.userName}
             </div>
             <div className="mr-2 flex justify-center items-center">

@@ -8,9 +8,10 @@ const Context=({children})=>{
     const [replyIdForContext,setReplyIdForContext]= useState(null);
     const [userName,setUserName] = useState(null);
     const [modelType, setModelType] = useState('text');
+    const [provider,setProvider] = useState("");
 
     return (
-        <CommentContext.Provider value={{model,setModel,viewBox,setViewBox,replyIdForContext,setReplyIdForContext,userName,setUserName,modelType,setModelType}}>
+        <CommentContext.Provider value={{model,setModel,viewBox,setViewBox,replyIdForContext,setReplyIdForContext,userName,setUserName,modelType,setModelType,provider,setProvider}}>
             {children}
         </CommentContext.Provider>
     )
