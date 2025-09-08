@@ -15,21 +15,22 @@ import {
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 import { ChevronDown, Send } from "lucide-react";
 import modelIcon from "../../asset/IconImage/ModelIcon.png";
-import ModelContent from "./Component/ModelContent";
+// import ModelContent from "./Component/ModelContent";
+import ModelList from "../AIchatbot/Component/ModelList";
+import { CommentContext } from "../ContextProvider/CommentModelContext";
+import { fetchModelInfo, describeImagesInBackground } from "./Component/ReplyApi";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-const UserReply = () => {
+const UserReply = ({forum=false}) => {
   const { loginData } = useContext(LoginContext);
-  const { emitNewReply } = useWebSocket();
-  const { topicId } = useParams();
+  const { emitNewReply,emitNewComment } = useWebSocket();
+  const params = useParams();
+  const dynamicId = forum ? params.topicId : params.id;
+  const forumContext = useContext(ForumContext);
+  const commentContext = useContext(CommentContext);
 
-  const {
-    replyIdForContext,
-    model,
-    modelType,
-    provider,
-  } = useContext(ForumContext);
+  const {replyIdForContext, model, modelType, provider} = forum ? forumContext : commentContext;
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [postingData, setPostingData] = useState([]);
@@ -63,46 +64,13 @@ const UserReply = () => {
             item.replyId === replyId ? { ...item, processed: true } : item
           )
         );
-        describeImagesInBackground(replyId, postingData);
+        describeImagesInBackground(replyId, postingData,selectedFiles);
       }
     });
   }, [postedReplies]);
 
-  const describeImagesInBackground = async (replyId, postingData) => {
-    const hasImages = postingData.some(
-      (entry) =>
-        entry.imageUrl ||
-        selectedFiles.some((file) => file.type.startsWith("image/"))
-    );
-    if (!hasImages) return;
 
-    try {
-      await axios.put(
-        `${baseUrl}/describe-images/${replyId}`,
-        {},
-        { headers: getAuthHeaders() }
-      );
-    } catch (err) {
-      console.error("Error describing images:", err);
-    }
-  };
-
-  // -------------------
-  // Fetch model info
-  const fetchModelInfo = async (modelName) => {
-    try {
-      const response = await axios.get(
-        `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`,
-        { headers: getAuthHeaders() }
-      );
-      if (response.data.success) return response.data.data;
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  // -------------------
+  
   // Generate Submit
   const handleGenerateSubmit = async (e, enhancedPrompt = null, originalUserText = null) => {
     if (e) e.preventDefault();
@@ -148,7 +116,7 @@ const UserReply = () => {
 
     try {
       const suggestResponse = await axios.post(
-        `${baseUrl}/suggest/${replyIdForContext || topicId}`,
+        `${baseUrl}/suggest/${replyIdForContext || dynamicId}`,
         {
           text: newReply.trim(),
           contextType: "forumReply",
@@ -204,27 +172,28 @@ const UserReply = () => {
     try {
       const formData = new FormData();
       formData.append("content", JSON.stringify(updatedPostingData));
-      formData.append("topicId", topicId);
+      formData.append("dynamicId", dynamicId);
       formData.append("userId", loginData.validuserone._id);
       formData.append("userName", loginData.validuserone.userName);
       if (replyIdForContext) {
         formData.append("parentReplyId", replyIdForContext);
       }
       selectedFiles.forEach((file) => formData.append("media", file));
-
-      const response = await axios.post(REPLIES_URL, formData, {
+      const url = forum ? REPLIES_URL : `${baseUrl}/comments/post`;
+      
+      const response = await axios.post(url, formData, {
         headers: { ...getAuthHeaders(), "Content-Type": "multipart/form-data" },
       });
 
       if (response.status === 201) {
+        const idKey = forum ? "topicId" : "postId";
         const newReplyData = {
           ...response.data.reply,
-          topicId: topicId,
+          [idKey]: dynamicId,
           userName: loginData.validuserone.userName,
           userId: loginData.validuserone._id,
         };
-        emitNewReply(newReplyData);
-
+        forum ? emitNewReply(newReplyData) : emitNewComment(newReplyData);
         const replyId = response.data.reply._id || response.data.reply.id;
         if (replyId) {
           setPostedReplies((prev) => [
@@ -292,7 +261,7 @@ const UserReply = () => {
         <ShowGeneratedContent postingData={postingData} />
       </div>
 
-      <UserAndModel />
+      <UserAndModel forum={forum}/>
 
       <form>
         <div className="flex md:mb-2">
@@ -343,7 +312,7 @@ const UserReply = () => {
               />
             </button>
             {isDropdownOpen && (
-              <ModelContent closeDropdown={() => setIsDropdownOpen(false)} />
+              <ModelList userForum={forum} userComment={!forum} closeDropdown={() => setIsDropdownOpen(false)} />
             )}
 
             {/* Context Aware Toggle */}

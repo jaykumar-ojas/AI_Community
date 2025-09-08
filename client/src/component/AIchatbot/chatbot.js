@@ -50,7 +50,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] relative overflow-hidden bg-transparent">
       <div className='hidden md:block h-[calc(100vh-3.5rem)] bg-neutral-100 dark:bg-bg_sidebar/50 border-r border-black w-[18%]'>
-        <ModelList />
+        <ModelList forum={true} />
       </div>
 
       <div className="flex-1 px-2 sm:px-4 flex flex-col">

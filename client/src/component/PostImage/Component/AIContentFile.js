@@ -208,7 +208,17 @@ const AIContentFile = () => {
                       selectedImageModel === modelKey ? "bg-like_color text-white font-semibold" : "text-white"
                     }`}
                   >
-                    <span>{config.emoji}</span>
+                    {/* {iconUrl ? (
+                    <img 
+                        src={iconUrl} 
+                        alt={displayName} 
+                        style={{ width: 20, height: 20, borderRadius: '50%' }}
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'inline';
+                        }}
+                    />
+                ) : null} */}
                     <span>{config.displayName}</span>
                   </button>
                 ))}

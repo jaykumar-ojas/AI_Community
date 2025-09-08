@@ -48,7 +48,9 @@ router.get("/comments/replies", async (req, res) => {
 
 router.post("/comments/post",authenticate,upload.array("media", 5),awsuploadMiddleware,async (req, res) => {
     try {
-      const { postId, parentReplyId, userId, userName } = req.body;
+      const { dynamicId, parentReplyId, userId, userName } = req.body;
+      const postId = dynamicId;
+      console.log("i m comigh here for post ");
       const contentArray = JSON.parse(req.body.content);
 
       console.log("i m coming here1");
