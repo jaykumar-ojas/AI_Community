@@ -16,7 +16,7 @@ import {
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
 import CommentModelProvider, { CommentContext } from "../ContextProvider/CommentModelContext";
 import UserAndModel from "./Comment/UserAndModelComment";
-import { BrainIcon, ChevronDown, Send } from "lucide-react";
+import { ChevronDown, Send } from "lucide-react";
 import modelIcon from "../../asset/IconImage/ModelIcon.png"
 import ModelContent from "./Comment/ModelContentComment";
 const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -37,13 +37,37 @@ const UserCommentReply = () => {
 
   // Track posted replies to call describe-images API
   const [postedReplies, setPostedReplies] = useState([]);
-  
+  //memory history
+  const [conversationHistory, setConversationHistory] = useState([]);
   // Context aware functionality
+  const [isContextAware, setIsContextAware] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
   const [aiGenerated, setAiGenerated] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+
+
+  const buildConversationPrompt = (history, newPrompt) => {
+    let historyString = history
+      .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
+      .join("\n");
+    return `You are an AI assistant. Below is the conversation so far:\n\n${historyString}\n\nThe user now says:\n"${newPrompt}"\n\nPlease respond helpfully as the assistant:\nAssistant:`;
+  };
+
+    useEffect(() => {
+      const newHistory = [];
+      postingData.forEach((item) => {
+        if (item.userText) {
+          newHistory.push({ role: "user", content: item.userText });
+        }
+        if (item.aiText) {
+          newHistory.push({ role: "assistant", content: item.aiText });
+        }
+      });
+      setConversationHistory(newHistory);
+    }, [postingData]);
+    
   // Background function to describe images
   const describeImagesInBackground = async (replyId, postingData) => {
     // Check if there are any images in the posting data
@@ -125,11 +149,17 @@ const UserCommentReply = () => {
     setError(null);
 
     try {
+
+       const conversationPrompt = conversationHistory.length > 0 
+        ? buildConversationPrompt(conversationHistory, promptToUse)
+        : promptToUse;
+
       const generatePayload = {
         model: model,
-        prompt: promptToUse,
+        prompt: conversationPrompt,
         type: modelType,
-        provider:provider
+        provider:provider,
+        conversationHistory: conversationHistory, 
       };
 
       
@@ -145,9 +175,7 @@ const UserCommentReply = () => {
         
         // Always render the original user text, not the enhanced prompt
         handleGeneratedResult(response.data.data, textToRender, modelInfo);
-        if (!enhancedPrompt) {
-          setNewReply("");
-        }
+        setNewReply("");
       } else {
         setError("Failed to generate content");
       }
@@ -180,7 +208,7 @@ const UserCommentReply = () => {
           options: {
             // Add any specific options for suggestion
             temperature: 0.7,
-            maxTokens: 500
+            maxTokens: 1000,
           }
         },
         {
@@ -209,6 +237,15 @@ const UserCommentReply = () => {
       setContextLoading(false);
     }
   };
+
+  const handleGenerateClick = (e) => {
+    if (isContextAware) {
+      handleContextAwareGenerate(e);
+    } else {
+      handleGenerateSubmit(e);
+    }
+  };
+
 
   // handle submit to post
   const handleSubmit = async (e) => {
@@ -328,6 +365,11 @@ const UserCommentReply = () => {
     setAiGenerated(true);
   };
 
+  const clearConversationHistory = () => {
+    setConversationHistory([]);
+    setPostingData([]);
+  };
+
   return (
     <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-2">
       {/* Error display */}
@@ -341,15 +383,15 @@ const UserCommentReply = () => {
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box">
         <ShowGeneratedContent postingData={postingData} />
       </div>
-      
+
       {/* for showing model and userName */}
-      <UserAndModel/>
-      
-     <form>
+      <UserAndModel />
+
+      <form>
         <div className="flex md:mb-2">
           <textarea
             type="text"
-           className="flex-1 p-1 min-h-8 text-sm md:text-sm 
+            className="flex-1 p-1 min-h-8 text-sm md:text-sm 
              bg-transparent focus:outline-none focus:ring-0 border border-gray-300 rounded-md 
              resize-none overflow-y-auto break-words"
             placeholder="Write your reply..."
@@ -373,17 +415,16 @@ const UserCommentReply = () => {
               />
               <AttachIcon />
             </label>
+
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 border border-gray-300  px-2 py-1  rounded-lg shadow-sm hover:shadow-md transition-all"
+              className="flex items-center gap-2 border border-gray-300 px-2 py-1 rounded-lg shadow-sm hover:shadow-md transition-all"
             >
               {model ? (
-                <>
-                  <span className="font-medium text-xs text-black">
-                    {model}
-                  </span>
-                </>
+                <span className="font-medium text-xs text-black">
+                  {model}
+                </span>
               ) : (
                 <span className="text-gray-500">
                   <img
@@ -393,38 +434,51 @@ const UserCommentReply = () => {
                 </span>
               )}
               <ChevronDown
-                className={`h-4 w-4 text-gray-600 transition-transform ${
-                  isDropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`h-4 w-4 text-gray-600 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
             </button>
-            {isDropdownOpen && <ModelContent  closeDropdown={() => setIsDropdownOpen(false)} />}
+            {isDropdownOpen && (
+              <ModelContent closeDropdown={() => setIsDropdownOpen(false)} />
+            )}
+
+            {/* Context toggle */}
+            {model && (
+              <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isContextAware}
+                  onChange={(e) => setIsContextAware(e.target.checked)}
+                  className="accent-purple-600"
+                />
+                Context Aware
+              </label>
+            )}
+
+             {/* Clear History Button */}
+            {conversationHistory.length > 0 && (
+              <button
+                type="button"
+                onClick={clearConversationHistory}
+                className="text-xs text-gray-500 hover:text-red-600 px-2 py-1 rounded border border-gray-300 hover:border-red-300"
+              >
+                Clear History ({conversationHistory.length})
+              </button>
+            )}
           </div>
-          <div className="flex ">
+
+          <div className="flex">
+            {/* Generate Button (uses toggle) */}
             {model && (
               <button
                 type="button"
-                onClick={handleContextAwareGenerate}
-                className="bg-purple-600 text-black rounded-md px-4 py-2 text-sm hover:bg-purple-700 disabled:opacity-50 "
-                disabled={contextLoading || loading || !newReply.trim()}
-                title="Generate with context awareness from conversation history"
+                onClick={handleGenerateClick}
+                className="text-white rounded-md px-4 py-2 text-sm disabled:opacity-50"
+                disabled={loading || contextLoading || !newReply.trim()}
               >
-                {contextLoading ? "Context..." : <BrainIcon />}
+                {loading || contextLoading ? <Sparkle /> : <SparklesIcon />}
               </button>
             )}
 
-            {/* Regular Generate Button */}
-            {model && (
-              <button
-                type="button"
-                onClick={handleGenerateSubmit}
-                className="text-white rounded-md px-4 py-2 text-sm  disabled:opacity-50"
-                disabled={loading || contextLoading || !newReply.trim()}
-              >
-                {/* {loading ? "Generating..." : `Generate ${modelType === 'image' ? 'Image' : 'Text'}`} */}
-                {loading ? <Sparkle/> : <SparklesIcon />}
-              </button>
-            )}
             {/* Post Button */}
             <button
               type="button"

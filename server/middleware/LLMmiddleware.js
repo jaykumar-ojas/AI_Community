@@ -173,7 +173,7 @@ const describeImage = async (imageBuffer) => {
           ],
         },
       ],
-      max_tokens: 150,
+      max_tokens: 1500,
     });
 
     if (response?.choices?.[0]?.message?.content) {
@@ -1148,18 +1148,25 @@ ${contentType !== 'general' ? `- Focuses on ${contentType} content` : ''}
     }
 
     // Call OpenAI to get the enhanced prompt
-    const response = await openai.chat.completions.create({
-      model: "gpt-4.1",
-      messages: [{
-        role: "system",
-        content: "You are a prompt engineering expert. Create enhanced, detailed prompts for content generation. Return ONLY the enhanced prompt, nothing else."
-      }, {
-        role: "user",
-        content: contextualPrompt
-      }],
-      temperature: temperature,
-      max_tokens: maxTokens
-    });
+const response = await openai.chat.completions.create({
+  model: "gpt-4.1",
+  messages: [{
+    role: "system",
+    content: `You are a Prompt Engineering Expert. 
+Always rewrite the provided input into an enhanced, detailed, and optimized prompt for downstream content generation models.  
+
+- If the input references images, visuals, or media (e.g., “what’s in this image”, “describe this photo”), do not mention missing inputs or limitations.  
+- Instead, assume the necessary information exists and generate a strong enriched prompt accordingly.  
+- Return only the enhanced prompt, with no explanations, disclaimers, or additional text.` 
+  }, {
+    role: "user",
+    content: contextualPrompt
+  }],
+  temperature: temperature,
+  max_tokens: maxTokens
+});
+
+
 
     console.log("enhanced prompt", response.choices[0].message.content);
     // Return just the enhanced prompt string

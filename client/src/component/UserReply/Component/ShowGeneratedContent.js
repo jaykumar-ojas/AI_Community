@@ -1,21 +1,38 @@
-import React, {useRef} from "react";
-import {parseMarkdown} from "../../../utils/parseMarkdown";
+import React, { useRef } from "react";
+import { parseMarkdown } from "../../../utils/parseMarkdown";
 import { useHighlightTheme } from "../../../hooks/useHighlightTheme";
 import { useMathJax } from "../../../hooks/useMathJax";
 
-const ShowGeneratedContent = ({ postingData }) => {
- const contentRef = useRef(null);
+const ShowGeneratedContent = ({ postingData, conversationHistory = [] }) => {
+  const contentRef = useRef(null);
   useHighlightTheme();
   useMathJax(contentRef, [postingData]);
+
   if (!postingData || postingData.length === 0) return null;
 
   return (
- <div ref={contentRef} className="space-y-6 md:p-4">
+    <div
+      ref={contentRef}
+      className="flex flex-col gap-4 p-4 bg-gray-50 min-h-screen"
+    >
+      {/* Conversation History Indicator */}
+      {conversationHistory && conversationHistory.length > 0 && (
+        <div className="flex justify-center mb-2">
+          <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+            Memory Active • {conversationHistory.length} messages in history
+          </div>
+        </div>
+      )}
+
       {postingData.map((item, index) => (
-        <div key={index} className="border md:p-4 p-2 rounded-lg shadow-md bg-white">
-          <ShowUserText userText= {item.userText} />
+        <div key={index} className="flex flex-col gap-3">
+          <ShowUserText userText={item.userText} />
           <ShowPrompt prompt={item.prompt} />
-          <ShowAiText aiText={item.aiText} modelInfo={item.modelInfo} />
+          <ShowAiText 
+            aiText={item.aiText} 
+            modelInfo={item.modelInfo}
+            isMemoryAware={conversationHistory && conversationHistory.length > 0}
+          />
           <ShowUrl url={item.imageUrl} modelInfo={item.modelInfo} />
         </div>
       ))}
@@ -23,110 +40,92 @@ const ShowGeneratedContent = ({ postingData }) => {
   );
 };
 
-
 const ShowUserText = ({ userText }) => {
   if (!userText) return null;
-
   return (
-    <div className="bg-blue-50 p-3 rounded-md shadow-sm mb-2">
-      <h3 className="text-blue-700 text-sm font-semibold mb-2">User Input</h3>
-      <div className="text-sm text-blue-800">{userText}</div>
+    <div className="flex justify-end">
+      <div className="max-w-[80%] bg-blue-500 text-white px-4 py-2 rounded-2xl shadow-md text-sm">
+        {userText}
+      </div>
     </div>
   );
 };
 
 const ShowPrompt = ({ prompt }) => {
   if (!prompt) return null;
-
   return (
-    <div className="bg-gray-100 p-3 rounded-md shadow-sm mb-2">
-      <h3 className="text-gray-700 text-sm font-semibold mb-2">Prompt</h3>
-      <div className="text-sm italic text-gray-800">{prompt}</div>
+    <div className="flex justify-end">
+      <div className="max-w-[70%] bg-blue-100 text-blue-800 px-3 py-2 rounded-2xl text-xs italic shadow-sm">
+        {prompt}
+      </div>
     </div>
   );
 };
 
 const ShowAiText = ({ aiText, modelInfo }) => {
   if (!aiText) return null;
-  console.log("parsemarkdown",parseMarkdown(aiText));
+
   return (
-    <div className="bg-green-50 p-3 rounded-md shadow-sm mb-2">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-green-700 text-sm font-semibold">AI Response</h3>
+    <div className="flex justify-start">
+      <div className="max-w-[80%] bg-white px-4 py-3 rounded-2xl shadow-md text-sm text-gray-800 border border-gray-100">
+        <div
+          className="prose prose-sm text-gray-800"
+          dangerouslySetInnerHTML={{ __html: parseMarkdown(aiText) }}
+        />
         {modelInfo && (
-          <div className="flex items-center space-x-2">
+          <div className="mt-2 flex items-center space-x-2 text-xs text-gray-500">
             {modelInfo.iconUrl && (
               <img
                 src={modelInfo.iconUrl}
                 alt={`${modelInfo.providerName} icon`}
-                className="w-5 h-5 rounded-full object-cover"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
+                className="w-4 h-4 rounded-full object-cover"
+                onError={(e) => (e.target.style.display = "none")}
               />
             )}
-            <div className="flex flex-col items-end">
-              <span className="text-xs text-green-600 font-medium">
-                {modelInfo.providerName}
-              </span>
-              <span className="text-xs text-gray-500">
-                {modelInfo.modelName}
-              </span>
-            </div>
+            <span>
+              {modelInfo.providerName} · {modelInfo.modelName}
+            </span>
           </div>
         )}
       </div>
-      <div
-        className="text-sm text-green-800 whitespace-pre-wrap"
-        dangerouslySetInnerHTML={{ __html: parseMarkdown(aiText) }}
-      />
     </div>
   );
 };
-
-
 
 const ShowUrl = ({ url, modelInfo }) => {
   if (!url) return null;
 
   return (
-    <div className="mb-2">
-      {modelInfo && (
-        <div className="flex items-center justify-between mb-2 bg-purple-50 p-2 rounded-t-md">
-          <h3 className="text-purple-700 text-sm font-semibold">Generated Image</h3>
-          <div className="flex items-center space-x-2">
-            {modelInfo.iconUrl && (
-              <img 
-                src={modelInfo.iconUrl} 
-                alt={`${modelInfo.providerName} icon`}
-                className="w-5 h-5 rounded-full object-cover"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-            )}
-            <div className="flex flex-col items-end">
-              <span className="text-xs text-purple-600 font-medium">
-                {modelInfo.providerName}
-              </span>
+    <div className="flex justify-start">
+      <div className="max-w-[80%] bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+        {modelInfo && (
+          <div className="flex items-center justify-between p-2 border-b border-gray-100 bg-gray-50">
+            <div className="text-xs text-gray-600 font-medium">
+              Generated Image
+            </div>
+            <div className="flex items-center space-x-2">
+              {modelInfo.iconUrl && (
+                <img
+                  src={modelInfo.iconUrl}
+                  alt={`${modelInfo.providerName} icon`}
+                  className="w-4 h-4 rounded-full object-cover"
+                  onError={(e) => (e.target.style.display = "none")}
+                />
+              )}
               <span className="text-xs text-gray-500">
-                {modelInfo.modelName}
+                {modelInfo.providerName}
               </span>
             </div>
           </div>
+        )}
+        <div className="bg-white flex items-center justify-center">
+          <img
+            src={url}
+            className="max-h-[200px] w-auto object-contain"
+            alt="Generated content"
+            onError={(e) => (e.target.style.display = "none")}
+          />
         </div>
-      )}
-      
-      {/* Image Container */}
-      <div className={`w-full max-h-[16px] rounded-lg bg-white flex items-center justify-center ${modelInfo ? 'rounded-t-none' : ''}`}>
-        <img
-          src={url}
-          className="max-h-[200px] w-auto object-contain rounded-lg"
-          alt="Generated content"
-          onError={(e) => {
-            e.target.style.display = 'none';
-          }}
-        />
       </div>
     </div>
   );

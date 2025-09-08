@@ -18,12 +18,15 @@ async function getImagen() {
 
 async function googletext(prompt, model) {
   const ai = await getGemini();
-  const response = await ai.models.generateContent({
-    model: model,
-    contents: prompt,
-  });
-  console.log(response.text);
-  return {text: response.text};
+  const genModel = ai.getGenerativeModel({ model });
+  const response = await genModel.generateContent(prompt);
+
+  const text = response.response.candidates[0].content.parts
+    .map(p => p.text)
+    .join(" ");
+
+   console.log(text);
+  return { text: text };
 }
 
 async function google_imagen(prompt, model) {
