@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEccfect, useEffect, useRef, useState } from "react";
 import { ForumContext } from "../ContextProvider/ModelContext";
 import UserAndModel from "./Component/UserAndModel";
 import ShowSelectedFile from "./Component/ShowSelectedFiie";
@@ -24,17 +24,20 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const UserReply = ({forum=false}) => {
   const { loginData } = useContext(LoginContext);
-  const { emitNewReply,emitNewComment } = useWebSocket();
+  const { emitNewReply,emitNewComment } = useWebSocket(); // for websocket
   const params = useParams();
-  const dynamicId = forum ? params.topicId : params.id;
+  const dynamicId = forum ? params.topicId : params.id; // for params id
   const forumContext = useContext(ForumContext);
   const commentContext = useContext(CommentContext);
 
-  const {replyIdForContext, model, modelType, provider} = forum ? forumContext : commentContext;
+  const {replyIdForContext, model, modelType, provider} = forum ? forumContext : commentContext; //for context
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [postingData, setPostingData] = useState([]);
   const [newReply, setNewReply] = useState("");
+  
+  // Conversation history for memory-aware functionality
+  const [conversationHistory, setConversationHistory] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -47,6 +50,30 @@ const UserReply = ({forum=false}) => {
   const [isContextAware, setIsContextAware] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
   const [aiGenerated, setAiGenerated] = useState(false);
+
+  
+
+  // Build conversation prompt with history
+  const buildConversationPrompt = (history, newPrompt) => {
+    let historyString = history
+      .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
+      .join("\n");
+    return `You are an AI assistant. Below is the conversation so far:\n\n${historyString}\n\nThe user now says:\n"${newPrompt}"\n\nPlease respond helpfully as the assistant:\nAssistant:`;
+  };
+
+  // Update conversation history when postingData changes
+  useEffect(() => {
+    const newHistory = [];
+    postingData.forEach((item) => {
+      if (item.userText) {
+        newHistory.push({ role: "user", content: item.userText });
+      }
+      if (item.aiText) {
+        newHistory.push({ role: "assistant", content: item.aiText });
+      }
+    });
+    setConversationHistory(newHistory);
+  }, [postingData]);
 
   // -------------------
   // File handler
@@ -82,11 +109,17 @@ const UserReply = ({forum=false}) => {
     setError(null);
 
     try {
+      // Build conversation-aware prompt
+      const conversationPrompt = conversationHistory.length > 0 
+        ? buildConversationPrompt(conversationHistory, promptToUse)
+        : promptToUse;
+
       const generatePayload = {
         model: model,
-        prompt: promptToUse,
+        prompt: conversationPrompt,
         type: modelType,
         provider: provider,
+        conversationHistory: conversationHistory, // Send history to API
       };
 
       const response = await axios.post(`${baseUrl}/generateContent`, generatePayload);
@@ -106,7 +139,7 @@ const UserReply = ({forum=false}) => {
   };
 
   // -------------------
-  // Context Aware Generate
+  // Context Aware Generate with Memory
   const handleContextAwareGenerate = async (e) => {
     if (e) e.preventDefault();
     if (!newReply.trim()) return;
@@ -121,6 +154,7 @@ const UserReply = ({forum=false}) => {
           text: newReply.trim(),
           contextType: "forumReply",
           options: { temperature: 0.7, maxTokens: 1000 },
+          conversationHistory: conversationHistory, // Include history in context-aware requests
         },
         { headers: getAuthHeaders() }
       );
@@ -249,6 +283,13 @@ const UserReply = ({forum=false}) => {
   };
 
   // -------------------
+  // Clear conversation history
+  const clearConversationHistory = () => {
+    setConversationHistory([]);
+    setPostingData([]);
+  };
+
+  // -------------------
   return (
     <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-1">
       {error && (
@@ -325,6 +366,17 @@ const UserReply = ({forum=false}) => {
               />
               Context Aware
             </label>
+
+            {/* Clear History Button */}
+            {conversationHistory.length > 0 && (
+              <button
+                type="button"
+                onClick={clearConversationHistory}
+                className="text-xs text-gray-500 hover:text-red-600 px-2 py-1 rounded border border-gray-300 hover:border-red-300"
+              >
+                Clear History ({conversationHistory.length})
+              </button>
+            )}
           </div>
 
           {/* Right controls */}
