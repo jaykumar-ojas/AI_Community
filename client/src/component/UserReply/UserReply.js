@@ -51,8 +51,6 @@ const UserReply = ({forum=false}) => {
   const [contextLoading, setContextLoading] = useState(false);
   const [aiGenerated, setAiGenerated] = useState(false);
 
-  
-
   // Build conversation prompt with history
   const buildConversationPrompt = (history, newPrompt) => {
     let historyString = history
@@ -96,9 +94,6 @@ const UserReply = ({forum=false}) => {
     });
   }, [postedReplies]);
 
-
-  
-  // Generate Submit
   const handleGenerateSubmit = async (e, enhancedPrompt = null, originalUserText = null) => {
     if (e) e.preventDefault();
     const promptToUse = enhancedPrompt || newReply.trim();
