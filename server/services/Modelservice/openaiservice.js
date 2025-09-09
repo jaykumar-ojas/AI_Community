@@ -21,17 +21,27 @@ async function generateTextopenai(prompt, model) {
 }
 
 async function generateImageBase64openai(prompt, model) {
+  try{
+    console.log("i m coming here");
   const openai = await getOpenAI();
+  console.log(" im here");
   const response = await openai.images.generate({
     model,
     prompt,
     response_format: "b64_json" 
   });
+  console.log("i come backg rom calling ,", response);
   if (!response.data[0]?.b64_json) {
     throw new Error("No image was generated.");
   }
+  console.log("i alos get data");
 
   return {imageData :response.data[0].b64_json};
+  }
+  catch(error){
+    console.log("i got error",error);
+  }
+  
 }
 
 async function generateImageBase64(prompt, model) {
