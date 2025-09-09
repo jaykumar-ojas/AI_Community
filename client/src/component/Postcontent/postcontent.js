@@ -4,9 +4,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import UserContent from "./UserContent";
 import CommentReview from "./CommentReview";
 import RelatedCard from "../Card/RelatedCard";
-import UserCommentReply from "../UserReply/UserCommentReply";
 import ModelList from "./CommentComponent/Model";
 import AiIcons from "../../asset/AiIcons.png";
+import UserReply from "../UserReply/UserReply";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -149,11 +149,11 @@ const PostContent = () => {
 
           {/* Reply box (desktop always visible, mobile only when comments open) */}
           <div className={`md:px-24 hidden md:block`}>
-            <UserCommentReply />
+            <UserReply />
           </div>
 
           <div className={`fixed bg-white left-0 right-0 ${showCommentsMobile ? "block" : "hidden"} z-30 bottom-0 block md:hidden`}>
-            <UserCommentReply />
+            <UserReply />
           </div>
 
           

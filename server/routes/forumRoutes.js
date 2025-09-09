@@ -614,9 +614,9 @@ router.get('/paginated', async(req, res) => {
 
 router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware,async (req, res) => {
     try {
-      const { topicId, parentReplyId, userId, userName } = req.body;
+      const { dynamicId, parentReplyId, userId, userName } = req.body;
 
-      const realId = decodeId(req.body.topicId);
+      const realId = decodeId(dynamicId);
 
       // Parse content as array of content blocks
       const contentArray = JSON.parse(req.body.content);

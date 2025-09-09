@@ -1,54 +1,22 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ForumContext } from '../../ContextProvider/ModelContext';
+import Context, { ForumContext } from '../../ContextProvider/ModelContext';
+import ModelShowParams from './ModelShowParams';
+import { fetchIconUrl, fetchModelConfig,loadIcons} from './ModelApi';
+import { CommentContext } from '../../ContextProvider/CommentModelContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-function ModelItem({ name, displayName, iconUrl, emoji, provider, active = false, onClick }) {
-    return (
-        <li>
-            <button
-                className={`w-full text-left px-2 py-2 rounded-md transition-all duration-150 cursor-pointer flex items-center space-x-2 ${
-                    active
-                        ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
-                        : 'text-black text-sm dark:text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
-                }`}
-                onClick={() => onClick(name,provider)}
-            >
-                {iconUrl ? (
-                    <img 
-                        src={iconUrl} 
-                        alt={displayName} 
-                        style={{ width: 20, height: 20, borderRadius: '50%' }}
-                        onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'inline';
-                        }}
-                    />
-                ) : null}
-                <span className="text-xl" style={{ display: iconUrl ? 'none' : 'inline' }}>{emoji}</span>
-                <span className='text-md'>{displayName}</span>
-            </button>
-        </li>
-    );
-}
 
-const fetchModelConfig = async () => {
-    const res = await fetch(`${baseUrl}/models-info`);
-    if (!res.ok) throw new Error("Failed to fetch model config");
-    const data = await res.json();
-    if (!data.success) throw new Error("API returned unsuccessful response");
-    return data.data;
-};
 
-const fetchIconUrl = async (modelName) => {
-    const res = await fetch(`${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.success ? data.data.iconUrl : null;
-};
 
-const ModelList = () => {
-    const { model, setModel, modelType, setModelType, setProvider } = useContext(ForumContext);
+
+const ModelList = ({forum=false, userForum=false, userComment=false, closeDropdown}) => {
+    const forumContext = useContext(ForumContext);
+    const commentContext = useContext(CommentContext);
+
+    // pick one based on props
+    const { model, setModel, modelType, setModelType, setProvider } =
+    forum || userForum ? forumContext : commentContext;
     const [iconUrls, setIconUrls] = useState({});
 
     const {
@@ -58,24 +26,13 @@ const ModelList = () => {
     } = useQuery({
         queryKey: ['model-config'],
         queryFn: fetchModelConfig,
-        staleTime: 1000 * 60 * 5, // 5 mins
+        staleTime: 1000 * 60 * 60, // 5 mins
     });
     console.log("this is model data",modelConfig);
 
     // Fetch icons after modelConfig is available
     useEffect(() => {
-        const loadIcons = async () => {
-            const entries = Object.entries(modelConfig[modelType] || {});
-            for (const [modelName] of entries) {
-                if (!iconUrls[modelName]) {
-                    const iconUrl = await fetchIconUrl(modelName);
-                    if (iconUrl) {
-                        setIconUrls(prev => ({ ...prev, [modelName]: iconUrl }));
-                    }
-                }
-            }
-        };
-        loadIcons();
+        loadIcons(modelConfig,modelType,iconUrls,setIconUrls);
     }, [modelConfig, modelType]);
 
     // Removed auto-selection of default model - user must manually select
@@ -83,40 +40,14 @@ const ModelList = () => {
     const handleModelSelect = (modelName,provider) => {
         setModel(modelName);
         setProvider(provider);
-        const isImageModel = modelType === 'image';
-        const controlBits = {
-            enhancePrompt: false,
-            generateText: !isImageModel,
-            generateImage: isImageModel,
-            processContextAware: false
-        };
-        window.dispatchEvent(new CustomEvent('modelSelected', {
-            detail: {
-                model: modelName,
-                type: modelType,
-                controlBits
-            }
-        }));
+        if(closeDropdown){
+            closeDropdown();
+        }
     };
 
     const handleTypeSelect = (type) => {
         setModelType(type);
-        // Clear model selection when changing type - user must manually select
         setModel("");
-        const isImageModel = type === 'image';
-        const controlBits = {
-            enhancePrompt: false,
-            generateText: !isImageModel,
-            generateImage: isImageModel,
-            processContextAware: false
-        };
-        window.dispatchEvent(new CustomEvent('modelSelected', {
-            detail: {
-                model: "",
-                type: type,
-                controlBits
-            }
-        }));
     };
 
     if (isLoading) {
@@ -135,7 +66,32 @@ const ModelList = () => {
     }
 
     return (
-        <div className="w-full flex flex-col bg-transparent rounded-lg shadow-sm">
+        <>
+            {forum && <SideBarModelsView
+                model={model}
+                modelType={modelType}
+                modelConfig={modelConfig}
+                handleTypeSelect={handleTypeSelect}
+                handleModelSelect={handleModelSelect}
+                iconUrls={iconUrls}
+            />}
+            {(userForum || userComment) && <BottomModelView
+                model={model}
+                modelType={modelType}
+                modelConfig={modelConfig}
+                handleTypeSelect={handleTypeSelect}
+                handleModelSelect={handleModelSelect}
+                iconUrls={iconUrls}
+            />}
+        </>
+    );
+};
+
+export default ModelList;
+
+const SideBarModelsView = ({model, modelType, modelConfig, handleTypeSelect, handleModelSelect, iconUrls}) =>{
+    return (
+         <div className="w-full flex flex-col bg-transparent rounded-lg shadow-sm">
             {/* Model Type Selection */}
             <div className="p-2 border-b border-gray-700">
                 <div className="font-semibold mb-2 text-gray-900 dark:text-text_header text-l flex items-center">
@@ -163,7 +119,7 @@ const ModelList = () => {
             <div className="p-4 pt-0 overflow-y-auto max-h-[calc(100vh-5rem)]">
                 <ul className="space-y-1 overflow-y-auto">
                     {Object.entries(modelConfig[modelType] || {}).map(([modelName, config]) => (
-                        <ModelItem
+                        <ModelShowParams
                             key={modelName}
                             name={modelName}
                             provider={config.provider}
@@ -177,7 +133,53 @@ const ModelList = () => {
                 </ul>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default ModelList;
+const BottomModelView = ({model, modelType, modelConfig, handleTypeSelect, handleModelSelect, iconUrls})=>{
+    return (
+    <div className="relative">
+      {/* Model Type Selector */}
+
+      {/* Dropdown Button fixed at bottom navbar */}
+      <div className="fixed bottom-12 left-1/4 transform -translate-x-8 w-64 z-50">
+        {/* Dropdown list above button */}
+
+        <ul className="absolute bottom-full mb-2 max-w-full max-h-64  overflow-y-auto bg-white  dark:bg-gray-800 rounded-md shadow-lg p-2 z-50">
+          <div className="flex space-x-2 mb-2">
+            {["text", "image"].map((type) => (
+              <button
+                type="button"
+                key={type}
+                className={`px-3 py-1 rounded-md text-sm flex items-center space-x-1 transition-all duration-150 ${
+                  modelType === type
+                    ? "bg-like_color text-text_header font-medium"
+                    : "text-text_header hover:bg-like_color"
+                }`}
+                onClick={() => handleTypeSelect(type)}
+              >
+                <span>{type === "text" ? "✍️" : "🖼️"}</span>
+                <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+              </button>
+            ))}
+          </div>
+
+          {Object.entries(modelConfig[modelType] || {}).map(
+            ([modelName, config]) => (
+              <ModelShowParams
+                key={modelName}
+                name={modelName}
+                provider={config.provider}
+                displayName={config.displayName}
+                iconUrl={iconUrls[modelName]}
+                emoji={config.emoji}
+                active={model === modelName}
+                onClick={handleModelSelect}
+              />
+            )
+          )}
+        </ul>
+      </div>
+    </div>
+    )
+}

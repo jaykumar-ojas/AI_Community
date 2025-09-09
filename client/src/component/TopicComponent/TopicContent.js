@@ -150,11 +150,11 @@ const TopicContent = () => {
 
       {/* Reply Input - Desktop always visible; Mobile shown only when Reply tapped */}
       <div className="px-4 py-2 bg-transparent hidden md:block">
-        <UserReply />
+        <UserReply forum={true} />
       </div>
       {viewBox && (
         <div ref={mobileReplyRef} className="fixed z-50 bottom-0 left-0 right-0 bg-white md:hidden">
-          <UserReply />
+          <UserReply forum={true} />
         </div>
       )}
     </div>

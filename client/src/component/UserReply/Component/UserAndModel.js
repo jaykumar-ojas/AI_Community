@@ -1,8 +1,12 @@
 import React, { useContext } from "react";
 import { ForumContext } from "../../ContextProvider/ModelContext";
+import { CommentContext } from "../../ContextProvider/CommentModelContext";
 
-const UserAndModel = () => {
-    const { replyIdForContext,setReplyIdForContext, userName,model,setModel } = useContext(ForumContext);
+const UserAndModel = ({forum=false}) => {
+  const forumContext = useContext(ForumContext);
+  const commentContext = useContext(CommentContext);
+  const { replyIdForContext,setReplyIdForContext, userName,model,setModel } = 
+  forum ? forumContext : commentContext;
   return (
     <div className="md:p-1 pb-1 px-2">
       {replyIdForContext && (
