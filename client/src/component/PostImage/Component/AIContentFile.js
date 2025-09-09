@@ -22,39 +22,66 @@ const AIContentFile = () => {
   const [availableModels, setAvailableModels] = useState({});
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const { originalFileRef, setDesc } = useContext(PostContext);
+  const [provider,setProvider] = useState(""); 
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+const fetchIconUrl = async (modelName) => {
+  const res = await fetch(
+    `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.success ? data.data.iconUrl : null;
+};
+
+
   // Fetch available models from backend
-  useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        setIsLoadingModels(true);
-        const response = await fetch(`${baseUrl}/models-info`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setAvailableModels(data.data);
+useEffect(() => {
+  const fetchModels = async () => {
+    try {
+      setIsLoadingModels(true);
+      const response = await fetch(`${baseUrl}/models-info`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const models = data.data.image || {};
+
+          // fetch icons for each model
+          const enrichedModels = {};
+          for (const [key, config] of Object.entries(models)) {
+            const iconUrl = await fetchIconUrl(key);
+            enrichedModels[key] = {
+              ...config,
+              iconUrl: iconUrl || null, // fallback handled later
+            };
           }
+
+          setAvailableModels({ image: enrichedModels });
         }
-      } catch (error) {
-        console.error("Error fetching models:", error);
-        setAvailableModels({
-          image: {
-            "dall-e-3": {
-              displayName: "DALL-E 3",
-              emoji: "🎨",
-              provider: "openai",
-            },
-          },
-        });
-      } finally {
-        setIsLoadingModels(false);
       }
-    };
-    fetchModels();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching models:", error);
+      setAvailableModels({
+        image: {
+          "dall-e-3": {
+            displayName: "DALL-E 3",
+            emoji: "🎨",
+            provider: "openai",
+            iconUrl: null,
+          },
+        },
+      });
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
+  fetchModels();
+}, []);
+
+
+
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -101,70 +128,87 @@ const AIContentFile = () => {
   };
 
   const generateAIImage = async () => {
-    if (!aiPrompt.trim()) {
-      alert("Please enter a prompt for image generation");
-      return;
-    }
-    if (!selectedImageModel) {
-      alert("Please select an image model");
-      return;
-    }
-    try {
-      setIsGeneratingImage(true);
-      const response = await fetch(`${baseUrl}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ prompt: aiPrompt, model: selectedImageModel, type: "image" }),
-      });
+  if (!aiPrompt.trim()) {
+    alert("Please enter a prompt for image generation");
+    return;
+  }
+  if (!selectedImageModel) {
+    alert("Please select an image model");
+    return;
+  }
 
-      if (!response.ok) throw new Error("Failed to generate image");
+  try {
+    setIsGeneratingImage(true);
 
-      const result = await response.json();
-      if (!(result.success && result.data?.result?.images)) {
-        throw new Error("Invalid response format");
-      }
-
-      let imageUrl;
-      const images = result.data.result.images;
-      if (Array.isArray(images)) {
-        imageUrl = typeof images[0] === "string" ? images[0] : images[0].url;
-      } else if (typeof images === "string") {
-        imageUrl = images;
-      }
-
-      if (!imageUrl) throw new Error("No image URL found");
-
-      const proxyUrl = `${baseUrl}/proxy-image?url=${encodeURIComponent(imageUrl)}`;
-      const imageResponse = await fetch(proxyUrl);
-      const blob = await imageResponse.blob();
-      const file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
-
-      const modelConfig = imageModels[selectedImageModel];
-      const aiMetadata = {
-        model: selectedImageModel,
-        provider: result.data.provider || "Unknown",
+    // --- Call backend ---
+    const response = await fetch(`${baseUrl}/generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
         prompt: aiPrompt,
-        displayName: modelConfig ? modelConfig.displayName : selectedImageModel,
-      };
-      if (setAiMetadata) setAiMetadata(aiMetadata);
+        model: selectedImageModel,
+        type: "image",
+        provider: imageModels[selectedImageModel]?.provider,
+      }),
+    });
 
-      // Save file in context
-      originalFileRef.current = file;
-      setFile(file);
-      setFileType("image");
-      setPreviewUrl(URL.createObjectURL(file));
-      setShowCropper(true);
-      setDesc((prev) =>
-        prev ? `${prev}\n\nAI Generated Image Prompt: ${aiPrompt}` : `AI Generated Image Prompt: ${aiPrompt}`
-      );
-      setAiPrompt("");
-    } catch (error) {
-      console.error("Error generating AI image:", error);
-      alert("Failed to generate image: " + error.message);
-    } finally {
-      setIsGeneratingImage(false);
+    if (!response.ok) throw new Error("Failed to generate image");
+    const result = await response.json();
+
+    // --- Validate response ---
+    const { imageData, imageUrl, provider } = result.data || {};
+    if (!(result.success && (imageData || imageUrl))) {
+      throw new Error("Invalid response format");
     }
-  };
+
+    // --- Convert image data to File ---
+    let file;
+    if (imageData) {
+      // Case 1: base64 → Blob
+      const byteArray = Uint8Array.from(atob(imageData), (c) => c.charCodeAt(0));
+      const blob = new Blob([byteArray], { type: "image/png" });
+      file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
+    } else if (imageUrl) {
+      // Case 2: fetch from URL → Blob
+      const proxyUrl = `${baseUrl}/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+      const imgResponse = await fetch(proxyUrl);
+      const blob = await imgResponse.blob();
+      file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
+    }
+
+    if (!file) throw new Error("No image file created");
+
+    // --- Save metadata ---
+    const modelConfig = imageModels[selectedImageModel];
+    const aiMetadata = {
+      model: selectedImageModel,
+      provider: selectedImageModel || "Unknown",
+      prompt: aiPrompt,
+      displayName: selectedImageModel,
+    };
+    if (setAiMetadata) setAiMetadata(aiMetadata);
+
+    // --- Update UI state ---
+    originalFileRef.current = file;
+    setFile(file);
+    setFileType("image");
+    setPreviewUrl(URL.createObjectURL(file));
+    setShowCropper(true);
+    setDesc((prev) =>
+      prev
+        ? `${prev}\n\nAI Generated Image Prompt: ${aiPrompt}`
+        : `AI Generated Image Prompt: ${aiPrompt}`
+    );
+    setAiPrompt("");
+
+  } catch (error) {
+    console.error("Error generating AI image:", error);
+    alert("Failed to generate image: " + error.message);
+  } finally {
+    setIsGeneratingImage(false);
+  }
+};
+
 
   return (
     <div className="md:px-6">
@@ -179,13 +223,25 @@ const AIContentFile = () => {
         >
           {selectedImageModel ? (
             <>
-              <span>{imageModels[selectedImageModel]?.emoji}</span>
+              {imageModels[selectedImageModel]?.iconUrl ? (
+                <img
+                  src={imageModels[selectedImageModel].iconUrl}
+                  alt={imageModels[selectedImageModel].displayName}
+                  className="h-6 w-6 rounded-full object-cover"
+                />
+              ) : (
+                <span>{imageModels[selectedImageModel]?.emoji || "🖼️"}</span>
+              )}
               <span className="font-medium text-white">
                 {imageModels[selectedImageModel]?.displayName}
               </span>
             </>
           ) : (
-            <span className="text-gray-500"><img className="h-6 w-full object-cover rounded-full" src={modelIcon}/></span>
+            <img
+              className="h-6 w-6 object-cover rounded-full"
+              src={modelIcon}
+              alt="Default model"
+            />
           )}
           <ChevronDown className={`h-4 w-4 text-gray-600 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
         </button>
@@ -200,28 +256,29 @@ const AIContentFile = () => {
               </div>
             ) : (
               <div className="flex flex-col bg-black">
-                {Object.entries(imageModels).map(([modelKey, config]) => (
-                  <button
-                    key={modelKey}
-                    onClick={() => handleSelectModel(modelKey)}
-                    className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-like_color ${
-                      selectedImageModel === modelKey ? "bg-like_color text-white font-semibold" : "text-white"
-                    }`}
-                  >
-                    {/* {iconUrl ? (
-                    <img 
-                        src={iconUrl} 
-                        alt={displayName} 
-                        style={{ width: 20, height: 20, borderRadius: '50%' }}
-                        onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'inline';
-                        }}
+              {Object.entries(imageModels).map(([modelKey, config]) => (
+                <button
+                  key={modelKey}
+                  onClick={() => handleSelectModel(modelKey)}
+                  className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-like_color ${
+                    selectedImageModel === modelKey
+                      ? "bg-like_color text-white font-semibold"
+                      : "text-white"
+                  }`}
+                >
+                  {config.iconUrl ? (
+                    <img
+                      src={config.iconUrl}
+                      alt={config.displayName}
+                      className="h-5 w-5 rounded-full object-cover"
                     />
-                ) : null} */}
-                    <span>{config.displayName}</span>
-                  </button>
-                ))}
+                  ) : (
+                    <span>{config.emoji}</span>
+                  )}
+                  <span>{config.displayName}</span>
+                </button>
+              ))}
+
               </div>
             )}
           </div>

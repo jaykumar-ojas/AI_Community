@@ -26,12 +26,16 @@ router.post("/generateContent", async (req, res) => {
       });
     }
 
+    console.log("1");
+
     // Validate type
     if (!["text", "image"].includes(type)) {
       return res.status(400).json({
         error: 'Type must be either "text" or "image"',
       });
     }
+
+     console.log("2");
 
     // Check if provider exists in the config for the given type
     if (!llmConfig[type] || !llmConfig[type][provider]) {
@@ -40,18 +44,26 @@ router.post("/generateContent", async (req, res) => {
         availableProviders: Object.keys(llmConfig[type] || {}),
       });
     }
+     console.log("3");
 
     // Get the function for the specific model from the provider
     const modelFunctions = llmConfig[type][provider];
+    console.log(4);
     if (!modelFunctions || !modelFunctions[model]) {
+      console.log(" i come here");
       return res.status(400).json({
+        
         error: `Model '${model}' not found for provider '${provider}'`,
         availableModels: Object.keys(modelFunctions || {}),
       });
     }
 
+    console.log("i m coming here");
     const func = modelFunctions[model];
+    console.log("i finde model");
     const response = await func(prompt, model);
+    console.log(response,"this is respoonse")
+    // const response ={imageData : "akjdhdg"};
 
     res.json({
       success: true,

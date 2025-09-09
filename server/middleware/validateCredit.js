@@ -36,12 +36,12 @@ const validateCredit = async (req, res, next) => {
 };
 
 
-const reduceCredit = async (userId) => {
+const reduceCredit = async (userId,credit) => {
     try {
         const user = await userdb.findById(userId) || await googledb.findById(userId);
         if (!user) return;
 
-        user.credit = Math.max(0, user.credit - 1); 
+        user.credit = Math.max(0, user.credit - credit); 
         await user.save();
 
         console.log(`Credit reduced. New credit: ${user.credit}`);
