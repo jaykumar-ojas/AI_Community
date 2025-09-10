@@ -224,23 +224,23 @@ const [sparkles, setSparkles] = useState([]);
 
   return (
     <div
-  className="group relative cursor-pointer pb-2 md:pb-0"
-  onClick={handleCardClick}
->
+      className="group relative cursor-pointer pb-2 md:pb-0"
+      onClick={handleCardClick}
+    >
 
   <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type}  onLoad={handleMediaLoad}/>
 
 
-  {!isMediaLoaded && (
+
   <div className="absolute flex flex-col bottom-0 h-full w-full justify-between left-0 right-0 bg-black bg-opacity-0 sm:bg-opacity-60 text-white text-sm p-2 sm:opacity-0 sm:group-hover:opacity-100 transition duration-500">
     {/* User info row (with AI model if AI generated) */}
     <div className="flex justify-between bg-black/5 flex-row gap-2 pb-1 items-center">
       <div className="flex flex-row  justify-start gap-2">
           <div className="h-6 w-6  flex-shrink-0">
-            {/* <UserIconCard id={post?.userId} /> */}
+            <UserIconCard id={post?.userId} />
           </div>
           <div>
-            {/* <UserNameCard id={post?.userId} /> */}
+            <UserNameCard id={post?.userId} />
           </div>
       </div>
         {post?.isAIGenerated && post?.aiModel && (
@@ -321,7 +321,6 @@ const [sparkles, setSparkles] = useState([]);
       </div>
     </div>
   </div>
-  )}
   {/* <style jsx>{`
         @keyframes sparkle {
           0% {

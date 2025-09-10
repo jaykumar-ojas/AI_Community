@@ -1,6 +1,5 @@
-const FormData = require("form-data");
+FormData = require("form-data");
 require("dotenv").config();
-
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 
 async function ultra(prompt) {
@@ -25,7 +24,8 @@ async function ultra(prompt) {
   );
 
   if (response.status === 200) {
-    return Buffer.from(response.data);
+    const base64Image = Buffer.from(response.data, "binary").toString("base64");
+    return { imageData: base64Image };
   } else {
     throw new Error(`${response.status}: ${response.data.toString()}`);
   }
@@ -53,7 +53,10 @@ async function core(prompt) {
   );
 
   if (response.status === 200) {
-    return {ImageData:response.data};
+    const base64Image = Buffer.from(response.data, "binary").toString("base64");
+    return { imageData: base64Image };
+
+   // return {ImageData:response.data};
   } else {
     throw new Error(`${response.status}: ${response.data.toString()}`);
   }
@@ -82,7 +85,8 @@ async function sd3(prompt, model) {
   );
 
   if (response.status === 200) {
-    return {ImageData:response.data};
+    const base64Image = Buffer.from(response.data, "binary").toString("base64");
+    return { imageData: base64Image };
   } else {
     throw new Error(`${response.status}: ${response.data.toString()}`);
   }

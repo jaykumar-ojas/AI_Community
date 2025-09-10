@@ -1,64 +1,4 @@
 
-
-/* 
-    text:{
-        gpt-4.1
-        gpt-5
-        gpt-5-mini
-        gpt-5-nano
-        o4-mini
-        gemini-2.0-flash
-        gemini-2.5-pro
-        gemini-2.5-flash
-        gemini-2.0-flash-lite
-        meta-llama/llama-4-scout
-        meta-llama/llama-4-maverick
-        meta-llama/Llama-3.3-70B-Instruct-Turbo
-        meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
-        grok-3-mini
-        grok-3-mini-fast
-        grok-4
-        mistralai/Mixtral-8x7B-Instruct-v0.1
-        mistralai/Mistral-7B-Instruct-v0.3
-        anthropic/claude-sonnet-4
-        claude-3-7-sonnet-latest
-        claude-3-5-sonnet-latest
-        anthropic/claude-opus-4
-        claude-opus-4-1
-        deepseek/deepseek-r1
-        deepseek/deepseek-chat-v3.1
-        deepseek-chat
-        qwen-max
-        qwen-turbo
-    }
-
-    image:{
-        dall-e-3
-        dall-e-2
-        gpt-5
-        gpt-image-1
-        grok-2-image
-     imagen-4.0-generate-001
-      imagen-4.0-ultra-generate-001
-     imagen-4.0-fast-generate-001
-       imagen-3.0-generate-002
-    gemini-2.5-flash-image-preview
-    gemini-2.0-flash-preview-image-generation
-    stable image ultra = ultra
-    stable image core = core
-    sd3.5-large
-    sd3.5-large-turbo
-    sd3.5-medium
-    sd3.5-flash
-    flux-pro
-    flux-pro/v1.1
-    flux-pro/v1.1-ultra
-    flux-realism
-    alibaba/qwen-image
-    gen4_image
-    }
-*/
-
 // llmConfig.js
 
 const { generateTextopenai, generateImageBase64openai, generateImageBase64 } = require('../services/Modelservice/openaiservice');
@@ -120,8 +60,7 @@ const llmConfig = {
     "openai": {
       "dall-e-3": generateImageBase64openai,
       "dall-e-2": generateImageBase64openai,
-      "gpt-5": generateImageBase64,
-      "gpt-image-1": generateImageBase64openai,
+      "gpt-image-1": generateImageBase64,
     },
     "grok": {
       "grok-2-image": generateGrokImage
@@ -161,4 +100,65 @@ const llmConfig = {
 };
 console.log("Loaded model configuration:", llmConfig);
 module.exports = llmConfig;
+
+
+/* 
+    text:{
+        gpt-4.1
+        gpt-5
+        gpt-5-mini
+        gpt-5-nano
+        o4-mini
+        gemini-2.0-flash
+        gemini-2.5-pro
+        gemini-2.5-flash
+        gemini-2.0-flash-lite
+        meta-llama/llama-4-scout
+        meta-llama/llama-4-maverick
+        meta-llama/Llama-3.3-70B-Instruct-Turbo
+        meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
+        grok-3-mini
+        grok-3-mini-fast
+        grok-4
+        mistralai/Mixtral-8x7B-Instruct-v0.1
+        mistralai/Mistral-7B-Instruct-v0.3
+        anthropic/claude-sonnet-4
+        claude-3-7-sonnet-latest
+        claude-3-5-sonnet-latest
+        anthropic/claude-opus-4
+        claude-opus-4-1
+        deepseek/deepseek-r1
+        deepseek/deepseek-chat-v3.1
+        deepseek-chat
+        qwen-max
+        qwen-turbo
+    }
+
+    image:{
+        dall-e-3
+        dall-e-2
+        gpt-5
+        gpt-image-1
+        grok-2-image
+     imagen-4.0-generate-001
+      imagen-4.0-ultra-generate-001
+     imagen-4.0-fast-generate-001
+       imagen-3.0-generate-002
+    gemini-2.5-flash-image-preview
+    gemini-2.0-flash-preview-image-generation
+    stable image ultra = ultra
+    stable image core = core
+    sd3.5-large
+    sd3.5-large-turbo
+    sd3.5-medium
+    sd3.5-flash
+    flux-pro
+    flux-pro/v1.1
+    flux-pro/v1.1-ultra
+    flux-realism
+    alibaba/qwen-image
+    gen4_image
+    }
+*/
+
 
