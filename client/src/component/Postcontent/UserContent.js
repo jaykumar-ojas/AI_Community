@@ -295,14 +295,6 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
     window.open(url, "_blank", "noreferrer");
   };
 
-  const handleMediaClick = () => {
-    if (!postData?.imgUrl) return;
-
-    if (postData?.fileType === "image") {
-      openInNewTab(postData?.imgUrl);
-    }
-    // For video and audio, we'll let the built-in controls handle playback
-  };
 
   if (!post) {
     return <UserContentSkeleton />;
@@ -483,7 +475,6 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
           className={`w-full flex items-center justify-center overflow-hidden ${
             postData?.fileType === "image" ? "cursor-pointer" : ""
           }`}
-          onClick={handleMediaClick}
         >
           {renderMedia()}
         </div>

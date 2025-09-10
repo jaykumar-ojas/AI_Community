@@ -120,12 +120,12 @@ const PostContent = () => {
             </div>
 
             {/* Comments (desktop always visible, mobile toggled) */}
-            <div className={`flex-1 bg-gray-100 dark:bg-bg_comment_box p-4 rounded-xl ${showCommentsMobile ? "block" : "hidden"} md:block`}>
+            <div className={`flex-1 bg-gray-100 dark:bg-bg_comment_box p-4 rounded-xl ${showCommentsMobile ? "block" : "block"} md:block`}>
               <CommentReview />
             </div>
 
             {/* Mobile only: Related content when comments are hidden */}
-            <div className={`md:hidden ${showCommentsMobile ? "hidden" : "block"}`}>
+            <div className={`md:hidden ${showCommentsMobile ? "hidden" : "hidden"}`}>
               <div className="border border-gray-300 rounded-lg">
                 <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold">
                   More Related Content
