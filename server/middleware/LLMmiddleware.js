@@ -57,28 +57,6 @@ const promptEnhancer =async(req,res,next)=>{
       }
 };
 
-const imageToText = async(req,res,next)=>{
-    try {
-        if (!req.file) {
-          return res.status(400).json({ error: "No image file provided" });
-        }
-    
-        const prompt = "Describe the contents of this image.";
-        const imagePart = fileToGenerativePart(req.file.buffer, req.file.mimetype);
-    
-        const result = await model.generateContent([prompt, imagePart]);
-        const responseText = result.response.text();
-        req.description = responseText;
-        next();
-      } catch (error) {
-        console.error("Error generating text:", error);
-        res.status(500).json({ error: "Failed to process the image" });
-      }
-};
-
-
-
-
 const textSuggestion = async(text) => {
   try {
     if (!text) {
@@ -104,65 +82,48 @@ const textSuggestion = async(text) => {
   }
 };
 
-const imageGenerator = async(text)=>{
-  try{
-    if(!text){
-      console.error("No text provided for image generation");
-      return null;
-    }
-
-    console.log("Generating image with prompt:", text);
-
-    // Create a new OpenAI instance with the API key
-   
-    // Call the OpenAI API to generate an image
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: text,
-      n:1
-  
-    });
-    console.log("i m succssfylly ocme to generate imgages");
-  
-    // Extract the image URL from the response
-    if (response && response.data && response.data[0] && response.data[0].url) {
-      const imageUrl = response.data[0].url;
-      console.log("Successfully generated image URL");
-      return imageUrl;
-    } else {
-      console.error("Invalid response structure from OpenAI");
-      return null;
-    }
-  }
-  catch(error){
-    console.error("Error in imageGenerator function:", error);
-    return null;
-  }
-}
-
 const describeImage = async (imageBuffer) => {
-  console.log("Describing image buffer, size:", imageBuffer.length);
-  
+  console.log("Describing image buffer, size:", imageBuffer?.length || 0);
+
   try {
     if (!imageBuffer || !Buffer.isBuffer(imageBuffer) || imageBuffer.length === 0) {
       console.error("No valid image buffer provided for description");
       return null;
     }
 
-    const base64Image = imageBuffer.toString('base64');
-    const mimeType = detectMimeType(imageBuffer) || 'image/png';
+    const base64Image = imageBuffer.toString("base64");
+    const mimeType = detectMimeType(imageBuffer) || "image/png";
 
-    console.log("Sending image to OpenAI for description...");
+    console.log("Sending image to OpenAI for detailed description...");
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4.1", // most powerful model
       messages: [
+        {
+          role: "system",
+          content: "You are an expert visual interpreter. Provide extremely detailed and accurate image descriptions in JSON format."
+        },
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "Describe this image concisely for forum context. Focus on key objects, people, and actions. Keep it under 50 words.",
+              text: `Provide a highly detailed and precise description of this image.
+Focus on:
+- Key objects and their attributes (color, shape, size, texture)
+- People (appearance, clothing, facial expressions, actions, poses)
+- Environment (setting, background details, lighting, perspective, atmosphere)
+- Overall mood or story conveyed
+
+Return the result as JSON with these fields:
+{
+  "objects": [ ... ],
+  "people": [ ... ],
+  "environment": "...",
+  "lighting": "...",
+  "mood": "...",
+  "detailed_description": "..."
+}`
             },
             {
               type: "image_url",
@@ -173,13 +134,20 @@ const describeImage = async (imageBuffer) => {
           ],
         },
       ],
-      max_tokens: 1500,
+      max_completion_tokens: 1500, // ✅ correct param name
+      response_format: { type: "json_object" }, // enforce JSON
     });
 
     if (response?.choices?.[0]?.message?.content) {
-      const description = response.choices[0].message.content;
+      const raw = response.choices[0].message.content;
       console.log("Successfully received image description");
-      return description;
+
+      try {
+        return JSON.parse(raw); // structured JSON
+      } catch (parseErr) {
+        console.warn("Response was not valid JSON, returning raw text");
+        return raw;
+      }
     } else {
       console.error("Invalid response structure from OpenAI");
       return null;
@@ -193,6 +161,8 @@ const describeImage = async (imageBuffer) => {
     return null;
   }
 };
+
+
 
 
 const downloadImage = async (url) => {
@@ -372,6 +342,7 @@ const addImageDescriptions = async (objectId, db) => {
       for (let i = 0; i < updatedMediaAttachments.length; i++) {
         const mediaItem = updatedMediaAttachments[i];
         
+        console.log("Processing media attachment:", mediaItem);
         // Check if this media item has a fileUrl
         if (mediaItem.fileUrl) {
           try {
@@ -634,9 +605,9 @@ async function fetchAncestorContext(req, res, next) {
 
     console.log('fetchAncestorContext - Input:', { startId, contextType });
 
-    const maxDepth = 10;
+    const maxDepth = 3;
     const maxWordsPerNode = 500;
-    const maxTotalContextWords = 800; // Increased to accommodate topic/post context
+    const maxTotalContextWords = 1500; // Increased to accommodate topic/post context
 
     // Validation
     if (!startId) {
@@ -1190,10 +1161,10 @@ const promptEnhancerAI = async (prompt) => {
     const final_prompt = userPrompt + "\n\n" + prompt;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4", 
+      model: "gpt-4.1", 
       messages: [{ role: "user", content: final_prompt }],
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 1000
     });
     console.log('responce', response.choices[0].message.content);
     return response.choices[0].message.content;
@@ -1235,9 +1206,7 @@ module.exports ={
     describeImage,
     promptEnhancer,
     promptEnhancerAI,
-    imageToText,
     textSuggestion,
-    imageGenerator,
     fetchAncestorContext,
     formatContextForAI,
     generateTextResponse,
