@@ -21,17 +21,18 @@ const RecurrsionLoop = ({
   const [view, setView] = useState(true);
   const commentRef = useRef(null);
 
-  useEffect(() => {
-    if (scrollToId && reply?._id === scrollToId && commentRef.current) {
-      commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+useEffect(() => {
+  if (scrollToId && reply?._id === scrollToId && commentRef.current) {
+    commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
 
-      // Optional: highlight the comment
-      commentRef.current.classList.add("ring-2", "ring-yellow-400", "rounded");
-      setTimeout(() => {
-        commentRef.current?.classList.remove("ring-2", "ring-yellow-400", "rounded");
-      }, 2000);
-    }
-  }, [scrollToId, reply?._id]);
+    // Highlight the comment with a light warm white
+    commentRef.current.classList.add("bg-amber-50", "rounded");
+    setTimeout(() => {
+      commentRef.current?.classList.remove("bg-amber-50", "rounded");
+    }, 2000);
+  }
+}, [scrollToId, reply?._id]);
+
 
   return (
     // add an id so ReplyContent can scroll back to this exact element

@@ -117,8 +117,8 @@ const ReplyContent = () => {
         const el = document.getElementById(`reply-${lastThreadContext}`);
         if (el) {
           el.scrollIntoView({ behavior: "smooth", block: "center" });
-          el.classList.add("ring-2", "ring-yellow-400", "rounded");
-          setTimeout(() => el.classList.remove("ring-2", "ring-yellow-400", "rounded"), 2000);
+          el.classList.add("bg-amber-50", "rounded");
+          setTimeout(() => el.classList.remove("bg-amber-50", "rounded"), 2000);
           // clear the context unless you want to keep it for subsequent back
           setLastThreadContext(null);
         }
