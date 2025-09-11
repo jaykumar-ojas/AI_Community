@@ -1,12 +1,18 @@
 const userdb = require("../models/userSchema");
 const googledb = require("../models/googleSchema");
+const modelCreditConfig = require("../config/modelCreditConfig");
 
 // Middleware to validate user's credit
 const validateCredit = async (req, res, next) => {
     try {
-        const { userId } = req.body;
+        console.log("i m here for that");
+        const {model,type} = req.body;
+        const userId= req.userId;
+        console.log("succeffuly getting userid",userId);
+        const modelCredit = modelCreditConfig[type][model].cost;
 
         // Find user in either collection
+        console.log("i got credit alos",modelCredit);
         const user = await userdb.findById(userId) || await googledb.findById(userId);
 
         if (!user) {
@@ -17,7 +23,7 @@ const validateCredit = async (req, res, next) => {
         }
 
         // Check if user has enough credit
-        if (user.credit > 0) {
+        if (user.credit > modelCredit) {
             req.user = user; // attach user to req for later use
             next();
         } else {
@@ -44,10 +50,34 @@ const reduceCredit = async (userId,credit) => {
         user.credit = Math.max(0, user.credit - credit); 
         await user.save();
 
+
         console.log(`Credit reduced. New credit: ${user.credit}`);
+        return user.credit;
     } catch (error) {
         console.error("Error reducing credit:", error);
     }
 };
 
-module.exports = { validateCredit, reduceCredit };
+const resetAllCredits = async () => {
+  try {
+    // Set all users' credit = 50
+    const userResult = await userdb.updateMany(
+      {}, // no filter → applies to all docs
+      { $set: { credit: 50 } }
+    );
+
+    // Set all google users' credit = 50
+    const googleResult = await googledb.updateMany(
+      {},
+      { $set: { credit: 50 } }
+    );
+
+    console.log("✅ User collection reset:", userResult.modifiedCount);
+    console.log("✅ Google collection reset:", googleResult.modifiedCount);
+  } catch (err) {
+    console.error("❌ Error resetting credits:", err);
+  }
+};
+
+
+module.exports = { validateCredit, reduceCredit,resetAllCredits };

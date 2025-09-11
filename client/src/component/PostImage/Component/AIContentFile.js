@@ -2,6 +2,8 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import { PostContext } from "../PostContext";
 import { ChevronDown } from "lucide-react";
 import modelIcon from "../../../asset/IconImage/ModelIcon.png"
+import { getAuthHeaders } from "../../AiForumPage/components/ForumUtils";
+import { UseSetUserCredit } from "../../GlobalFunction/GlobalFunctionForResue";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const AIContentFile = () => {
@@ -22,7 +24,9 @@ const AIContentFile = () => {
   const [availableModels, setAvailableModels] = useState({});
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const { originalFileRef, setDesc } = useContext(PostContext);
-  const [provider,setProvider] = useState(""); 
+  const [provider,setProvider] = useState("");
+    const setUserCredit = UseSetUserCredit();
+   
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -143,7 +147,7 @@ useEffect(() => {
     // --- Call backend ---
     const response = await fetch(`${baseUrl}/generateContent`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers:getAuthHeaders(),
       body: JSON.stringify({
         prompt: aiPrompt,
         model: selectedImageModel,
@@ -154,6 +158,9 @@ useEffect(() => {
 
     if (!response.ok) throw new Error("Failed to generate image");
     const result = await response.json();
+    console.log(result);
+
+    setUserCredit(result?.credit);
 
     // --- Validate response ---
     const { imageData, imageUrl, provider } = result.data || {};

@@ -11,6 +11,7 @@ const googleSchema = new mongoose.Schema({
     profilePictureUrl: { type: String, default: "" },
     backgroundImage: { type: String, default: "" },
     backgroundImageUrl: { type: String, default: "" },
+    credit:{type:Number,default:10},
     tokens :[
         {
         token:{

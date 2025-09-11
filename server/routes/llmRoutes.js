@@ -3,6 +3,10 @@ const router = express.Router();
 const llmService = require("../services/llmService");
 // const { llmConfig } = require('../config/llmConfig');
 const llmConfig = require("../config/modelconfig");
+const modelCreditConfig = require("../config/modelCreditConfig");
+const { reduceCredit, validateCredit } = require("../middleware/validateCredit");
+const authenticate = require("../middleware/authenticate");
+
 
 console.log("llmConfig import check:", {
   isObject: typeof llmConfig === "object",
@@ -10,64 +14,73 @@ console.log("llmConfig import check:", {
   structure: llmConfig,
 });
 
-router.post("/generateContent", async (req, res) => {
+
+const validateRequest = (req, res, next) => {
+  console.log("in validate");
+  const { model, prompt, type, provider } = req.body;
+
+  // 1. Required fields
+  if (!type || !provider || !model || !prompt) {
+    return res.status(400).json({
+      error: "Missing required fields: type, provider, model, and prompt are required",
+    });
+  }
+
+  // 2. Validate type
+  if (!["text", "image"].includes(type)) {
+    return res.status(400).json({
+      error: 'Type must be either "text" or "image"',
+    });
+  }
+
+  // 3. Validate provider
+  const providerConfig = llmConfig[type][provider];
+  if (!providerConfig) {
+    return res.status(400).json({
+      error: `Provider '${provider}' not found for type '${type}'`,
+      availableProviders: Object.keys(llmConfig[type] || {}),
+    });
+  }
+
+  // 4. Validate model
+  const modelFunction = providerConfig[model];
+  if (!modelFunction) {
+    return res.status(400).json({
+      error: `Model '${model}' not found for provider '${provider}'`,
+      availableModels: Object.keys(providerConfig || {}),
+    });
+  }
+
+  console.log("succeffully verified");
+
+  // ✅ Attach resolved model function to request
+  req.modelFunction = modelFunction;
+
+  next();
+};
+
+router.post("/generateContent",authenticate, validateRequest, validateCredit, async (req, res) => {
   try {
-    const { model, prompt, type, provider } = req.body;
-    console.log("model:", model);
-    console.log("prompt:", prompt);
-    console.log("type:", type);
-    console.log("provider:", provider);
-
-    // Validate required fields
-    if (!type || !provider || !model || !prompt) {
-      return res.status(400).json({
-        error:
-          "Missing required fields: type, provider, model, and prompt are required",
-      });
-    }
-
-    console.log("1");
-
-    // Validate type
-    if (!["text", "image"].includes(type)) {
-      return res.status(400).json({
-        error: 'Type must be either "text" or "image"',
-      });
-    }
-
-     console.log("2");
-
-    // Check if provider exists in the config for the given type
-    if (!llmConfig[type] || !llmConfig[type][provider]) {
-      return res.status(400).json({
-        error: `Provider '${provider}' not found for type '${type}'`,
-        availableProviders: Object.keys(llmConfig[type] || {}),
-      });
-    }
-     console.log("3");
-
+    const { model, prompt, type, provider} = req.body;
+    console.log("i m comihg here");
+    console.log(model,prompt,type,provider);
     // Get the function for the specific model from the provider
-    const modelFunctions = llmConfig[type][provider];
-    console.log(4);
-    if (!modelFunctions || !modelFunctions[model]) {
-      console.log(" i come here");
-      return res.status(400).json({
-        
-        error: `Model '${model}' not found for provider '${provider}'`,
-        availableModels: Object.keys(modelFunctions || {}),
-      });
+    const modelFunctions = req.modelFunction;
+
+    const func = modelFunctions[model];
+    // const response = await func(prompt, model);
+    const response = {imageUrl : "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"};
+    let credit = 0;
+    if(response?.text || response?.imageUrl || response?.imageData){
+      const modelCredit = modelCreditConfig[type][model].cost;
+      credit =await reduceCredit(req.userId,modelCredit);
     }
 
-    console.log("i m coming here");
-    const func = modelFunctions[model];
-    console.log("i finde model");
-    const response = await func(prompt, model);
-    console.log(response,"this is respoonse")
-    // const response ={imageData : "akjdhdg"};
 
     res.json({
       success: true,
       data: response,
+      credit: credit
     });
   } catch (error) {
     res.status(500).json({
@@ -77,33 +90,10 @@ router.post("/generateContent", async (req, res) => {
   }
 });
 
-const validateRequest = (req, res, next) => {
-  const { model, prompt, type } = req.body;
 
-  if (!model) {
-    return res.status(400).json({ error: "Model name is required" });
-  }
 
-  if (!prompt) {
-    return res.status(400).json({ error: "Prompt is required" });
-  }
 
-  if (!type || !["text", "image"].includes(type)) {
-    return res
-      .status(400)
-      .json({ error: 'Type must be either "text" or "image"' });
-  }
 
-  // Validate if model exists for the given type
-  if (!llmConfig[type][model]) {
-    return res.status(400).json({
-      error: `Model ${model} not found for type ${type}`,
-      availableModels: Object.keys(llmConfig[type]),
-    });
-  }
-
-  next();
-};
 
 
 // Route to get available models

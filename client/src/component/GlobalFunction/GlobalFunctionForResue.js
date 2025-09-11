@@ -86,3 +86,19 @@ export const ValidUserForPage = () => {
 };
 
 
+export const UseSetUserCredit = () => {
+  const { setLoginData } = useContext(LoginContext);
+
+  const setUserCredit = (credit) => {
+    setLoginData((prev) => ({
+      ...prev,
+      validuserone: {
+        ...prev.validuserone,
+        credit: credit,
+      },
+    }));
+  };
+
+  return setUserCredit;
+};
+
