@@ -30,6 +30,7 @@ const PostImageContent = () => {
   } = useContext(PostContext);
 
   const [showGenerateAI, setShowGenerateAI] = useState(false);
+  
 
   const getCroppedFile = useCroppedFile();
 

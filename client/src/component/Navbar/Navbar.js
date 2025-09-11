@@ -47,6 +47,7 @@ export default function Navbar({ showForum, setShowForum }) {
   const [showNotification, setShowNotification] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  console.log(loginData?.validuserone);
 
   const [darkMode, setDarkMode] = useState(false);
 
@@ -183,7 +184,7 @@ export default function Navbar({ showForum, setShowForum }) {
 
               {/* User icon bell icon */}
               <div className="flex items-center space-x-4">
-                <DynamicNumberSVG value={20}/>
+                <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50 }/>
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
                   <Menu as="div" className="relative z-10">

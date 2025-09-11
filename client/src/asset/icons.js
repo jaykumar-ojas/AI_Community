@@ -529,11 +529,11 @@ export const BookmarkIcon = ({ isBookmarked, ...props }) => {
 
 
 
-export const DynamicNumberSVG = ({ value }) => {
+export const DynamicNumberSVG = ({ value, size=36 }) => {
   return (
     <svg
-      width={36}
-      height={36}
+      width={size}
+      height={size}
       xmlns="http://www.w3.org/2000/svg"
       shapeRendering="geometricPrecision"
       textRendering="geometricPrecision"

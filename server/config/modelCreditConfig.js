@@ -1,35 +1,7 @@
-const baseUrl = process.env.REACT_APP_BASE_URL;
+// modelCreditConfig.js
 
-
-export const fetchModelConfig = async () => {
-    const res = await fetch(`${baseUrl}/models-info`);
-    if (!res.ok) throw new Error("Failed to fetch model config");
-    const data = await res.json();
-    if (!data.success) throw new Error("API returned unsuccessful response");
-    return data.data;
-};
-
-export const fetchIconUrl = async (modelName) => {
-    const res = await fetch(`${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.success ? data.data.iconUrl : null;
-};
-
-export const loadIcons = async (modelConfig,modelType,iconUrls,setIconUrls) => {
-    const entries = Object.entries(modelConfig[modelType] || {});
-    for (const [modelName] of entries) {
-        if (!iconUrls[modelName]) {
-            const iconUrl = await fetchIconUrl(modelName);
-            if (iconUrl) {
-                setIconUrls(prev => ({ ...prev, [modelName]: iconUrl }));
-            }
-        }
-    }
-};
-
-export const modelCreditConfig = {
-    
+const modelCreditConfig = {
+  text: {
     "gpt-5": { cost: 5 },
     "gpt-5-mini": { cost: 2 },
     "gpt-5-nano": { cost: 1 },
@@ -65,8 +37,10 @@ export const modelCreditConfig = {
 
     "qwen/qwen3-32b": { cost: 3 },
     "qwen-max": { cost: 2 },
-    "qwen-turbo": { cost: 1 },
+    "qwen-turbo": { cost: 1 }
+  },
 
+  image: {
     "gpt-image-1": { cost: 6 },   // most costly
     "dall-e-3": { cost: 5 },
     "dall-e-2": { cost: 3 },
@@ -97,4 +71,7 @@ export const modelCreditConfig = {
 
     "alibaba/qwen-image": { cost: 2 },
     "gen4_image": { cost: 3 }
+  }
 };
+
+module.exports = modelCreditConfig;

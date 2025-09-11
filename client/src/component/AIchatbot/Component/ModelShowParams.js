@@ -1,18 +1,21 @@
 import React from "react";
+import { DynamicNumberSVG } from "../../../asset/icons";
+import { modelCreditConfig } from "./ModelApi";
 
 const ModelShowParams =({ name, displayName, iconUrl, emoji, provider, active = false, onClick }) => {
     return (
         <li>
             <button
                 type="button"
-                className={`w-full text-left px-2 py-2 rounded-md transition-all duration-150 cursor-pointer flex items-center space-x-2 ${
+                className={`w-full  px-2 py-2 rounded-md transition-all duration-150 cursor-pointer flex justify-between items-center space-x-2 ${
                     active
                         ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
                         : 'text-black text-sm dark:text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
                 }`}
                 onClick={() => onClick(name,provider)}
             >
-                {iconUrl ? (
+                <div className="inline flex gap-2 justify-start items-center">
+                    {iconUrl ? (
                     <img 
                         src={iconUrl} 
                         alt={displayName} 
@@ -23,8 +26,13 @@ const ModelShowParams =({ name, displayName, iconUrl, emoji, provider, active = 
                         }}
                     />
                 ) : null}
-                <span className="text-xl" style={{ display: iconUrl ? 'none' : 'inline' }}>{emoji}</span>
-                <span className='text-md'>{displayName}</span>
+                {/* <span className="text-xl" style={{ display: iconUrl ? 'none' : 'inline' }}>{emoji}</span> */}
+                <span className={`text-md line-clamp-1 ${iconUrl ? '' : 'ml-7'}`}>{displayName}</span>
+                </div>
+                <div className="">
+                    <DynamicNumberSVG value={modelCreditConfig[name]?.cost} size={25}/>
+                </div>
+               
             </button>
         </li>
     );

@@ -19,6 +19,7 @@ import modelIcon from "../../asset/IconImage/ModelIcon.png";
 import ModelList from "../AIchatbot/Component/ModelList";
 import { CommentContext } from "../ContextProvider/CommentModelContext";
 import { fetchModelInfo, describeImagesInBackground } from "./Component/ReplyApi";
+import { UseSetUserCredit } from "../GlobalFunction/GlobalFunctionForResue";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -29,6 +30,7 @@ const UserReply = ({forum=false}) => {
   const dynamicId = forum ? params.topicId : params.id; // for params id
   const forumContext = useContext(ForumContext);
   const commentContext = useContext(CommentContext);
+  const setUserCredit = UseSetUserCredit();
 
   const {replyIdForContext, model, modelType, provider} = forum ? forumContext : commentContext; //for context
 
@@ -95,6 +97,10 @@ const UserReply = ({forum=false}) => {
   }, [postedReplies]);
 
   const handleGenerateSubmit = async (e, enhancedPrompt = null, originalUserText = null) => {
+    if(!loginData){
+      alert("Please Login to proceed");
+      return;
+    }
     if (e) e.preventDefault();
     const promptToUse = enhancedPrompt || newReply.trim();
     const textToRender = originalUserText || newReply.trim();
@@ -117,11 +123,13 @@ const UserReply = ({forum=false}) => {
         conversationHistory: conversationHistory, // Send history to API
       };
 
-      const response = await axios.post(`${baseUrl}/generateContent`, generatePayload);
+      const response = await axios.post(`${baseUrl}/generateContent`, generatePayload,{headers: getAuthHeaders()});
 
       if (response.data.success) {
         const modelInfo = await fetchModelInfo(model);
+
         handleGeneratedResult(response.data.data, textToRender, modelInfo);
+        setUserCredit(response?.data?.credit);
         setNewReply("");
       } else {
         setError("Failed to generate content");
@@ -147,7 +155,7 @@ const UserReply = ({forum=false}) => {
         `${baseUrl}/suggest/${replyIdForContext || dynamicId}`,
         {
           text: newReply.trim(),
-          contextType: "forumReply",
+          contextType: forum ? "forumReply" : "comment",
           options: { temperature: 0.7, maxTokens: 1000 },
           conversationHistory: conversationHistory, // Include history in context-aware requests
         },

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Context, { ForumContext } from '../../ContextProvider/ModelContext';
 import ModelShowParams from './ModelShowParams';
-import { fetchIconUrl, fetchModelConfig,loadIcons} from './ModelApi';
+import { fetchIconUrl, fetchModelConfig,loadIcons, modelCreditConfig} from './ModelApi';
 import { CommentContext } from '../../ContextProvider/CommentModelContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -18,7 +18,6 @@ const ModelList = ({forum=false, userForum=false, userComment=false, closeDropdo
     const { model, setModel, modelType, setModelType, setProvider } =
     forum || userForum ? forumContext : commentContext;
     const [iconUrls, setIconUrls] = useState({});
-
     const {
         data: modelConfig = { text: {}, image: {} },
         isLoading,

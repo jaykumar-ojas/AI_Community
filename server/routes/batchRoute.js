@@ -8,6 +8,7 @@ const {
 } = require('../middleware/batchJob');
 
 const express = require("express");
+const { resetAllCredits } = require('../middleware/validateCredit');
 const router = express.Router(); 
 
 
@@ -15,10 +16,7 @@ const router = express.Router();
 
 
 async function runBatchJob(batchSize = 10) {
-    await updateUrlFromUserPost();
-    await updateUrlFromReplies();
-    await updateUrlFromTopic();
-    await updateUrlFromComment();
+   resetAllCredits();
 }
 
 
