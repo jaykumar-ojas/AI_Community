@@ -4,19 +4,23 @@ import { LoginContext } from "../../ContextProvider/context";
 import UserIconCard from "../../Card/UserIconCard";
 import UserNameCard from "../../Card/UserNameCard";
 
+const MAX_DEPTH = 3; // keep your depth limit if you used it earlier
+
 const RecurrsionLoop = ({
   reply,
   depth = 0,
   isLastChild,
   onReplyDeleted,
-  scrollToId // Add this new prop
+  scrollToId,               // existing
+  setThreadView,            // may be passed from ReplyContent
+  setLastThreadContext = () => {}, // <--- default noop to avoid "not a function"
 }) => {
   const { loginData } = useContext(LoginContext);
   const [showReply, setShowReply] = useState(false);
   const hasChildren = reply?.children && reply?.children.length > 0;
   const [view, setView] = useState(true);
   const commentRef = useRef(null);
-  
+
   useEffect(() => {
     if (scrollToId && reply?._id === scrollToId && commentRef.current) {
       commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -28,28 +32,29 @@ const RecurrsionLoop = ({
       }, 2000);
     }
   }, [scrollToId, reply?._id]);
-  
-
 
   return (
-    <div key={reply?._id}
-      ref={commentRef} className={`relative ${depth > 0 ? "ml-8": ``}`}>
+    // add an id so ReplyContent can scroll back to this exact element
+    <div
+      id={`reply-${reply?._id}`}
+      key={reply?._id}
+      ref={commentRef}
+      className={`relative ${depth > 0 ? "ml-8" : ``}`}
+    >
       <div
         className="absolute top-0 left-0 h-full border-l border-time_header"
-        style={{ marginLeft: "0.75rem" }} // align to margin
+        style={{ marginLeft: "0.75rem" }}
       />
-      {/* for those comment those dont have child */}
-      {!hasChildren &&  (
+      {!hasChildren && (
         <div
           className="absolute top-0 left-0 h-full border-l border-gray-100 dark:border-bg_comment_box"
-          style={{ marginLeft: "0.75rem" }} // align to margin
+          style={{ marginLeft: "0.75rem" }}
         />
       )}
-      {/* for those comment those dont have child */}
-      {!view &&  (
+      {!view && (
         <div
           className="absolute top-0 left-0 h-full border-l bg-gray-100 dark:border-bg_comment_box"
-          style={{ marginLeft: "0.75rem" }} // align to margin
+          style={{ marginLeft: "0.75rem" }}
         />
       )}
 
@@ -75,9 +80,8 @@ const RecurrsionLoop = ({
         <div
           className="absolute w-1 h-3 border-l z-20 border-b border-time_header/30 rounded-bl-3xl"
           style={{
-            // aligns roughly to avatar middle
             left: "-1.25rem",
-            width: "2rem", // horizontal length to reach comment box
+            width: "2rem",
             height: "1rem",
           }}
         />
@@ -101,34 +105,49 @@ const RecurrsionLoop = ({
             +
           </button>
           <div className="w-8 h-8 flex-shrink-0">
-          <UserIconCard id={reply?.userId} />
+            <UserIconCard id={reply?.userId} />
           </div>
-          <UserNameCard id= {reply?.userId}/>
+          <UserNameCard id={reply?.userId} />
         </div>
       )}
 
-       {/* Thread connector dot */}
       {reply && (
         <ShowReplyContent
           reply={reply}
           hasChildren={hasChildren}
-          onReplyDeleted={onReplyDeleted} // Pass down the delete handler
+          onReplyDeleted={onReplyDeleted}
         />
       )}
 
-      {/* Render children if expanded or not too deep */}
       {hasChildren && view && (
         <div className="">
-          {reply?.children.map((childReply,index) => (
+          {depth + 1 < MAX_DEPTH ? (
+            reply?.children.map((childReply, index) => (
               <RecurrsionLoop
                 key={childReply?._id}
                 reply={childReply}
                 depth={depth + 1}
                 isLastChild={index === reply.children.length - 1}
                 onReplyDeleted={onReplyDeleted}
-                scrollToId={scrollToId} // Pass down the delete handler
+                scrollToId={scrollToId}
+                setThreadView={setThreadView}
+                setLastThreadContext={setLastThreadContext} // pass down so child can set it too
               />
-          ))}
+            ))
+          ) : (
+            <div
+              className="pl-8 py-2 text-blue-600 text-sm cursor-pointer hover:underline"
+              onClick={() => {
+                // remember where we came from, then open thread view
+                setLastThreadContext(reply._id);
+                if (typeof setThreadView === "function") {
+                  setThreadView(reply._id);
+                }
+              }}
+            >
+              Continue thread →
+            </div>
+          )}
         </div>
       )}
     </div>

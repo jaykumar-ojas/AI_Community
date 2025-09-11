@@ -89,7 +89,7 @@ const UserReply = ({forum=false}) => {
             item.replyId === replyId ? { ...item, processed: true } : item
           )
         );
-        describeImagesInBackground(replyId, postingData,selectedFiles);
+        describeImagesInBackground(replyId, postingData, selectedFiles);
       }
     });
   }, [postedReplies]);
@@ -148,7 +148,7 @@ const UserReply = ({forum=false}) => {
         {
           text: newReply.trim(),
           contextType: "forumReply",
-          options: { temperature: 0.7, maxTokens: 1000 },
+          options: { temperature: 0.7, maxTokens: 10000 },
           conversationHistory: conversationHistory, // Include history in context-aware requests
         },
         { headers: getAuthHeaders() }
@@ -224,12 +224,20 @@ const UserReply = ({forum=false}) => {
         };
         forum ? emitNewReply(newReplyData) : emitNewComment(newReplyData);
         const replyId = response.data.reply._id || response.data.reply.id;
-        if (replyId) {
-          setPostedReplies((prev) => [
-            ...prev,
-            { replyId, postingData: updatedPostingData, processed: false },
-          ]);
-        }
+          if (replyId) {
+            const combinedPostingData = [
+              ...updatedPostingData,
+              ...selectedFiles.map(file => ({
+                imageUrl: { fileUrl: URL.createObjectURL(file), fileName: file.name },
+              }))
+            ];
+
+            setPostedReplies((prev) => [
+              ...prev,
+              { replyId, postingData: combinedPostingData, processed: false },
+            ]);
+          }
+
 
         setNewReply("");
         setSelectedFiles([]);

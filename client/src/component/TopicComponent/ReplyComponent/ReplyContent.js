@@ -28,6 +28,7 @@ const ReplyContent = () => {
 
   const [expandedThreads, setExpandedThreads] = useState({});
   const [threadView, setThreadView] = useState();
+  const [lastThreadContext, setLastThreadContext] = useState(null); // <-- new
   const queryClient = useQueryClient();
 
   const { subscribeToEvent, joinTopic, leaveTopic } = useWebSocket();
@@ -58,46 +59,32 @@ const ReplyContent = () => {
     },
   });
 
-  // WebSocket Handlers
+  // WebSocket handlers (unchanged)
   useEffect(() => {
     const unsubscribeNew = subscribeToEvent("reply_created", (newReply) => {
       if (newReply.topicId !== topicId) return;
-
-      console.log("WebSocket: New reply received:", newReply);
-      
       queryClient.invalidateQueries(["replies", topicId]);
-  
     });
-
-   
-    let count = 0;
-
 
     const unsubscribeDelete = subscribeToEvent("reply_deleted", (deletedReplyId) => {
       queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
         const removeReplyAndChildren = (replies) => {
           return replies.filter(reply => {
-            // If this is the reply to delete, remove it (and all its children automatically)
             if (reply._id === deletedReplyId) {
-              return false; // This removes the entire branch
+              return false;
             }
-            
-            // For other replies, recursively check their children
             if (reply.children && reply.children.length > 0) {
               reply.children = removeReplyAndChildren(reply.children);
             }
-            
-            return true; // Keep this reply
+            return true;
           });
         };
-        
         const updatedReplies = removeReplyAndChildren(oldReplies);
-        console.log('Deleting reply and its children:', deletedReplyId);
-        console.log('Updated replies:', updatedReplies);
         return organizeReplies(updatedReplies);
       });
       queryClient.invalidateQueries(["replies", topicId]);
     });
+
     return () => {
       unsubscribeNew();
       unsubscribeDelete();
@@ -111,8 +98,8 @@ const ReplyContent = () => {
     }));
   };
 
-  const findReplyById = (replies, replyId) => {
-    for (const reply of replies) {
+  const findReplyById = (repliesList, replyId) => {
+    for (const reply of repliesList) {
       if (reply._id === replyId) return reply;
       if (reply.children?.length) {
         const found = findReplyById(reply.children, replyId);
@@ -121,6 +108,24 @@ const ReplyContent = () => {
     }
     return null;
   };
+
+  // When we come BACK from a thread view, scroll to the lastThreadContext element
+  useEffect(() => {
+    if (threadView === null && lastThreadContext && replies?.length) {
+      // short delay to let DOM render
+      setTimeout(() => {
+        const el = document.getElementById(`reply-${lastThreadContext}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-2", "ring-yellow-400", "rounded");
+          setTimeout(() => el.classList.remove("ring-2", "ring-yellow-400", "rounded"), 2000);
+          // clear the context unless you want to keep it for subsequent back
+          setLastThreadContext(null);
+        }
+      }, 50);
+    }
+    // dependencies: threadView, lastThreadContext, replies
+  }, [threadView, lastThreadContext, replies]);
 
   if (isLoading) return <ReplySkeletonLayout />;
 
@@ -144,6 +149,8 @@ const ReplyContent = () => {
             expandedThreads={expandedThreads}
             toggleThreadExpansion={toggleThreadExpansion}
             handleViewThread={setThreadView}
+            setThreadView={setThreadView}
+            setLastThreadContext={setLastThreadContext} // pass here as well
           />
         )}
       </div>
@@ -167,6 +174,7 @@ const ReplyContent = () => {
                 setExpandedThreads={setExpandedThreads}
                 threadView={threadView}
                 setThreadView={setThreadView}
+                setLastThreadContext={setLastThreadContext} // <-- pass it here
                 scrollToId={scrollToId}
               />
             </div>
