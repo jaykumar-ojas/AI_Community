@@ -23,50 +23,61 @@ const {
     textSuggestionWithContext
 } = require("../middleware/LLMmiddleware");
 
-router.post('/suggest/:id', (req, res, next) => {
-  // Set the contextType for the middleware
- // req.body.contextType = 'forumReply';
- console.log("context type is ", req.body.contextType);
-  next();
-}, fetchAncestorContext, async (req, res) => {
-  try {
-    const { text, options = {} } = req.body;
+// router.post('/suggest/:id', (req, res, next) => {
+//   // Set the contextType for the middleware
+//  // req.body.contextType = 'forumReply';
+//  console.log("context type is ", req.body.contextType);
+//   next();
+// }, fetchAncestorContext, async (req, res) => {
+//   try {
+//     const { text, options = {} } = req.body;
 
-    if (!text || text.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Text is required for AI suggestion'
-      });
-    }
+//     if (!text || text.trim().length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Text is required for AI suggestion'
+//       });
+//     }
 
-    const ancestorContext = req.ancestorContext;
-    const ancestorMedia = req.ancestorMedia;
+//     const ancestorContext = req.ancestorContext;
+//     const ancestorMedia = req.ancestorMedia;
 
-    // Generate AI suggestion with context
-    const result = await textSuggestionWithContext(text, ancestorContext, ancestorMedia, options);
+//     // Generate AI suggestion with context
+//     const result = await textSuggestionWithContext(text, ancestorContext, ancestorMedia, options);
 
-    res.json({
-      success: true,
-      data: {
-        suggestion: result,
-        metadata: result.metadata,
-        context: {
-          totalNodes: ancestorContext?.summary?.totalNodes || 0,
-          depthReached: ancestorContext?.summary?.depthReached || 0,
-          mediaCount: ancestorMedia?.length || 0
-        }
-      }
-    });
+//     res.json({
+//       success: true,
+//       data: {
+//         suggestion: result,
+//         metadata: result.metadata,
+//         context: {
+//           totalNodes: ancestorContext?.summary?.totalNodes || 0,
+//           depthReached: ancestorContext?.summary?.depthReached || 0,
+//           mediaCount: ancestorMedia?.length || 0
+//         }
+//       }
+//     });
 
-  } catch (error) {
-    console.error('Error in forum AI suggestion:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to generate AI suggestion',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
+//   } catch (error) {
+//     console.error('Error in forum AI suggestion:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to generate AI suggestion',
+//       error: process.env.NODE_ENV === 'development' ? error.message : undefined
+//     });
+//   }
+// });
+
+
+router.post('/suggest/:id', fetchAncestorContext, textSuggestionWithContext, (req, res) => {
+  res.json({
+    success: true,
+    finalprompt: req.contextForAI.suggestion,
+    aiPrompt: req.contextForAI.promptText,
+   // structuredJSON: req.contextForAI.structuredJSON
+  });
 });
+
 
 router.post("/aitest", async (req, res) => {
   console.log("Request body: outside try in after middleware", req.body);
@@ -535,9 +546,8 @@ router.post("/enhance-prompt", async (req, res) => {
 router.get('/forum/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { format = 'json', maxDepth = 10, maxWords = 50 } = req.query;
+    const { format = 'json' } = req.query;
 
-    // Validate ID
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -545,13 +555,10 @@ router.get('/forum/:id', async (req, res) => {
       });
     }
 
-    // Set up request object for middleware
     req.params.id = id;
     req.body.contextType = 'forumReply';
-    req.body.maxDepth = parseInt(maxDepth);
-    req.body.maxWords = parseInt(maxWords);
 
-    // Use middleware to fetch context
+    // Step 1: fetch ancestor context → produces req.structuredContext
     await new Promise((resolve, reject) => {
       fetchAncestorContext(req, res, (error) => {
         if (error) reject(error);
@@ -559,24 +566,33 @@ router.get('/forum/:id', async (req, res) => {
       });
     });
 
-    const ancestorContext = req.ancestorContext;
-    const ancestorMedia = req.ancestorMedia;
+    // Step 2: build AI-ready prompt → produces req.contextForAI
+    // await new Promise((resolve, reject) => {
+    //   textSuggestionWithContext(req, res, (error) => {
+    //     if (error) reject(error);
+    //     else resolve();
+    //   });
+    // });
 
-    // Format response based on requested format
+    // ✅ Use the new fields
+    const structuredContext = req.structuredContext || null;
+    
+   // const contextForAI = req.contextForAI || null;
+
     let response = {
       success: true,
       data: {
-        id: id,
-        contextType: 'forumReply',
-        context: ancestorContext,
-        media: ancestorMedia,
-        timestamp: new Date().toISOString()
+        id,
+        contextType: 'forum',
+        structuredContext,   // <-- include this
+     //   timestamp: new Date().toISOString(),
       }
     };
 
-    if (format === 'ai') {
-      response.data.aiFormattedContext = formatContextForAI(ancestorContext);
-    }
+    // if (format === 'ai' && contextForAI) {
+    //   response.data.aiPrompt = contextForAI.promptText;
+    //   response.data.structuredJSON = contextForAI.structuredJSON;
+    // }
 
     res.json(response);
 
@@ -589,6 +605,7 @@ router.get('/forum/:id', async (req, res) => {
     });
   }
 });
+
 
 router.get('/comment/:id', async (req, res) => {
   try {

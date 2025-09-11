@@ -12,6 +12,7 @@ const { decodeId } = require('../utils/hashids');
 
 
 
+
 dotenv.config();
 
 
@@ -602,552 +603,365 @@ async function fetchAncestorContext(req, res, next) {
   try {
     const startId = req.params.id;
     const contextType = req.body.contextType;
-
-    console.log('fetchAncestorContext - Input:', { startId, contextType });
-
-    const maxDepth = 3;
-    const maxWordsPerNode = 500;
-    const maxTotalContextWords = 1500; // Increased to accommodate topic/post context
-
-    // Validation
+    console.log("fetchAncestorContext called with:", { startId, contextType });
     if (!startId) {
-      console.log('Missing ID');
       return res.status(400).json({
         success: false,
-        message: 'Missing ID for context fetching'
+        message: "Missing ID for context fetching",
       });
     }
 
-    // Decode the hashid only for topics, not for forum replies or post comments
-    let decodedId;
-    if (contextType === 'forumReply' && req.body.isTopic) {
-      // Only decode if this is a topic (not a forum reply)
-      try {
-        decodedId = decodeId(startId);
-        console.log('Decoded topic ID:', { original: startId, decoded: decodedId });
-        
-        // Handle case where decodeId returns an array
-        if (Array.isArray(decodedId) && decodedId.length > 0) {
-          decodedId = decodedId[0];
-          console.log('Extracted first ID from array:', decodedId);
-        }
-        
-      } catch (error) {
-        console.log('Failed to decode topic hashid:', startId, error.message);
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid hashid format for topic'
-        });
-      }
+    // For simplicity I’ll keep your decoding logic
+    let decodedId = startId;
+    // if (contextType === "forumReply" && req.body.isTopic) {
+    //   try {
+    //     decodedId = startId;
+    //     if (Array.isArray(decodedId) && decodedId.length > 0) {
+    //       decodedId = decodedId[0];
+    //     }
+    //   } catch (error) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "Invalid hashid format for topic",
+    //     });
+    //   }
+    // }
 
-      // Validate the decoded ObjectId for topics
-      if (!mongoose.Types.ObjectId.isValid(decodedId)) {
-        console.log('Invalid decoded ObjectId for topic:', decodedId);
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid ID format after decoding topic'
-        });
-      }
-    } else {
-      // For forum replies and post comments, use the ID as-is (no decoding needed)
-      decodedId = startId;
-      console.log('Using ID as-is (no decoding):', decodedId);
-    }
-
-    if (!contextType || (contextType !== 'forumReply' && contextType !== 'comment')) {
-      console.log('Invalid context type:', contextType);
-      return res.status(400).json({
-        success: false,
-        message: 'Missing or invalid context type'
-      });
-    }
-
-    let SelectedModel;
-    let parentIdField;
-    let parentContextModel;
-    let parentIdFieldName;
-    let parentContext = null; // Initialize parentContext variable
-    
-    if (contextType === 'forumReply') {
+    let SelectedModel, parentIdFieldName, parentContextModel;
+    if (contextType === "forumReply") {
       SelectedModel = ForumReply;
-      parentIdField = 'parentReplyId';
+      parentIdFieldName = "topicId";
       parentContextModel = ForumTopic;
-      parentIdFieldName = 'topicId';
-    } else if (contextType === 'comment') {
+    } else if (contextType === "comment") {
       SelectedModel = Comment;
-      parentIdField = 'parentReplyId';
+      parentIdFieldName = "postId";
       parentContextModel = Post;
-      parentIdFieldName = 'postId';
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid context type",
+      });
     }
 
-    console.log('Selected model configuration:', { 
-      modelName: SelectedModel.modelName,
-      parentIdField,
-      parentContextModel: parentContextModel.modelName,
-      parentIdFieldName,
-      originalId: startId,
-      decodedId: decodedId,
-      hashidDecoded: contextType === 'forumReply' && req.body.isTopic
+    // fetch starting node
+    let startingNode = await SelectedModel.findById(decodedId).lean();
+    console.log("Starting node fetched:", startingNode ? "found" : "not found");
+    if (!startingNode) {
+      return res.status(404).json({
+        success: false,
+        message: "Starting node not found",
+      });
+    }
+
+    // collect ancestor chain
+    const maxDepth = 3;
+    const ancestorChain = [];
+    let currentId = decodedId;
+    let depth = 0;
+
+    while (currentId && depth <= maxDepth) {
+      const node = await SelectedModel.findById(currentId).lean();
+      console.log(`Ancestor at depth ${depth}:`, node ? "found" : "not found");
+      if (!node) break;
+
+      ancestorChain.push({ node, depth });
+      currentId = node.parentReplyId;
+      depth++;
+    }
+
+    // add parent topic/post context
+    let parentContext = null;
+    console.log("starting node",startingNode[parentIdFieldName]);
+    if (startingNode[parentIdFieldName]) {
+      parentContext = await parentContextModel.findById(
+        startingNode[parentIdFieldName]
+      ).lean();
+    }
+
+    // 🔑 transform into structured JSON by user
+    const structuredContext = {};
+    const assignPriority = (depth) => 20 - depth*5; // depth=0 → high priority
+
+    // parent context first (highest priority)
+    if (parentContext) {
+      structuredContext[parentContext.userName || "Unknown"] = {
+        priority: 10,
+        meta: {
+          // userId: parentContext.userId?.toString(),
+          // userName: parentContext.userName,
+          title: parentContext.title || "",
+          content: parentContext.desc ||  "",
+          // createdAt: parentContext.createdAt,
+          // depth: -1,
+          // isParentContext: true,
+        },
+      };
+    }
+
+        for (const { node, depth } of ancestorChain) {
+          // build a cleaned content array
+          console.log(`Processing node at depth ${depth} by user ${node.userName || 'Unknown'}`);
+          const cleanedContent = [];
+
+          // Handle node.content
+          if (Array.isArray(node.content)) {
+            node.content.forEach((item) => {
+              const filtered = {
+                userText: item.userText || null,
+                prompt: item.prompt || null,
+                aiText: item.aiText || null,
+                model: item.model || null,
+              };
+
+              // keep description if it exists
+              if (item.description) {
+                filtered.description = item.description;
+              }
+
+              // Only push if it has something useful
+              if (
+                filtered.userText ||
+                filtered.prompt ||
+                filtered.aiText ||
+                filtered.model ||
+                filtered.description
+              ) {
+                cleanedContent.push(filtered);
+              }
+            });
+          }
+
+          // Handle media attachments
+          if (Array.isArray(node.mediaAttachments)) {
+            node.mediaAttachments.forEach((m) => {
+              if (m.description) {
+                cleanedContent.push({
+                  userText: null,
+                  prompt: null,
+                  aiText: null,
+                  model: null,
+                  description: m.description,
+                });
+              }
+            });
+          }
+
+          const key = `${node.userName || "Unknown"}_${node.id || node._id}`;
+
+          // Assign structured context
+          structuredContext[key] = {
+            priority: assignPriority(depth),
+            description: {
+              sources: {
+                content: cleanedContent, // ✅ cleaned, minimal content
+              },
+            },
+          };
+        }
+
+       // console.log("Structured context constructed:", structuredContext);
+    // attach to req
+    req.structuredContext = {
+      conversationContext: structuredContext,
+      newUserPrompt: req.body.newPrompt || "",
+      finalInstruction: `Based on the above structured conversation context and the new user request, create a detailed, coherent, contextually-aware prompt for downstream generative models.`,
+    };
+  //  console.log("Structured context prepared:", req.structuredContext);
+    next();
+  } catch (err) {
+    console.error("Error in fetchAncestorContext:", err);
+    next(err);
+  }
+}
+
+// async function textSuggestionWithContext(req, res, next) {
+//   try {
+//     const structured = req.structuredContext;
+//     if (!structured || !structured.conversationContext) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Missing structured context for text suggestion",
+//       });
+//     }
+
+//     const { conversationContext, newUserPrompt, finalInstruction } = structured;
+
+//     // 🔑 Build narrative summary from structured context safely
+// const summaryParts = Object.entries(conversationContext)
+//   .sort((a, b) => (b[1]?.priority || 0) - (a[1]?.priority || 0)) // safe compare
+//   .map(([user, data]) => {
+//     const safeMeta = data?.meta || {};
+//     const safeDescription = data?.description?.sources?.content || [];
+
+//     const userName = safeMeta.userName || user || "Unknown";
+
+//     // Build text body flexibly
+//     let body = "";
+
+//     if (safeDescription.length > 0) {
+//       body += `Content: ${JSON.stringify(safeDescription)}`;
+//     }
+
+//     if (safeMeta.title) {
+//       body += (body ? " | " : "") + `Title: ${safeMeta.title}`;
+//     }
+
+//     if (safeMeta.content) {
+//       body += (body ? " | " : "") + `Post: ${safeMeta.content}`;
+//     }
+
+//     if (!body) {
+//       body = "(no content provided)";
+//     }
+
+//     return `- **${userName}** (priority ${data?.priority ?? "N/A"}): ${body}`;
+//   });
+
+
+//     const conversationSummary = summaryParts.join("\n");
+
+//     // 🔑 Construct AI-ready prompt
+//     const aiPrompt = `
+// You are an AI system assisting in a forum-like creative workspace.
+
+// Here is the structured conversation context so far remember:
+// ${conversationSummary}
+
+// The new user request is:
+// "${newUserPrompt || "No new prompt provided"}"
+
+// Your task:
+// ${finalInstruction || "Continue the conversation or generate creative content."}
+
+// Guidelines for your response:  
+
+// 1.) Respect the **priority hierarchy** when deciding which details matter most. 
+// 2.) Ensure your response feels like a natural continuation of this thread, not an isolated output.  
+// 3.) Be descriptive, coherent, and imaginative — combining text and image context seamlessly.  
+// `;
+
+
+
+//     // attach to request for downstream models
+//     req.contextForAI = {
+//       structuredJSON: structured, // keep full JSON for multimodal models
+//       promptText: aiPrompt,       // the clean human-readable AI instruction
+//     };
+
+//     res.locals.contextForAI = req.contextForAI;
+//     next();
+//   } catch (err) {
+//     console.error("Error in textSuggestionWithContext:", err);
+//     next(err);
+//   }
+// }
+
+async function textSuggestionWithContext(req, res, next) {
+  try {
+    const structured = req.structuredContext;
+    if (!structured || !structured.conversationContext) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing structured context for text suggestion",
+      });
+    }
+
+    const { conversationContext, newUserPrompt, finalInstruction } = structured;
+
+    // 🔑 Build narrative summary from structured context safely
+    const summaryParts = Object.entries(conversationContext)
+      .sort((a, b) => (b[1]?.priority || 0) - (a[1]?.priority || 0)) // safe compare
+      .map(([user, data]) => {
+        const safeMeta = data?.meta || {};
+        const safeDescription = data?.description?.sources?.content || [];
+
+        const userName = safeMeta.userName || user || "Unknown";
+
+        // Build text body flexibly
+        let body = "";
+
+        if (safeDescription.length > 0) {
+          body += `Content: ${JSON.stringify(safeDescription)}`;
+        }
+
+        if (safeMeta.title) {
+          body += (body ? " | " : "") + `Title: ${safeMeta.title}`;
+        }
+
+        if (safeMeta.content) {
+          body += (body ? " | " : "") + `Post: ${safeMeta.content}`;
+        }
+
+        if (!body) {
+          body = "(no content provided)";
+        }
+
+        return `- **${userName}** (priority ${data?.priority ?? "N/A"}): ${body}`;
+      });
+
+    const conversationSummary = summaryParts.join("\n");
+
+    // 🔑 Construct AI-ready prompt
+    const aiPrompt = `
+You are an AI system assisting in a forum-like creative workspace.
+
+Here is the structured conversation context so far:
+${conversationSummary}
+
+The new user request is:
+"${newUserPrompt || "No new prompt provided"}"
+
+Your task:
+${finalInstruction || "Continue the conversation or generate creative content."}
+
+Guidelines for your response:  
+
+1.) Respect the **priority hierarchy** when deciding which details matter most. 
+2.) Ensure your response feels like a natural continuation of this thread, not an isolated output.  
+3.) Be descriptive, coherent, and imaginative — combining text and image context seamlessly.  
+`;
+
+    // 🔥 Call AI to get suggestion
+    const aiResponse = await openai.chat.completions.create({
+      model: "gpt-4.1",
+      messages: [
+        {
+          role: "system",
+          content: `You are a Prompt Engineering Expert dont write i am giving this suggestions here are my results like this just directly give prompt as humans. 
+Everything you generate will be passed directly to the next model for content generation, so it must always be a highly enriched, detailed, and contextually aware prompt. Never mention missing inputs, limitations, or irrelevant content — always assume the required information exists and expand it into the strongest possible prompt for optimal results.`,
+        },
+        {
+          role: "user",
+          content: aiPrompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 5000,
     });
 
-    // First, try to fetch the starting node to get the parent topic/post ID
-    let startingNode = await SelectedModel.findById(decodedId)
-      .select(`${parentIdFieldName} _id`)
-      .lean();
-    
-    // If starting node not found, it might be a direct topic comment
-    // Try to fetch the topic/post directly to see if this is a new comment
-    if (!startingNode) {
-      console.log('Starting node not found, checking if this is a direct topic/post comment');
-      
-      try {
-        // Try to fetch the topic/post directly using the decoded ID
-        const directParent = await parentContextModel.findById(decodedId)
-          .select('_id title content desc imgUrl mediaAttachments userName userId createdAt')
-          .lean();
-        
-        if (directParent) {
-          console.log('Found direct parent (topic/post), treating as new comment');
-          
-          // Create a mock starting node for new comments
-          startingNode = {
-            _id: decodedId,
-            [parentIdFieldName]: decodedId, // Self-reference for new comments
-            isDirectComment: true
-          };
-          
-          // Set parent context directly
-          parentContext = directParent;
-          
-          console.log('Created mock starting node for direct comment:', {
-            id: startingNode._id,
-            parentId: startingNode[parentIdFieldName],
-            isDirectComment: startingNode.isDirectComment
-          });
-        } else {
-          console.log('Neither starting node nor direct parent found');
-          return res.status(404).json({
-            success: false,
-            message: 'Starting node not found and not a valid topic/post for commenting'
-          });
-        }
-      } catch (error) {
-        console.error('Error checking for direct parent:', error);
-        return res.status(500).json({
-          success: false,
-          message: 'Error checking for direct parent context'
-        });
-      }
-    }
+    const suggestion = aiResponse.choices?.[0]?.message?.content?.trim() || "";
 
-    // Fetch the parent topic/post context (if not already fetched from direct comment)
-    if (!parentContext && startingNode[parentIdFieldName]) {
-      try {
-        parentContext = await parentContextModel.findById(startingNode[parentIdFieldName])
-          .select('title content desc imgUrl mediaAttachments userName userId createdAt _id')
-          .lean();
-        
-        if (parentContext) {
-          console.log('Parent context fetched:', {
-            type: contextType === 'forumReply' ? 'Topic' : 'Post',
-            id: parentContext._id,
-            title: parentContext.title || 'No title',
-            contentLength: parentContext.content?.length || parentContext.desc?.length || 0
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching parent context:', error);
-      }
-    }
+    console.log("AI suggestion generated successfully", suggestion);
 
-    const ancestorNodes = [];
-    let currentId = decodedId;
-    let totalWords = 0;
-
-    // Check if this is a direct comment (no existing reply/comment to build ancestors from)
-    if (startingNode.isDirectComment) {
-      console.log('Direct comment detected, skipping ancestor chain building');
-      
-             // Create a mock current node for direct comments
-       const mockCurrentNode = {
-         id: startingNode._id.toString(),
-         depth: 0,
-         priority: 20, // Highest priority for depth 0
-         content: 'New comment being created',
-         userName: 'Current User',
-         userId: null,
-         createdAt: new Date(),
-         mediaCount: 0,
-         mediaAttachments: [],
-         contentImages: 0,
-         isStartNode: true,
-         isDirectComment: true
-       };
-      
-      ancestorNodes.push(mockCurrentNode);
-      console.log('Added mock current node for direct comment');
-      
-    } else {
-      // Build ancestor chain from bottom to top for existing replies/comments
-      for (let depth = 0; depth <= maxDepth; depth++) {
-        console.log(`Fetching node at depth ${depth}, currentId:`, currentId);
-        
-        const currentNode = await SelectedModel.findById(currentId)
-          .select(`content description mediaAttachments userName userId createdAt ${parentIdField} _id`)
-        .lean();
-        
-        if (!currentNode) {
-          console.log(`Node not found at depth ${depth}`);
-          break;
-        }
-
-              // Extract text content (same logic for both types since they have same structure)
-        let textContent = '';
-        if (currentNode.content) {
-          textContent = extractContentText(currentNode.content);
-        } else {
-          textContent = currentNode.description || '';
-        }
-
-        // Extract media descriptions from mediaAttachments
-        const mediaDescriptions = extractMediaDescriptions(currentNode.mediaAttachments);
-        
-        // Count images in content array (same logic for both types)
-        let contentImageCount = 0;
-        if (currentNode.content) {
-          contentImageCount = currentNode.content.filter(item => item.imageUrl).length;
-        }
-        
-        // Combine text and media descriptions
-        const fullText = [textContent, mediaDescriptions].filter(t => t.length > 0).join(' ');
-        
-        // Truncate to word limit
-        const truncatedText = getFirstNWords(fullText, maxWordsPerNode);
-        
-        // Count words for total limit
-        const wordCount = truncatedText.split(/\s+/).filter(word => word.length > 0).length;
-        
-        if (totalWords + wordCount > maxTotalContextWords && depth > 0) {
-          console.log('Reached maximum total context words limit');
-          break;
-        }
-
-        totalWords += wordCount;
-
-        // Create structured ancestor node
-        const ancestorNode = {
-          id: currentNode._id.toString(),
-          depth: depth,
-          priority: 20 - depth, // Higher priority for lower depth (depth 0 = priority 20, depth 10 = priority 10)
-          content: truncatedText,
-          userName: currentNode.userName || 'Unknown',
-          userId: currentNode.userId?.toString(),
-          createdAt: currentNode.createdAt,
-          mediaCount: (currentNode.mediaAttachments ? currentNode.mediaAttachments.length : 0) + contentImageCount,
-          mediaAttachments: currentNode.mediaAttachments || [],
-          contentImages: contentImageCount,
-          isStartNode: depth === 0
-        };
-
-        ancestorNodes.push(ancestorNode);
-
-        console.log(`Added ancestor at depth ${depth}:`, {
-          priority: ancestorNode.priority,
-          content: ancestorNode.content.substring(0, 100) + '...',
-          mediaCount: ancestorNode.mediaCount,
-          userName: ancestorNode.userName
-        });
-
-        // Check for parent
-        if (!currentNode[parentIdField]) {
-          console.log('No parent found, reached root');
-          break;
-        }
-
-        currentId = currentNode[parentIdField];
-      } // End of for loop
-    } // End of else block
-
-    // Add parent context as the highest priority node if available
-    if (parentContext) {
-      let parentText = '';
-      let parentMediaCount = 0;
-      
-             if (contextType === 'forumReply') {
-         // Forum topic context
-         parentText = parentContext.content || '';
-         parentMediaCount = parentContext.mediaAttachments ? parentContext.mediaAttachments.length : 0;
-         
-         const parentNode = {
-           id: parentContext._id.toString(),
-           depth: -1, // Special depth for parent context
-           priority: 25, // Highest priority for parent context
-           content: getFirstNWords(parentText, maxWordsPerNode),
-          userName: parentContext.userName || 'Unknown',
-          userId: parentContext.userId?.toString(),
-          createdAt: parentContext.createdAt,
-          mediaCount: parentMediaCount,
-          mediaAttachments: parentContext.mediaAttachments || [],
-          contentImages: 0,
-          isStartNode: false,
-          isParentContext: true,
-          title: parentContext.title || 'No title'
-        };
-        
-        ancestorNodes.unshift(parentNode); // Add to beginning
-        totalWords += parentNode.content.split(/\s+/).filter(word => word.length > 0).length;
-        
-        console.log('Added parent topic context:', {
-          priority: parentNode.priority,
-          content: parentNode.content.substring(0, 100) + '...',
-          mediaCount: parentNode.mediaCount,
-          title: parentNode.title
-        });
-             } else {
-         // Post context
-         parentText = parentContext.desc || '';
-         parentMediaCount = parentContext.imgUrl ? 1 : 0;
-         
-         const parentNode = {
-           id: parentContext._id.toString(),
-           depth: -1, // Special depth for parent context
-           priority: 25, // Highest priority for parent context
-           content: getFirstNWords(parentText, maxWordsPerNode),
-          userName: parentContext.userName || 'Unknown',
-          userId: parentContext.userId?.toString(),
-          createdAt: parentContext.createdAt,
-          mediaCount: parentMediaCount,
-          mediaAttachments: parentContext.imgUrl ? [{
-            fileName: 'Post Image',
-            fileType: 'image',
-            fileUrl: parentContext.imgUrl,
-            fileSize: 0,
-            uploadedAt: parentContext.createdAt
-          }] : [],
-          contentImages: 0,
-          isStartNode: false,
-          isParentContext: true,
-          title: 'Post Content'
-        };
-        
-        ancestorNodes.unshift(parentNode); // Add to beginning
-        totalWords += parentNode.content.split(/\s+/).filter(word => word.length > 0).length;
-        
-        console.log('Added parent post context:', {
-          priority: parentNode.priority,
-          content: parentNode.content.substring(0, 100) + '...',
-          mediaCount: parentNode.mediaCount
-        });
-      }
-    }
-
-    // Sort by priority (highest first - closest ancestors)
-    ancestorNodes.sort((a, b) => b.priority - a.priority);
-
-    // Create structured context string
-    const contextString = ancestorNodes
-      .map(node => {
-        let prefix;
-        if (node.isParentContext) {
-          prefix = contextType === 'forumReply' ? 'TOPIC' : 'POST';
-        } else if (node.isStartNode) {
-          if (node.isDirectComment) {
-            prefix = 'NEW_COMMENT';
-          } else {
-            prefix = 'CURRENT';
-          }
-        } else {
-          prefix = `ANCESTOR_${node.depth}`;
-        }
-        
-        const mediaInfo = node.mediaCount > 0 ? ` [${node.mediaCount} media]` : '';
-        const contentImgInfo = node.contentImages > 0 ? ` [${node.contentImages} inline images]` : '';
-        const userInfo = ` (by ${node.userName})`;
-        const titleInfo = node.title ? ` [${node.title}]` : '';
-        
-        return `${prefix}${titleInfo}${userInfo}${mediaInfo}${contentImgInfo}: ${node.content}`;
-      })
-      .join(' | ');
-
-    // Extract all media attachments with metadata
-    const allMediaAttachments = ancestorNodes
-      .flatMap(node => node.mediaAttachments.map(media => ({
-        ...media,
-        sourceNodeId: node.id,
-        sourceDepth: node.depth,
-        sourceUserName: node.userName
-      })));
-
-    // Create summary statistics
-    const contextSummary = {
-      totalNodes: ancestorNodes.length,
-      totalWords: totalWords,
-      totalMedia: allMediaAttachments.length,
-      depthReached: Math.max(...ancestorNodes.map(n => n.depth)),
-      rootUserName: ancestorNodes.length > 0 ? ancestorNodes[ancestorNodes.length - 1].userName : null,
-      hasParentContext: !!parentContext,
-      parentContextType: contextType === 'forumReply' ? 'Topic' : 'Post',
-      parentContextId: parentContext?._id?.toString() || null,
-      isDirectComment: startingNode?.isDirectComment || false
-    };
-
-    console.log('Context fetching complete:', contextSummary);
-    console.log('Final context string length:', contextString.length);
-    
-    if (contextType === 'forumReply' && req.body.isTopic) {
-      console.log('ID mapping (Topic - Hashid decoded):', { 
-        originalHashid: startId, 
-        decodedObjectId: decodedId 
-      });
-    } else if (contextType === 'forumReply') {
-      console.log('ID mapping (Forum Reply - No decoding):', { 
-        originalId: startId, 
-        usedAsIs: decodedId 
-      });
-    } else {
-      console.log('ID mapping (Post Comment - No decoding):', { 
-        originalId: startId, 
-        usedAsIs: decodedId 
-      });
-    }
-    
-    if (startingNode?.isDirectComment) {
-      console.log('Direct comment mode - no existing reply/comment found, providing topic/post context only');
-    }
-    
-    if (parentContext) {
-      console.log('Parent context included:', {
-        type: contextSummary.parentContextType,
-        id: contextSummary.parentContextId,
-        title: contextType === 'forumReply' ? parentContext.title : 'Post Content'
-      });
-    }
-
-    // Attach to request object
-    req.ancestorContext = {
-      contextString: contextString,
-      nodes: ancestorNodes,
-      summary: contextSummary
-    };
-    req.ancestorMedia = allMediaAttachments;
-    
-    next();
-
-  } catch (error) {
-    console.error('Error in fetchAncestorContext:', error);
-    next(error);
-  }
-}
-
-// Helper function to format context for AI prompt
-function formatContextForAI(ancestorContext) {
-  if (!ancestorContext || !ancestorContext.nodes) {
-    return '';
-  }
-
-  const { nodes, summary } = ancestorContext;
-  
-  let prompt = `CONVERSATION CONTEXT (${summary.totalNodes} messages, depth: ${summary.depthReached}):\n\n`;
-  
-  nodes.forEach(node => {
-    let label;
-    if (node.isStartNode) {
-      if (node.isDirectComment) {
-        label = '🆕 NEW COMMENT';
-      } else {
-        label = '🎯 CURRENT MESSAGE';
-      }
-    } else {
-      label = `📖 ${node.depth} levels back`;
-    }
-    
-    const mediaInfo = node.mediaCount > 0 ? ` 📎${node.mediaCount}` : '';
-    
-    prompt += `${label}${mediaInfo} - ${node.userName}:\n`;
-    prompt += `"${node.content}"\n\n`;
-  });
-  
-  if (summary.totalMedia > 0) {
-    prompt += `📎 Total media attachments: ${summary.totalMedia}\n`;
-  }
-  
-  return prompt;
-}
-
-const textSuggestionWithContext = async (text, ancestorContext = null, ancestorMedia = null, options = {}) => {
-  try {
-    if (!text) {
-      throw new Error("Text field is required");
-    }
-
-    const {
-      includeContext = true,
-      responseStyle = 'conversational',
-      maxTokens = 10000,
-      temperature = 0.7,
-      focusOnMedia = false,
-      contentType = 'general'
-    } = options;
-
-    let contextualPrompt = '';
-
-    // Build context-aware prompt
-    if (includeContext && ancestorContext && ancestorContext.nodes && ancestorContext.nodes.length > 0) {
-      const contextString = formatContextForAI(ancestorContext);
-      const totalMedia = ancestorMedia ? ancestorMedia.length : 0;
-      const mediaTypes = ancestorMedia ? [...new Set(ancestorMedia.map(m => m.fileType))].join(', ') : '';
-
-      contextualPrompt = `CONVERSATION CONTEXT:
-${contextString}
-
-${totalMedia > 0 ? `MEDIA ATTACHMENTS: ${totalMedia} files (${mediaTypes})\n` : ''}USER REQUEST: ${text}
-
-Based on the above context and request, create an enhanced detailed prompt for content generation that:
-- Incorporates relevant context from the conversation
-- Maintains consistency with the discussion thread
-${focusOnMedia && totalMedia > 0 ? '- References any relevant media mentioned' : ''}
-- Uses ${responseStyle} style
-${contentType !== 'general' ? `- Focuses on ${contentType} content` : ''}`;
-
-    } else {
-      contextualPrompt = `USER REQUEST: ${text}
-
-Create an enhanced detailed prompt for content generation that:
-- Uses ${responseStyle} style
-${contentType !== 'general' ? `- Focuses on ${contentType} content` : ''}
-- Provides comprehensive guidance for generating quality content`;
-    }
-
-    // Call OpenAI to get the enhanced prompt
-const response = await openai.chat.completions.create({
-  model: "gpt-4.1",
-  messages: [{
-    role: "system",
-    content: `You are a Prompt Engineering Expert. 
-Always rewrite the provided input into an enhanced, detailed, and optimized prompt for downstream content generation models.  
-
-- If the input references images, visuals, or media (e.g., “what’s in this image”, “describe this photo”), do not mention missing inputs or limitations.  
-- Instead, assume the necessary information exists and generate a strong enriched prompt accordingly.  
-- Return only the enhanced prompt, with no explanations, disclaimers, or additional text.` 
-  }, {
-    role: "user",
-    content: contextualPrompt
-  }],
-  temperature: temperature,
-  max_tokens: maxTokens
-});
-
-
-
-    console.log("enhanced prompt", response.choices[0].message.content);
-    // Return just the enhanced prompt string
-    return response.choices[0].message.content.trim();
-
-  } catch (error) {
-    console.error("Error generating enhanced prompt:", error);
-    throw error;
-  }
+  req.contextForAI = {
+    structuredJSON: structured,
+    promptText: aiPrompt,
+    suggestion, // attach AI-generated suggestion here
 };
+next();
+
+  } catch (err) {
+    console.error("Error in textSuggestionWithContext:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to generate AI suggestion",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+}
+
+
+
 
 
 
@@ -1199,6 +1013,40 @@ const extractImageDescription = async (context, userPrompt) => {
     return userPrompt; // Fallback to original prompt
   }
 };
+
+function formatContextForAI(ancestorContext) {
+  if (!ancestorContext || !ancestorContext.nodes) {
+    return '';
+  }
+
+  const { nodes, summary } = ancestorContext;
+  
+  let prompt = `CONVERSATION CONTEXT (${summary.totalNodes} messages, depth: ${summary.depthReached}):\n\n`;
+  
+  nodes.forEach(node => {
+    let label;
+    if (node.isStartNode) {
+      if (node.isDirectComment) {
+        label = '🆕 NEW COMMENT';
+      } else {
+        label = '🎯 CURRENT MESSAGE';
+      }
+    } else {
+      label = `📖 ${node.depth} levels back`;
+    }
+    
+    const mediaInfo = node.mediaCount > 0 ? ` 📎${node.mediaCount}` : '';
+    
+    prompt += `${label}${mediaInfo} - ${node.userName}:\n`;
+    prompt += `"${node.content}"\n\n`;
+  });
+  
+  if (summary.totalMedia > 0) {
+    prompt += `📎 Total media attachments: ${summary.totalMedia}\n`;
+  }
+  
+  return prompt;
+}
 
 module.exports ={
     openai,

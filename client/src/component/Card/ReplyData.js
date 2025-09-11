@@ -90,7 +90,7 @@ const ReplyData = ({ content }) => {
           {displayContent?.map((item, index) => (
             <div
               key={index}
-              className="mb-4 border-l-2 border-gray-200 dark:border-gray-700 pl-3"
+              className="mb-4 border-gray-200 dark:border-gray-700 pl-3"
             >
               {item.userText && (
 
@@ -132,7 +132,7 @@ const ReplyData = ({ content }) => {
                 <img
                   src={item.imageUrl.fileUrl}
                   alt={item.imageUrl.fileName || "uploaded"}
-                  className="max-w-md h-auto rounded-md shadow-sm border"
+                  className="max-w-md h-48 rounded-md shadow-sm border"
                 />
               )}
             </div>
