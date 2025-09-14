@@ -29,13 +29,18 @@ import { encodeId } from "../../utils/hashids";
 import UserIconCard from "../Card/UserIconCard";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
+import "./wave-btn.css";
 // Create context for forum visibility
 export const ForumContext = createContext();
 
 const navigation = [
   { name: "Home", href: "/", current: true },
-  { name: <PlusIcon />, href: "/post", current: false },
+  {
+    name: "generate image",
+    href: "/post",
+    current: false,
+    isSpecial: true, // mark Post as special (only used in desktop render)
+  },
 ];
 
 function classNames(...classes) {
@@ -93,12 +98,12 @@ export default function Navbar({ showForum, setShowForum }) {
       onClick: () => setShowForum(false), // Close forum when Home is clicked
     },
     {
-      name: "Post",
+      name: "generate image",
       href: "/post",
       icon: PlusIcon,
       iconSolid: PlusIcon,
       isActive: location.pathname === "/post",
-      // isSpecial: true, // Special styling for add button
+       //isSpecial: true, // Special styling for add button
     },
     {
       name: "Forum",
@@ -161,22 +166,38 @@ export default function Navbar({ showForum, setShowForum }) {
                     className="h-full w-full object-contain p-1"
                   />
                 </Link>
+                {/* Desktop links */}
                 <div className="hidden sm:flex space-x-2">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={classNames(
-                        item.current
-                          ? "text-like_color font-semibold"
-                          : "text-gray-900 dark:text-text_header hover:text-like_color",
-                        "px-3 py-2 rounded-md text-sm"
-                      )}
-                      aria-current={item.current ? "page" : undefined}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
+                  {navigation.map((item) =>
+                    item.isSpecial ? (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        aria-current={item.current ? "page" : undefined}
+                        className="px-3 py-2 rounded-md text-sm"
+                      >
+                        <button type="button" className="wave-post-btn wave-post-sm">
+                          <span>{item.name}</span>
+                          <div className="waves" aria-hidden></div>
+                          <div className="shimmer" aria-hidden></div>
+                        </button>
+                      </Link>
+                    ) : (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className={classNames(
+                          item.current
+                            ? "text-like_color font-semibold"
+                            : "text-gray-900 dark:text-text_header hover:text-like_color",
+                          "px-3 py-2 rounded-md text-sm"
+                        )}
+                        aria-current={item.current ? "page" : undefined}
+                      >
+                        {item.name}
+                      </Link>
+                    )
+                  )}
                 </div>
 
                 {/* Navigation links removed */}
@@ -273,9 +294,14 @@ export default function Navbar({ showForum, setShowForum }) {
                   ) : (
                     <Link
                       to="/login"
-                      className="text-gray-900 dark:text-white px-4 py-2"
+                      className="px-3 py-2 rounded-md text-sm"
+                      aria-current={location.pathname === "/login" ? "page" : undefined}
                     >
-                      Sign In
+                      <button type="button" className="wave-post-btn wave-signin wave-post-sm">
+                        <span>Sign In</span>
+                        <div className="waves" aria-hidden></div>
+                        <div className="shimmer" aria-hidden></div>
+                      </button>
                     </Link>
                   )}
                 </div>
@@ -388,11 +414,16 @@ export default function Navbar({ showForum, setShowForum }) {
                   ) : (
                     <Link
                       to="/login"
-                      className="dark:text-white text-gray-800 px-4 py-2"
+                      className="px-3 py-2 rounded-md text-sm"
+                      aria-current={location.pathname === "/login" ? "page" : undefined}
                     >
-                      Sign In
+                      <button type="button" className="wave-post-btn wave-signin wave-post-sm">
+                        <span>Sign In</span>
+                        <div className="waves" aria-hidden></div>
+                        <div className="shimmer" aria-hidden></div>
+                      </button>
                     </Link>
-                  )}
+                   )}
                 </div>
               </div>
             </div>

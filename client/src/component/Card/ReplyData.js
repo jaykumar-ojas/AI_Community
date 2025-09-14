@@ -74,7 +74,14 @@ const ReplyData = ({ content }) => {
 //             </p>
 //           )} */}
 
-          {collapsedSummary && <div className="mb-2">{collapsedSummary}</div>}
+         {collapsedSummary && (
+            <div
+              className="mb-2"
+              dangerouslySetInnerHTML={{
+                __html: parseMarkdown(collapsedSummary),
+              }}
+            />
+          )}
 
           {showSeeMore && (
             <button
