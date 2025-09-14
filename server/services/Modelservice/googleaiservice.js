@@ -16,7 +16,7 @@ async function getImagen() {
 }
 
 
-async function googletext(prompt, model) {
+async function googletext(prompt, model, aspectRatio) {
   const ai = await getGemini();
   const genModel = ai.getGenerativeModel({ model });
   const response = await genModel.generateContent(prompt);
@@ -29,7 +29,7 @@ async function googletext(prompt, model) {
   return { text: text };
 }
 
-async function google_imagen(prompt, model) {
+async function google_imagen(prompt, model, aspectRatio) {
   const ai = await getImagen();
 
 const response = await ai.models.generateImages({
@@ -37,6 +37,7 @@ const response = await ai.models.generateImages({
     prompt: prompt,
     config: {
       numberOfImages: 1,
+      aspectRatio: aspectRatio || "1:1",
     },
   });
   const generatedImage = response.generatedImages[0]; 
@@ -44,13 +45,14 @@ const response = await ai.models.generateImages({
      return  {imageData:imgBytes};
 }
 
-async function generateGeminibanana(prompt, model) {
+async function generateGeminibanana(prompt, model, aspectRatio) {
   const ai = await getImagen();
   const response = await ai.models.generateContent({
     model: model,
     contents: prompt,
      config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
+        aspectRatio: aspectRatio || "1:1",
       },
   });
 

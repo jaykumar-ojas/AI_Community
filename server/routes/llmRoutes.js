@@ -17,10 +17,11 @@ console.log("llmConfig import check:", {
 
 const validateRequest = (req, res, next) => {
   console.log("in validate");
-  const { model, prompt, type, provider } = req.body;
-
+  const { model, prompt, type, provider, aspectRatio } = req.body;
+  console.log("Request body:", req.body);
   // 1. Required fields
   if (!type || !provider || !model || !prompt) {
+    console.log("Missing required fields");
     return res.status(400).json({
       error: "Missing required fields: type, provider, model, and prompt are required",
     });
@@ -28,6 +29,7 @@ const validateRequest = (req, res, next) => {
 
   // 2. Validate type
   if (!["text", "image"].includes(type)) {
+    console.log("Invalid type");
     return res.status(400).json({
       error: 'Type must be either "text" or "image"',
     });
@@ -36,6 +38,7 @@ const validateRequest = (req, res, next) => {
   // 3. Validate provider
   const providerConfig = llmConfig[type][provider];
   if (!providerConfig) {
+    console.log("Invalid provider");
     return res.status(400).json({
       error: `Provider '${provider}' not found for type '${type}'`,
       availableProviders: Object.keys(llmConfig[type] || {}),
@@ -45,6 +48,7 @@ const validateRequest = (req, res, next) => {
   // 4. Validate model
   const modelFunction = providerConfig[model];
   if (!modelFunction) {
+    console.log("Invalid model");
     return res.status(400).json({
       error: `Model '${model}' not found for provider '${provider}'`,
       availableModels: Object.keys(providerConfig || {}),
@@ -61,16 +65,24 @@ const validateRequest = (req, res, next) => {
 
 router.post("/generateContent",authenticate, validateRequest, validateCredit, async (req, res) => {
   try {
-    const { model, prompt, type, provider} = req.body;
+    const { model, prompt, type, provider, aspectRatio} = req.body;
     console.log("i m comihg here");
-    console.log(model,prompt,type,provider);
+    console.log(model,prompt,type,provider, aspectRatio);
     // Get the function for the specific model from the provider
-    const modelFunctions = req.modelFunction;
+   // const modelFunctions = req.modelFunction;
 
-    const func = modelFunctions[model];
-    // const response = await func(prompt, model);
-    const response = {imageUrl : "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"};
-    let credit = 0;
+   // const func = modelFunctions;
+    // const response = await func(prompt, model, aspectRatio);
+    // console.log("response from model function:", response);
+   // settimeout(() => {}, 10000);
+    const response = await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          imageUrl: "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"
+        });
+      }, 25000); // 5 seconds
+    });
+   let credit = 0;
     if(response?.text || response?.imageUrl || response?.imageData){
       const modelCredit = modelCreditConfig[type][model].cost;
       credit =await reduceCredit(req.userId,modelCredit);

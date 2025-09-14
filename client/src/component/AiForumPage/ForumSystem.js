@@ -7,6 +7,8 @@ import MyTopics from '../AiForumPage/components/MyTopics';
 import NewTopicModal from '../AiForumPage/components/NewTopicModal';
 import ChatBotForum from '../AIchatbot/chatbot';
 import AiContentGenerator from './components/AiContentGenerator';
+import "./Button.css";
+
 import { useEffect } from 'react';
 
 const ForumSystem = () => {
@@ -94,18 +96,32 @@ const ForumSystem = () => {
       </div>
 
       {/* Create Topic Button - with dark theme styling */}
-      <div className="p-2 border-t border-slate-700/50 sticky bottom-0 bg-slate-300 dark:bg-slate-900/90 backdrop-blur-sm">
-          <button
-            onClick={() => setIsNewTopicModalOpen(true)}
-            className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
-            disabled={!loginData}
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {loginData ? "Create New Topic" : "Login to Create Topic"}
-          </button>
-        </div>
+<button
+  onClick={() => setIsNewTopicModalOpen(true)}
+  className="wave-btn btn-up"
+  disabled={!loginData}
+>
+  <svg
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 4v16m8-8H4"
+    />
+  </svg>
+  <span>
+    {loginData ? "Create your Topic" : "Login to Create Topic"}
+  </span>
+
+  {/* waves + shimmer */}
+  <div className="waves"></div>
+  <div className="shimmer"></div>
+</button>
+
 
     </div>
   );

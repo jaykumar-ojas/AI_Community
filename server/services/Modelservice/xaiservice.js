@@ -9,7 +9,7 @@ const client = new OpenAI({
 });
 
 
-async function getGrokResponse( prompt, model) {
+async function getGrokResponse( prompt, model, asspectRatio) {
   const completion = await client.chat.completions.create({
     model,
     messages: [
@@ -28,7 +28,7 @@ async function getGrokResponse( prompt, model) {
 }
 
 
-async function generateGrokImage(prompt, model, asBuffer = false) {
+async function generateGrokImage(prompt, model, asBuffer = false, asspectRatio) {
     const response = await client.images.generate({
       model,
       prompt,
