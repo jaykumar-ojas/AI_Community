@@ -25,7 +25,11 @@ import PostImage from "./component/PostImage/PostImage";
 import UserEdit from "./component/userProfileView/UserEdit";
 import CommentModelProvider from "./component/ContextProvider/CommentModelContext";
 import {BackgroundBeams} from "./component/ui/background-beams";
+
 import { NotificationProvider } from "./component/ContextProvider/NotificationContext";
+
+import ForumSystem from "./component/AiForumPage/ForumSystem";
+
 
 const Layout = () => {
   const location = useLocation();
@@ -80,7 +84,8 @@ const router = createBrowserRouter([
       { path: "loader", element: <PixelLoader /> },
       { path: "sample-user/:id", element: <UserProfile /> },
       { path: "post", element:<PostImage/>},
-      {path: "userPost/edit/:id", element: <UserEdit/>}
+      {path: "userPost/edit/:id", element: <UserEdit/>},
+      {path: "forum", element: <ForumSystem/>}
     ]
   },
    { path: "/login", element: <BackgroundWrapper><Login /></BackgroundWrapper> },
