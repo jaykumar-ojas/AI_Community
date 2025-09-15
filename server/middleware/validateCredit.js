@@ -5,10 +5,8 @@ const modelCreditConfig = require("../config/modelCreditConfig");
 // Middleware to validate user's credit
 const validateCredit = async (req, res, next) => {
     try {
-        console.log("i m here for that");
         const {model,type} = req.body;
         const userId= req.userId;
-        console.log("succeffuly getting userid",userId);
         const modelCredit = modelCreditConfig[type][model].cost;
 
         // Find user in either collection
@@ -23,13 +21,15 @@ const validateCredit = async (req, res, next) => {
         }
 
         // Check if user has enough credit
-        if (user.credit > modelCredit) {
+        if (user.credit >= modelCredit) {
             req.user = user; // attach user to req for later use
             next();
         } else {
             return res.status(403).json({
                 status: 403,
-                message: "Insufficient credit"
+                message: user.credit === 0
+                ? "You have 0 credits left. Your credits will refresh at 12 AM IST."
+                : `Insufficient credit. You have ${user.credit} credits left, but this model requires ${modelCredit}.`,
             });
         }
     } catch (error) {

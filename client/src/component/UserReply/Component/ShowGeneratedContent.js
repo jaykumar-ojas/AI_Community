@@ -13,7 +13,7 @@ const ShowGeneratedContent = ({ postingData, conversationHistory = [] }) => {
   return (
     <div
       ref={contentRef}
-      className="flex flex-col gap-4 p-4 bg-gray-50 min-h-screen"
+      className="flex flex-col gap-4 p-4 bg-gray-50 "
     >
       {/* Conversation History Indicator */}
       {conversationHistory && conversationHistory.length > 0 && (

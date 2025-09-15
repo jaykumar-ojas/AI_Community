@@ -10,6 +10,7 @@ import AiContentGenerator from './components/AiContentGenerator';
 import "./Button.css";
 
 import { useEffect } from 'react';
+import { PlusIcon } from 'lucide-react';
 
 const ForumSystem = () => {
   const { loginData } = useContext(LoginContext);
@@ -47,7 +48,7 @@ const ForumSystem = () => {
       </div>
 
       {/* Navigation Tabs - with dark theme styling */}
-      <div className="flex dark:bg-black/40 backdrop-blur-sm border-b border-gray-800">
+      <div className="flex dark:bg-black/40 backdrop-blur-sm border-b w-full border-gray-800">
         <button
           className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
             currentTab === 'popular' 
@@ -96,31 +97,20 @@ const ForumSystem = () => {
       </div>
 
       {/* Create Topic Button - with dark theme styling */}
-<button
-  onClick={() => setIsNewTopicModalOpen(true)}
-  className="wave-btn btn-up"
-  disabled={!loginData}
->
-  <svg
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
+  <button
+    onClick={() => setIsNewTopicModalOpen(true)}
+    className="wave-btn w-full btn-up flex items-center justify-center gap-2"
+    disabled={!loginData}
   >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 4v16m8-8H4"
-    />
-  </svg>
-  <span>
-    {loginData ? "Create your Topic" : "Login to Create Topic"}
-  </span>
+    <PlusIcon/>
+    <span>
+      {loginData ? "Create your Topic" : "Login to Create Topic"}
+    </span>
 
-  {/* waves + shimmer */}
-  <div className="waves"></div>
-  <div className="shimmer"></div>
-</button>
+    {/* waves + shimmer */}
+    <div className="waves"></div>
+    <div className="shimmer"></div>
+  </button>
 
 
     </div>

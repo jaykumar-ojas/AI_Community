@@ -9,9 +9,11 @@ import PostProvider from "./PostContext";
 import { Link, useNavigate } from "react-router-dom";
 import { encodeId } from "../../utils/hashids";
 import { ChevronDown } from "lucide-react";
+import { useNotification } from "../ContextProvider/NotificationContext";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const PostImageContent = () => {
+  const {showNotification} = useNotification();
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const { loginData } = useContext(LoginContext);
@@ -48,12 +50,12 @@ const PostImageContent = () => {
   const handleSubmit = async (e) => {
     try {
       if (!loginData) {
-        alert("User not logged in");
+        showNotification("User not logged in");
         return;
       }
 
       if (!file) {
-        alert("Please add a description or upload a file");
+        showNotification("Please add a description or upload a file","error");
         return;
       }
 

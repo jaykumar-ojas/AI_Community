@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Svg from "./svg";
 import Svg2 from "./Svg2";
+import { useNotification } from "../ContextProvider/NotificationContext";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 
 const Register = () => {
+  const {showNotification} = useNotification();
   const history = useNavigate();
   const [show, setShow] = useState(false);
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -96,8 +98,7 @@ const Register = () => {
     e.preventDefault();
     
     if (!canSendOtp()) {
-      setPopupType("error");
-      setErrorMessage("Please fill all fields correctly before verifying email");
+      showNotification("Please fill all fields correctly before verifying email","warning");
       return;
     }
 
@@ -115,24 +116,22 @@ const Register = () => {
       const res = await data.json();
       
       if (res.status === 200) {
-        setIsOtpSent(true);
-        setPopupType("success");
-        setErrorMessage("OTP sent successfully to your email");
+       
+        showNotification("OTP sent successfully to your email","success");
       } else if (res.status === 409) {
         // User already exists
         setPopupType("error");
-        setErrorMessage(res.message || "User already exists. Please login instead.");
+        showNotification(res.message || "User already exists. Please login instead.","info");
         // Optionally redirect to login after a delay
         setTimeout(() => {
           history("/login");
         }, 3000);
       } else {
         setPopupType("error");
-        setErrorMessage(res.message || res.error || "Failed to send OTP");
+        showNotification(res.message || res.error || "failed to send OTP Please try again","error");
       }
     } catch (err) {
-      setPopupType("error");
-      setErrorMessage("Failed to send OTP. Please try again.");
+      showNotification("Failed to send OTP. Please try again.","error");
     } finally {
       setIsLoading(false);
     }
@@ -157,17 +156,12 @@ const Register = () => {
       
       if (res.status === 200) {
         setIsOtpVerified(true);
-        setPopupType("success");
-        setErrorMessage("Email verified successfully");
-        setFieldErrors(prev => ({ ...prev, otp: "" }));
+        showNotification("Email verified successfully","success");
       } else {
-        setPopupType("error");
-        setErrorMessage(res.message || "Invalid OTP");
-        setFieldErrors(prev => ({ ...prev, otp: "Invalid OTP" }));
+        showNotification(res.message || "invalid OTP","error");
       }
     } catch (err) {
-      setPopupType("error");
-      setErrorMessage("OTP verification failed. Please try again.");
+      showNotification("OTP verification failed. Please try again.","error");
     } finally {
       setIsLoading(false);
     }
@@ -177,8 +171,7 @@ const Register = () => {
     e.preventDefault();
     
     if (!canRegister()) {
-      setPopupType("error");
-      setErrorMessage("Please complete all steps before registering");
+      showNotification("please fill all required fields","info");
       return;
     }
 
@@ -210,19 +203,16 @@ const Register = () => {
           otp: "",
         });
         localStorage.setItem("userdatatoken", res.token);
-        setPopupType("success");
-        setErrorMessage("Registration successful!");
+        showNotification("Welcome to pixxelmind where creativity meets you","success");
         setTimeout(() => {
           setErrorMessage("");
           history("/");
         }, 1500);
       } else {
-        setPopupType("error");
-        setErrorMessage(res.message || res.error || "Registration failed");
+        showNotification(res.message || res.error || "Registration failed, please try again","error");
       }
     } catch (err) {
-      setPopupType("error");
-      setErrorMessage("Registration failed. Please try again.");
+      showNotification("Registration failed. Please try again.","error");
     } finally {
       setIsLoading(false);
     }

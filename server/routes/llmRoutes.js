@@ -66,29 +66,17 @@ const validateRequest = (req, res, next) => {
 router.post("/generateContent",authenticate, validateRequest, validateCredit, async (req, res) => {
   try {
     const { model, prompt, type, provider, aspectRatio} = req.body;
-    console.log("i m comihg here");
-    console.log(model,prompt,type,provider, aspectRatio);
     // Get the function for the specific model from the provider
-   // const modelFunctions = req.modelFunction;
+    const modelFunctions = req.modelFunction;
 
-   // const func = modelFunctions;
+   const func = modelFunctions;
+   const response = { imageUrl: "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"};
     // const response = await func(prompt, model, aspectRatio);
-    // console.log("response from model function:", response);
-   // settimeout(() => {}, 10000);
-    const response = await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          imageUrl: "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"
-        });
-      }, 25000); // 5 seconds
-    });
    let credit = 0;
     if(response?.text || response?.imageUrl || response?.imageData){
       const modelCredit = modelCreditConfig[type][model].cost;
       credit =await reduceCredit(req.userId,modelCredit);
     }
-
-
     res.json({
       success: true,
       data: response,
