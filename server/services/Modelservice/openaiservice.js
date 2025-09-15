@@ -8,7 +8,7 @@ async function getOpenAI() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
 
-async function generateTextopenai(prompt, model) {
+async function generateTextopenai(prompt, model, aspectRatio) {
 
   console.log("Generating text with OpenAI model:", model);
   const openai = await getOpenAI();
@@ -20,14 +20,15 @@ async function generateTextopenai(prompt, model) {
   return {text: response.choices[0].message.content};
 }
 
-async function generateImageBase64openai(prompt, model) {
+async function generateImageBase64openai(prompt, model, aspectRatio) {
   try{
-    console.log("i m coming here");
+    console.log("i  coming here");
   const openai = await getOpenAI();
   console.log(" im here");
   const response = await openai.images.generate({
     model,
     prompt,
+    size: aspectRatio || "1024:1024",
     response_format: "b64_json" 
   });
   console.log("i come backg rom calling ,", response);
@@ -44,27 +45,53 @@ async function generateImageBase64openai(prompt, model) {
   
 }
 
-async function generateImageBase64(prompt, model) {
-  // const { default: OpenAI } = await import("openai");
-  // const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  console.log("Generating image with OpenAI model:", model);
-  const openai = await getOpenAI();
-  const response = await openai.responses.create({
-    model:model,
-    input: prompt,
-    tools: [{ type: "image_generation" }],
-  });
+// async function generateImageBase64(prompt, model, aspectRatio) {
 
-  const imageData = response.output
-    .filter((output) => output.type === "image_generation_call")
-    .map((output) => output.result);
+//   console.log("Generating image with OpenAI model:", model);
+//   const openai = await getOpenAI();
+//   const response = await openai.responses.create({
+//     model:model,
+//     input: prompt,
+//     size: aspectRatio ||"1024x1024",
+//     //tools: [{ type: "image_generation" }],
+//   });
 
-  if (!imageData.length) {
-    throw new Error("No image was generated.");
+//   const imageData = response.output
+//     .filter((output) => output.type === "image_generation_call")
+//     .map((output) => output.result);
+
+//   if (!imageData.length) {
+//     throw new Error("No image was generated.");
+//   }
+
+//   return {imageData:imageData[0]}; // base64 string
+// }
+
+async function generateImageBase64(prompt, model = "gpt-image-1", aspectRatio = "1024x1024") {
+  try {
+    console.log("Generating image with model:", model);
+     const openai = await getOpenAI();
+    const result = await openai.images.generate({
+      model,
+      prompt,
+      size: aspectRatio,
+    //  background: "transparent",
+      quality: "high",
+    });
+
+    if (!result.data?.length) {
+      throw new Error("No image was generated.");
+    }
+
+    const image_base64 = result.data[0].b64_json;
+    return {imageData:image_base64}; // base64 string
+  } catch (error) {
+    console.error("Error generating image:", error);
+    throw error;
   }
-
-  return imageData[0]; // base64 string
 }
+
+
 
 // async function generateImageBase64(prompt, model) {
 //   const openai = await getOpenAI();

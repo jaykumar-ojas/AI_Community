@@ -13,7 +13,7 @@ const groq = new Groq({
  * @param {string} prompt - User input text
  * @returns {Promise<string>} - Model response text
  */
-async function metagen(prompt, model) {
+async function metagen(prompt, model, aspectRatio) {
   const completion = await groq.chat.completions.create({
     model,
     messages: [{ role: "user", content: prompt }],

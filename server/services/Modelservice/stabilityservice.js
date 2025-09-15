@@ -2,12 +2,13 @@ FormData = require("form-data");
 require("dotenv").config();
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 
-async function ultra(prompt) {
+async function ultra(prompt, aspectRatio) {
   const { default: axios } = await import("axios");
-
+  conlsole.log("i m in ultra", aspectRatio);
   const payload = {
     prompt,
     output_format: "png",
+    aspect_ratio: aspectRatio || "1:1",
   };
 
   const response = await axios.postForm(
@@ -31,12 +32,13 @@ async function ultra(prompt) {
   }
 }
 
-async function core(prompt) {
+async function core(prompt, aspectRatio) {
   const { default: axios } = await import("axios");
 
   const payload = {
     prompt,
     output_format: "png",
+    aspect_ratio: aspectRatio || "1:1",
   };
 
   const response = await axios.postForm(
@@ -62,13 +64,14 @@ async function core(prompt) {
   }
 }
 
-async function sd3(prompt, model) {
+async function sd3(prompt, model, aspectRatio) {
   const { default: axios } = await import("axios");
 
   const payload = {
     prompt,
     output_format: "png",
     model,
+    aspect_ratio: aspectRatio || "1:1",
   };
 
   const response = await axios.postForm(

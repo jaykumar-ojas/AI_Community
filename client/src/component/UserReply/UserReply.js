@@ -154,7 +154,7 @@ const UserReply = ({forum=false}) => {
       const suggestResponse = await axios.post(
         `${baseUrl}/suggest/${replyIdForContext || dynamicId}`,
         {
-          text: newReply.trim(),
+          newPrompt: newReply.trim(),
 
           contextType: forum ? "forumReply" : "comment",
           options: { temperature: 0.7, maxTokens: 1000 },
@@ -165,7 +165,7 @@ const UserReply = ({forum=false}) => {
       );
 
       if (suggestResponse.data.success) {
-        const enhancedPrompt = suggestResponse.data.data.suggestion;
+        const enhancedPrompt = suggestResponse.data.finalprompt;
         const originalUserText = newReply.trim();
         handleGenerateSubmit(null, enhancedPrompt, originalUserText);
       } else {

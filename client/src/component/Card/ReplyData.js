@@ -70,7 +70,23 @@ const ReplyData = ({ content }) => {
     <div className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
       {!expanded ? (
         <>
-          {collapsedSummary && <div className="mb-2">{collapsedSummary}</div>}
+
+
+{/* //           {collapsedSummary && (
+//             <p className="mb-1 leading-relaxed text-[13.5px] text-gray-900 dark:text-text_header">
+//               {collapsedSummary}
+//             </p>
+//           )} */}
+
+         {collapsedSummary && (
+            <div
+              className="mb-2"
+              dangerouslySetInnerHTML={{
+                __html: parseMarkdown(collapsedSummary),
+              }}
+            />
+          )}
+
 
           {showSeeMore && (
             <button
