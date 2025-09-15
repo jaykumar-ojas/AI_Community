@@ -25,7 +25,7 @@ import {
 import ReplyData from "../../Card/ReplyData";
 
 // Add ModelIcon component
-const ModelIcon = ({ modelName }) => {
+const ModelIcon = ({ modelName, name=true }) => {
   const [iconUrl, setIconUrl] = useState(null);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const ModelIcon = ({ modelName }) => {
         className="w-4 h-4 md:w-6 md:h-6 rounded-full"
         // style={{ width: 24, height: 24, borderRadius: "50%" }}
       />
-      <span className="text-xs text-blue-700 font-medium">{modelName}</span>
+      {name && <span className="text-xs text-blue-700 font-medium">{modelName}</span>}
     </div>
   );
 };
@@ -88,6 +88,7 @@ const ShowReplyContent = ({
   const [showFullContent, setShowFullContent] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false); // Add local deleted state
   const [isOpen, setIsOpen] = useState(false);
+  const [modelNameArray,setModelNameArray]=useState([]);
 
   const getTrimmedContent = (text) => {
     const words = text?.split?.(/\s+/) || [];
@@ -99,6 +100,8 @@ const ShowReplyContent = ({
       setReplyLikes(reply?.likes);
       setReplyDislikes(reply?.dislikes);
       setIsAuthor(reply?.userId === loginData?.validuserone._id);
+      const models = getAllModelNames();
+      setModelNameArray(models);
     }
   }, [reply, loginData]);
 
@@ -228,25 +231,15 @@ const ShowReplyContent = ({
     }
   };
 
-  // Extract the first model name from reply content
-  const getFirstModelName = () => {
+  const getAllModelNames = () => {
     if (Array.isArray(reply?.content)) {
-      for (const item of reply.content) {
-        if (item.model) return item.model;
-      }
+      return reply.content
+        .filter(item => item.model) // keep only items with a model
+        .map(item => item.model);   // extract model names
     }
-    return null;
+    return [];
   };
-  const firstModelName = getFirstModelName();
 
-  // Don't render if deleted (immediate UI feedback)
-  // if (isDeleted) {
-  //   return (
-  //     <div className="p-4 text-center text-gray-500 bg-gray-100 rounded-xl border border-gray-200">
-  //       <span className="text-sm">This reply has been deleted</span>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div key={reply?._id} className="flex justify-start">
@@ -270,12 +263,16 @@ const ShowReplyContent = ({
             </div>
           </div>
           {/* Move ModelIcon to the right corner, after the delete button */}
+          
           <div className="flex items-center gap-2">
-            {firstModelName && (
-              <div className="ml-2">
-                <ModelIcon modelName={firstModelName} />
-              </div>
-            )}
+           {modelNameArray.map((modelName, index) => (
+            <div
+              key={index}
+              className={index === 0 ? "ml-0" : "-ml-8"} // overlap only after first
+            >
+              <ModelIcon modelName={modelName} name={false} />
+            </div>
+          ))}
 
             {isAuthor && (
               <div className="relative">

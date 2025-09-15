@@ -47,8 +47,6 @@ export default function Navbar({ showForum, setShowForum }) {
   const [showNotification, setShowNotification] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  console.log(loginData?.validuserone);
-
   const [darkMode, setDarkMode] = useState(false);
 
   const { data: userData, isLoading, isError } = useQuery({

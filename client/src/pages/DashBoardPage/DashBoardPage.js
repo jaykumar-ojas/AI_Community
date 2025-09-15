@@ -150,7 +150,7 @@ const Page = () => {
                   pointerEvents: showForum ? "auto" : "none", // Prevent interaction when closed
                 }}
               >
-                <div className="h-full pt-12 pb-12 overflow-hidden">
+                <div className="h-full pt-12 pb-12 bg-white dark:bg-black overflow-hidden">
                   <ForumSystem />
                 </div>
               </div>

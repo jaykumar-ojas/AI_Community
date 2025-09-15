@@ -6,6 +6,7 @@ import { parseMarkdown } from "../../utils/parseMarkdown";
 import { useHighlightTheme } from "../../hooks/useHighlightTheme";
 import { useMathJax } from "../../hooks/useMathJax";
 import { AiShowIcon } from "../../asset/icons";
+import ModelIcon from "../AIchatbot/Component/ModelIcon";
 // ---- local text helpers ----
 
 const wordCount = (str = "") =>
@@ -63,17 +64,12 @@ const ReplyData = ({ content }) => {
   const displayContent =
     content && Array.isArray(content) && content.length > 0 ? content : [];
 
+  console.log("this is display content",displayContent);
+
   return (
     <div className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
       {!expanded ? (
         <>
-
-{/* //           {collapsedSummary && (
-//             <p className="mb-1 leading-relaxed text-[13.5px] text-gray-900 dark:text-text_header">
-//               {collapsedSummary}
-//             </p>
-//           )} */}
-
           {collapsedSummary && <div className="mb-2">{collapsedSummary}</div>}
 
           {showSeeMore && (
@@ -119,7 +115,7 @@ const ReplyData = ({ content }) => {
               )}
               {item.aiText && (
                 <div className="mb-3">
-                 <AiShowIcon className="h-8 w-8 text-gray-700 dark:text-gray-100" />
+                  <ModelIcon modelName={item.model}/>
                   <div className=""
                     dangerouslySetInnerHTML={{
                       __html: parseMarkdown(item.aiText),
@@ -129,11 +125,12 @@ const ReplyData = ({ content }) => {
 
               )}
               {item.imageUrl?.fileUrl && (
-                <img
-                  src={item.imageUrl.fileUrl}
-                  alt={item.imageUrl.fileName || "uploaded"}
-                  className="max-w-md h-48 rounded-md shadow-sm border"
-                />
+                // <img
+                //   src={item.imageUrl.fileUrl}
+                //   alt={item.imageUrl.fileName || "uploaded"}
+                //   className="max-w-md h-auto rounded-md shadow-sm border"
+                // />
+                <ShowUrl url={item.imageUrl.fileUrl} modelInfo={item.model}/>
               )}
             </div>
           ))}
@@ -158,4 +155,30 @@ const ReplyData = ({ content }) => {
 };
 
 export default ReplyData;
+
+const ShowUrl = ({ url, modelInfo }) => {
+  if (!url) return null;
+
+  return (
+    <div className="flex justify-start">
+      <div className="max-w-[100%] bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-500">
+        {modelInfo && (
+          <div className="flex items-center justify-between p-1 border-b border-gray-100 dark:border-gray-500 bg-gray-50 dark:bg-gray-300">
+            <div className="flex items-center space-x-2">
+              <ModelIcon modelName={modelInfo}/>
+            </div>
+          </div>
+        )}
+        <div className="bg-white flex items-center justify-center">
+          <img
+            src={url}
+            className="max-h-[250px] w-auto object-contain"
+            alt="Generated content"
+            onError={(e) => (e.target.style.display = "none")}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
 

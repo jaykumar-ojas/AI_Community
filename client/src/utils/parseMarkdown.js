@@ -24,21 +24,21 @@ export const parseMarkdown = (text) => {
   // Horizontal rule
   html = html.replace(
     /^---$/gm,
-    '<hr class="border-gray-300 dark:border-gray-600 my-6" />'
+    '<hr class="border-gray-300 dark:border-gray-600 " />'
   );
 
   // Headings
   html = html.replace(
     /^### (.+)$/gm,
-    '<h3 class="text-xl font-bold text-blue-800 dark:text-blue-300 mt-6 mb-4 border-b-2 border-blue-200 dark:border-blue-700 pb-2">$1</h3>'
+    '<h3 class="text-xl font-bold text-blue-800 dark:text-blue-300 p-1 pl-0 border-b-2 border-blue-200 dark:border-blue-700 ">$1</h3>'
   );
   html = html.replace(
     /^## (.+)$/gm,
-    '<h2 class="text-2xl font-bold text-blue-900 dark:text-blue-200 mt-8 mb-4">$1</h2>'
+    '<h2 class="text-2xl font-bold text-blue-900 dark:text-blue-200 pt-1">$1</h2>'
   );
   html = html.replace(
     /^# (.+)$/gm,
-    '<h1 class="text-3xl font-bold text-blue-900 dark:text-blue-100 mt-8 mb-6">$1</h1>'
+    '<h1 class="text-3xl font-bold text-blue-900 dark:text-blue-100">$1</h1>'
   );
 
   // Bold
