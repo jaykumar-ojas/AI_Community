@@ -200,14 +200,16 @@ const UserReply = ({forum=false}) => {
     setIsLoading(true);
     setError(null);
 
-    const updatedPostingData = [
-      ...postingData.map((entry) => {
-        if (entry.modelInfo && model) return { ...entry, model };
-        return entry;
-      }),
-      { userText: newReply.trim(), aiText: "", prompt: "", imageUrl: "" },
-    ];
+    let updatedPostingData = [...postingData];
 
+    if (newReply.trim()) {
+      updatedPostingData.push({
+        userText: newReply.trim(),
+        aiText: "",
+        prompt: "",
+        imageUrl: ""
+      });
+    }
     try {
       const formData = new FormData();
       formData.append("content", JSON.stringify(updatedPostingData));
@@ -291,9 +293,12 @@ const UserReply = ({forum=false}) => {
     }
 
     setPostingData((prev) => [...prev, newEntry]);
+    
     setAiGenerated(true);
     setNewReply("");
   };
+
+  console.log("this is posting",postingData);
 
   // -------------------
   // Clear conversation history

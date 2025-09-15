@@ -27,7 +27,6 @@ const ModelList = ({forum=false, userForum=false, userComment=false, closeDropdo
         queryFn: fetchModelConfig,
         staleTime: 1000 * 60 * 60, // 5 mins
     });
-    console.log("this is model data",modelConfig);
 
     // Fetch icons after modelConfig is available
     useEffect(() => {

@@ -7,7 +7,6 @@ const Context=({children})=>{
     const [loginData,setLoginData] = useState(null);
 
     useEffect(() => {
-        console.log("i am coming to set userData");
         const storedUser = localStorage.getItem("userData");
         if (storedUser ) {
           setLoginData(JSON.parse(storedUser));
@@ -20,7 +19,6 @@ const Context=({children})=>{
             localStorage.setItem("userData", JSON.stringify(loginData));
         }
       }, [loginData]);
-      console.log("this is set loginData,",loginData);
     
     return (
         <>
