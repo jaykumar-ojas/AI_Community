@@ -6,6 +6,8 @@ import { getAuthHeaders } from "../../AiForumPage/components/ForumUtils";
 import { UseSetUserCredit } from "../../GlobalFunction/GlobalFunctionForResue";
 import imageModelsConfig from "../../../config/imageModelsConfig";
 import ImageLoader from "./ImageLoader"; 
+import { useNotification } from "../../ContextProvider/NotificationContext";
+import { LoginContext } from "../../ContextProvider/context";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -40,6 +42,8 @@ const AIContentFile = () => {
   const [currentProgress, setCurrentProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState('');
   const imageLoaderRef = useRef();
+  const {showNotification} = useNotification();
+  const {loginData} = useContext(LoginContext);
 
   const fetchIconUrl = async (modelName) => {
     const res = await fetch(
@@ -154,8 +158,11 @@ const AIContentFile = () => {
   };
 
   const enhancePrompt = async () => {
+    if(!loginData){
+      showNotification("please first login","info");
+    }
     if (!aiPrompt.trim()) {
-      alert("Please enter a prompt first");
+      showNotification("Oo.... i think you forget me to give a prompt","info");
       return;
     }
     try {
@@ -180,12 +187,15 @@ const AIContentFile = () => {
   };
 
   const generateAIImage = async () => {
+    if(!loginData){
+      showNotification("you are not logged in","info");
+    }
     if (!aiPrompt.trim()) {
-      alert("Please enter a prompt for image generation");
+      showNotification("Please enter a prompt for image generation","generate a image");
       return;
     }
     if (!selectedImageModel) {
-      alert("Please select an image model");
+      showNotification("Please select an image model","info");
       return;
     }
 
@@ -296,15 +306,15 @@ const AIContentFile = () => {
   return (
     <>
       {/* ImageLoader overlay */}
-<ImageLoader
-  ref={imageLoaderRef}
-  aspectRatio={selectedAspectRatio || "1:1"}
-  isVisible={isGeneratingImage}
-  model={selectedImageModel}
-  onProgress={(progress) => setCurrentProgress(progress)}
-  onStageChange={(stage) => setCurrentStage(stage)}
-  onComplete={() => setIsGeneratingImage(false)}
-/>
+    <ImageLoader
+      ref={imageLoaderRef}
+      aspectRatio={selectedAspectRatio || "1:1"}
+      isVisible={isGeneratingImage}
+      model={selectedImageModel}
+      onProgress={(progress) => setCurrentProgress(progress)}
+      onStageChange={(stage) => setCurrentStage(stage)}
+      onComplete={() => setIsGeneratingImage(false)}
+    />
 
 
       <div className="md:px-6">

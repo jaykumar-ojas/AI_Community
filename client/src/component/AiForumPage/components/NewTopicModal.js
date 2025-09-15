@@ -18,11 +18,7 @@ const NewTopicModal = ({ onClose }) => {
   const [aiGeneratedContent, setAiGeneratedContent] = useState({ title: '', content: '' });
   const [modelInfo, setModelInfo] = useState(null);
 
-  console.log("AI Content Modal State:", showAiContent);
 
-  useEffect(() => {
-    console.log("NewTopicModal Mounted");
-  }, []);
 
   // Update form when AI-generated content is provided
   useEffect(() => {
@@ -95,7 +91,6 @@ const NewTopicModal = ({ onClose }) => {
       if (handleAuthError(err, setError)) {
         return;
       }
-      console.error('Error creating topic:', err);
       setError('Failed to create topic. Please try again later.');
     } finally {
       setIsLoading(false);

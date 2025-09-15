@@ -25,7 +25,11 @@ import PostImage from "./component/PostImage/PostImage";
 import UserEdit from "./component/userProfileView/UserEdit";
 import CommentModelProvider from "./component/ContextProvider/CommentModelContext";
 import {BackgroundBeams} from "./component/ui/background-beams";
+
+import { NotificationProvider } from "./component/ContextProvider/NotificationContext";
+
 import ForumSystem from "./component/AiForumPage/ForumSystem";
+
 
 const Layout = () => {
   const location = useLocation();
@@ -92,6 +96,7 @@ const router = createBrowserRouter([
 function App() {
   return (  
     <Context>
+      <NotificationProvider>
       <WebSocketProvider>
         <ForumContext>
           <CommentModelProvider>
@@ -99,6 +104,7 @@ function App() {
           </CommentModelProvider>
         </ForumContext>
       </WebSocketProvider>
+      </NotificationProvider>
     </Context>
   );
 }

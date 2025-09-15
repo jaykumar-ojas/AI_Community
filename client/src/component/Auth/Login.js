@@ -2,8 +2,10 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import GoogleLogin from "../Auth//GoogleLogin";
 import { LoginContext } from "../ContextProvider/context";
+import { useNotification } from "../ContextProvider/NotificationContext";
 
 const Login = () => {
+  const {showNotification} = useNotification();
   const {loginData,setLoginData} = useContext(LoginContext);
   const [show, setShow] = useState(false);
   const [inpVal,setInpVal]=useState({
@@ -11,29 +13,12 @@ const Login = () => {
     "password":""
   })
   const [isLoading, setIsLoading] = useState(false);
-  const [popupMessage, setPopupMessage] = useState("");
-  const [popupType, setPopupType] = useState("error"); // 'success' or 'error'
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
 
   const history = useNavigate();
   const location = useLocation();
 
-  // (optional) lock background scroll
-  // useEffect(() => {
-  //   const prev = document.body.style.overflow;
-  //   document.body.style.overflow = "hidden";
-  //   return () => (document.body.style.overflow = prev);
-  // }, []);
-
-  useEffect(() => {
-    if (popupMessage) {
-      const timer = setTimeout(() => setPopupMessage("") , 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [popupMessage]);
-
-  console.log(inpVal);
   const setVal=(e)=>{
     
     const {name,value}=e.target;
@@ -49,13 +34,11 @@ const Login = () => {
     e.preventDefault();
     const {email,password}=inpVal;
     if(email===""){
-      setPopupType("error");
-      setPopupMessage("Email is required");
+      showNotification("email is required","warning");
       setIsLoading(false);
     }
     else if(password===""){
-      setPopupType("error");
-      setPopupMessage("Password is required");
+      showNotification("password is required","warning");
       setIsLoading(false);
     }
     else{
@@ -72,28 +55,25 @@ const Login = () => {
         })
         const res=await data.json();
         if(res.status===201){
-          setPopupType("success");
-          setPopupMessage("Login successful");
+          showNotification("Welcome Back to pixxelmind where creativity meets you","success");
           setIsLoading(false);
           localStorage.setItem("userdatatoken",res.token);
           localStorage.setItem("userData", JSON.stringify(res)); 
           setInpVal({...inpVal,email:"",password:""});
           setTimeout(() => {
-            setPopupMessage("");
             if(location.pathname =="/login"){
               history("/");
             }
           }, 1500);
         }
         else{
-          setPopupType("error");
-          setPopupMessage(res.error || "Some error occurred");
+          console.log(res);
+          showNotification(res.error,"error");
           setIsLoading(false);
         }
       } catch (err) {
-        setPopupType("error");
-        setPopupMessage("Network error. Please try again.");
         setIsLoading(false);
+        showNotification("network Error","error");
       }
     }
   }
@@ -115,7 +95,7 @@ const Login = () => {
     const res = await data.json();
 
     if(!data || data.status==401){
-      console.log("invalid user");
+
     }
     else{
       setLoginData(res);
@@ -124,7 +104,7 @@ const Login = () => {
     }
   }
   catch(error){
-    console.log("this si error",error);
+    showNotification(error,"error");
   }
   }
 
@@ -135,21 +115,9 @@ const Login = () => {
   return (
     <div className="z-20 fixed inset-0 bg-black/95  flex justify-center items-center p-4">
       {/* Loader Overlay */}
-      {isLoading && !popupMessage && (
+      {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      )}
-      {/* Popup */}
-      {popupMessage && (
-        <div
-          className={`fixed top-4 left-1/2 z-50 transform -translate-x-1/2 px-6 py-4 rounded shadow-lg flex items-center gap-2
-            ${popupType === "success"
-              ? "bg-green-100 border border-green-400 text-green-700"
-              : "bg-white border border-red-400 text-red-700"}
-          `}
-        >
-          <span>{popupMessage}</span>
         </div>
       )}
       <div className="relative flex w-full max-w-4xl flex-col md:flex-row bg-white rounded-lg shadow-lg overflow-hidden">

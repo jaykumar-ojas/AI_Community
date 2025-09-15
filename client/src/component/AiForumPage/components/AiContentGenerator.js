@@ -72,9 +72,7 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
         isThinking: true,
         modelInfo: null
       }]);
-  
-      console.log('Sending request to API:', { prompt: userPrompt });
-      
+        
       // Call the API endpoint with model name
       const response = await axios.post(`${API_BASE_URL}/generateTopicContent`, {
         prompt: userPrompt,
@@ -82,9 +80,7 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
       }, {
         headers: getAuthHeaders()
       });
-  
-      console.log('API response:', response.data);
-      
+        
       // Remove the "thinking" message
       setMessages(prev => prev.filter(msg => !msg.isThinking));
       
@@ -103,14 +99,11 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
         });
         onClose();
       } else {
-        console.error('Unexpected response structure:', response.data);
         throw new Error('Invalid response structure from API');
       }
       
       setIsLoading(false);
-    } catch (error) {
-      console.error('Error in API call:', error);
-      // Remove any "thinking" message
+    } catch (error) {      // Remove any "thinking" message
       setMessages(prev => prev.filter(msg => !msg.isThinking));
       // Add error message
       setMessages(prev => [...prev, { 
