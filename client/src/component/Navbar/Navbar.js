@@ -107,7 +107,8 @@ export default function Navbar({ showForum, setShowForum }) {
     },
     {
       name: "Forum",
-      onClick: handleForumToggle,
+     // onClick: handleForumToggle,
+     href: "/forum",
       icon: () => (
         <svg
           className="w-6 h-6"
@@ -128,8 +129,8 @@ export default function Navbar({ showForum, setShowForum }) {
           <path d="M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       ),
-      isActive: showForum,
-      isTab: true,
+      isActive: location.pathname === "/forum",
+     // isTab: true,
     },
     {
       name: "Profile",
