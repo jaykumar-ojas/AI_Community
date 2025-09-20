@@ -1,7 +1,8 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { parseMarkdown } from "../../../utils/parseMarkdown";
 import { useHighlightTheme } from "../../../hooks/useHighlightTheme";
 import { useMathJax } from "../../../hooks/useMathJax";
+import { CubeSpinner } from "../../ui/CubeSpinner";
 
 const ShowGeneratedContent = ({ postingData, conversationHistory = [] }) => {
   const contentRef = useRef(null);
@@ -28,12 +29,18 @@ const ShowGeneratedContent = ({ postingData, conversationHistory = [] }) => {
         <div key={index} className="flex flex-col gap-3">
           <ShowUserText userText={item.userText} />
           <ShowPrompt prompt={item.prompt} />
-          <ShowAiText 
-            aiText={item.aiText} 
-            modelInfo={item.modelInfo}
-            isMemoryAware={conversationHistory && conversationHistory.length > 0}
-          />
-          <ShowUrl url={item.imageUrl} modelInfo={item.modelInfo} />
+          {item.isLoading ? (
+            item.loadingType === 'image' ? <ImageSkeleton /> : <TextSkeleton />
+          ) : (
+            <>
+              <ShowAiText 
+                aiText={item.aiText} 
+                modelInfo={item.modelInfo}
+                isMemoryAware={conversationHistory && conversationHistory.length > 0}
+              />
+              <ShowUrl url={item.imageUrl} modelInfo={item.modelInfo} />
+            </>
+          )}
         </div>
       ))}
     </div>
@@ -93,6 +100,7 @@ const ShowAiText = ({ aiText, modelInfo }) => {
 };
 
 const ShowUrl = ({ url, modelInfo }) => {
+  const [loaded, setLoaded] = useState(false);
   if (!url) return null;
 
   return (
@@ -118,15 +126,77 @@ const ShowUrl = ({ url, modelInfo }) => {
             </div>
           </div>
         )}
-        <div className="bg-white flex items-center justify-center">
+        <div className="bg-white flex items-center justify-center min-h-[200px]">
+          {!loaded && (
+            <div className="py-6">
+              <CubeSpinner size="w-12 h-12" color="orange" />
+            </div>
+          )}
           <img
             src={url}
-            className="max-h-[200px] w-auto object-contain"
+            className={`max-h-[200px] w-auto object-contain ${loaded ? 'opacity-100' : 'opacity-0'}`}
             alt="Generated content"
+            onLoad={() => setLoaded(true)}
             onError={(e) => (e.target.style.display = "none")}
           />
         </div>
       </div>
+    </div>
+  );
+};
+
+const TextSkeleton = () => (
+  <div className="flex justify-start">
+    <div className="max-w-[80%] bg-white px-4 py-3 rounded-2xl shadow-md text-sm border border-gray-100 w-full">
+      <div className="mb-2">
+        <LoadingMessage type="text" />
+      </div>
+      <div className="animate-pulse space-y-3">
+        <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+        <div className="h-3 bg-gray-200 rounded w-4/6"></div>
+        <div className="h-3 bg-gray-200 rounded w-3/6"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const ImageSkeleton = () => (
+  <div className="flex justify-start">
+    <div className="max-w-[80%] bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 w-full">
+      <div className="flex flex-col items-center justify-center min-h-[200px] gap-3 p-4">
+        <LoadingMessage type="image" />
+        <CubeSpinner size="w-12 h-12" color="orange" />
+      </div>
+    </div>
+  </div>
+);
+
+const LoadingMessage = ({ type = "text" }) => {
+  const textPhrases = [
+    "Polishing your words...",
+    "Weaving your ideas into text...",
+    "Refining context and tone...",
+    "Adding clarity and flow...",
+  ];
+  const imagePhrases = [
+    "Preparing your image canvas...",
+    "Composing the perfect shot...",
+    "Enhancing details and lighting...",
+    "Fine‑tuning style and colors...",
+  ];
+  const phrases = type === "image" ? imagePhrases : textPhrases;
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % phrases.length);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [phrases.length]);
+
+  return (
+    <div className="text-xs md:text-sm font-medium bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+      {phrases[index]}
     </div>
   );
 };

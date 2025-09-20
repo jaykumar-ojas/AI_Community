@@ -240,9 +240,10 @@ const ShowReplyContent = ({
     return [];
   };
 
+  const isReplyDeleted = reply?.userName === 'deleted' && !reply?.userId;
 
   return (
-    <div key={reply?._id} className="flex justify-start">
+    <div key={reply?._id} className={`flex justify-start ${isReplyDeleted ? 'opacity-60' : ''}`}>
       <div className="w-8 h-8 flex-shrink-0">
         <UserIconCard id={reply?.userId} />
       </div>
@@ -252,7 +253,7 @@ const ShowReplyContent = ({
         {/* User Info & Delete Button */}
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-            <div className="text-black  dark:text-text_header font-normal mr-2 text-[14px] md:text-[13.5px]">
+            <div className={`font-normal mr-2 text-[14px] md:text-[13.5px] ${isReplyDeleted ? 'text-gray-500 italic' : 'text-black dark:text-text_header'}`}>
               {reply?.userName}
             </div>
             <div className="mr-2 flex justify-center items-center">
@@ -265,7 +266,7 @@ const ShowReplyContent = ({
           {/* Move ModelIcon to the right corner, after the delete button */}
           
           <div className="flex items-center gap-2">
-           {modelNameArray.map((modelName, index) => (
+           {!isReplyDeleted && modelNameArray.map((modelName, index) => (
             <div
               key={index}
               className={index === 0 ? "ml-0" : "-ml-8"} // overlap only after first
@@ -274,7 +275,7 @@ const ShowReplyContent = ({
             </div>
           ))}
 
-            {isAuthor && (
+            {isAuthor && !isReplyDeleted && (
               <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
@@ -319,9 +320,10 @@ const ShowReplyContent = ({
                   <div className="bg-gray-200 border border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
                     <button
                       onClick={handleReplyLike}
+                      disabled={isReplyDeleted}
                       className={`flex items-center gap-0.5 hover:text-like_color text-black dark:text-gray-500 transition ${
                         isLiked && "text-like_color"
-                      }`}
+                      } ${isReplyDeleted ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <UpvoteIcon isLiked={isLiked} />
                       {replyLikes?.length || 0}
@@ -329,27 +331,30 @@ const ShowReplyContent = ({
         
                     <button
                       onClick={handleReplyDislike}
+                      disabled={isReplyDeleted}
                       className={`flex items-center gap-1 hover:text-red-600 text-black dark:text-gray-500 transition ${
                         isDisliked && "text-red-600"
-                      }`}
+                      } ${isReplyDeleted ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <DownvoteIcon isDisliked={isDisliked} />
                       {replyDislikes?.length || 0}
                     </button>
                   </div>
-                  <button
-                    // onClick={() => setShowReplyBox(true)}
-                    onClick={() => {
-                      setReplyIdForContext(reply?._id);
-                      setUserName(reply?.userName);
-                      setViewBox(true);
-                    }}
-                    className="flex items-center gap-1  text-like_color hover:text-like_color transition"
-                  >
-                    <ReplyIcon />
+                  {!isReplyDeleted && (
+                    <button
+                      // onClick={() => setShowReplyBox(true)}
+                      onClick={() => {
+                        setReplyIdForContext(reply?._id);
+                        setUserName(reply?.userName);
+                        setViewBox(true);
+                      }}
+                      className="flex items-center gap-1  text-like_color hover:text-like_color transition"
+                    >
+                      <ReplyIcon />
         
-                    <div className="text-xs">Reply</div>
-                  </button>
+                      <div className="text-xs">Reply</div>
+                    </button>
+                  )}
                 </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import AiContentGenerator from './components/AiContentGenerator';
 import "./Button.css";
 
 import { useEffect } from 'react';
+import { PlusIcon } from 'lucide-react';
 
 const ForumSystem = () => {
   const { loginData } = useContext(LoginContext);
@@ -47,38 +48,43 @@ const ForumSystem = () => {
       </div>
 
       {/* Navigation Tabs - with dark theme styling */}
-      <div className="flex dark:bg-black/40 backdrop-blur-sm border-b border-gray-800">
-        <button
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            currentTab === 'popular' 
-              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
-          }`}
-          onClick={() => setCurrentTab('popular')}
-        >
-          Popular
-        </button>
-        <button
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            currentTab === 'recent' 
-              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
-          }`}
-          onClick={() => setCurrentTab('recent')}
-        >
-          Recent
-        </button>
-        <button
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            currentTab === 'my' 
-              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
-          }`}
-          onClick={() => setCurrentTab('my')}
-        >
-          My Topics
-        </button>
-      </div>
+<div className="relative flex dark:bg-black/40 backdrop-blur-sm border-gray-800 p-1 gap-2 rounded-lg overflow-hidden">
+  {/* Slim sliding background indicator */}
+  <span
+    className="absolute h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-md transition-all duration-500 ease-in-out"
+    style={{
+      top: "50%",
+      transform: "translateY(-50%)",
+      left: currentTab === "popular" ? "0.5rem" : currentTab === "recent" ? "34%" : "67.5%",
+      width: "30%",
+    }}
+  ></span>
+
+  <button
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+      ${currentTab === "popular" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+    onClick={() => setCurrentTab("popular")}
+  >
+    Popular
+  </button>
+
+  <button
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+      ${currentTab === "recent" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+    onClick={() => setCurrentTab("recent")}
+  >
+    Recent
+  </button>
+
+  <button
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+      ${currentTab === "my" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+    onClick={() => setCurrentTab("my")}
+  >
+    My Topics
+  </button>
+</div>
+
 
       {isNewTopicModalOpen && <NewTopicModal onClose={() => setIsNewTopicModalOpen(false)} />}
 
@@ -101,7 +107,7 @@ const ForumSystem = () => {
   className="wave-btn btn-up"
   disabled={!loginData}
 >
-  <svg
+  {/* <svg
     fill="none"
     stroke="currentColor"
     viewBox="0 0 24 24"
@@ -112,7 +118,8 @@ const ForumSystem = () => {
       strokeWidth={2}
       d="M12 4v16m8-8H4"
     />
-  </svg>
+  </svg> */}
+  <PlusIcon/>
   <span>
     {loginData ? "Create your Topic" : "Login to Create Topic"}
   </span>

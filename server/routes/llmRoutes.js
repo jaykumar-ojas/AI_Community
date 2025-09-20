@@ -80,7 +80,7 @@ router.post("/generateContent",authenticate, validateRequest, validateCredit, as
         resolve({
           imageUrl: "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"
         });
-      }, 25000); // 5 seconds
+      }, 10000); // 5 seconds
     });
    let credit = 0;
     if(response?.text || response?.imageUrl || response?.imageData){

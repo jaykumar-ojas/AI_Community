@@ -5,7 +5,7 @@ import modelIcon from "../../../asset/IconImage/ModelIcon.png"
 import { getAuthHeaders } from "../../AiForumPage/components/ForumUtils";
 import { UseSetUserCredit } from "../../GlobalFunction/GlobalFunctionForResue";
 import imageModelsConfig from "../../../config/imageModelsConfig";
-import ImageLoader from "./ImageLoader"; 
+ 
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -22,7 +22,7 @@ const AIContentFile = () => {
     setAiMetadata,
   } = useContext(PostContext);
 
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const { isGeneratingImage, setIsGeneratingImage } = useContext(PostContext);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [availableModels, setAvailableModels] = useState({});
   const [isLoadingModels, setIsLoadingModels] = useState(false);
@@ -39,7 +39,7 @@ const AIContentFile = () => {
   const aspectRatioDropdownRef = useRef(null);
   const [currentProgress, setCurrentProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState('');
-  const imageLoaderRef = useRef();
+  
 
   const fetchIconUrl = async (modelName) => {
     const res = await fetch(
@@ -276,35 +276,11 @@ const AIContentFile = () => {
     }
   };
 
-  const handleAIComplete = (imageData) => {
-  // Complete the loader progress
-  if (imageLoaderRef.current) {
-    imageLoaderRef.current.completeGeneration();
-  }
-  
-  //setGeneratedImage(imageData);
-  
-  // Hide loader after showing completion
-  setTimeout(() => {
-    setIsGeneratingImage(false);
-  }, 1500);
-};
-
-
   const availableRatios = getAvailableAspectRatios();
 
   return (
     <>
-      {/* ImageLoader overlay */}
-<ImageLoader
-  ref={imageLoaderRef}
-  aspectRatio={selectedAspectRatio || "1:1"}
-  isVisible={isGeneratingImage}
-  model={selectedImageModel}
-  onProgress={(progress) => setCurrentProgress(progress)}
-  onStageChange={(stage) => setCurrentStage(stage)}
-  onComplete={() => setIsGeneratingImage(false)}
-/>
+      {/* Inline spinner is shown inside DragAndDrop */}
 
 
       <div className="md:px-6">

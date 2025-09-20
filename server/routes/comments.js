@@ -152,7 +152,7 @@ router.post("/comments/post",authenticate,upload.array("media", 5),awsuploadMidd
   }
 );
 
-// delete a reply on post
+// Soft delete a reply on post
 router.delete("/comments/:id", authenticate, async (req, res) => {
   try {
     const { id } = req.params;
@@ -169,8 +169,32 @@ router.delete("/comments/:id", authenticate, async (req, res) => {
         .json({ status: 403, error: "Not authorized to delete this reply" });
     }
 
-    // Delete media attachments from S3
-    await deleteCommentById(id);
+    // Recursively soft delete all child comments
+    const softDeleteChildComments = async (parentId) => {
+      const children = await Comment.find({ parentReplyId: parentId });
+      for (const child of children) {
+        // Soft delete the child comment
+        await Comment.findByIdAndUpdate(child._id, {
+          $set: {
+            userId: null,
+            userName: 'deleted'
+          }
+        });
+        // Recursively soft delete children of this child
+        await softDeleteChildComments(child._id);
+      }
+    };
+
+    // Soft delete all child comments first
+    await softDeleteChildComments(id);
+
+    // Soft delete the main comment
+    await Comment.findByIdAndUpdate(id, {
+      $set: {
+        userId: null,
+        userName: 'deleted'
+      }
+    });
 
     res
       .status(200)

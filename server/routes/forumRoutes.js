@@ -253,7 +253,7 @@ router.get('/replies', async (req, res) => {
 
 
 
-// Delete a reply
+// Soft delete a reply
 router.delete('/replies/:id', authenticate, async (req, res) => {
   try {
     const {id} = req.params;
@@ -268,35 +268,32 @@ router.delete('/replies/:id', authenticate, async (req, res) => {
       return res.status(403).json({ status: 403, error: 'Not authorized to delete this reply' });
     }
 
-    // Recursively delete all child replies
-    const deleteChildReplies = async (parentId) => {
+    // Recursively soft delete all child replies
+    const softDeleteChildReplies = async (parentId) => {
       const children = await ForumReply.find({ parentReplyId: parentId });
       for (const child of children) {
-        // Delete media attachments for child reply
-        if (child.mediaAttachments && child.mediaAttachments.length > 0) {
-          for (const attachment of child.mediaAttachments) {
-            await awsdeleteMiddleware(attachment.fileName);
+        // Soft delete the child reply
+        await ForumReply.findByIdAndUpdate(child._id, {
+          $set: {
+            userId: null,
+            userName: 'deleted'
           }
-        }
-        // Recursively delete children of this child
-        await deleteChildReplies(child._id);
-        // Delete the child reply
-        await ForumReply.findByIdAndDelete(child._id);
+        });
+        // Recursively soft delete children of this child
+        await softDeleteChildReplies(child._id);
       }
     };
 
-    // Delete media attachments for the main reply
-    if (reply.mediaAttachments && reply.mediaAttachments.length > 0) {
-      for (const attachment of reply.mediaAttachments) {
-        await awsdeleteMiddleware(attachment.fileName);
-      }
-    }
-
-    // Delete all child replies first
-    await deleteChildReplies(id);
+    // Soft delete all child replies first
+    await softDeleteChildReplies(id);
     
-    // Delete the main reply
-    await ForumReply.findByIdAndDelete(id);
+    // Soft delete the main reply
+    await ForumReply.findByIdAndUpdate(id, {
+      $set: {
+        userId: null,
+        userName: 'deleted'
+      }
+    });
 
     // Decrement reply count on the topic
     const topic = await ForumTopic.findById(reply.topicId);

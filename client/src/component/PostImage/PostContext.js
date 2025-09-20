@@ -14,6 +14,8 @@ const PostProvider = ({ children }) => {
     const [desc,setDesc] = useState("");
     const [selectedImageModel, setSelectedImageModel] = useState("");
     const [aiMetadata, setAiMetadata] = useState(null);
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [selectedAspectRatio, setSelectedAspectRatio] = useState("");
     const [crop, setCrop] = useState({ 
     unit: '%', 
     width: 100,
@@ -27,6 +29,7 @@ const PostProvider = ({ children }) => {
     const originalFileRef = useRef(null);
     const fileInputRef = useRef(null);
     const dropzoneRef = useRef(null);
+    const imageLoaderRef = useRef(null);
 
 
     return (
@@ -35,7 +38,10 @@ const PostProvider = ({ children }) => {
                 previewUrl, file, fileType, completedCrop, showCropper, refreshKey, crop,desc,aiPrompt,aiMetadata,
                 setPreviewUrl, setFile, setFileType, setCompletedCrop, setShowCropper, setRefreshKey, setCrop, setDesc,setAiPrompt,setAiMetadata,
                 imageRef, canvasRef, originalFileRef, fileInputRef, dropzoneRef,
-                selectedImageModel, setSelectedImageModel
+                selectedImageModel, setSelectedImageModel,
+                isGeneratingImage, setIsGeneratingImage,
+                selectedAspectRatio, setSelectedAspectRatio,
+                imageLoaderRef
             }}>
                 {children}
             </PostContext.Provider>

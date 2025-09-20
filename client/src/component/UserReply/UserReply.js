@@ -20,6 +20,7 @@ import ModelList from "../AIchatbot/Component/ModelList";
 import { CommentContext } from "../ContextProvider/CommentModelContext";
 import { fetchModelInfo, describeImagesInBackground } from "./Component/ReplyApi";
 import { UseSetUserCredit } from "../GlobalFunction/GlobalFunctionForResue";
+import { CubeSpinner } from "../ui/CubeSpinner";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -109,6 +110,21 @@ const UserReply = ({forum=false}) => {
     setLoading(true);
     setError(null);
 
+    // Add loading placeholder entry
+    const loadingType = modelType === 'image' ? 'image' : 'text';
+    setPostingData(prev => ([
+      ...prev,
+      {
+        userText: textToRender,
+        aiText: "",
+        prompt: "",
+        imageUrl: "",
+        isLoading: true,
+        loadingType,
+        model
+      }
+    ]));
+
     try {
       // Build conversation-aware prompt
       const conversationPrompt = conversationHistory.length > 0 
@@ -128,7 +144,31 @@ const UserReply = ({forum=false}) => {
       if (response.data.success) {
         const modelInfo = await fetchModelInfo(model);
 
-        handleGeneratedResult(response.data.data, textToRender, modelInfo);
+        // Replace the last loading entry with the real content
+        setPostingData(prev => {
+          const next = [...prev];
+          for (let i = next.length - 1; i >= 0; i--) {
+            if (next[i].isLoading) {
+              const data = response.data.data;
+              const updated = { ...next[i], isLoading: false, modelInfo };
+              if (data?.text) {
+                updated.aiText = data.text;
+              } else if (data?.imageData) {
+                const binary = atob(data.imageData);
+                const bytes = new Uint8Array(binary.length);
+                for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
+                const blob = new Blob([bytes], { type: "image/png" });
+                updated.imageUrl = URL.createObjectURL(blob);
+                updated.imageBlob = data.imageData;
+              } else if (data?.imageUrl) {
+                updated.imageUrl = data.imageUrl;
+              }
+              next[i] = updated;
+              break;
+            }
+          }
+          return next;
+        });
         setUserCredit(response?.data?.credit);
         setNewReply("");
       } else {
@@ -265,38 +305,7 @@ const UserReply = ({forum=false}) => {
   };
 
   // -------------------
-  // Handle generated result
-  const handleGeneratedResult = (data, originalPrompt, modelInfo = null) => {
-    setAiGenerated(false);
-
-    let newEntry = {
-      userText: originalPrompt,
-      aiText: "",
-      prompt: "",
-      imageUrl: "",
-      imageBlob: "",
-      model: model,
-      modelInfo: modelInfo,
-    };
-
-    if (data?.text) {
-      newEntry.aiText = data.text;
-    } else if (data?.imageData) {
-      const binary = atob(data.imageData);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const blob = new Blob([bytes], { type: "image/png" });
-      newEntry.imageUrl = URL.createObjectURL(blob);
-      newEntry.imageBlob = data.imageData;
-    } else if (data?.imageUrl) {
-      newEntry.imageUrl = data.imageUrl;
-    }
-
-    setPostingData((prev) => [...prev, newEntry]);
-    
-    setAiGenerated(true);
-    setNewReply("");
-  };
+  // Remove old handleGeneratedResult (now inline replacing loading entry)
 
   console.log("this is posting",postingData);
 
@@ -403,10 +412,17 @@ const UserReply = ({forum=false}) => {
               <button
                 type="button"
                 onClick={handleGenerateClick}
-                className="text-white rounded-md px-4 py-2 text-sm disabled:opacity-50"
+                className="text-white rounded-md px-4 py-2 text-sm disabled:opacity-50 flex items-center justify-center"
                 disabled={loading || contextLoading || !newReply.trim()}
+                aria-busy={loading || contextLoading}
               >
-                {loading || contextLoading ? <Sparkle /> : <SparklesIcon />}
+                {loading || contextLoading ? (
+                  <div className="scale-75">
+                    <CubeSpinner size="w-8 h-8" color="orange" />
+                  </div>
+                ) : (
+                  <SparklesIcon />
+                )}
               </button>
             )}
             <button

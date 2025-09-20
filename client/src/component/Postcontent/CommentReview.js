@@ -58,17 +58,26 @@ const CommentReview = () => {
     });
 
     const unsubscribeCommentDeleted = subscribeToEvent("comment_deleted", (deletedCommentId) => {
-      const removeCommentAndChildren = (comments, targetId) => {
-        return comments.filter((comment) => {
-          if (comment._id === targetId) return false;
-          if (comment.children && comment.children.length > 0) {
-            comment.children = removeCommentAndChildren(comment.children, targetId);
+      const markDeleted = (comments, targetId) => {
+        return comments.map((comment) => {
+          if (comment._id === targetId) {
+            return {
+              ...comment,
+              userId: null,
+              userName: 'deleted'
+            };
           }
-          return true;
+          if (comment.children && comment.children.length > 0) {
+            return {
+              ...comment,
+              children: markDeleted(comment.children, targetId)
+            };
+          }
+          return comment;
         });
       };
       queryClient.setQueryData(["comments", id], (old = []) =>
-        removeCommentAndChildren(old, deletedCommentId)
+        markDeleted(old, deletedCommentId)
       );
     });
 
