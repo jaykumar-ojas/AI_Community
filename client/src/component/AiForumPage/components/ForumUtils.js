@@ -12,7 +12,6 @@ export const getAuthHeaders = () => {
 
 // Helper function to handle authentication errors
 export const handleAuthError = (error, setError) => {
-  console.error('Authentication error:', error);
   if (error.response && error.response.status === 401) {
     // Clear token if it's invalid
     localStorage.removeItem("userdatatoken");

@@ -20,11 +20,17 @@ import ModelList from "../AIchatbot/Component/ModelList";
 import { CommentContext } from "../ContextProvider/CommentModelContext";
 import { fetchModelInfo, describeImagesInBackground } from "./Component/ReplyApi";
 import { UseSetUserCredit } from "../GlobalFunction/GlobalFunctionForResue";
+
 import { CubeSpinner } from "../ui/CubeSpinner";
+
+import ErrorBar from "../Card/ErrorBar";
+import { useNotification } from "../ContextProvider/NotificationContext";
+
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const UserReply = ({forum=false}) => {
+  const {showNotification} = useNotification();
   const { loginData } = useContext(LoginContext);
   const { emitNewReply,emitNewComment } = useWebSocket(); // for websocket
   const params = useParams();
@@ -99,7 +105,7 @@ const UserReply = ({forum=false}) => {
 
   const handleGenerateSubmit = async (e, enhancedPrompt = null, originalUserText = null) => {
     if(!loginData){
-      alert("Please Login to proceed");
+      showNotification("user not Login","warning");
       return;
     }
     if (e) e.preventDefault();
@@ -175,7 +181,7 @@ const UserReply = ({forum=false}) => {
         setError("Failed to generate content");
       }
     } catch (err) {
-      setError(err.response?.data?.error || "An error occurred while generating content");
+      setError(err.response?.data?.message || err.response?.data.error|| "An error occurred while generating content");
     } finally {
       setLoading(false);
     }
@@ -296,7 +302,6 @@ const UserReply = ({forum=false}) => {
         setPostingData([]);
       }
     } catch (err) {
-      console.error("Error posting reply:", err);
       if (handleAuthError(err, setError)) return;
       setError("Failed to post reply. Please try again.");
     } finally {
@@ -306,8 +311,6 @@ const UserReply = ({forum=false}) => {
 
   // -------------------
   // Remove old handleGeneratedResult (now inline replacing loading entry)
-
-  console.log("this is posting",postingData);
 
   // -------------------
   // Clear conversation history
@@ -319,13 +322,11 @@ const UserReply = ({forum=false}) => {
   // -------------------
   return (
     <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-1">
-      {error && (
-        <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-md text-xs md:text-sm">
-          {error}
-        </div>
+      {error && ( 
+        <ErrorBar message={error} onClose={()=>{setError("")}} />
       )}
 
-      <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-bg_comment_box">
+      <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box">
         <ShowGeneratedContent postingData={postingData} />
       </div>
 

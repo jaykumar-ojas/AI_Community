@@ -48,6 +48,7 @@ const ForumSystem = () => {
       </div>
 
       {/* Navigation Tabs - with dark theme styling */}
+
 <div className="relative flex dark:bg-black/40 backdrop-blur-sm border-gray-800 p-1 gap-2 rounded-lg overflow-hidden">
   {/* Slim sliding background indicator */}
   <span
@@ -86,6 +87,7 @@ const ForumSystem = () => {
 </div>
 
 
+
       {isNewTopicModalOpen && <NewTopicModal onClose={() => setIsNewTopicModalOpen(false)} />}
 
       {/* Main Content Area - transparent background */}
@@ -102,32 +104,22 @@ const ForumSystem = () => {
       </div>
 
       {/* Create Topic Button - with dark theme styling */}
-<button
-  onClick={() => setIsNewTopicModalOpen(true)}
-  className="wave-btn btn-up"
-  disabled={!loginData}
->
-  {/* <svg
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 4v16m8-8H4"
-    />
-  </svg> */}
-  <PlusIcon/>
-  <span>
-    {loginData ? "Create your Topic" : "Login to Create Topic"}
-  </span>
 
-  {/* waves + shimmer */}
-  <div className="waves"></div>
-  <div className="shimmer"></div>
-</button>
+  <button
+    onClick={() => setIsNewTopicModalOpen(true)}
+    className="wave-btn w-full btn-up flex items-center justify-center gap-2"
+    disabled={!loginData}
+  >
+    <PlusIcon/>
+    <span>
+      {loginData ? "Create your Topic" : "Login to Create Topic"}
+    </span>
+
+
+    {/* waves + shimmer */}
+    <div className="waves"></div>
+    <div className="shimmer"></div>
+  </button>
 
 
     </div>

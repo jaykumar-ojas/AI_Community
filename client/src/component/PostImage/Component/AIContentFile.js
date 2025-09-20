@@ -5,7 +5,10 @@ import modelIcon from "../../../asset/IconImage/ModelIcon.png"
 import { getAuthHeaders } from "../../AiForumPage/components/ForumUtils";
 import { UseSetUserCredit } from "../../GlobalFunction/GlobalFunctionForResue";
 import imageModelsConfig from "../../../config/imageModelsConfig";
- 
+
+import { useNotification } from "../../ContextProvider/NotificationContext";
+import { LoginContext } from "../../ContextProvider/context";
+
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -39,7 +42,10 @@ const AIContentFile = () => {
   const aspectRatioDropdownRef = useRef(null);
   const [currentProgress, setCurrentProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState('');
-  
+
+  const {showNotification} = useNotification();
+  const {loginData} = useContext(LoginContext);
+
 
   const fetchIconUrl = async (modelName) => {
     const res = await fetch(
@@ -154,8 +160,11 @@ const AIContentFile = () => {
   };
 
   const enhancePrompt = async () => {
+    if(!loginData){
+      showNotification("please first login","info");
+    }
     if (!aiPrompt.trim()) {
-      alert("Please enter a prompt first");
+      showNotification("Oo.... i think you forget me to give a prompt","info");
       return;
     }
     try {
@@ -180,12 +189,15 @@ const AIContentFile = () => {
   };
 
   const generateAIImage = async () => {
+    if(!loginData){
+      showNotification("you are not logged in","info");
+    }
     if (!aiPrompt.trim()) {
-      alert("Please enter a prompt for image generation");
+      showNotification("Please enter a prompt for image generation","generate a image");
       return;
     }
     if (!selectedImageModel) {
-      alert("Please select an image model");
+      showNotification("Please select an image model","info");
       return;
     }
 
@@ -280,7 +292,7 @@ const AIContentFile = () => {
 
   return (
     <>
-      {/* Inline spinner is shown inside DragAndDrop */}
+
 
 
       <div className="md:px-6">

@@ -54,82 +54,80 @@ const [sparkles, setSparkles] = useState([]);
 
 
  const handleLikePost = async () => {
-    if (!currentUser.id) {
-      // alert("Please log in to like posts");
-      setShowLogin(true);
-      return;
+  if (!currentUser.id) {
+    setShowLogin(true);
+    return;
+  }
+
+  // ---- Optimistic Update Start ----
+  let prevPostData = { ...postData }; // backup
+  let prevUserLiked = userLiked;
+  let prevUserDisliked = userDisliked;
+
+  // Create sparkle animation only when liking
+  if (!userLiked) {
+    const sparkleColors = [
+      '#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24',
+      '#f0932b', '#eb4d4b', '#6c5ce7', '#a29bfe',
+      '#fd79a8', '#00b894', '#e17055', '#fdcb6e'
+    ];
+
+    const newSparkles = Array.from({ length: 8 }, (_, i) => ({
+      id: Date.now() + i,
+      color: sparkleColors[Math.floor(Math.random() * sparkleColors.length)],
+      style: {
+        left: `${Math.random() * 50 - 15}px`,
+        top: `${Math.random() * 50 - 15}px`,
+        animationDelay: `${i * 0.08}s`,
+        animationDuration: `${0.6 + Math.random() * 0.4}s`,
+      },
+    }));
+    setSparkles(newSparkles);
+    setTimeout(() => setSparkles([]), 1000);
+  }
+
+  // Optimistically update UI
+  let updatedPost = { ...postData };
+
+  if (userLiked) {
+    // Unlike
+    updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
+    setUserLiked(false);
+  } else {
+    // Like
+    if (!updatedPost.likes) updatedPost.likes = [];
+    if (!updatedPost.likes.includes(currentUser.id)) {
+      updatedPost.likes.push(currentUser.id);
     }
 
-    // Create sparkle animation only when liking (not unliking)
-    if (!userLiked) {
-      // Array of vibrant colors for sparkles
-      const sparkleColors = [
-        '#ff6b6b', // Red
-        '#4ecdc4', // Teal
-        '#45b7d1', // Blue
-        '#f9ca24', // Yellow
-        '#f0932b', // Orange
-        '#eb4d4b', // Pink
-        '#6c5ce7', // Purple
-        '#a29bfe', // Light Purple
-        '#fd79a8', // Pink
-        '#00b894', // Green
-        '#e17055', // Coral
-        '#fdcb6e'  // Golden
-      ];
-      
-      // Create sparkle animation with random colors
-      const newSparkles = Array.from({ length: 8 }, (_, i) => ({
-        id: Date.now() + i,
-        color: sparkleColors[Math.floor(Math.random() * sparkleColors.length)],
-        style: {
-          left: `${Math.random() * 50 - 15}px`,
-          top: `${Math.random() * 50 - 15}px`,
-          animationDelay: `${i * 0.08}s`,
-          animationDuration: `${0.6 + Math.random() * 0.4}s`,
-        },
-      }));
-      
-      setSparkles(newSparkles);
-      
-      // Remove sparkles after animation
-      setTimeout(() => setSparkles([]), 1000);
+    if (updatedPost.dislikes?.includes(currentUser.id)) {
+      updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
+      setUserDisliked(false);
     }
+    setUserLiked(true);
+  }
 
-    try {
-      const response = await axios.post(`${baseUrl}/${postData._id}/like`, {
-        userId: currentUser.id
-      });
-      
-      if (response.status === 200) {
-        // Update local state to reflect the change
-        const updatedPost = { ...postData };
-        
-        if (userLiked) {
-          // Remove like
-          updatedPost.likes = updatedPost.likes.filter(id => id !== currentUser.id);
-        } else {
-          // Add like and remove dislike if exists
-          if (!updatedPost.likes) updatedPost.likes = [];
-          if (!updatedPost.likes.includes(currentUser.id)) {
-            updatedPost.likes.push(currentUser.id);
-          }
-          
-          // Remove from dislikes if present
-          if (updatedPost.dislikes && updatedPost.dislikes.includes(currentUser.id)) {
-            updatedPost.dislikes = updatedPost.dislikes.filter(id => id !== currentUser.id);
-          }
-        }
-        
-        setPostData(updatedPost);
-        setUserLiked(!userLiked);
-        if (userDisliked) setUserDisliked(false);
-      }
-    } catch (error) {
-      console.error('Error liking post:', error);
-      alert("Error liking post. Please try again.");
-    }
-  };
+  setPostData(updatedPost);
+  // ---- Optimistic Update End ----
+
+  try {
+    const response = await axios.post(`${baseUrl}/${postData._id}/like`, {
+      userId: currentUser.id
+    });
+
+    if (response.status !== 200) throw new Error("Like failed");
+  } catch (error) {
+    console.error("Error liking post:", error);
+
+    // Rollback if API fails
+    setPostData(prevPostData);
+    setUserLiked(prevUserLiked);
+    setUserDisliked(prevUserDisliked);
+
+    alert("Error liking post. Please try again.");
+  }
+};
+
 
 
     const handleDislikePost = async () => {
@@ -189,7 +187,7 @@ const [sparkles, setSparkles] = useState([]);
       });
       }
     }
-  }, [post]);
+  }, [post,loginData]);
   const navigate = useNavigate();
 
 
