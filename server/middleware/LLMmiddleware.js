@@ -774,87 +774,6 @@ async function fetchAncestorContext(req, res, next) {
   }
 }
 
-// async function textSuggestionWithContext(req, res, next) {
-//   try {
-//     const structured = req.structuredContext;
-//     if (!structured || !structured.conversationContext) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Missing structured context for text suggestion",
-//       });
-//     }
-
-//     const { conversationContext, newUserPrompt, finalInstruction } = structured;
-
-//     // 🔑 Build narrative summary from structured context safely
-// const summaryParts = Object.entries(conversationContext)
-//   .sort((a, b) => (b[1]?.priority || 0) - (a[1]?.priority || 0)) // safe compare
-//   .map(([user, data]) => {
-//     const safeMeta = data?.meta || {};
-//     const safeDescription = data?.description?.sources?.content || [];
-
-//     const userName = safeMeta.userName || user || "Unknown";
-
-//     // Build text body flexibly
-//     let body = "";
-
-//     if (safeDescription.length > 0) {
-//       body += `Content: ${JSON.stringify(safeDescription)}`;
-//     }
-
-//     if (safeMeta.title) {
-//       body += (body ? " | " : "") + `Title: ${safeMeta.title}`;
-//     }
-
-//     if (safeMeta.content) {
-//       body += (body ? " | " : "") + `Post: ${safeMeta.content}`;
-//     }
-
-//     if (!body) {
-//       body = "(no content provided)";
-//     }
-
-//     return `- **${userName}** (priority ${data?.priority ?? "N/A"}): ${body}`;
-//   });
-
-
-//     const conversationSummary = summaryParts.join("\n");
-
-//     // 🔑 Construct AI-ready prompt
-//     const aiPrompt = `
-// You are an AI system assisting in a forum-like creative workspace.
-
-// Here is the structured conversation context so far remember:
-// ${conversationSummary}
-
-// The new user request is:
-// "${newUserPrompt || "No new prompt provided"}"
-
-// Your task:
-// ${finalInstruction || "Continue the conversation or generate creative content."}
-
-// Guidelines for your response:  
-
-// 1.) Respect the **priority hierarchy** when deciding which details matter most. 
-// 2.) Ensure your response feels like a natural continuation of this thread, not an isolated output.  
-// 3.) Be descriptive, coherent, and imaginative — combining text and image context seamlessly.  
-// `;
-
-
-
-//     // attach to request for downstream models
-//     req.contextForAI = {
-//       structuredJSON: structured, // keep full JSON for multimodal models
-//       promptText: aiPrompt,       // the clean human-readable AI instruction
-//     };
-
-//     res.locals.contextForAI = req.contextForAI;
-//     next();
-//   } catch (err) {
-//     console.error("Error in textSuggestionWithContext:", err);
-//     next(err);
-//   }
-// }
 
 async function textSuggestionWithContext(req, res, next) {
   try {
@@ -922,6 +841,7 @@ Guidelines for your response:
 `;
 
     // 🔥 Call AI to get suggestion
+    /* un commnet in live
     const aiResponse = await openai.chat.completions.create({
       model: "gpt-4.1",
       messages: [
@@ -940,7 +860,8 @@ Everything you generate will be passed directly to the next model for content ge
     });
 
     const suggestion = aiResponse.choices?.[0]?.message?.content?.trim() || "";
-
+      */
+     const suggestion = "hello";
     console.log("AI suggestion generated successfully", suggestion);
 
   req.contextForAI = {

@@ -188,7 +188,7 @@ const ShowUrl = ({ url, modelInfo }) => {
         <div className="bg-white flex items-center justify-center">
           <img
             src={url}
-            className="max-h-[250px] w-auto object-contain"
+            className="max-h-[180px] w-auto object-contain"
             alt="Generated content"
             onError={(e) => (e.target.style.display = "none")}
           />

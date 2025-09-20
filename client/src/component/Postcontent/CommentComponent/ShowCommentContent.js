@@ -22,6 +22,7 @@ import {
 import ReplyData from "../../Card/ReplyData";
 import { CommentContext } from "../../ContextProvider/CommentModelContext";
 
+
 const ModelIcon = ({ modelName }) => {
   const [iconUrl, setIconUrl] = useState(null);
 
@@ -112,31 +113,7 @@ const ShowCommentContent = ({ reply }) => {
     try {
       setIsLoading(true);
 
-      // Function to recursively delete child comments
-      const deleteChildComments = async (children) => {
-        if (!children || children.length === 0) return;
-
-        for (const child of children) {
-          // First delete all grandchildren
-          if (child.children && child.children.length > 0) {
-            await deleteChildComments(child.children);
-          }
-
-          // Then delete the child comment
-          await axios.delete(`${baseUrl}/comments/${child._id}`, {
-            headers: getAuthHeaders(),
-          });
-          // Emit delete event for child
-          emitDeleteComment(child._id, child.postId);
-        }
-      };
-
-      // First delete all child comments
-      if (reply.children && reply.children.length > 0) {
-        await deleteChildComments(reply.children);
-      }
-
-      // Then delete the parent comment
+      // Call the delete API - backend will handle soft delete and recursive deletion
       const response = await axios.delete(`${baseUrl}/comments/${reply?._id}`, {
         headers: getAuthHeaders(),
       });
@@ -158,6 +135,9 @@ const ShowCommentContent = ({ reply }) => {
       setIsLoading(false);
     }
   };
+
+
+
 
   const handleReplyLike = async () => {
     if (!loginData || !loginData.validuserone) {
@@ -257,9 +237,10 @@ const ShowCommentContent = ({ reply }) => {
     return null;
   };
   const firstModelName = getFirstModelName();
+  const isDeleted = reply?.userName === 'deleted' && !reply?.userId;
 
   return (
-    <div key={reply?._id} className="relative flex justify-start ">
+    <div key={reply?._id} className={`relative flex justify-start ${isDeleted ? 'opacity-60' : ''}`}>
       <div className="w-8 h-8 flex-shrink-0 z-30">
         <UserIconCard id={reply?.userId} />
       </div>
@@ -268,7 +249,7 @@ const ShowCommentContent = ({ reply }) => {
       <div className="flex flex-col md: p-1 px-2 pt-0 w-full md:mb-2 mb-1">
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-            <div className="text-black dark:text-text_header font-normal mr-2 text-sm">
+            <div className={`font-normal mr-2 text-sm ${isDeleted ? 'text-gray-500 italic' : 'text-black dark:text-text_header'}`}>
               {reply?.userName}
             </div>
             <div className="mr-2 flex justify-center items-center">
@@ -281,13 +262,13 @@ const ShowCommentContent = ({ reply }) => {
           </div>
           {/* Move ModelIcon to the right corner, after the delete button */}
           <div className="flex items-center gap-2">
-            {firstModelName && (
+            {firstModelName && !isDeleted && (
               <div className="ml-2">
                 <ModelIcon modelName={firstModelName} />
               </div>
             )}
 
-            {isAuthor && (
+            {isAuthor && !isDeleted && (
               <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
@@ -335,9 +316,10 @@ const ShowCommentContent = ({ reply }) => {
           <div className="bg-gray-200 border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
             <button
               onClick={handleReplyLike}
+              disabled={isDeleted}
               className={`flex items-center gap-0.5 hover:text-like_color transition ${
                 isLiked && "text-like_color"
-              }`}
+              } ${isDeleted ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <UpvoteIcon isLiked={isLiked} />
               {replyLikes?.length || 0}
@@ -345,27 +327,30 @@ const ShowCommentContent = ({ reply }) => {
 
             <button
               onClick={handleReplyDislike}
+              disabled={isDeleted}
               className={`flex items-center gap-1 hover:text-red-600 transition ${
                 isDisliked && "text-red-600"
-              }`}
+              } ${isDeleted ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <DownvoteIcon isDisliked={isDisliked} />
               {replyDislikes?.length || 0}
             </button>
           </div>
-          <button
-            // onClick={() => setShowReplyBox(true)}
-            onClick={() => {
-              setReplyIdForContext(reply?._id);
-              setUserName(reply?.userName);
-              setViewBox(true);
-            }}
-            className="flex items-center gap-1  text-like_color hover:text-like_color transition"
-          >
-            <ReplyIcon />
+          {!isDeleted && (
+            <button
+              // onClick={() => setShowReplyBox(true)}
+              onClick={() => {
+                setReplyIdForContext(reply?._id);
+                setUserName(reply?.userName);
+                setViewBox(true);
+              }}
+              className="flex items-center gap-1  text-like_color hover:text-like_color transition"
+            >
+              <ReplyIcon />
 
-            <div className="text-xs">Reply</div>
-          </button>
+              <div className="text-xs">Reply</div>
+            </button>
+          )}
         </div>
       </div>
     </div>

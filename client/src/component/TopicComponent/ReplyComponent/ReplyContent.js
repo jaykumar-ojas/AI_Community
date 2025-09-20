@@ -60,29 +60,65 @@ const ReplyContent = () => {
   });
 
   // WebSocket handlers (unchanged)
+  // useEffect(() => {
+  //   const unsubscribeNew = subscribeToEvent("reply_created", (newReply) => {
+  //     if (newReply.topicId !== topicId) return;
+  //     queryClient.invalidateQueries(["replies", topicId]);
+  //   });
+
+  //   const unsubscribeDelete = subscribeToEvent("reply_deleted", (deletedReplyId) => {
+  //     queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
+  //       const removeReplyAndChildren = (replies) => {
+  //         return replies.filter(reply => {
+  //           if (reply._id === deletedReplyId) {
+  //             return false;
+  //           }
+  //           if (reply.children && reply.children.length > 0) {
+  //             reply.children = removeReplyAndChildren(reply.children);
+  //           }
+  //           return true;
+  //         });
+  //       };
+  //       const updatedReplies = removeReplyAndChildren(oldReplies);
+  //       return organizeReplies(updatedReplies);
+  //     });
+  //     queryClient.invalidateQueries(["replies", topicId]);
+  //   });
+
+  //   return () => {
+  //     unsubscribeNew();
+  //     unsubscribeDelete();
+  //   };
+  // }, [topicId, queryClient, subscribeToEvent]);
+
+
   useEffect(() => {
     const unsubscribeNew = subscribeToEvent("reply_created", (newReply) => {
       if (newReply.topicId !== topicId) return;
       queryClient.invalidateQueries(["replies", topicId]);
     });
 
+    // 🔹 Soft delete handler
     const unsubscribeDelete = subscribeToEvent("reply_deleted", (deletedReplyId) => {
       queryClient.setQueryData(["replies", topicId], (oldReplies = []) => {
-        const removeReplyAndChildren = (replies) => {
-          return replies.filter(reply => {
+        const markDeleted = (list) => {
+          return list.map((reply) => {
             if (reply._id === deletedReplyId) {
-              return false;
+              return {
+                ...reply,
+              //  isDeleted: true,
+                userId: null,
+                userName: "deleted",
+              };
             }
-            if (reply.children && reply.children.length > 0) {
-              reply.children = removeReplyAndChildren(reply.children);
+            if (reply.children?.length > 0) {
+              return { ...reply, children: markDeleted(reply.children) };
             }
-            return true;
+            return reply;
           });
         };
-        const updatedReplies = removeReplyAndChildren(oldReplies);
-        return organizeReplies(updatedReplies);
+        return markDeleted(oldReplies);
       });
-      queryClient.invalidateQueries(["replies", topicId]);
     });
 
     return () => {

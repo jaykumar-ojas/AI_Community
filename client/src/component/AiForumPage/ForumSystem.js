@@ -48,38 +48,45 @@ const ForumSystem = () => {
       </div>
 
       {/* Navigation Tabs - with dark theme styling */}
-      <div className="flex dark:bg-black/40 backdrop-blur-sm border-b w-full border-gray-800">
-        <button
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            currentTab === 'popular' 
-              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
-          }`}
-          onClick={() => setCurrentTab('popular')}
-        >
-          Popular
-        </button>
-        <button
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            currentTab === 'recent' 
-              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
-          }`}
-          onClick={() => setCurrentTab('recent')}
-        >
-          Recent
-        </button>
-        <button
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            currentTab === 'my' 
-              ? 'text-blue-700 dark:text-blue-400 border-b-2 border-blue-400' 
-              : 'text-gray-900 dark:text-gray-400 hover:dark:text-gray-300 hover:text-gray-500'
-          }`}
-          onClick={() => setCurrentTab('my')}
-        >
-          My Topics
-        </button>
-      </div>
+
+<div className="relative flex dark:bg-black/40 backdrop-blur-sm border-gray-800 p-1 gap-2 rounded-lg overflow-hidden">
+  {/* Slim sliding background indicator */}
+  <span
+    className="absolute h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-md transition-all duration-500 ease-in-out"
+    style={{
+      top: "50%",
+      transform: "translateY(-50%)",
+      left: currentTab === "popular" ? "0.5rem" : currentTab === "recent" ? "34%" : "67.5%",
+      width: "30%",
+    }}
+  ></span>
+
+  <button
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+      ${currentTab === "popular" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+    onClick={() => setCurrentTab("popular")}
+  >
+    Popular
+  </button>
+
+  <button
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+      ${currentTab === "recent" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+    onClick={() => setCurrentTab("recent")}
+  >
+    Recent
+  </button>
+
+  <button
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+      ${currentTab === "my" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+    onClick={() => setCurrentTab("my")}
+  >
+    My Topics
+  </button>
+</div>
+
+
 
       {isNewTopicModalOpen && <NewTopicModal onClose={() => setIsNewTopicModalOpen(false)} />}
 
@@ -97,6 +104,7 @@ const ForumSystem = () => {
       </div>
 
       {/* Create Topic Button - with dark theme styling */}
+
   <button
     onClick={() => setIsNewTopicModalOpen(true)}
     className="wave-btn w-full btn-up flex items-center justify-center gap-2"
@@ -106,6 +114,7 @@ const ForumSystem = () => {
     <span>
       {loginData ? "Create your Topic" : "Login to Create Topic"}
     </span>
+
 
     {/* waves + shimmer */}
     <div className="waves"></div>

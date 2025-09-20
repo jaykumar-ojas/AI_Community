@@ -3,6 +3,7 @@ import { CropIcon, CrossIcon, DragAndDropIcon } from "../../../asset/icons";
 import RenderPreview from "./RenderPreview";
 import { PostContext } from "../PostContext";
 import Cropper from "./Cropper";
+import { CubeSpinner } from "../../ui/CubeSpinner";
 
 const DragAndDrop = () => {
     const {
@@ -13,7 +14,11 @@ const DragAndDrop = () => {
         showCropper,
         setShowCropper,
         setCompletedCrop,
-        setFile
+        setFile,
+        isGeneratingImage,
+        selectedImageModel,
+        selectedAspectRatio,
+        imageLoaderRef
     } = useContext(PostContext);
 
     const fileInputRef = useRef(null);
@@ -57,6 +62,12 @@ const DragAndDrop = () => {
 
     return (
         <div className="flex  h-full w-full relative bg-transparent">
+            {/* Inline AI Generation Spinner overlayed on drop zone */}
+            {!showCropper && !previewUrl && isGeneratingImage && (
+                <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/50 rounded-lg">
+                    <CubeSpinner size="w-16 h-16" color="orange" />
+                </div>
+            )}
             {showCropper ? (
                 <div className="h-full w-full">
                     <Cropper />
