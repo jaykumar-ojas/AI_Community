@@ -151,110 +151,125 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   };
 
   return (
-    <div className="divide-y">
-      {topics.length > 0 ? (
-        topics.map(topic => {
-          const isLiked = topic.likes?.includes(loginData?.validuserone?._id);
-          const isDisliked = topic.dislikes?.includes(loginData?.validuserone?._id);
-          const isAuthor = loginData?.validuserone?._id.toString() === topic.userId.toString();
-          const isAdmin = loginData?.validuserone?.role === 'admin';
-          const canDelete = isAuthor || isAdmin;
+    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+  {topics.length > 0 ? (
+    topics.map(topic => {
+      const isLiked = topic.likes?.includes(loginData?.validuserone?._id);
+      const isDisliked = topic.dislikes?.includes(loginData?.validuserone?._id);
+      const isAuthor = loginData?.validuserone?._id.toString() === topic.userId.toString();
+      const isAdmin = loginData?.validuserone?.role === 'admin';
+      const canDelete = isAuthor || isAdmin;
 
-          return (
-            <div
-              key={topic._id}
-              className="p-2 w-full hover:bg-gray-200 hover:dark:bg-bg_comment_box transition-colors cursor-pointer"
-              onClick={() => handleTopicClick(topic)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-md font-medium text-gray-800 line-clamp-2 dark:text-text_comment mb-1">{topic.title}</h3>
-                  <p className="text-gray-600 dark:text-text_header text-sm  line-clamp-2">{topic.content}</p>
-                  <div className="mt-1 flex flex-row items-center text-sm justify-between">
-                    <div className='w-6 h-6 flex-shrink-0'><UserIconCard id={topic?.userId}/></div>
-                    <div className='flex items-center gap-1'>
-                    <div className="text_time_header dark:text-gray-500">•</div>
-                    <div className='text-blue-500 dark:text-time_header text-xs'>{topic.userName}</div>
-                    </div>
-                    <div className='flex items-center gap-1'>
-                    <div className="text_time_header dark:text-gray-500">•</div>
-                    <div className='text-gray-800 dark:text-time_header text-xs'>{formatDate(topic.createdAt)}</div>
-                    </div>
-                    <div className='flex items-center gap-1'>
-                    <div className="text_time_header dark:text-gray-500">•</div>
-                    <div className='text-gray-800 flex flex-row items-center gap-1 dark:text-time_header text-xs'>{topic.replyCount} <CommentIcon h={4} w={4}/></div>
-                    </div>
-                    <div className='flex items-center gap-1'>
-                    <div className="text_time_header dark:text-gray-500">•</div>
-                    <div className='text-gray-800 dark:text-time_header flex flex-row gap-1 text-xs'>{topic.viewCount} <EyeIcon size={16}/></div>
-                    </div>
-                  </div>
+      return (
+        <div
+          key={topic._id}
+          className="p-3 w-full  hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-colors cursor-pointer"
+          onClick={() => handleTopicClick(topic)}
+        >
+          <div className="flex flex-col items-start justify-between">
+            <div className="flex-1">
+              <div className="flex justify-between items-start">
+                <div className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 hover:text-blue-600 transition">
+                  {topic.title}
                 </div>
-                <div className="flex items-center ">
-                  
-                  {canDelete && (
-                    <div className="relative">
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          setOpenMenuId(openMenuId === topic._id ? null : topic._id);
-                        }}
-                        className="p-1 text-gray-500 hover:bg-gray-100 rounded-full"
-                        aria-label="Open menu"
+
+                {canDelete && (
+                  <div className="relative">
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === topic._id ? null : topic._id);
+                      }}
+                      className="p-1 text-gray-500 hover:bg-blue-100 dark:hover:bg-gray-700 rounded-full"
+                      aria-label="Open menu"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <circle cx="10" cy="4" r="1.5" />
+                        <circle cx="10" cy="10" r="1.5" />
+                        <circle cx="10" cy="16" r="1.5" />
+                      </svg>
+                    </button>
+                    {openMenuId === topic._id && (
+                      <div
+                        className="absolute right-0 mt-2 w-28 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-10"
+                        onClick={e => e.stopPropagation()}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <circle cx="4" cy="10" r="2" />
-                          <circle cx="10" cy="10" r="2" />
-                          <circle cx="16" cy="10" r="2" />
-                        </svg>
-                      </button>
-                      {openMenuId === topic._id && (
-                        <div
-                          className="absolute right-0 mt-2 w-28 bg-white border border-gray-200 rounded shadow-lg z-10"
-                          onClick={e => e.stopPropagation()}
+                        <button
+                          onClick={() => {
+                            handleDeleteTopic(topic._id);
+                            setOpenMenuId(null);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40"
                         >
-                          <button
-                            onClick={() => {
-                              handleDeleteTopic(topic._id);
-                              setOpenMenuId(null);
-                            }}
-                            className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="flex items-center space-x-1 bg-gray-300 dark:bg-btn_bg rounded-lg px-2 py-0.5">
-                    <button
-                      onClick={(e) => handleTopicLike(topic._id, e)}
-                      className={`rounded-full  hover:bg-bg_comment ${
-                        isLiked ? 'text-like_color' : 'none dark:text-gray-400'
-                      }`}
-                    >
-                      <UpvoteIcon isLiked={isLiked}/>
-                    </button>
-                    <span className="text-xs dark:text-gray-500 text-black">{topic.likes?.length || 0}</span>
-                    <button
-                      onClick={(e) => handleTopicDislike(topic._id, e)}
-                      className={`p-1 rounded-full hover:bg-gray-100 ${
-                        isDisliked ? 'text-red-500' : 'none dark:text-gray-400'
-                      }`}
-                    >
-                     <DownvoteIcon isDisliked={isDisliked}/>
-                    </button>
-                    <span className="text-sm dark:text-gray-500 text-black">{topic.dislikes?.length || 0}</span>
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
+              </div>
+
+              <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-1">
+                {topic.content}
+              </p>
+            </div>
+
+            {/* Bottom Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 w-full mt-2">
+              
+              {/* Meta Info */}
+              <div className="flex flex-row items-center text-xs gap-1">
+                <div className="w-6 h-6 flex-shrink-0"><UserIconCard id={topic?.userId}/></div>
+
+                <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                  {topic.userName}
+                </span>
+
+                <span className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full">
+                  {formatDate(topic.createdAt)}
+                </span>
+
+                <span className="bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  {topic.replyCount} <CommentIcon h={4} w={4}/>
+                </span>
+
+                <span className="bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  {topic.viewCount} <EyeIcon size={14}/>
+                </span>
+              </div>
+
+              {/* Vote Buttons */}
+              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-700 rounded-full px-3 py-1 self-start sm:self-auto">
+                <button
+                  onClick={(e) => handleTopicLike(topic._id, e)}
+                  className={`p-1 rounded-full transition transform hover:scale-110 ${
+                    isLiked ? 'text-green-600' : 'text-gray-500 dark:text-gray-400'
+                  }`}
+                >
+                  <UpvoteIcon isLiked={isLiked}/>
+                </button>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{topic.likes?.length || 0}</span>
+
+                <button
+                  onClick={(e) => handleTopicDislike(topic._id, e)}
+                  className={`p-1 rounded-full transition transform hover:scale-110 ${
+                    isDisliked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
+                  }`}
+                >
+                  <DownvoteIcon isDisliked={isDisliked}/>
+                </button>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{topic.dislikes?.length || 0}</span>
               </div>
             </div>
-          );
-        })
-      ) : (
-        <div className="p-4 text-center text-gray-500">{emptyMessage}</div>
-      )}
-    </div>
+          </div>
+        </div>
+      );
+    })
+  ) : (
+    <div className="p-4 text-center text-gray-500">{emptyMessage}</div>
+  )}
+</div>
+
   );
 };
 

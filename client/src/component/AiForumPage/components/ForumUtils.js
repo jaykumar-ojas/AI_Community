@@ -26,30 +26,32 @@ export const formatDate = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now - date;
+
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHr = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHr / 24);
   const diffWeek = Math.floor(diffDay / 7);
+  const diffMonth = Math.floor(diffDay / 30);
+  const diffYear = Math.floor(diffDay / 365);
 
   if (diffSec < 60) {
-    return `${diffSec}s ${diffSec !== 1 ? '' : ''}`;
+    return `${diffSec}s`;
   } else if (diffMin < 60) {
-    return `${diffMin}m ${diffMin !== 1 ? '' : ''}`;
+    return `${diffMin}m`;
   } else if (diffHr < 24) {
-    return `${diffHr}h ${diffHr !== 1 ? '' : ''}`;
+    return `${diffHr}h`;
   } else if (diffDay < 7) {
-    return `${diffDay}d${diffDay !== 1 ? '' : ''}`;
-  } else if (diffDay < 15) {
-    return `${diffWeek}w${diffWeek !== 1 ? '' : ''}`;
+    return `${diffDay}d`;
+  } else if (diffWeek < 4) {
+    return `${diffWeek}w`;
+  } else if (diffMonth < 12) {
+    return `${diffMonth}mo`;
   } else {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(date);
+    return `${diffYear}y`;
   }
 };
+
 
 
 // Organize replies into a nested structure
