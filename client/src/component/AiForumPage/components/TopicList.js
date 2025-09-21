@@ -8,14 +8,16 @@ import { DisLikeIcon, LikeIcon, UpvoteIcon, DownvoteIcon, CommentIcon } from '..
 import UserIconCard from '../../Card/UserIconCard';
 import { encodeId } from '../../../utils/hashids';
 import { EyeIcon } from 'lucide-react';
+import LikeDislike from '../../Card/LikeDislike';
+import { useNotification } from '../../ContextProvider/NotificationContext';
 
 const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
+  const {showNotification} = useNotification();
   const { loginData } = useContext(LoginContext);
   const {emitDeleteTopic,subscribeToEvent} = useWebSocket();
   const navigate = useNavigate();
   //  const [topics, setTopics] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
   const [topics, setTopics] = useState(initialTopics);
   const [openMenuId, setOpenMenuId] = useState(null);
 
@@ -45,7 +47,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   const handleTopicLike = async (topicId, e) => {
     e.stopPropagation();
     if (!loginData || !loginData.validuserone) {
-      alert('Please log in to like topics');
+      showNotification('Please log in to like topics');
       return;
     }
 
@@ -71,9 +73,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
       }
     } catch (error) {
       console.error('Error liking topic:', error);
-      if (!handleAuthError(error)) {
-        alert('Failed to like topic. Please try again.');
-      }
+        showNotification("failed to like. please try again","info");
     }
   };
 
@@ -81,7 +81,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   const handleTopicDislike = async (topicId, e) => {
     e.stopPropagation();
     if (!loginData || !loginData.validuserone) {
-      alert('Please log in to dislike topics');
+      showNotification('Please log in to dislike topics');
       return;
     }
 
@@ -106,17 +106,15 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
         }));
       }
     } catch (error) {
-      console.error('Error disliking topic:', error);
-      if (!handleAuthError(error)) {
-        alert('Failed to dislike topic. Please try again.');
-      }
+      // console.error('Error disliking topic:', error);
+        showNotification('Failed to dislike topic. Please try again.');
     }
   };
 
 
   const handleDeleteTopic = async (topicId) => {
     if (!loginData || !loginData.validuserone) {
-      setError('You must be logged in to delete a topic');
+      showNotification("please login to proceed","warning");
       return;
     }
 
@@ -138,13 +136,11 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
       }
     } catch (error) {
       console.error('Error deleting topic:', error);
-      if (!handleAuthError(error, setError)) {
         if (error.response && error.response.status === 403) {
-          setError('You are not authorized to delete this topic');
+          showNotification('You are not authorized to delete this topic',"warning");
         } else {
-          setError('Failed to delete topic. Please try again.');
+          showNotification('Failed to delete. Please try again.',"warning");
         }
-      }
     } finally {
       setIsLoading(false);
     }
@@ -166,9 +162,9 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
           className="p-3 w-full  hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-colors cursor-pointer"
           onClick={() => handleTopicClick(topic)}
         >
-          <div className="flex flex-col items-start justify-between">
-            <div className="flex-1">
-              <div className="flex justify-between items-start">
+          <div className="flex flex-col w-full justify-between">
+            {/* this is first one */}
+              <div className="flex justify-between items-center">
                 <div className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 hover:text-blue-600 transition">
                   {topic.title}
                 </div>
@@ -208,17 +204,17 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                   </div>
                 )}
               </div>
-
+            {/* this is content one */}
               <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-1">
                 {topic.content}
               </p>
-            </div>
+
 
             {/* Bottom Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 w-full mt-2">
+            <div className="flex flex-row items-center justify-between gap-1 w-full mt-1">
               
               {/* Meta Info */}
-              <div className="flex flex-row items-center text-xs gap-1">
+              <div className="flex flex-wrap items-center text-xs gap-1">
                 <div className="w-6 h-6 flex-shrink-0"><UserIconCard id={topic?.userId}/></div>
 
                 <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full">
@@ -239,7 +235,8 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
               </div>
 
               {/* Vote Buttons */}
-              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-700 rounded-full px-3 py-1 self-start sm:self-auto">
+              <LikeDislike topic={topic} like = {handleTopicLike} dislike={handleTopicDislike}/>
+              {/* <div className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-700 rounded-full px-3 py-1 self-start sm:self-auto">
                 <button
                   onClick={(e) => handleTopicLike(topic._id, e)}
                   className={`p-1 rounded-full transition transform hover:scale-110 ${
@@ -259,7 +256,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                   <DownvoteIcon isDisliked={isDisliked}/>
                 </button>
                 <span className="text-xs text-gray-700 dark:text-gray-300">{topic.dislikes?.length || 0}</span>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

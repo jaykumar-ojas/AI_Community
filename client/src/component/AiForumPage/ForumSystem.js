@@ -62,7 +62,7 @@ const ForumSystem = () => {
   ></span>
 
   <button
-    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
       ${currentTab === "popular" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
     onClick={() => setCurrentTab("popular")}
   >
@@ -70,7 +70,7 @@ const ForumSystem = () => {
   </button>
 
   <button
-    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
       ${currentTab === "recent" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
     onClick={() => setCurrentTab("recent")}
   >
@@ -78,7 +78,7 @@ const ForumSystem = () => {
   </button>
 
   <button
-    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-500
+    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
       ${currentTab === "my" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
     onClick={() => setCurrentTab("my")}
   >

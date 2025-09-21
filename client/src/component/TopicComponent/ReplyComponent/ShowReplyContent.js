@@ -23,6 +23,7 @@ import {
   DownvoteIcon,
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
+import LikeDislike from "../../Card/LikeDislike";
 
 // Add ModelIcon component
 const ModelIcon = ({ modelName, name=true }) => {
@@ -317,7 +318,8 @@ const ShowReplyContent = ({
 
         {/* Actions Section */}
         <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
-                  <div className="bg-gray-200 border border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
+          <LikeDislike topic={reply} like={handleReplyLike} dislike={handleReplyDislike}/>
+                  {/* <div className="bg-gray-200 border border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
                     <button
                       onClick={handleReplyLike}
                       disabled={isReplyDeleted}
@@ -339,7 +341,7 @@ const ShowReplyContent = ({
                       <DownvoteIcon isDisliked={isDisliked} />
                       {replyDislikes?.length || 0}
                     </button>
-                  </div>
+                  </div> */}
                   {!isReplyDeleted && (
                     <button
                       // onClick={() => setShowReplyBox(true)}
