@@ -188,105 +188,117 @@ const AIContentFile = () => {
     }
   };
 
-  const generateAIImage = async () => {
-    if(!loginData){
-      showNotification("you are not logged in","info");
+const generateAIImage = async () => {
+  if(!loginData){
+    showNotification("you are not logged in","info");
+    return;
+  }
+  if (!aiPrompt.trim()) {
+    showNotification("Please enter a prompt for image generation","generate a image");
+    return;
+  }
+  if (!selectedImageModel) {
+    showNotification("Please select an image model","info");
+    return;
+  }
+
+  try {
+    console.log('Setting isGeneratingImage to true');
+    setIsGeneratingImage(true);
+
+    // Prepare request body
+    const requestBody = {
+      prompt: aiPrompt,
+      model: selectedImageModel,
+      type: "image",
+      provider: imageModels[selectedImageModel]?.provider,
+    };
+
+    // Add aspect ratio if selected
+    if (selectedAspectRatio && selectedAspectRatio !== 'auto') {
+      requestBody.aspectRatio = selectedAspectRatio;
     }
-    if (!aiPrompt.trim()) {
-      showNotification("Please enter a prompt for image generation","generate a image");
-      return;
+
+    console.log('Starting image generation...');
+
+    // --- Call backend ---
+    const response = await fetch(`${baseUrl}/generateContent`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) throw new Error("Failed to generate image");
+    const result = await response.json();
+    console.log('Image generation result:', result);
+
+    setUserCredit(result?.credit);
+
+    // --- Validate response ---
+    const { imageData, imageUrl, provider } = result.data || {};
+    if (!(result.success && (imageData || imageUrl))) {
+      throw new Error("Invalid response format");
     }
-    if (!selectedImageModel) {
-      showNotification("Please select an image model","info");
-      return;
+
+    // --- Convert image data to File ---
+    let file;
+    if (imageData) {
+      // Case 1: base64 → Blob
+      const byteArray = Uint8Array.from(atob(imageData), (c) => c.charCodeAt(0));
+      const blob = new Blob([byteArray], { type: "image/png" });
+      file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
+    } else if (imageUrl) {
+      // Case 2: fetch from URL → Blob
+      const proxyUrl = `${baseUrl}/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+      const imgResponse = await fetch(proxyUrl);
+      const blob = await imgResponse.blob();
+      file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
     }
 
-    try {
-      setIsGeneratingImage(true);
+    if (!file) throw new Error("No image file created");
 
-      // Prepare request body
-      const requestBody = {
-        prompt: aiPrompt,
-        model: selectedImageModel,
-        type: "image",
-        provider: imageModels[selectedImageModel]?.provider,
-      };
+    // --- Save metadata ---
+    const modelConfig = imageModels[selectedImageModel];
+    const aiMetadata = {
+      model: selectedImageModel,
+      provider: selectedImageModel || "Unknown",
+      prompt: aiPrompt,
+      displayName: selectedImageModel,
+      aspectRatio: selectedAspectRatio,
+    };
+    if (setAiMetadata) setAiMetadata(aiMetadata);
 
-      // Add aspect ratio if selected
-      if (selectedAspectRatio && selectedAspectRatio !== 'auto') {
-        requestBody.aspectRatio = selectedAspectRatio;
-      }
+    // --- Update UI state ---
+    originalFileRef.current = file;
+    setFile(file);
+    setFileType("image");
+    setPreviewUrl(URL.createObjectURL(file));
+    
+    // Set description
+    setDesc((prev) =>
+      prev
+        ? `${prev}\n\nAI Generated Image Prompt: ${aiPrompt}`
+        : `AI Generated Image Prompt: ${aiPrompt}`
+    );
+    setAiPrompt("");
 
-      // --- Call backend ---
-      const response = await fetch(`${baseUrl}/generateContent`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate image");
-      const result = await response.json();
-      console.log(result);
-
-      setUserCredit(result?.credit);
-
-      // --- Validate response ---
-      const { imageData, imageUrl, provider } = result.data || {};
-      if (!(result.success && (imageData || imageUrl))) {
-        throw new Error("Invalid response format");
-      }
-
-      // --- Convert image data to File ---
-      let file;
-      if (imageData) {
-        // Case 1: base64 → Blob
-        const byteArray = Uint8Array.from(atob(imageData), (c) => c.charCodeAt(0));
-        const blob = new Blob([byteArray], { type: "image/png" });
-        file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
-      } else if (imageUrl) {
-        // Case 2: fetch from URL → Blob
-        const proxyUrl = `${baseUrl}/proxy-image?url=${encodeURIComponent(imageUrl)}`;
-        const imgResponse = await fetch(proxyUrl);
-        const blob = await imgResponse.blob();
-        file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
-      }
-
-      if (!file) throw new Error("No image file created");
-
-      // When your AI API returns the image
-
-
-      // --- Save metadata ---
-      const modelConfig = imageModels[selectedImageModel];
-      const aiMetadata = {
-        model: selectedImageModel,
-        provider: selectedImageModel || "Unknown",
-        prompt: aiPrompt,
-        displayName: selectedImageModel,
-        aspectRatio: selectedAspectRatio,
-      };
-      if (setAiMetadata) setAiMetadata(aiMetadata);
-
-      // --- Update UI state ---
-      originalFileRef.current = file;
-      setFile(file);
-      setFileType("image");
-      setPreviewUrl(URL.createObjectURL(file));
-      setShowCropper(true);
-      setDesc((prev) =>
-        prev
-          ? `${prev}\n\nAI Generated Image Prompt: ${aiPrompt}`
-          : `AI Generated Image Prompt: ${aiPrompt}`
-      );
-      setAiPrompt("");
-
-    } catch (error) {
-      console.error("Error generating AI image:", error);
-      alert("Failed to generate image: " + error.message);
-    } finally {
+    // Wait a bit before stopping the loader to ensure smooth transition
+    setTimeout(() => {
+      console.log('Setting isGeneratingImage to false');
       setIsGeneratingImage(false);
-    }
-  };
+      
+      // Then show cropper after loader is hidden
+      setTimeout(() => {
+        setShowCropper(true);
+      }, 300);
+    }, 1000); // Show success for 1 second
+
+  } catch (error) {
+    console.error("Error generating AI image:", error);
+    alert("Failed to generate image: " + error.message);
+    setIsGeneratingImage(false);
+  }
+};
 
   const availableRatios = getAvailableAspectRatios();
 

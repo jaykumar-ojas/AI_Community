@@ -1,8 +1,8 @@
-import React, { useContext, useEccfect, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { ForumContext } from "../ContextProvider/ModelContext";
 import UserAndModel from "./Component/UserAndModel";
 import ShowSelectedFile from "./Component/ShowSelectedFiie";
-import { AttachIcon, Sparkle, SparklesIcon } from "../../asset/icons";
+import { AttachIcon, SparklesIcon } from "../../asset/icons";
 import axios from "axios";
 import ShowGeneratedContent from "./Component/ShowGeneratedContent";
 import { LoginContext } from "../ContextProvider/context";
@@ -13,54 +13,81 @@ import {
   handleAuthError,
 } from "../AiForumPage/components/ForumUtils";
 import { useWebSocket } from "../AiForumPage/components/WebSocketContext";
-import { ChevronDown, Send } from "lucide-react";
+import { ChevronDown, Send, Brain, Zap } from "lucide-react";
 import modelIcon from "../../asset/IconImage/ModelIcon.png";
-// import ModelContent from "./Component/ModelContent";
 import ModelList from "../AIchatbot/Component/ModelList";
 import { CommentContext } from "../ContextProvider/CommentModelContext";
 import { fetchModelInfo, describeImagesInBackground } from "./Component/ReplyApi";
 import { UseSetUserCredit } from "../GlobalFunction/GlobalFunctionForResue";
 
 import { CubeSpinner } from "../ui/CubeSpinner";
-
 import ErrorBar from "../Card/ErrorBar";
 import { useNotification } from "../ContextProvider/NotificationContext";
 
-
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-const UserReply = ({forum=false}) => {
-  const {showNotification} = useNotification();
+// Engaging context loading messages
+const CONTEXT_MESSAGES = [
+  "Contexting your response…",
+  "Analyzing thread…",
+  "Shaping your answer…",
+  "Reading between the lines…",
+  "Understanding the conversation…",
+  "Crafting contextual insights…",
+  "Processing discussion flow…",
+  "Weaving context magic…"
+];
+
+const UserReply = ({ forum = false }) => {
+  const { showNotification } = useNotification();
   const { loginData } = useContext(LoginContext);
-  const { emitNewReply,emitNewComment } = useWebSocket(); // for websocket
+  const { emitNewReply, emitNewComment } = useWebSocket();
   const params = useParams();
-  const dynamicId = forum ? params.topicId : params.id; // for params id
+  const dynamicId = forum ? params.topicId : params.id;
+
   const forumContext = useContext(ForumContext);
   const commentContext = useContext(CommentContext);
   const setUserCredit = UseSetUserCredit();
 
-  const {replyIdForContext, model, modelType, provider} = forum ? forumContext : commentContext; //for context
+  const { replyIdForContext, model, modelType, provider, setModel } = forum
+    ? forumContext
+    : commentContext;
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [postingData, setPostingData] = useState([]);
   const [newReply, setNewReply] = useState("");
-  
-  // Conversation history for memory-aware functionality
   const [conversationHistory, setConversationHistory] = useState([]);
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
-
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
   const [postedReplies, setPostedReplies] = useState([]);
   const [isContextAware, setIsContextAware] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
-  const [aiGenerated, setAiGenerated] = useState(false);
+  const [contextMessage, setContextMessage] = useState("");
 
-  // Build conversation prompt with history
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  // Rotating context messages effect
+  useEffect(() => {
+    let interval;
+    if (contextLoading) {
+      interval = setInterval(() => {
+        setMessageIndex((prev) => (prev + 1) % CONTEXT_MESSAGES.length);
+      }, 1500); // Change message every 1.5 seconds
+    }
+    return () => clearInterval(interval);
+  }, [contextLoading]);
+
+  useEffect(() => {
+    if (contextLoading) {
+      setContextMessage(CONTEXT_MESSAGES[messageIndex]);
+    }
+  }, [messageIndex, contextLoading]);
+
+  // -------------------
+  // Conversation builder
   const buildConversationPrompt = (history, newPrompt) => {
     let historyString = history
       .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
@@ -68,7 +95,6 @@ const UserReply = ({forum=false}) => {
     return `You are an AI assistant. Below is the conversation so far:\n\n${historyString}\n\nThe user now says:\n"${newPrompt}"\n\nPlease respond helpfully as the assistant:\nAssistant:`;
   };
 
-  // Update conversation history when postingData changes
   useEffect(() => {
     const newHistory = [];
     postingData.forEach((item) => {
@@ -103,22 +129,25 @@ const UserReply = ({forum=false}) => {
     });
   }, [postedReplies]);
 
-  const handleGenerateSubmit = async (e, enhancedPrompt = null, originalUserText = null) => {
-    if(!loginData){
-      showNotification("user not Login","warning");
+  // -------------------
+  // Generate content
+  const handleGenerateSubmit = async (e, useEnhancedPrompt = null, useOriginalText = null) => {
+    if (!loginData) {
+      showNotification("user not Login", "warning");
       return;
     }
     if (e) e.preventDefault();
-    const promptToUse = enhancedPrompt || newReply.trim();
-    const textToRender = originalUserText || newReply.trim();
+    
+    const promptToUse = useEnhancedPrompt || newReply.trim();
+    const textToRender = useOriginalText || newReply.trim();
+    
     if (!promptToUse) return;
 
     setLoading(true);
     setError(null);
 
-    // Add loading placeholder entry
-    const loadingType = modelType === 'image' ? 'image' : 'text';
-    setPostingData(prev => ([
+    const loadingType = modelType === "image" ? "image" : "text";
+    setPostingData((prev) => [
       ...prev,
       {
         userText: textToRender,
@@ -127,31 +156,32 @@ const UserReply = ({forum=false}) => {
         imageUrl: "",
         isLoading: true,
         loadingType,
-        model
-      }
-    ]));
+        model,
+      },
+    ]);
 
     try {
-      // Build conversation-aware prompt
-      const conversationPrompt = conversationHistory.length > 0 
-        ? buildConversationPrompt(conversationHistory, promptToUse)
-        : promptToUse;
+      const conversationPrompt =
+        conversationHistory.length > 0
+          ? buildConversationPrompt(conversationHistory, promptToUse)
+          : promptToUse;
 
       const generatePayload = {
-        model: model,
+        model,
         prompt: conversationPrompt,
         type: modelType,
-        provider: provider,
-        conversationHistory: conversationHistory, // Send history to API
+        provider,
+        conversationHistory,
       };
 
-      const response = await axios.post(`${baseUrl}/generateContent`, generatePayload,{headers: getAuthHeaders()});
+      const response = await axios.post(`${baseUrl}/generateContent`, generatePayload, {
+        headers: getAuthHeaders(),
+      });
 
       if (response.data.success) {
         const modelInfo = await fetchModelInfo(model);
 
-        // Replace the last loading entry with the real content
-        setPostingData(prev => {
+        setPostingData((prev) => {
           const next = [...prev];
           for (let i = next.length - 1; i >= 0; i--) {
             if (next[i].isLoading) {
@@ -175,37 +205,44 @@ const UserReply = ({forum=false}) => {
           }
           return next;
         });
+
         setUserCredit(response?.data?.credit);
         setNewReply("");
+
+        // Reset model after generation
+        setModel?.(null);
       } else {
         setError("Failed to generate content");
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data.error|| "An error occurred while generating content");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "An error occurred while generating content"
+      );
     } finally {
       setLoading(false);
+      // Don't reset contextLoading here since it's already handled in context flow
     }
   };
 
   // -------------------
-  // Context Aware Generate with Memory
-  const handleContextAwareGenerate = async (e) => {
-    if (e) e.preventDefault();
+  // Context aware generate and auto-trigger main generation
+  const handleContextAwareGenerate = async () => {
     if (!newReply.trim()) return;
 
     setContextLoading(true);
     setError(null);
+    setMessageIndex(0); // Reset message rotation
 
     try {
       const suggestResponse = await axios.post(
         `${baseUrl}/suggest/${replyIdForContext || dynamicId}`,
         {
           newPrompt: newReply.trim(),
-
           contextType: forum ? "forumReply" : "comment",
           options: { temperature: 0.7, maxTokens: 1000 },
-
-          conversationHistory: conversationHistory, // Include history in context-aware requests
+          conversationHistory,
         },
         { headers: getAuthHeaders() }
       );
@@ -213,9 +250,15 @@ const UserReply = ({forum=false}) => {
       if (suggestResponse.data.success) {
         const enhancedPrompt = suggestResponse.data.finalprompt;
         const originalUserText = newReply.trim();
-        handleGenerateSubmit(null, enhancedPrompt, originalUserText);
+        
+        // Stop contexting when generation starts
+        setContextLoading(false);
+        
+        // Automatically trigger generation with enhanced prompt
+        await handleGenerateSubmit(null, enhancedPrompt, originalUserText);
       } else {
         setError("Failed to generate context-aware suggestion");
+        setContextLoading(false);
       }
     } catch (err) {
       setError(
@@ -223,16 +266,14 @@ const UserReply = ({forum=false}) => {
           err.response?.data?.error ||
           "An error occurred while generating context-aware content"
       );
-    } finally {
       setContextLoading(false);
     }
   };
 
-  // -------------------
-  // Unified Generate Button Click
+  // Main generate handler - decides between context-aware or direct generation
   const handleGenerateClick = (e) => {
     if (isContextAware) {
-      handleContextAwareGenerate(e);
+      handleContextAwareGenerate();
     } else {
       handleGenerateSubmit(e);
     }
@@ -247,15 +288,15 @@ const UserReply = ({forum=false}) => {
     setError(null);
 
     let updatedPostingData = [...postingData];
-
     if (newReply.trim()) {
       updatedPostingData.push({
         userText: newReply.trim(),
         aiText: "",
         prompt: "",
-        imageUrl: ""
+        imageUrl: "",
       });
     }
+
     try {
       const formData = new FormData();
       formData.append("content", JSON.stringify(updatedPostingData));
@@ -267,7 +308,7 @@ const UserReply = ({forum=false}) => {
       }
       selectedFiles.forEach((file) => formData.append("media", file));
       const url = forum ? REPLIES_URL : `${baseUrl}/comments/post`;
-      
+
       const response = await axios.post(url, formData, {
         headers: { ...getAuthHeaders(), "Content-Type": "multipart/form-data" },
       });
@@ -281,21 +322,20 @@ const UserReply = ({forum=false}) => {
           userId: loginData.validuserone._id,
         };
         forum ? emitNewReply(newReplyData) : emitNewComment(newReplyData);
+
         const replyId = response.data.reply._id || response.data.reply.id;
-          if (replyId) {
-            const combinedPostingData = [
-              ...updatedPostingData,
-              ...selectedFiles.map(file => ({
-                imageUrl: { fileUrl: URL.createObjectURL(file), fileName: file.name },
-              }))
-            ];
-
-            setPostedReplies((prev) => [
-              ...prev,
-              { replyId, postingData: combinedPostingData, processed: false },
-            ]);
-          }
-
+        if (replyId) {
+          const combinedPostingData = [
+            ...updatedPostingData,
+            ...selectedFiles.map((file) => ({
+              imageUrl: { fileUrl: URL.createObjectURL(file), fileName: file.name },
+            })),
+          ];
+          setPostedReplies((prev) => [
+            ...prev,
+            { replyId, postingData: combinedPostingData, processed: false },
+          ]);
+        }
 
         setNewReply("");
         setSelectedFiles([]);
@@ -310,10 +350,6 @@ const UserReply = ({forum=false}) => {
   };
 
   // -------------------
-  // Remove old handleGeneratedResult (now inline replacing loading entry)
-
-  // -------------------
-  // Clear conversation history
   const clearConversationHistory = () => {
     setConversationHistory([]);
     setPostingData([]);
@@ -322,15 +358,13 @@ const UserReply = ({forum=false}) => {
   // -------------------
   return (
     <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-1">
-      {error && ( 
-        <ErrorBar message={error} onClose={()=>{setError("")}} />
-      )}
+      {error && <ErrorBar message={error} onClose={() => setError("")} />}
 
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box">
         <ShowGeneratedContent postingData={postingData} />
       </div>
 
-      <UserAndModel forum={forum}/>
+      <UserAndModel forum={forum} />
 
       <form>
         <div className="flex md:mb-2">
@@ -381,21 +415,50 @@ const UserReply = ({forum=false}) => {
               />
             </button>
             {isDropdownOpen && (
-              <ModelList userForum={forum} userComment={!forum} closeDropdown={() => setIsDropdownOpen(false)} />
+              <ModelList
+                userForum={forum}
+                userComment={!forum}
+                closeDropdown={() => setIsDropdownOpen(false)}
+              />
             )}
 
-            {/* Context Aware Toggle */}
-            <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isContextAware}
-                onChange={(e) => setIsContextAware(e.target.checked)}
-                className="accent-blue-600"
-              />
-              Context Aware
-            </label>
+            {/* Cool Context Aware Toggle */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsContextAware(!isContextAware)}
+                className={`
+                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                  ${isContextAware ? 'bg-gradient-to-r from-blue-500 to-purple-600' : 'bg-gray-300'}
+                `}
+                disabled={contextLoading}
+              >
+                <span
+                  className={`
+                    inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out shadow-lg
+                    ${isContextAware ? 'translate-x-6' : 'translate-x-1'}
+                  `}
+                >
+                  {isContextAware && (
+                    <Brain className="h-3 w-3 text-blue-600 absolute top-0.5 left-0.5" />
+                  )}
+                </span>
+              </button>
+              <span className={`text-xs font-medium transition-colors ${isContextAware ? 'text-blue-600' : 'text-gray-500'}`}>
+                Context Aware
+              </span>
+            </div>
 
-            {/* Clear History Button */}
+            {/* Context Loading Message */}
+            {contextLoading && (
+              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-1 rounded-full border border-blue-200">
+                <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs text-blue-600 font-medium animate-pulse">
+                  {contextMessage}
+                </span>
+              </div>
+            )}
+
             {conversationHistory.length > 0 && (
               <button
                 type="button"
@@ -409,11 +472,12 @@ const UserReply = ({forum=false}) => {
 
           {/* Right controls */}
           <div className="flex items-center gap-2">
-            {model && (
+            {/* Show Generate button only if model is selected */}
+            {model ? (
               <button
                 type="button"
                 onClick={handleGenerateClick}
-                className="text-white rounded-md px-4 py-2 text-sm disabled:opacity-50 flex items-center justify-center"
+                className="text-white rounded-md px-4 py-2 text-sm disabled:opacity-50 flex items-center justify-center gap-2"
                 disabled={loading || contextLoading || !newReply.trim()}
                 aria-busy={loading || contextLoading}
               >
@@ -425,28 +489,26 @@ const UserReply = ({forum=false}) => {
                   <SparklesIcon />
                 )}
               </button>
+            ) : (
+              // Show Post button when no model selected
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="text-black rounded-full p-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+                disabled={
+                  isLoading ||
+                  loading ||
+                  contextLoading ||
+                  (!newReply.trim() && postingData.length === 0)
+                }
+              >
+                {isLoading ? "Posting..." : <Send size={20} className="rotate-45" />}
+              </button>
             )}
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="text-black rounded-full p-2 text-sm hover:bg-blue-700 disabled:opacity-50"
-              disabled={
-                isLoading ||
-                loading ||
-                contextLoading ||
-                (!newReply.trim() && postingData.length === 0) ||
-                (model && !aiGenerated)
-              }
-            >
-              {isLoading ? "Posting..." : <Send size={20} className="rotate-45" />}
-            </button>
           </div>
         </div>
 
-        <ShowSelectedFile
-          selectedFiles={selectedFiles}
-          setSelectedFiles={setSelectedFiles}
-        />
+        <ShowSelectedFile selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} />
       </form>
     </div>
   );

@@ -71,10 +71,10 @@ router.post("/generateContent",authenticate, validateRequest, validateCredit, as
 
    const func = modelFunctions;
  //  const response = { imageUrl: "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"};
-    // const response = await func(prompt, model, aspectRatio);
+   // const response = await func(prompt, model, aspectRatio);
 
-    // console.log("response from model function:", response);
-   // settimeout(() => {}, 10000);
+   // console.log("response from model function:", response);
+ 
     const response = await new Promise((resolve) => {
       setTimeout(() => {
         resolve({

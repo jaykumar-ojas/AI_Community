@@ -1,0 +1,430 @@
+/* ModelList.css */
+
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  transition: all 0.3s ease;
+}
+
+.icon-container:hover {
+  transform: scale(1.1);
+}
+
+/* Text Icon - Box full of letters */
+.text-icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-box {
+  position: relative;
+  width: 14px;
+  height: 12px;
+  border: 1px solid #3b82f6;
+  border-radius: 2px;
+  background: linear-gradient(45deg, #dbeafe, #e0e7ff);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.text-letters {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 1px;
+}
+
+.letter {
+  width: 2px;
+  height: 2px;
+  background: #3b82f6;
+  border-radius: 0.5px;
+  opacity: 0.8;
+  animation: letterFloat 2s ease-in-out infinite;
+}
+
+.letter:nth-child(1) { animation-delay: 0s; }
+.letter:nth-child(2) { animation-delay: 0.2s; }
+.letter:nth-child(3) { animation-delay: 0.4s; }
+.letter:nth-child(4) { animation-delay: 0.6s; }
+.letter:nth-child(5) { animation-delay: 0.8s; }
+.letter:nth-child(6) { animation-delay: 1s; }
+.letter:nth-child(7) { animation-delay: 1.2s; }
+.letter:nth-child(8) { animation-delay: 1.4s; }
+
+@keyframes letterFloat {
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: scale(1) translateY(0px);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.2) translateY(-1px);
+  }
+}
+
+.icon-container:hover .text-box {
+  border-color: #06b6d4;
+  background: linear-gradient(45deg, #e0f2fe, #dbeafe);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+}
+
+.icon-container:hover .letter {
+  background: #06b6d4;
+  box-shadow: 0 0 2px rgba(6, 182, 212, 0.3);
+}
+
+/* Image Icon - Collection of stickers/images */
+.image-icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.image-collection {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1px;
+}
+
+.mini-image {
+  position: relative;
+  border-radius: 1px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  animation: imageStack 3s ease-in-out infinite;
+}
+
+.mini-image-1 {
+  background: linear-gradient(45deg, #f59e0b, #ef4444);
+  animation-delay: 0s;
+}
+
+.mini-image-2 {
+  background: linear-gradient(45deg, #10b981, #059669);
+  animation-delay: 0.5s;
+}
+
+.mini-image-3 {
+  background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+  animation-delay: 1s;
+}
+
+.mini-image-4 {
+  background: linear-gradient(45deg, #8b5cf6, #7c3aed);
+  animation-delay: 1.5s;
+}
+
+.mini-image::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 2px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.mini-image::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+}
+
+@keyframes imageStack {
+  0%, 100% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 0.8;
+  }
+  25% { 
+    transform: scale(1.1) rotate(2deg);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.05) rotate(-1deg);
+    opacity: 0.9;
+  }
+  75% { 
+    transform: scale(1.1) rotate(1deg);
+    opacity: 1;
+  }
+}
+
+.icon-container:hover .mini-image {
+  transform: scale(1.1) !important;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+
+.icon-container:hover .mini-image-1 {
+  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+}
+
+.icon-container:hover .mini-image-2 {
+  background: linear-gradient(45deg, #34d399, #10b981);
+}
+
+.icon-container:hover .mini-image-3 {
+  background: linear-gradient(45deg, #60a5fa, #3b82f6);
+}
+
+.icon-container:hover .mini-image-4 {
+  background: linear-gradient(45deg, #a78bfa, #8b5cf6);
+}
+
+/* Model/Tree Icon - Tree structure with connected nodes */
+.model-icon {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-container {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+/* Tree trunk/main connection */
+.tree-trunk {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 8px;
+  background: linear-gradient(to top, #374151, #6b7280);
+  border-radius: 0.5px;
+}
+
+/* Tree branches */
+.tree-branch {
+  position: absolute;
+  background: linear-gradient(45deg, #6b7280, #9ca3af);
+  border-radius: 0.5px;
+  animation: branchGrow 2s ease-in-out infinite;
+}
+
+.branch-left {
+  left: 3px;
+  top: 6px;
+  width: 5px;
+  height: 1px;
+  transform-origin: right center;
+  transform: rotate(-20deg);
+  animation-delay: 0.3s;
+}
+
+.branch-right {
+  right: 3px;
+  top: 6px;
+  width: 5px;
+  height: 1px;
+  transform-origin: left center;
+  transform: rotate(20deg);
+  animation-delay: 0.6s;
+}
+
+.branch-center {
+  left: 50%;
+  top: 3px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 1px;
+  animation-delay: 0.9s;
+}
+
+/* Tree nodes */
+.tree-node {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  animation: nodePulse 2s ease-in-out infinite;
+}
+
+.node-root {
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+
+.node-left {
+  left: 1px;
+  top: 4px;
+  animation-delay: 0.4s;
+}
+
+.node-right {
+  right: 1px;
+  top: 4px;
+  animation-delay: 0.8s;
+}
+
+.node-center {
+  left: 50%;
+  top: 1px;
+  transform: translateX(-50%);
+  animation-delay: 1.2s;
+}
+
+@keyframes branchGrow {
+  0%, 100% { 
+    opacity: 0.7; 
+    transform: scaleX(1) rotate(var(--rotation, 0deg));
+  }
+  50% { 
+    opacity: 1; 
+    transform: scaleX(1.2) rotate(var(--rotation, 0deg));
+  }
+}
+
+@keyframes nodePulse {
+  0%, 100% { 
+    opacity: 0.8; 
+    transform: scale(1) translateX(-50%);
+    box-shadow: 0 0 0px rgba(59, 130, 246, 0);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.3) translateX(-50%);
+    box-shadow: 0 0 4px rgba(59, 130, 246, 0.5);
+  }
+}
+
+.branch-left { --rotation: -20deg; }
+.branch-right { --rotation: 20deg; }
+
+.icon-container:hover .tree-node {
+  background: linear-gradient(45deg, #06b6d4, #8b5cf6);
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.4);
+}
+
+.icon-container:hover .tree-branch {
+  background: linear-gradient(45deg, #06b6d4, #3b82f6);
+}
+
+.icon-container:hover .tree-trunk {
+  background: linear-gradient(to top, #1f2937, #374151);
+  box-shadow: 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .text-box {
+    border-color: #60a5fa;
+    background: linear-gradient(45deg, #1e293b, #334155);
+  }
+  
+  .letter {
+    background: #60a5fa;
+  }
+  
+  .icon-container:hover .text-box {
+    border-color: #06b6d4;
+    background: linear-gradient(45deg, #0f172a, #1e293b);
+  }
+  
+  .icon-container:hover .letter {
+    background: #06b6d4;
+  }
+  
+  .mini-image-1 {
+    background: linear-gradient(45deg, #f59e0b, #d97706);
+  }
+  
+  .mini-image-2 {
+    background: linear-gradient(45deg, #10b981, #047857);
+  }
+  
+  .mini-image-3 {
+    background: linear-gradient(45deg, #3b82f6, #1e40af);
+  }
+  
+  .mini-image-4 {
+    background: linear-gradient(45deg, #8b5cf6, #6d28d9);
+  }
+  
+  .tree-trunk {
+    background: linear-gradient(to top, #e5e7eb, #d1d5db);
+  }
+  
+  .tree-branch {
+    background: linear-gradient(45deg, #d1d5db, #9ca3af);
+  }
+  
+  .icon-container:hover .tree-trunk {
+    background: linear-gradient(to top, #f9fafb, #e5e7eb);
+  }
+  
+  .icon-container:hover .tree-branch {
+    background: linear-gradient(45deg, #06b6d4, #60a5fa);
+  }
+}
+
+/* Button state adjustments */
+.bg-like_color .icon-container .text-box {
+  border-color: #ffffff;
+  background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+}
+
+.bg-like_color .icon-container .letter {
+  background: #ffffff;
+}
+
+.bg-like_color .icon-container .mini-image-1 {
+  background: linear-gradient(45deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+}
+
+.bg-like_color .icon-container .mini-image-2 {
+  background: linear-gradient(45deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
+}
+
+.bg-like_color .icon-container .mini-image-3 {
+  background: linear-gradient(45deg, rgba(255,255,255,0.7), rgba(255,255,255,0.5));
+}
+
+.bg-like_color .icon-container .mini-image-4 {
+  background: linear-gradient(45deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+}
+
+.bg-like_color .icon-container .tree-node {
+  background: linear-gradient(45deg, #ffffff, #f1f5f9);
+}
+
+.bg-like_color .icon-container .tree-branch {
+  background: linear-gradient(45deg, #ffffff, #f1f5f9);
+}
+
+.bg-like_color .icon-container .tree-trunk {
+  background: linear-gradient(to top, #ffffff, #f1f5f9);
+}

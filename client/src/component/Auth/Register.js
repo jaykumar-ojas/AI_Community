@@ -94,48 +94,48 @@ const Register = () => {
     );
   };
 
-  const sendOtp = async (e) => {
-    e.preventDefault();
-    
-    if (!canSendOtp()) {
-      showNotification("Please fill all fields correctly before verifying email","warning");
-      return;
-    }
+ const sendOtp = async (e) => {
+  e.preventDefault();
+  
+  if (!canSendOtp()) {
+    showNotification("Please fill all fields correctly before verifying email","warning");
+    return;
+  }
 
-    const { email } = inpVal;
-    setIsLoading(true);
+  const { email } = inpVal;
+  setIsLoading(true);
+  
+  try {
+    const data = await fetch(`${baseUrl}/send-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+    const res = await data.json();
     
-    try {
-      const data = await fetch(`${baseUrl}/send-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-      const res = await data.json();
-      
-      if (res.status === 200) {
-       
-        showNotification("OTP sent successfully to your email","success");
-      } else if (res.status === 409) {
-        // User already exists
-        setPopupType("error");
-        showNotification(res.message || "User already exists. Please login instead.","info");
-        // Optionally redirect to login after a delay
-        setTimeout(() => {
-          history("/login");
-        }, 3000);
-      } else {
-        setPopupType("error");
-        showNotification(res.message || res.error || "failed to send OTP Please try again","error");
-      }
-    } catch (err) {
-      showNotification("Failed to send OTP. Please try again.","error");
-    } finally {
-      setIsLoading(false);
+    if (res.status === 200) {
+      setIsOtpSent(true); // ← THIS LINE WAS MISSING!
+      showNotification("OTP sent successfully to your email","success");
+    } else if (res.status === 409) {
+      // User already exists
+      setPopupType("error");
+      showNotification(res.message || "User already exists. Please login instead.","info");
+      // Optionally redirect to login after a delay
+      setTimeout(() => {
+        history("/login");
+      }, 3000);
+    } else {
+      setPopupType("error");
+      showNotification(res.message || res.error || "failed to send OTP Please try again","error");
     }
-  };
+  } catch (err) {
+    showNotification("Failed to send OTP. Please try again.","error");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const verifyOtp = async (otp) => {
     if (otp.length !== 4) return;
