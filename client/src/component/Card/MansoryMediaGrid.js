@@ -5,8 +5,6 @@ import "react-loading-skeleton/dist/skeleton.css";
 const MasonryMediaGrid = ({ url, type, onLoad }) => {
   const [mediaLoaded, setMediaLoaded] = useState(false);
 
-  console.log(url);
-
   const handleMediaLoad = () => {
     setMediaLoaded(true);
     if (onLoad) {

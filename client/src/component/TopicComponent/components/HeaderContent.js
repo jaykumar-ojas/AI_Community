@@ -22,6 +22,7 @@ import {
 import HeaderSkeleton from "./HeaderSkeleton";
 import { parseMarkdown } from "../../../utils/parseMarkdown"; 
 import { useMathJaxAndHighlight } from "../../../utils/useMathJaxAndHighlight";
+import LikeDislike from "../../Card/LikeDislike";
 // Add a simple three dots icon (vertical ellipsis)
 const ThreeDotsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -116,6 +117,7 @@ const HeaderContent = ({ topic, onDelete }) => {
         setTopicDislikes(topicDislikes.filter((id) => id !== userId));
         setIsLiked(liked);
         setIsDisLiked(false);
+        
       }
     } catch (error) {
       console.error("Error liking topic:", error);
@@ -263,35 +265,14 @@ const HeaderContent = ({ topic, onDelete }) => {
         )}
 
         {/* Actions Section */}
-        <div className="pt-4 flex items-center gap-2 text-xs text-gray-500">
-          <div className="bg-gray-200 dark:bg-btn_bg border border-gray-300 dark:border-none flex p-1 px-2 rounded-xl gap-2">
-            <button
-              onClick={handleTopicLike}
-              className={`flex items-center gap-1 hover:text-like_color text-black dark:text-gray-500 transition ${
-                isLiked && "text-like_color"
-              }`}
-            >
-              <UpvoteIcon isLiked={isLiked} />
-              {topicLikes?.length || 0}
-            </button>
-
-            <button
-              onClick={handleTopicDislike}
-              className={`flex items-center gap-1 hover:text-red-600 text-black dark:text-gray-500 transition ${
-                isDisliked && "text-red-600"
-              }`}
-            >
-              <DownvoteIcon isDisliked={isDisliked} />
-              {topicDislikes?.length || 0}
-            </button>
-          </div>
-
+        <div className="pt-2 flex justify-start items-center gap-2 text-xs text-gray-500">
+          <LikeDislike topic={topic} like={handleTopicLike} dislike={handleTopicDislike}/>
           <button
             onClick={() => {
               setViewBox(true);
               setReplyIdForContext(null);
             }}
-            className="flex items-center gap-1 text-like_color hover:text-like_color transition"
+            className="flex items-center justify-content gap-1 text-like_color hover:text-like_color transition"
           >
             <ReplyIcon />
             <div className="text-xs">Reply</div>

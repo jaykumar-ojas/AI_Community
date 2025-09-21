@@ -21,6 +21,7 @@ import {
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
 import { CommentContext } from "../../ContextProvider/CommentModelContext";
+import LikeDislike from "../../Card/LikeDislike";
 
 
 const ModelIcon = ({ modelName }) => {
@@ -313,29 +314,7 @@ const ShowCommentContent = ({ reply }) => {
         </div>
 
         <div className="pt-1 flex items-center gap-2 text-xs text-black dark:text-gray-500">
-          <div className="bg-gray-200 border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
-            <button
-              onClick={handleReplyLike}
-              disabled={isDeleted}
-              className={`flex items-center gap-0.5 hover:text-like_color transition ${
-                isLiked && "text-like_color"
-              } ${isDeleted ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <UpvoteIcon isLiked={isLiked} />
-              {replyLikes?.length || 0}
-            </button>
-
-            <button
-              onClick={handleReplyDislike}
-              disabled={isDeleted}
-              className={`flex items-center gap-1 hover:text-red-600 transition ${
-                isDisliked && "text-red-600"
-              } ${isDeleted ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <DownvoteIcon isDisliked={isDisliked} />
-              {replyDislikes?.length || 0}
-            </button>
-          </div>
+          <LikeDislike topic={reply} like={handleReplyLike} dislike={handleReplyDislike}/>
           {!isDeleted && (
             <button
               // onClick={() => setShowReplyBox(true)}
