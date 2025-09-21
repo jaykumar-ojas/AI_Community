@@ -4,11 +4,59 @@ import Context, { ForumContext } from '../../ContextProvider/ModelContext';
 import ModelShowParams from './ModelShowParams';
 import { fetchIconUrl, fetchModelConfig,loadIcons, modelCreditConfig} from './ModelApi';
 import { CommentContext } from '../../ContextProvider/CommentModelContext';
+import './ModelList.css'; // Import CSS file for icons
+
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
+// CSS Icon Components
+const TextIcon = ({ className = "" }) => (
+    <div className={`icon-container ${className}`}>
+        <div className="text-icon">
+            <div className="text-box">
+                <div className="text-letters">
+                    <div className="letter"></div>
+                    <div className="letter"></div>
+                    <div className="letter"></div>
+                    <div className="letter"></div>
+                    <div className="letter"></div>
+                    <div className="letter"></div>
+                    <div className="letter"></div>
+                    <div className="letter"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
 
+const ImageIcon = ({ className = "" }) => (
+    <div className={`icon-container ${className}`}>
+        <div className="image-icon">
+            <div className="image-collection">
+                <div className="mini-image mini-image-1"></div>
+                <div className="mini-image mini-image-2"></div>
+                <div className="mini-image mini-image-3"></div>
+                <div className="mini-image mini-image-4"></div>
+            </div>
+        </div>
+    </div>
+);
 
-
+const ModelIcon = ({ className = "" }) => (
+    <div className={`icon-container ${className}`}>
+        <div className="model-icon">
+            <div className="tree-container">
+                <div className="tree-trunk"></div>
+                <div className="tree-branch branch-left"></div>
+                <div className="tree-branch branch-right"></div>
+                <div className="tree-branch branch-center"></div>
+                <div className="tree-node node-root"></div>
+                <div className="tree-node node-left"></div>
+                <div className="tree-node node-right"></div>
+                <div className="tree-node node-center"></div>
+            </div>
+        </div>
+    </div>
+);
 
 const ModelList = ({forum=false, userForum=false, userComment=false, closeDropdown}) => {
     const forumContext = useContext(ForumContext);
@@ -93,20 +141,21 @@ const SideBarModelsView = ({model, modelType, modelConfig, handleTypeSelect, han
             {/* Model Type Selection */}
             <div className="p-2 border-b border-gray-700">
                 <div className="font-semibold mb-2 text-gray-900 dark:text-text_header text-l flex items-center">
-                    <span className="mr-1">🎯</span> MODELS
+                    <ModelIcon className="mr-2" />
+                    <span>MODELS</span>
                 </div>
                 <div className="flex justify-between items-center">
                     {['text', 'image'].map(type => (
                         <button
                             key={type}
-                            className={`px-4 py-1 rounded-md w-full  text-sm flex items-center space-x-2 transition-all duration-150 ${
+                            className={`px-4 py-1 rounded-md w-full text-sm flex items-center justify-center space-x-2 transition-all duration-150 ${
                                 modelType === type
                                     ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
                                     : 'text-black dark:text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
                             }`}
                             onClick={() => handleTypeSelect(type)}
                         >
-                            <span>{type === 'text' ? '✍️' : '🖼️'}</span>
+                            {type === 'text' ? <TextIcon /> : <ImageIcon />}
                             <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
                         </button>
                     ))}
@@ -156,7 +205,7 @@ const BottomModelView = ({model, modelType, modelConfig, handleTypeSelect, handl
                 }`}
                 onClick={() => handleTypeSelect(type)}
               >
-                <span>{type === "text" ? "✍️" : "🖼️"}</span>
+                {type === "text" ? <TextIcon /> : <ImageIcon />}
                 <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
               </button>
             ))}

@@ -841,7 +841,7 @@ Guidelines for your response:
 `;
 
     // 🔥 Call AI to get suggestion
-    /* un commnet in live
+    //un commnet in live
     const aiResponse = await openai.chat.completions.create({
       model: "gpt-4.1",
       messages: [
@@ -859,17 +859,31 @@ Everything you generate will be passed directly to the next model for content ge
       max_tokens: 5000,
     });
 
-    const suggestion = aiResponse.choices?.[0]?.message?.content?.trim() || "";
-      */
-     const suggestion = "hello";
-    console.log("AI suggestion generated successfully", suggestion);
+  //  const suggestion = aiResponse.choices?.[0]?.message?.content?.trim() || "";
+      
+  let suggestion = null; // declare outside
 
+setTimeout(() => {
+  suggestion = "hello";
+  console.log("AI suggestion generated successfully", suggestion);
+
+  // Now you can safely attach it after it's ready
   req.contextForAI = {
     structuredJSON: structured,
     promptText: aiPrompt,
-    suggestion, // attach AI-generated suggestion here
-};
-next();
+    suggestion, // now this has value
+  };
+  next();
+  // You can continue with the rest of your logic here
+}, 10000); // runs after 10 seconds
+
+
+//   req.contextForAI = {
+//     structuredJSON: structured,
+//     promptText: aiPrompt,
+//     suggestion, // attach AI-generated suggestion here
+// };
+// next();
 
   } catch (err) {
     console.error("Error in textSuggestionWithContext:", err);

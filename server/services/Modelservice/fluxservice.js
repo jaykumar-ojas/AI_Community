@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
-async function generateBFL(prompt, model, aspectRatio = aspectRatio, interval = 3000) {
+async function generateBFL(prompt, model, aspectRatio = "1:1", interval = 3000) {
   const { default: axios } = await import("axios");
 
   // 1. Submit generation request

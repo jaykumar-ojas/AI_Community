@@ -125,7 +125,7 @@ router.post("/generateTopicContent", async (req, res) => {
     Please provide the output in this format:
     Title: [Generated Title Here]
     
-    [Generated detailed forum post content here]`;
+    [Generated a discription not more than 3-4 lines]`;
 
     console.log("sending prompt to AI for the topic gneration: ", final_Prompt);
 
