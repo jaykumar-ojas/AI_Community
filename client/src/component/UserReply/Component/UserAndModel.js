@@ -8,15 +8,15 @@ const UserAndModel = ({forum=false}) => {
   const { replyIdForContext,setReplyIdForContext, userName,model,setModel } = 
   forum ? forumContext : commentContext;
   return (
-    <div className="md:p-1 pb-1 px-2">
+    <div className="md:px-1 pb-0 px-2">
       {replyIdForContext && (
-        <span className="text-xs text-time_header">
+        <span className="text-[11px] text-gray-600 dark:text-time_header">
           Replying to{" "}
-          <span className="md:font-medium font-bold text-xs md:text-sm text-like_color">
+          <span className="md:font-medium font-bold text-xs md:text-[13px] text-like_color">
             @{userName}
             <button
               onClick={() => setReplyIdForContext(null)}
-              className="ml-2 text-time_header hover:text-red-600 font-bold"
+              className="ml-2 text-gray-600 dark:text-time_header hover:text-red-600 font-bold"
               aria-label="Remove model"
             >
               ×
@@ -25,11 +25,11 @@ const UserAndModel = ({forum=false}) => {
         </span>
       )}
       {model && (
-        <span className="inline-flex items-center md:font-medium font-bold md:text-sm text-xs md:ml-2 rounded-lg text-like_color px-1">
+        <span className="inline-flex items-center md:font-medium font-bold md:text-[13px] text-xs rounded-lg text-like_color px-1">
           @{model}
           <button
             onClick={() => setModel(null)}
-            className="ml-2 text-time_header hover:text-red-600 font-bold"
+            className="ml-2 text-gray-600 dark:text-time_header hover:text-red-600 font-bold"
             aria-label="Remove model"
           >
             ×

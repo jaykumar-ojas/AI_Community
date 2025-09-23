@@ -23,6 +23,7 @@ import { UseSetUserCredit } from "../GlobalFunction/GlobalFunctionForResue";
 import { CubeSpinner } from "../ui/CubeSpinner";
 import ErrorBar from "../Card/ErrorBar";
 import { useNotification } from "../ContextProvider/NotificationContext";
+import { decodeId } from "../../utils/hashids";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -43,7 +44,7 @@ const UserReply = ({ forum = false }) => {
   const { loginData } = useContext(LoginContext);
   const { emitNewReply, emitNewComment } = useWebSocket();
   const params = useParams();
-  const dynamicId = forum ? params.topicId : params.id;
+  const dynamicId = forum ? decodeId(params.topicId) : params.id;
 
   const forumContext = useContext(ForumContext);
   const commentContext = useContext(CommentContext);
@@ -349,15 +350,14 @@ const UserReply = ({ forum = false }) => {
     }
   };
 
-  // -------------------
   const clearConversationHistory = () => {
     setConversationHistory([]);
     setPostingData([]);
   };
 
-  // -------------------
+
   return (
-    <div className="relative bottom-0 left-0 right-0 bg-transparent shadow-lg z-50 p-1">
+    <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-700 rounded-md  dark:bg-gray-800  bg-transparent  z-50">
       {error && <ErrorBar message={error} onClose={() => setError("")} />}
 
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box">
@@ -367,9 +367,9 @@ const UserReply = ({ forum = false }) => {
       <UserAndModel forum={forum} />
 
       <form>
-        <div className="flex md:mb-2">
+        <div className="flex md:mb-1">
           <textarea
-            className="flex-1 p-1 min-h-8 text-sm md:text-sm bg-transparent focus:outline-none focus:ring-0 border border-gray-300 rounded-md resize-none overflow-y-auto break-words"
+            className="flex-1 px-2 min-h-8 max-h-12 text-gray-900 dark:text-gray-300 text-sm md:text-sm bg-transparent focus:outline-none focus:ring-0  rounded-md resize-none overflow-y-auto break-words"
             placeholder="Write your reply..."
             value={newReply}
             onChange={(e) => setNewReply(e.target.value)}
@@ -380,7 +380,7 @@ const UserReply = ({ forum = false }) => {
         <div className="flex justify-between items-center">
           {/* Left controls */}
           <div className="flex items-center gap-2 px-1">
-            <label className="text-gray-500 hover:text-gray-700 cursor-pointer text-xs md:text-sm flex items-center">
+            <label className="dark:text-gray-300 text-gray-600 hover:text-gray-700 cursor-pointer text-xs md:text-sm flex items-center">
               <input
                 type="file"
                 multiple
@@ -395,10 +395,10 @@ const UserReply = ({ forum = false }) => {
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 border border-gray-300 px-2 py-1 rounded-lg shadow-sm hover:shadow-md transition-all"
+              className="flex items-center gap-2 border dark:border-gray-300 border-gray-800 px-2 py-1 rounded-lg shadow-sm hover:shadow-md transition-all"
             >
               {model ? (
-                <span className="font-medium text-xs text-black">{model}</span>
+                <span className="font-medium text-xs text-gray-900 dark:text-gray-200">{model}</span>
               ) : (
                 <span className="text-gray-500">
                   <img
@@ -409,7 +409,7 @@ const UserReply = ({ forum = false }) => {
                 </span>
               )}
               <ChevronDown
-                className={`h-4 w-4 text-gray-600 transition-transform ${
+                className={`h-4 w-4 text-gray-800 dark:text-gray-300 transition-transform ${
                   isDropdownOpen ? "rotate-180" : ""
                 }`}
               />
@@ -428,8 +428,8 @@ const UserReply = ({ forum = false }) => {
                 type="button"
                 onClick={() => setIsContextAware(!isContextAware)}
                 className={`
-                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  ${isContextAware ? 'bg-gradient-to-r from-blue-500 to-purple-600' : 'bg-gray-300'}
+                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-400 ease-in-out 
+                  ${isContextAware ? 'bg-gradient-to-r from-like_color to-purple-600' : 'bg-gray-300 dark:bg-gray-500'}
                 `}
                 disabled={contextLoading}
               >
@@ -440,11 +440,11 @@ const UserReply = ({ forum = false }) => {
                   `}
                 >
                   {isContextAware && (
-                    <Brain className="h-3 w-3 text-blue-600 absolute top-0.5 left-0.5" />
+                    <Brain className="h-3 w-3 text-like_color absolute top-0.5 left-0.5" />
                   )}
                 </span>
               </button>
-              <span className={`text-xs font-medium transition-colors ${isContextAware ? 'text-blue-600' : 'text-gray-500'}`}>
+              <span className={`text-xs font-medium transition-colors ${isContextAware ? 'text-like_color' : 'text-gray-800 dark:text-gray-200'}`}>
                 Context Aware
               </span>
             </div>
@@ -494,7 +494,7 @@ const UserReply = ({ forum = false }) => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="text-black rounded-full p-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+                className="text-gray-800 dark:text-gray-300 rounded-full p-2 text-sm hover:bg-blue-500 hover:dark:text-gray-600 hover:text-gray-200 "
                 disabled={
                   isLoading ||
                   loading ||

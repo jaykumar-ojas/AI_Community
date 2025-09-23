@@ -16,9 +16,12 @@ export const parseMarkdown = (text) => {
       highlighted = code.trim();
     }
 
-    return `<pre class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 text-sm rounded-md overflow-x-auto mb-4 p-4">
-      <code class="hljs ${lang || ""}">${highlighted}</code>
-    </pre>`;
+    return `
+  <pre class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 text-sm 
+              rounded-md whitespace-pre-wrap break-words w-full ">
+    <code class="hljs ${lang || ""} block">${highlighted}</code>
+  </pre>
+`;
   });
 
   // Horizontal rule
@@ -34,11 +37,11 @@ export const parseMarkdown = (text) => {
   );
   html = html.replace(
     /^## (.+)$/gm,
-    '<h2 class="text-2xl font-bold text-blue-900 dark:text-blue-200 pt-1">$1</h2>'
+    '<h2 class="text-xl font-bold text-blue-900 dark:text-blue-200 pt-1">$1</h2>'
   );
   html = html.replace(
     /^# (.+)$/gm,
-    '<h1 class="text-3xl font-bold text-blue-900 dark:text-blue-100">$1</h1>'
+    '<h2 class="text-2xl font-bold text-blue-900 dark:text-blue-100">$1</h>'
   );
 
   // Bold

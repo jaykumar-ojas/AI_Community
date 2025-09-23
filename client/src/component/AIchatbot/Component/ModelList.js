@@ -139,7 +139,7 @@ const SideBarModelsView = ({model, modelType, modelConfig, handleTypeSelect, han
     return (
          <div className="w-full flex flex-col bg-transparent rounded-lg shadow-sm">
             {/* Model Type Selection */}
-            <div className="p-2 border-b border-gray-700">
+            <div className="p-2 border-b dark:border-gray-800 border-gray-300">
                 <div className="font-semibold mb-2 text-gray-900 dark:text-text_header text-l flex items-center">
                     <ModelIcon className="mr-2" />
                     <span>MODELS</span>
@@ -163,7 +163,7 @@ const SideBarModelsView = ({model, modelType, modelConfig, handleTypeSelect, han
             </div>
 
             {/* AI Models Section */}
-            <div className="p-4 pt-0 overflow-y-auto max-h-[calc(100vh-5rem)]">
+            <div className="p-4 pt-0 overflow-y-auto max-h-[calc(100vh-7.4rem)]">
                 <ul className="space-y-1 overflow-y-auto">
                     {Object.entries(modelConfig[modelType] || {}).map(([modelName, config]) => (
                         <ModelShowParams
@@ -201,7 +201,7 @@ const BottomModelView = ({model, modelType, modelConfig, handleTypeSelect, handl
                 className={`px-3 py-1 rounded-md text-sm flex items-center space-x-1 transition-all duration-150 ${
                   modelType === type
                     ? "bg-like_color text-text_header font-medium"
-                    : "text-text_header hover:bg-like_color"
+                    : "dark:text-text_header text-gray-800 hover:bg-like_color"
                 }`}
                 onClick={() => handleTypeSelect(type)}
               >

@@ -245,7 +245,7 @@ const ShowReplyContent = ({
 
   return (
     <div key={reply?._id} className={`flex justify-start ${isReplyDeleted ? 'opacity-60' : ''}`}>
-      <div className="w-8 h-8 flex-shrink-0">
+      <div className="w-8 h-8 z-30 flex-shrink-0">
         <UserIconCard id={reply?.userId} />
       </div>
 
@@ -254,7 +254,7 @@ const ShowReplyContent = ({
         {/* User Info & Delete Button */}
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
-            <div className={`font-normal mr-2 text-[14px] md:text-[13.5px] ${isReplyDeleted ? 'text-gray-500 italic' : 'text-black dark:text-text_header'}`}>
+            <div className={`font-normal mr-2 text-[14px] md:text-[13.5px] ${isReplyDeleted ? 'text-gray-500 italic' : 'text-gray-900 dark:text-text_header'}`}>
               {reply?.userName}
             </div>
             <div className="mr-2 flex justify-center items-center">

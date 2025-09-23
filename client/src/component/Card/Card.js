@@ -198,18 +198,18 @@ const [sparkles, setSparkles] = useState([]);
   
   // Determine the media URL and type
   const getMediaInfo = () => {
-    if (post.mediaAttachments && post.mediaAttachments.length > 0) {
+    if (post?.mediaAttachments && post?.mediaAttachments.length > 0) {
       // Forum media post
       const attachment = post.mediaAttachments[0];
       return {
-        url: attachment.signedUrl,
-        type: attachment.fileType
+        url: attachment?.signedUrl,
+        type: attachment?.fileType
       };
     } else {
       // Regular post
       return {
-        url: post.imgUrl,
-        type: post.fileType
+        url: post?.imgUrl,
+        type: post?.fileType
       };
     }
   };
@@ -254,7 +254,7 @@ const [sparkles, setSparkles] = useState([]);
             />
           ) : null}
 
-          <span className="truncate">{post.aiModel}</span>
+          <span className="truncate">{post?.aiModel}</span>
         </div>
       )}
       
@@ -302,43 +302,9 @@ const [sparkles, setSparkles] = useState([]);
         {postData?.likes?.length || 0}
       </span>
     </button>
-
-        {/* <button
-          className="flex items-center gap-1"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDislikePost();
-          }}
-          title={userDisliked ? "Remove dislike" : "Dislike this post"}
-        >
-          {thumbsDownSvg(userDisliked)}
-          <span className="text-sm font-medium">
-            {postData?.dislikes?.length || 0}
-          </span>
-        </button> */}
       </div>
     </div>
   </div>
-  {/* <style jsx>{`
-        @keyframes sparkle {
-          0% {
-            transform: scale(0) rotate(0deg);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1) rotate(180deg);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(0) rotate(360deg);
-            opacity: 0;
-          }
-        }
-        
-        .animate-ping {
-          animation: sparkle 0.8s ease-out forwards;
-        }
-      `}</style> */}
 </div>
 
   );

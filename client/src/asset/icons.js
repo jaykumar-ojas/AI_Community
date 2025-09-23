@@ -509,21 +509,36 @@ export const PlusIcon = ({ isActive }) => {
   );
 };
 
-export const BookmarkIcon = ({ isBookmarked, ...props }) => {
+export const BookmarkIcon = ({ isBookmarked }) => {
   return (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 50 50"
-    fill={isBookmarked ? "currentColor" : "none"} // Filled with currentColor when bookmarked
-    stroke="currentColor" // Always follows current text color
-    strokeWidth="2"
-    className="h-5 w-5 md:h-6 md:w-6 transition-all duration-300"
-    {...props}
-  >
-    <path d="M 13 2 A 1.0001 1.0001 0 0 0 12 3 L 12 47 A 1.0001 1.0001 0 0 0 13.503906 47.863281 L 25 41.158203 L 36.496094 47.863281 A 1.0001 1.0001 0 0 0 38 47 L 38 3 A 1.0001 1.0001 0 0 0 37 2 L 13 2 z M 14 4 L 36 4 L 36 45.259766 L 25.503906 39.136719 A 1.0001 1.0001 0 0 0 24.496094 39.136719 L 14 45.259766 L 14 4 z" />
-  </svg>
+    <svg
+      className={`h-5 w-5 md:h-6 md:w-6 transition-all duration-300
+                   text-yellow-500 dark:text-red-400" `}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 50 50"
+      aria-hidden="true"
+      role="img"
+    >
+      <path
+        d="M 13 2 A 1.0001 1.0001 0 0 0 12 3 L 12 47 
+           A 1.0001 1.0001 0 0 0 13.503906 47.863281 
+           L 25 41.158203 L 36.496094 47.863281 
+           A 1.0001 1.0001 0 0 0 38 47 L 38 3 
+           A 1.0001 1.0001 0 0 0 37 2 L 13 2 z 
+           M 14 4 L 36 4 L 36 45.259766 
+           L 25.503906 39.136719 
+           A 1.0001 1.0001 0 0 0 24.496094 39.136719 
+           L 14 45.259766 L 14 4 z"
+        fill={isBookmarked ? "#5c1818" : "none"}
+        stroke="currentColor"
+        strokeWidth={2}
+      />
+    </svg>
   );
 };
+
+
+
 
 
 
@@ -615,6 +630,30 @@ export const AiShowIcon = (props ) => (
   </svg>
 );
 
+
+export const PostLikeIcon = ({isLiked , size=36})=>{
+  return (
+     <svg
+        key={isLiked}
+        viewBox="0 0 256 256"
+        width={size}
+        height={size}
+        className={`inline-block rounded-full p-1 transition-transform duration-200 block animate-pop ${isLiked ? "text-[#ff5353]" : "text-black dark:text-gray-200"}`}
+        aria-hidden={false}
+        role="img"
+      >
+        <rect fill="none" height="256" width="256"></rect>
+        <path
+          d="M224.6,51.9a59.5,59.5,0,0,0-43-19.9,60.5,60.5,0,0,0-44,17.6L128,59.1l-7.5-7.4C97.2,28.3,59.2,26.3,35.9,47.4a59.9,59.9,0,0,0-2.3,87l83.1,83.1a15.9,15.9,0,0,0,22.6,0l81-81C243.7,113.2,245.6,75.2,224.6,51.9Z"
+          strokeWidth={15}
+          stroke="currentColor"
+          // When liked, apply the fill color; otherwise keep it none
+          className={isLiked ? "heart-fill" : "heart-unfilled"}
+          fill={isLiked ? "#ff5353" : "none"}
+        ></path>
+      </svg>
+  )
+}
 
 
 

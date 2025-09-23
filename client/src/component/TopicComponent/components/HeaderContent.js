@@ -253,14 +253,12 @@ const HeaderContent = ({ topic, onDelete }) => {
 
         {/* Generated Image */}
         {topic?.imageUrl && (
-          <div className="pt-4">
-            <div className="w-full rounded-md overflow-hidden border border-gray-200 shadow-sm">
+          <div className="flex justify-center pt-4">
               <img
                 src={topic.imageUrl}
                 alt="Generated topic image"
-                className="w-full h-auto object-cover"
+                className="max-h-[400px] max-w-xl rounded-md w-auto object-cover"
               />
-            </div>
           </div>
         )}
 

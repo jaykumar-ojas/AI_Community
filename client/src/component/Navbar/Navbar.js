@@ -1,22 +1,6 @@
-import {
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from "@headlessui/react";
-import {
-  Bars3Icon,
-  BellIcon,
-  HomeIcon,
-  UserIcon,
-} from "@heroicons/react/24/outline";
-import {
-  HomeIcon as HomeIconSolid,
-  UserIcon as UserIconSolid,
-} from "@heroicons/react/24/solid";
+import {Disclosure,DisclosureButton,DisclosurePanel,Menu,MenuButton,MenuItem,MenuItems,} from "@headlessui/react";
+import {Bars3Icon,BellIcon,HomeIcon,UserIcon,} from "@heroicons/react/24/outline";
+import {HomeIcon as HomeIconSolid,UserIcon as UserIconSolid,} from "@heroicons/react/24/solid";
 import logo from "./logo.png";
 import { useContext, createContext, useEffect } from "react";
 import { LoginContext } from "../ContextProvider/context";
@@ -30,6 +14,7 @@ import UserIconCard from "../Card/UserIconCard";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import "./wave-btn.css";
+
 // Create context for forum visibility
 export const ForumContext = createContext();
 
@@ -41,6 +26,7 @@ const navigation = [
     current: false,
     isSpecial: true, // mark Post as special (only used in desktop render)
   },
+  {name : "Feedback", href:'/feedback', current:false},
 ];
 
 function classNames(...classes) {
@@ -236,20 +222,11 @@ export default function Navbar({ showForum, setShowForum }) {
                   {isAuthenticated() && loginData ? (
                     <Menu as="div" className="relative z-10">
                       <MenuButton className="flex items-center focus:outline-none">
-                        {/* <img
-                          src={
-                            loginData?.validuserone?.profilePictureUrl ||
-                            loginData?.validuserone?.image
-                          }
-                          alt="Profile"
-                          className="h-8 w-8 rounded-full"
-                          referrerPolicy="no-referrer"
-                        /> */}
                         <div className="h-8 w-8 flex flex-shrink-0 pointer-events-none">
                           <UserIconCard id={loginData?.validuserone?._id} />
                         </div>
                       </MenuButton>
-                      <MenuItems className="absolute right-0 mt-2 w-48 shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <MenuItems className="bg-white absolute right-0 mt-2 w-48 shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <MenuItem>
                           {({ active }) => (
                             <Link

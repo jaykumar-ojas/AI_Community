@@ -612,8 +612,9 @@ router.get('/paginated', async(req, res) => {
 router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware,async (req, res) => {
     try {
       const { dynamicId, parentReplyId, userId, userName } = req.body;
-
-      const realId = decodeId(dynamicId);
+      console.log("getting dynamci id",dynamicId);
+      const realId = dynamicId;
+      console.log("real ID",realId);
 
       // Parse content as array of content blocks
       const contentArray = JSON.parse(req.body.content);
@@ -648,7 +649,7 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
 
       // Collect media attachments from uploaded files
       let allMediaAttachments = [...(req.uploadedFiles || [])];
-
+      console.log("going for imabe blob");
       // Process each content block, extract and upload images from URLs
       const processedContent = [];
       for (const block of contentArray) {
@@ -665,6 +666,8 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
 
           processedContent.push(rest);
       }
+
+      console.log("coming for image blob");
 
       // Create and save new reply document
       const newReply = new ForumReply({
@@ -699,6 +702,8 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
           console.error('Error updating parent reply:', parentUpdateError);
         }
       }
+
+      console.log("coming at the end");
 
       // Increment reply count on the topic
       topic.replyCount += 1;
