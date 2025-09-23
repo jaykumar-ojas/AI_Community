@@ -56,7 +56,7 @@ const LikeDislike = ({ topic, like, dislike }) => {
                 <div className="checked-like-fx"></div>
               </div>
             )}
-            <span className={`border-r-2 ${liked ? "border-green-500 text-green-500" :"border-gray-900"} px-1.5 text-[12px]`}>
+            <span className={`border-r-2 ${liked ? "border-green-500 text-green-500 dark:text-green-300" :"border-gray-900 dark:border-gray-400"} px-1.5 text-[12px]`}>
               {topic.likes?.length}
             </span>
 
@@ -80,7 +80,7 @@ const LikeDislike = ({ topic, like, dislike }) => {
             <UnDisLiked className="icon-dislike-regular" />
             <Disliked className="icon-dislike-solid" />
 
-            <span className={`border-l-2 ${disliked ? "border-red-500 text-red-500" :"border-gray-900"} px-1.5 text-[12px]`}>
+            <span className={`border-l-2 ${disliked ? "border-red-500 dark:border-[#ff0000] text-red-500 dark:text-[#ff0000]" :"border-gray-900 dark:border-gray-400"} px-1.5 text-[12px]`}>
               {topic.dislikes?.length}
             </span>
 

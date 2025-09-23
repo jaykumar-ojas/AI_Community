@@ -130,8 +130,9 @@ export const BackgroundBeams = React.memo(({
     //     </defs>
     //   </svg>
     // </div>
+    // bg-neutral-50
     <div className="absolute inset-0 bg-neutral-50 dark:bg-black h-full w-full">
-      
+      {/* bg-gradient-to-r from-[#EAEAEA] via-[#DBDBDB] */}
     </div>
   );
 });

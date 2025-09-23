@@ -159,17 +159,21 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
       return (
         <div
           key={topic._id}
-          className="p-3 w-full  hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-colors cursor-pointer"
+          className="p-1 w-full  hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-colors cursor-pointer"
           onClick={() => handleTopicClick(topic)}
         >
           <div className="flex flex-col w-full justify-between">
             {/* this is first one */}
               <div className="flex justify-between items-center">
-                <div className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 hover:text-blue-600 transition">
+                <div className="text-sm font-semibold  text-gray-900 dark:text-white line-clamp-2 hover:text-blue-600 transition">
                   {topic.title}
                 </div>
 
-                {canDelete && (
+                <div className='flex items-center justify-center'>
+                  <div className="bg-green-100 h-5 text-green-700 text-xs dark:bg-green-900/40 dark:text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  {topic.viewCount} <EyeIcon size={12}/>
+                </div>
+                 {canDelete && (
                   <div className="relative">
                     <button
                       onClick={e => {
@@ -203,6 +207,8 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                     )}
                   </div>
                 )}
+                </div>
+               
               </div>
             {/* this is content one */}
               <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-1">
@@ -214,7 +220,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
             <div className="flex flex-row items-center justify-between gap-1 w-full mt-1">
               
               {/* Meta Info */}
-              <div className="flex flex-wrap items-center text-xs gap-1">
+              <div className="flex flex-wrap items-center text-xs ">
                 <div className="w-6 h-6 flex-shrink-0"><UserIconCard id={topic?.userId}/></div>
 
                 <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full">
@@ -229,9 +235,6 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                   {topic.replyCount} <CommentIcon h={4} w={4}/>
                 </span>
 
-                <span className="bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  {topic.viewCount} <EyeIcon size={14}/>
-                </span>
               </div>
 
               {/* Vote Buttons */}

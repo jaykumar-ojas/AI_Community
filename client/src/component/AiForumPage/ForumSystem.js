@@ -29,9 +29,9 @@ const ForumSystem = () => {
   }, []);
 
   return (
-    <div className="overflow-hidden md:border-x-2 dark:border-gray-700 dark:bg-black flex flex-col h-full">
+    <div className=" md:border-x-2 border-[#DBDBDB]  dark:border-gray-600  dark:bg-black flex flex-col h-[calc(100vh-6.6rem)] md:h-full">
       {/* Header with search - now with transparent/dark background */}
-      <div className="p-2 border-b border-gray-800 sticky top-0  backdrop-blur-sm">
+      <div className="p-2 sticky top-0  backdrop-blur-sm">
         <h2 className="text-xl text-gray-900 dark:text-gray-300 font-bold mb-2">AI Forum</h2>
         {/* <div className="relative">
           <input
@@ -49,10 +49,10 @@ const ForumSystem = () => {
 
       {/* Navigation Tabs - with dark theme styling */}
 
-<div className="relative flex dark:bg-black/40 backdrop-blur-sm border-gray-800 p-1 gap-2 rounded-lg overflow-hidden">
+<div className="relative flex dark:bg-black/40 backdrop-blur-sm  border-y border-gray-400  gap-2  overflow-hidden">
   {/* Slim sliding background indicator */}
   <span
-    className="absolute h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-md transition-all duration-500 ease-in-out"
+    className="absolute h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-md transition-all duration-500 ease-in-out"
     style={{
       top: "50%",
       transform: "translateY(-50%)",
@@ -62,7 +62,7 @@ const ForumSystem = () => {
   ></span>
 
   <button
-    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
+    className={`flex-1 relative z-10 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
       ${currentTab === "popular" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
     onClick={() => setCurrentTab("popular")}
   >
@@ -70,7 +70,7 @@ const ForumSystem = () => {
   </button>
 
   <button
-    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
+    className={`flex-1 relative z-10 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
       ${currentTab === "recent" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
     onClick={() => setCurrentTab("recent")}
   >
@@ -78,7 +78,7 @@ const ForumSystem = () => {
   </button>
 
   <button
-    className={`flex-1 relative z-10 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
+    className={`flex-1 relative z-10 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
       ${currentTab === "my" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
     onClick={() => setCurrentTab("my")}
   >
@@ -107,7 +107,7 @@ const ForumSystem = () => {
 
   <button
     onClick={() => setIsNewTopicModalOpen(true)}
-    className="wave-btn w-full btn-up flex items-center justify-center gap-2"
+    className="w-full mr-2 bg-gradient-to-r from-blue-500 to-blue-600  md:p-3 p-2 rounded-lg text-gray-100 flex items-center justify-center gap-2"
     disabled={!loginData}
   >
     <PlusIcon/>

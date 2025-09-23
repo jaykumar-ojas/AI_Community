@@ -6,14 +6,26 @@ import UserNameCard from "../../Card/UserNameCard";
 
 const MAX_DEPTH = 3; // keep your depth limit if you used it earlier
 
+const getLineColor = (depth) => {
+  const colors = [
+    "border-red-400",
+    "border-green-400",
+    "border-blue-400",
+    "border-yellow-400",
+    "border-purple-400",
+    "border-pink-400",
+  ];
+  return colors[depth % colors.length]; // cycle through colors
+};
+
 const RecurrsionLoop = ({
   reply,
   depth = 0,
   isLastChild,
   onReplyDeleted,
-  scrollToId,               // existing
-  setThreadView,            // may be passed from ReplyContent
-  setLastThreadContext = () => {}, // <--- default noop to avoid "not a function"
+  scrollToId,
+  setThreadView,
+  setLastThreadContext = () => {},
 }) => {
   const { loginData } = useContext(LoginContext);
   const [showReply, setShowReply] = useState(false);
@@ -21,40 +33,40 @@ const RecurrsionLoop = ({
   const [view, setView] = useState(true);
   const commentRef = useRef(null);
 
-useEffect(() => {
-  if (scrollToId && reply?._id === scrollToId && commentRef.current) {
-    commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  useEffect(() => {
+    if (scrollToId && reply?._id === scrollToId && commentRef.current) {
+      commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
 
-    // Highlight the comment with a light warm white
-    commentRef.current.classList.add("bg-amber-50", "rounded");
-    setTimeout(() => {
-      commentRef.current?.classList.remove("bg-amber-50", "rounded");
-    }, 2000);
-  }
-}, [scrollToId, reply?._id]);
-
+      commentRef.current.classList.add("bg-amber-50", "rounded");
+      setTimeout(() => {
+        commentRef.current?.classList.remove("bg-amber-50", "rounded");
+      }, 2000);
+    }
+  }, [scrollToId, reply?._id]);
 
   return (
-    // add an id so ReplyContent can scroll back to this exact element
     <div
       id={`reply-${reply?._id}`}
       key={reply?._id}
       ref={commentRef}
       className={`relative ${depth > 0 ? "ml-8" : ``}`}
     >
+      {/* verticla line */}
       <div
-        className="absolute top-0 left-0 h-full border-l border-time_header"
+        className={`absolute top-0 left-0 h-full border-l ${getLineColor(depth)}`}
         style={{ marginLeft: "0.75rem" }}
       />
+
+      {/* vertical hidden line */}
       {!hasChildren && (
         <div
-          className="absolute top-0 left-0 h-full border-l border-gray-100 dark:border-bg_comment_box"
+          className={`absolute top-0 left-0 h-full border-l border-gray-100 dark:border-bg_comment_box `}
           style={{ marginLeft: "0.75rem" }}
         />
       )}
       {!view && (
         <div
-          className="absolute top-0 left-0 h-full border-l bg-gray-100 dark:border-bg_comment_box"
+          className={`absolute top-0 left-0 h-full border-l border-gray-100 dark:border-bg_comment_box`}
           style={{ marginLeft: "0.75rem" }}
         />
       )}
@@ -79,7 +91,9 @@ useEffect(() => {
 
       {depth > 0 && (
         <div
-          className="absolute w-1 h-3 border-l z-20 border-b border-time_header/30 rounded-bl-3xl"
+          className={`absolute w-1 h-3 border-l z-20 border-b rounded-bl-3xl ${getLineColor(
+            depth-1
+          )}`}
           style={{
             left: "-1.25rem",
             width: "2rem",
@@ -132,14 +146,13 @@ useEffect(() => {
                 onReplyDeleted={onReplyDeleted}
                 scrollToId={scrollToId}
                 setThreadView={setThreadView}
-                setLastThreadContext={setLastThreadContext} // pass down so child can set it too
+                setLastThreadContext={setLastThreadContext}
               />
             ))
           ) : (
             <div
-              className="pl-8 py-2 text-blue-600 text-sm cursor-pointer hover:underline"
+              className="pl-8 text-blue-600 text-sm cursor-pointer hover:underline"
               onClick={() => {
-                // remember where we came from, then open thread view
                 setLastThreadContext(reply._id);
                 if (typeof setThreadView === "function") {
                   setThreadView(reply._id);
