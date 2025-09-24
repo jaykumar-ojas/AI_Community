@@ -306,7 +306,7 @@ const ShowCommentContent = ({ reply }) => {
           <ReplyData content={reply?.content} />
           {/* Display media attachments */}
           {reply?.mediaAttachments?.length > 0 && (
-            <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {reply?.mediaAttachments.map((attachment, index) => (
                 <div
                   key={index}

@@ -14,7 +14,7 @@ const ShowMedia = ({ attachment }) => {
     <img
       src={fileUrl}
       alt={fileName}
-      className="max-w-64 h-auto object-cover "
+      className="w-full max-h-[200px] object-cover "
       loading="lazy"
       onError={(e) => {
         console.error("Error loading image:", fileUrl);
