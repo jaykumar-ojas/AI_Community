@@ -110,17 +110,13 @@ const DragAndDrop = () => {
             Preview loading...
           </div>
         </div>
-      ) : showCropper ? (
-        <div className="h-full w-full">
-          <Cropper />
-        </div>
-      ) : previewUrl ? (
+      )  : previewUrl ? (
         <div className="w-full h-full flex flex-col relative bg-transparent rounded-lg max-w-7xl p-4 pt-2">
-          <div className="flex items-center justify-between">
-            <div className="text-text_header/70 tracking-wider items-center text-md">
+          <div className="flex items-center justify-between p-2">
+            {/* <div className="dark:text-text_header/70 text-gray-800 tracking-wider items-center text-md">
               Preview
-            </div>
-            <div className="flex justify-end pt-0 mb-2 px-4">
+            </div> */}
+            {/* <div className="flex justify-end pt-0 mb-2 px-4">
               {fileType === "image" && (
                 <button
                   onClick={() => setShowCropper(true)}
@@ -135,7 +131,7 @@ const DragAndDrop = () => {
               >
                 <CrossIcon />
               </button>
-            </div>
+            </div> */}
           </div>
           <div className="flex-1 overflow-auto">
             <RenderPreview />

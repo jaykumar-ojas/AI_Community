@@ -149,7 +149,7 @@ const TopicContent = () => {
       </div>
 
       {/* Reply Input - Desktop always visible; Mobile shown only when Reply tapped */}
-      <div className="px-4 py-2 bg-transparent hidden md:block">
+      <div className="py-1 hidden md:block">
         <UserReply forum={true} />
       </div>
       {viewBox && (

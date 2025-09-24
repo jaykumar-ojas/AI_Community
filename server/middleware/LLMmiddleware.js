@@ -32,11 +32,12 @@ function fileToGenerativePart(fileBuffer, mimeType) {
     };
   }
 
+
+
 const promptEnhancer =async(req,res,next)=>{
     try {
 
-        // when call from frontend make sure prompt send 
-        // in this format :- prompt : "iahgajdg";
+  
         
         const userPrompt = req.body.prompt;
       //  const  description  = req.description || " ";
@@ -598,7 +599,7 @@ function extractMediaDescriptions(mediaAttachments) {
 
 async function fetchAncestorContext(req, res, next) {
   try {
-    const startId = req.params.id;
+    const startId = req.params.id; // parent id, reply id
     const contextType = req.body.contextType;
     console.log("fetchAncestorContext called with:", { startId, contextType });
     if (!startId) {
@@ -640,7 +641,7 @@ async function fetchAncestorContext(req, res, next) {
       });
     }
 
-    // fetch starting node
+
    // fetch starting node
 let startingNode = await SelectedModel.findById(decodedId).lean();
 console.log("Starting node fetched:", startingNode ? "found" : "not found");
@@ -758,7 +759,7 @@ if (startingNode) {
           };
         }
 
-       // console.log("Structured context constructed:", structuredContext);
+       console.log("Structured context constructed:", structuredContext);
     // attach to req
     req.structuredContext = {
       conversationContext: structuredContext,

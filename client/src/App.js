@@ -29,6 +29,7 @@ import {BackgroundBeams} from "./component/ui/background-beams";
 import { NotificationProvider } from "./component/ContextProvider/NotificationContext";
 
 import ForumSystem from "./component/AiForumPage/ForumSystem";
+import FeedbackPage from "./component/Navbar/feedback";
 
 
 const Layout = () => {
@@ -85,7 +86,8 @@ const router = createBrowserRouter([
       { path: "sample-user/:id", element: <UserProfile /> },
       { path: "post", element:<PostImage/>},
       {path: "userPost/edit/:id", element: <UserEdit/>},
-      {path: "forum", element: <ForumSystem/>}
+      {path: "forum", element: <ForumSystem/>},
+      {path: "feedback", element: <FeedbackPage/>}
     ]
   },
    { path: "/login", element: <BackgroundWrapper><Login /></BackgroundWrapper> },

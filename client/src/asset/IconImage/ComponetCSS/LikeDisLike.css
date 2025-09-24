@@ -24,6 +24,14 @@
   transition: .2s ease all;
 }
 
+.dark .like-dislike-container {
+  --dark-grey: #e0e0e0;
+  --middle-grey: #b0b0b0;
+  --lightest-grey: linear-gradient(#1e1e1e, #2b2b2b);
+  /* background: var(--lightest-grey); */
+  color: var(--middle-grey);
+}
+
 .like-dislike-container:hover {
   box-shadow: var(--shadow-active);
 }
@@ -132,11 +140,17 @@
 
 .like-dislike-container .icons .svgs {
   width: 0.9rem;
-  fill: #000000;
   box-sizing: content-box;
   padding: 5px 5px;
   transition: .2s ease all;
+  fill: #000000; 
 }
+
+
+.dark .like-dislike-container .icons .svgs {
+  fill: #dfe0e2;
+}
+
 
 .like-dislike-container .icons .svgs-like {
   width: 0.9rem;
@@ -146,9 +160,21 @@
   transition: .2s ease all;
 }
 
+.dark .like-dislike-container .icons .svgs-like {
+  fill: #4cff8d; /* green-500 (appealing for like) */
+}
+
 .like-dislike-container .icons .svgs-dislike {
   width: 0.9rem;
   fill: #ef4444; /* red-500 (appealing for dislike) */
+  box-sizing: content-box;
+  padding: 5px 5px;
+  transition: .2s ease all;
+}
+
+.dark .like-dislike-container .icons .svgs-dislike {
+  width: 0.9rem;
+  fill: #ff0000; /* red-500 (appealing for dislike) */
   box-sizing: content-box;
   padding: 5px 5px;
   transition: .2s ease all;

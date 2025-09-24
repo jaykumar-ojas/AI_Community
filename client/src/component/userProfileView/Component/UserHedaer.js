@@ -466,7 +466,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                 ) : (
 
 
-                  <h1 className="text-start justify-center font-bold text-black dark:text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
+                  <h1 className="flex mx-auto text-start justify-center font-bold text-black dark:text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
                     {profileUser?.userName}
                   </h1>
                 )}

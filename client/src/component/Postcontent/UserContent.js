@@ -10,13 +10,16 @@ import BookmarkIcon, {
   thumbsDownSvg,
   ReplyIcon,
   CommentIcon,
+  PostLikeIcon,
 } from "../../asset/icons";
 import UserContentSkeleton from "./UserContentSkeleton";
 import BookMark from "../BookMark/BookMark";
+import { useNotification } from "../ContextProvider/NotificationContext";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 // AI Model Info Component
 const AIModelInfo = ({ aiMetadata }) => {
+  
   const [modelInfo, setModelInfo] = useState(null);
   const [modelIcon, setModelIcon] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -121,6 +124,7 @@ const AIModelInfo = ({ aiMetadata }) => {
 };
 
 const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
+  const { showNotification } = useNotification();
   const history = useNavigate();
   const { loginData } = useContext(LoginContext);
   const [currentUser, setCurrentUser] = useState({
@@ -138,8 +142,10 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   const isLong = words.length > 20;
   // Show only first 20 words if not expanded
   const displayText = expanded ? words.join(" ") : words.slice(0, 20).join(" ");
+  const [booked,setBooked]=useState(false);
 
   useEffect(() => {
+    
     console.log("UserContent received post:", post);
     if (post) {
       setPostData(post);
@@ -149,6 +155,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         const userId = loginData.validuserone._id;
         setUserLiked(post.likes.includes(userId));
         setUserDisliked(post.dislikes.includes(userId));
+       
       }
     }
   }, [post]);
@@ -166,6 +173,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         const userId = loginData.validuserone._id;
         setUserLiked(postData?.likes.includes(userId));
         setUserDisliked(postData?.dislikes.includes(userId));
+        setBooked(postData?.BookMark?.includes(loginData?.validuserone?._id))
       }
     }
   }, [loginData, postData]);
@@ -193,16 +201,16 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         // Refresh the page or redirect
         window.location.reload();
       } else {
-        alert("Failed to delete post: " + (result.error || "Unknown error"));
+        showNotification("Failed to delete post: " + (result.error || "Unknown error"),"error");
       }
     } catch (error) {
-      alert("Error occurred while deleting post. Please try again.");
+      showNotification("Error occurred while deleting post. Please try again.","warning");
     }
   };
 
   const handleLikePost = async () => {
     if (!currentUser.id) {
-      alert("Please log in to like posts");
+      showNotification("Please log in to like posts","warning");
       return;
     }
 
@@ -243,13 +251,13 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         if (userDisliked) setUserDisliked(false);
       }
     } catch (error) {
-      alert("Error liking post. Please try again.");
+      showNotification("Error liking post. Please try again.");
     }
   };
 
   const handleDislikePost = async () => {
     if (!currentUser.id) {
-      alert("Please log in to dislike posts");
+      showNotification("Please log in to dislike posts");
       return;
     }
 
@@ -482,7 +490,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
 
       {/* user description and interaction */}
       <div className="border-t dark:border-gray-700">
-        <div className="p-1 sm:mx-2 flex items-center justify-between gap-2 text-xs ">
+        <div className="p-1  flex items-center justify-between gap-2 text-xs ">
           {/* Outer wrapper with justify-between */}
           <div className="bg-something flex justify-between items-center px-2 rounded-xl w-full">
             {/* Left side (Like + Comment toggle on mobile) */}
@@ -492,8 +500,8 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
                 onClick={handleLikePost}
                 title={userLiked ? "Remove like" : "Like this post"}
               >
-                {heartSvg(userLiked)}
-                <span className="text-lg font-medium">
+                <PostLikeIcon isLiked={userLiked}/>
+                <span className="text-lg text-gray-700 dark:text-gray-200 font-medium">
                   {postData?.likes ? postData?.likes.length : 0}
                 </span>
               </button>
@@ -509,22 +517,18 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
                 </button>
               )}
             </div>
-
             {/* Right side (Bookmark) */}
-            <div className="text-red-700 dark:text-gray-500">
               <BookMark
                 postId={postData?._id}
                 userId={loginData?.validuserone?._id}
-                isBookmarked={postData?.BookMark?.includes(
-                  loginData?.validuserone?._id
-                )}
+                isBookmarked={booked}
               />
-            </div>
+
           </div>
         </div>
 
         {/* Description */}
-        <div className="p-2 pt-1 leading-snug text-[14px] text-gray-800 dark:text-time_header">
+        <div className="p-2 pt-0 leading-snug sm:text-[16px] text-[14px] text-gray-800 dark:text-time_header">
           {postData?.desc ? (
             <>
               {displayText}
@@ -532,7 +536,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
               {isLong && (
                 <button
                   onClick={() => setExpanded(!expanded)}
-                  className="ml-2 text-blue-500 hover:underline"
+                  className="ml-1 text-blue-500 hover:underline"
                 >
                   {expanded ? "View Less" : "View More"}
                 </button>
