@@ -121,7 +121,7 @@ const imageModelsConfig = {
   // --- Grok ---
   "grok-2-image": {
     displayName: "Grok 2 Image",
-    provider: "xai",
+    provider: "grok",
     emoji: "🤖",
     aspectRatios: ["1:1"],
   },

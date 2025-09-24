@@ -244,10 +244,18 @@ const ShowReplyContent = ({
   const isReplyDeleted = reply?.userName === 'deleted' && !reply?.userId;
 
   return (
-    <div key={reply?._id} className={`flex justify-start ${isReplyDeleted ? 'opacity-60' : ''}`}>
-      <div className="w-8 h-8 z-30 flex-shrink-0">
-        <UserIconCard id={reply?.userId} />
-      </div>
+
+    <div key={reply?._id} className={`flex justify-start ${isReplyDeleted ? 'opacity-100' : ''}`}>
+    <div className="w-8 h-8 flex-shrink-0">
+  {isReplyDeleted ? (
+    <div className="w-8 h-8 relative z-10  rounded-full bg-gray-300  flex items-center justify-center text-xs text-gray-600 cursor-not-allowed">
+      !
+    </div>
+  ) : (
+    <UserIconCard id={reply?.userId} />
+  )}
+</div>
+
 
       {/* Content Section */}
       <div className="flex flex-col px-2 p-4 pt-0 w-full">
