@@ -24,30 +24,53 @@ const fetchPostById = async (id) => {
   throw new Error("Post not found");
 };
 
-// Fetch related posts
-const fetchRelevantPosts = async (id) => {
-  const res = await fetch(`http://localhost:8000/search/bypostid/${id}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  const data = await res.json();
-
-  return (data?.results || [])
-    .map((value) => {
-      if (!value || !value.metadata) return null;
-      return {
-        ...(value.metadata.data || {}),
-        signedUrl: value.image_url || "",
-      };
-    })
-    .filter(Boolean);
+// Fetch all dashboard posts with pagination to get all images
+const fetchAllDashboardPosts = async () => {
+  let allPosts = [];
+  let page = 1;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const res = await fetch(`${baseUrl}/allget?page=${page}&limit=50`); // Fetch 50 per page for efficiency
+    const data = await res.json();
+    
+    if (data.userposts && data.userposts.length > 0) {
+      allPosts = [...allPosts, ...data.userposts];
+      hasMore = data.hasMore;
+      page++;
+    } else {
+      hasMore = false;
+    }
+  }
+  
+  return allPosts;
 };
+
+// Commented out the original fetchRelevantPosts function
+// const fetchRelevantPosts = async (id) => {
+//   const res = await fetch(`http://localhost:8000/search/bypostid/${id}`, {
+//     method: "GET",
+//     headers: { "Content-Type": "application/json" },
+//   });
+//   const data = await res.json();
+
+//   return (data?.results || [])
+//     .map((value) => {
+//       if (!value || !value.metadata) return null;
+//       return {
+//         ...(value.metadata.data || {}),
+//         signedUrl: value.image_url || "",
+//       };
+//     })
+//     .filter(Boolean);
+// };
 
 const PostContent = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const [showIcon,setShowICon] = useState(false);
+  const [showIcon, setShowICon] = useState(false);
   const [showCommentsMobile, setShowCommentsMobile] = useState(false);
+  
   // Try to find the post in the existing cached posts list (from useInfiniteQuery)
   const postFromCache = queryClient.getQueryData(['posts'])?.pages
     ?.flatMap((page) => page.posts || []) // Adjust according to your actual structure
@@ -69,16 +92,36 @@ const PostContent = () => {
     cacheTime: 1000 * 60 * 10,
   });
 
-  // Fetch relevant posts
+  // Fetch all dashboard posts for related content
   const {
-    data: relevantPost = [],
+    data: dashboardPosts = [],
     isLoading: isRelatedLoading,
   } = useQuery({
-    queryKey: ['relatedPosts', id],
-    queryFn: () => fetchRelevantPosts(id),
+    queryKey: ['allDashboardPosts', 'related'],
+    queryFn: fetchAllDashboardPosts,
     enabled: !!id,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes since we're fetching all posts
+    select: (data) => {
+      // Filter out the current post and randomize the order
+      const filteredPosts = data.filter(dashboardPost => dashboardPost._id !== id);
+      
+      // Shuffle array randomly
+      const shuffled = [...filteredPosts].sort(() => Math.random() - 0.5);
+      
+      return shuffled;
+    }
   });
+
+  // Original related posts query (commented out)
+  // const {
+  //   data: relevantPost = [],
+  //   isLoading: isRelatedLoading,
+  // } = useQuery({
+  //   queryKey: ['relatedPosts', id],
+  //   queryFn: () => fetchRelevantPosts(id),
+  //   enabled: !!id,
+  //   staleTime: 1000 * 60 * 5,
+  // });
 
   if (isError) {
     return (
@@ -94,11 +137,9 @@ const PostContent = () => {
     );
   }
 
-  
   const handleIconClick = () => {
     setShowICon(!showIcon);
   }
-
 
   return (
     <div className="bg-transparent w-full overflow-x-hidden h-full">
@@ -133,8 +174,8 @@ const PostContent = () => {
                 <div className="grid grid-cols-1">
                   {isRelatedLoading ? (
                     <div className="p-4 text-center text-gray-500">Loading...</div>
-                  ) : relevantPost.length > 0 ? (
-                    relevantPost.map((item, index) => (
+                  ) : dashboardPosts.length > 0 ? (
+                    dashboardPosts.map((item, index) => (
                       <RelatedCard key={item?._id || index} post={item} />
                     ))
                   ) : (
@@ -155,8 +196,6 @@ const PostContent = () => {
           <div className={`fixed bg-white left-0 right-0 ${showCommentsMobile ? "block" : "hidden"} z-30 bottom-0 block md:hidden`}>
             <UserReply />
           </div>
-
-          
         </div>
 
         {/* Right Section - Sticky Sidebar */}
@@ -168,8 +207,8 @@ const PostContent = () => {
             <div className="grid grid-cols-1">
               {isRelatedLoading ? (
                 <div className="p-4 text-center text-gray-500">Loading...</div>
-              ) : relevantPost.length > 0 ? (
-                relevantPost.map((item, index) => (
+              ) : dashboardPosts.length > 0 ? (
+                dashboardPosts.map((item, index) => (
                   <RelatedCard key={item?._id || index} post={item} />
                 ))
               ) : (

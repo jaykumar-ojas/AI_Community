@@ -242,8 +242,14 @@ const ShowCommentContent = ({ reply }) => {
 
   return (
     <div key={reply?._id} className={`relative flex justify-start ${isDeleted ? 'opacity-60' : ''}`}>
-      <div className="w-8 h-8 flex-shrink-0 z-30">
-        <UserIconCard id={reply?.userId} />
+      <div className="w-8 h-8 flex-shrink-0">
+        {isDeleted ? (
+          <div className="w-8 h-8 relative z-10  rounded-full bg-gray-300  flex items-center justify-center text-xs text-gray-600 cursor-not-allowed">
+            !
+          </div>
+        ) : (
+          <UserIconCard id={reply?.userId} />
+        )}
       </div>
       {/* user icon outside */}
 

@@ -163,9 +163,6 @@ Return the result as JSON with these fields:
   }
 };
 
-
-
-
 const downloadImage = async (url) => {
   try {
     console.log("Downloading image from URL:", url);
@@ -644,39 +641,41 @@ async function fetchAncestorContext(req, res, next) {
     }
 
     // fetch starting node
-    let startingNode = await SelectedModel.findById(decodedId).lean();
-    console.log("Starting node fetched:", startingNode ? "found" : "not found");
-    if (!startingNode) {
-      return res.status(404).json({
-        success: false,
-        message: "Starting node not found",
-      });
-    }
+   // fetch starting node
+let startingNode = await SelectedModel.findById(decodedId).lean();
+console.log("Starting node fetched:", startingNode ? "found" : "not found");
 
-    // collect ancestor chain
-    const maxDepth = 3;
-    const ancestorChain = [];
-    let currentId = decodedId;
-    let depth = 0;
+// collect ancestor chain only if startingNode exists
+const maxDepth = 5;
+const ancestorChain = [];
+let parentContext = null;
 
-    while (currentId && depth <= maxDepth) {
-      const node = await SelectedModel.findById(currentId).lean();
-      console.log(`Ancestor at depth ${depth}:`, node ? "found" : "not found");
-      if (!node) break;
+if (startingNode) {
+  let currentId = decodedId;
+  let depth = 0;
 
-      ancestorChain.push({ node, depth });
-      currentId = node.parentReplyId;
-      depth++;
-    }
+  while (currentId && depth <= maxDepth) {
+    const node = await SelectedModel.findById(currentId).lean();
+    console.log(`Ancestor at depth ${depth}:`, node ? "found" : "not found");
+    if (!node) break;
 
-    // add parent topic/post context
-    let parentContext = null;
-    console.log("starting node",startingNode[parentIdFieldName]);
-    if (startingNode[parentIdFieldName]) {
-      parentContext = await parentContextModel.findById(
-        startingNode[parentIdFieldName]
-      ).lean();
-    }
+    ancestorChain.push({ node, depth });
+    currentId = node.parentReplyId;
+    depth++;
+  }
+
+  // add parent topic/post context
+  if (startingNode[parentIdFieldName]) {
+    parentContext = await parentContextModel.findById(
+      startingNode[parentIdFieldName]
+    ).lean();
+  }
+} else {
+  // 🟢 fallback: no reply/comment found, treat decodedId as parentContextId
+  console.log("No starting node found, treating decodedId as parent context id...");
+  parentContext = await parentContextModel.findById(decodedId).lean();
+}
+
 
     // 🔑 transform into structured JSON by user
     const structuredContext = {};
@@ -766,7 +765,7 @@ async function fetchAncestorContext(req, res, next) {
       newUserPrompt: req.body.newPrompt || "",
       finalInstruction: `Based on the above structured conversation context and the new user request, create a detailed, coherent, contextually-aware prompt for downstream generative models.`,
     };
-  //  console.log("Structured context prepared:", req.structuredContext);
+   console.log("Structured context prepared:", req.structuredContext);
     next();
   } catch (err) {
     console.error("Error in fetchAncestorContext:", err);
@@ -859,31 +858,31 @@ Everything you generate will be passed directly to the next model for content ge
       max_tokens: 5000,
     });
 
-  //  const suggestion = aiResponse.choices?.[0]?.message?.content?.trim() || "";
+   const suggestion = aiResponse.choices?.[0]?.message?.content?.trim() || "";
       
-  let suggestion = null; // declare outside
+//   let suggestion = null; // declare outside
 
-setTimeout(() => {
-  suggestion = "hello";
-  console.log("AI suggestion generated successfully", suggestion);
+// setTimeout(() => {
+//   suggestion = "hello";
+//   console.log("AI suggestion generated successfully", suggestion);
 
-  // Now you can safely attach it after it's ready
-  req.contextForAI = {
-    structuredJSON: structured,
-    promptText: aiPrompt,
-    suggestion, // now this has value
-  };
-  next();
-  // You can continue with the rest of your logic here
-}, 10000); // runs after 10 seconds
-
-
+//   // Now you can safely attach it after it's ready
 //   req.contextForAI = {
 //     structuredJSON: structured,
 //     promptText: aiPrompt,
-//     suggestion, // attach AI-generated suggestion here
-// };
-// next();
+//     suggestion, // now this has value
+//   };
+//   next();
+//   // You can continue with the rest of your logic here
+// }, 10000); // runs after 10 seconds
+
+
+  req.contextForAI = {
+    structuredJSON: structured,
+    promptText: aiPrompt,
+    suggestion, // attach AI-generated suggestion here
+};
+next();
 
   } catch (err) {
     console.error("Error in textSuggestionWithContext:", err);
@@ -894,11 +893,6 @@ setTimeout(() => {
     });
   }
 }
-
-
-
-
-
 
 const promptEnhancerAI = async (prompt) => {
   try {

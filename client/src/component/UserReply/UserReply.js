@@ -23,6 +23,8 @@ import { UseSetUserCredit } from "../GlobalFunction/GlobalFunctionForResue";
 import { CubeSpinner } from "../ui/CubeSpinner";
 import ErrorBar from "../Card/ErrorBar";
 import { useNotification } from "../ContextProvider/NotificationContext";
+import { decodeId } from "../../utils/hashids";
+
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -44,6 +46,7 @@ const UserReply = ({ forum = false }) => {
   const { emitNewReply, emitNewComment } = useWebSocket();
   const params = useParams();
   const dynamicId = forum ? params.topicId : params.id;
+  const dynamicId1 = forum ? decodeId (params.topicId) : params.id;
 
   const forumContext = useContext(ForumContext);
   const commentContext = useContext(CommentContext);
@@ -171,7 +174,6 @@ const UserReply = ({ forum = false }) => {
         prompt: conversationPrompt,
         type: modelType,
         provider,
-        conversationHistory,
       };
 
       const response = await axios.post(`${baseUrl}/generateContent`, generatePayload, {
@@ -237,12 +239,11 @@ const UserReply = ({ forum = false }) => {
 
     try {
       const suggestResponse = await axios.post(
-        `${baseUrl}/suggest/${replyIdForContext || dynamicId}`,
+        `${baseUrl}/suggest/${replyIdForContext || dynamicId1 }`,
         {
           newPrompt: newReply.trim(),
           contextType: forum ? "forumReply" : "comment",
           options: { temperature: 0.7, maxTokens: 1000 },
-          conversationHistory,
         },
         { headers: getAuthHeaders() }
       );

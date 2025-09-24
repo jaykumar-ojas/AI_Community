@@ -20,7 +20,7 @@ async function googletext(prompt, model, aspectRatio) {
   const ai = await getGemini();
   const genModel = ai.getGenerativeModel({ model });
   const response = await genModel.generateContent(prompt);
-
+  
   const text = response.response.candidates[0].content.parts
     .map(p => p.text)
     .join(" ");
@@ -31,7 +31,7 @@ async function googletext(prompt, model, aspectRatio) {
 
 async function google_imagen(prompt, model, aspectRatio) {
   const ai = await getImagen();
-
+console.log("i am in imagen");
 const response = await ai.models.generateImages({
     model: model,
     prompt: prompt,
