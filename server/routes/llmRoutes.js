@@ -88,6 +88,8 @@ router.post("/generateContent",authenticate, validateRequest, validateCredit, as
       const modelCredit = modelCreditConfig[type][model].cost;
       credit =await reduceCredit(req.userId,modelCredit);
     }
+
+    console.log(response);
     res.json({
       success: true,
       data: response,

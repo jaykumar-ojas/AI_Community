@@ -45,6 +45,41 @@ const response = await ai.models.generateImages({
      return  {imageData:imgBytes};
 }
 
+// async function google_imagen(prompt, model, aspectRatio) {
+//   try {
+//     const ai = await getImagen();
+//     console.log("i am in imagen");
+
+//     // Truncate prompt to 40 words max
+//     const maxWords = 400;
+//     const words = prompt.split(/\s+/).slice(0, maxWords);
+//     const truncatedPrompt = words.join(" ");
+
+//     const response = await ai.models.generateImages({
+//       model: model,
+//       prompt: truncatedPrompt,
+//       config: {
+//         numberOfImages: 1,
+//         aspectRatio: aspectRatio || "1:1",
+//       },
+//     });
+
+//     if (!response.generatedImages || response.generatedImages.length === 0) {
+//       throw new Error("No image generated. Either your prompt is too long or flagged by Google.");
+//     }
+
+//     const generatedImage = response.generatedImages[0];
+//     const imgBytes = generatedImage.image.imageBytes;
+
+//     return { imageData: imgBytes };
+//   } catch (err) {
+//     console.error("Image generation failed:", err.message || err);
+//     throw new Error("Failed to generate image: Either your prompt is too long or has flagged issues with Google.");
+//   }
+// }
+
+
+
 async function generateGeminibanana(prompt, model, aspectRatio) {
   const ai = await getImagen();
   const response = await ai.models.generateContent({

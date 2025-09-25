@@ -99,7 +99,7 @@ async function sd3(prompt, model, aspectRatio) {
     model,
     aspect_ratio: aspectRatio || "1:1",
   };
-
+  console.log("hellow");
   const response = await axios.postForm(
     "https://api.stability.ai/v2beta/stable-image/generate/sd3",
     axios.toFormData(payload, new FormData()),
