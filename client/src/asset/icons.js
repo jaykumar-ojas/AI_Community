@@ -546,7 +546,7 @@ export const BookmarkIcon = ({ isBookmarked }) => {
 
 export const DynamicNumberSVG = ({ value, size=36 }) => {
   return (
-   <div class="loader border-r-2 rounded-full border-yellow-500 bg-yellow-300 
+   <div className="loader border-r-2 rounded-full border-yellow-500 bg-yellow-300 
 aspect-square w-8 flex justify-center items-center text-yellow-700">{value}</div>
   );
 };
