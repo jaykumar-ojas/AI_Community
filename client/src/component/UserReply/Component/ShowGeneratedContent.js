@@ -173,16 +173,54 @@ const ImageSkeleton = () => (
 
 const LoadingMessage = ({ type = "text" }) => {
   const textPhrases = [
-    "Polishing your words...",
-    "Weaving your ideas into text...",
-    "Refining context and tone...",
-    "Adding clarity and flow...",
-  ];
+  "✨ Polishing your words...",
+  "🧵 Weaving your ideas into text...",
+  "🎯 Refining context and tone...",
+  "🌊 Adding clarity and flow...",
+  "📖 Crafting a narrative for you...",
+  "🎨 Shaping ideas into meaning...",
+  "🔍 Highlighting your key points...",
+  "🕰️ Fine-tuning every detail...",
+  "💡 Illuminating your thoughts...",
+  "🖋️ Giving words their perfect form...",
+  "🎶 Finding rhythm in your text...",
+  "🪞 Reflecting your intent clearly...",
+  "🛠️ Building structure and style...",
+  "🚀 Elevating your expression...",
+  "🌱 Nurturing your draft to grow...",
+  "🔮 Sharpening your message...",
+  "📐 Balancing tone and clarity...",
+  "🪄 Sprinkling a touch of magic...",
+  "🗝️ Unlocking the flow of words...",
+  "🧩 Piecing thoughts together...",
+  "🕊️ Smoothing out rough edges...",
+  "🌟 Adding sparkle to your writing...",
+  "📜 Unfolding your story...",
+  "🧭 Guiding your ideas forward...",
+  "🏗️ Constructing your final draft..."
+];
+
   const imagePhrases = [
-    "Preparing your image canvas...",
-    "Composing the perfect shot...",
-    "Enhancing details and lighting...",
-    "Fine‑tuning style and colors...",
+  "✨ Your image canvas is forming...",
+  "🎨 Adding colors and textures...",
+  "🌀 Polishing details for perfection...",
+  "⚡ Almost ready... hang tight!",
+  "🔮 Summoning creativity from the void...",
+  "🖌️ Painting strokes of imagination...",
+  "🌌 Mixing stardust with colors...",
+  "⚙️ Aligning tiny artistic gears...",
+  "🎭 Giving life to your vision...",
+  "📸 Adjusting the perfect frame...",
+  "🧩 Assembling all the creative pieces...",
+  "🌈 Splashing a bit more color magic...",
+  "🔍 Perfecting the tiniest details...",
+  "💡 Bright ideas are sparking up...",
+  "🚀 Creativity is blasting off...",
+  "🌟 Adding some final sparkles...",
+  "🧵 Weaving imagination into reality...",
+  "🎇 Almost there, your masterpiece awaits...",
+  "🔔 Just a moment, magic is ringing...",
+  "🏆 Done soon — a work of art is coming!"
   ];
   const phrases = type === "image" ? imagePhrases : textPhrases;
   const [index, setIndex] = useState(0);
@@ -190,7 +228,7 @@ const LoadingMessage = ({ type = "text" }) => {
   useEffect(() => {
     const id = setInterval(() => {
       setIndex((i) => (i + 1) % phrases.length);
-    }, 3000);
+    }, 4000);
     return () => clearInterval(id);
   }, [phrases.length]);
 

@@ -45,6 +45,7 @@ export const modelCreditConfig = {
     "meta-llama/llama-4-scout-17b-16e-instruct": { cost: 2 },
     "llama-3.3-70b-versatile": { cost: 3 },
     "llama-3.1-8b-instant": { cost: 1 },
+    "meta-llama/llama-guard-4-12b": {cost:3},
 
     "grok-4": { cost: 4 },
     "grok-3-mini": { cost: 2 },

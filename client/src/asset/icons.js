@@ -546,54 +546,8 @@ export const BookmarkIcon = ({ isBookmarked }) => {
 
 export const DynamicNumberSVG = ({ value, size=36 }) => {
   return (
-    <svg
-      width={size}
-      height={size}
-      xmlns="http://www.w3.org/2000/svg"
-      shapeRendering="geometricPrecision"
-      textRendering="geometricPrecision"
-      imageRendering="optimizeQuality"
-      fillRule="evenodd"
-      clipRule="evenodd"
-      viewBox="0 0 512 512"
-    >
-      {/* Background shapes */}
-      <path
-        fill="#ECCA43"
-        fillRule="nonzero"
-        d="M256 0c70.685 0 134.689 28.659 181.015 74.984C483.341 121.306 512 185.311 512 256c0 70.684-28.659 134.689-74.985 181.015-46.326 46.322-110.33 74.98-181.015 74.98-70.685 0-134.689-28.658-181.015-74.98C28.659 390.689 0 326.684 0 256c0-70.689 28.659-134.694 74.985-181.016C121.307 28.659 185.311 0 256 0z"
-      />
-      <ellipse fill="#F7E259" cx="256" cy="255.998" rx="250.992" ry="250.991" />
-      <path
-        fill="#F8D548"
-        d="M503.753 215.692A252.691 252.691 0 01506.989 256c0 138.614-112.371 250.988-250.989 250.988S5.007 394.614 5.007 256c0-21.858 2.801-43.056 8.051-63.271l246.435 183.476 244.26-160.513z"
-      />
-      <path
-        fill="#D7925B"
-        fillRule="nonzero"
-        d="M256 58.922c54.414 0 103.688 22.061 139.353 57.725 35.664 35.661 57.725 84.935 57.725 139.349 0 54.414-22.061 103.688-57.725 139.352-35.665 35.664-84.939 57.726-139.353 57.726-54.414 0-103.688-22.062-139.349-57.726-35.664-35.664-57.725-84.938-57.725-139.352s22.061-103.688 57.725-139.349C152.312 80.983 201.586 58.922 256 58.922z"
-      />
-      <path
-        fill="#EDA140"
-        d="M256 63.929c106.076 0 192.071 85.994 192.071 192.067 0 106.076-85.995 192.071-192.071 192.071-106.073 0-192.067-85.995-192.067-192.071 0-106.073 85.994-192.067 192.067-192.067z"
-      />
-
-      {/* Remove the old rupee path here */}
-
-      {/* Dynamic Number */}
-      <text
-        x="50%"
-        y="50%"
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fontSize="200"
-        fill="#7b3e17ff"
-        fontFamily="Arial, sans-serif"
-                // fill="#C26A34"
-      >
-        {value}
-      </text>
-    </svg>
+   <div class="loader border-r-2 rounded-full border-yellow-500 bg-yellow-300 
+aspect-square w-8 flex justify-center items-center text-yellow-700">{value}</div>
   );
 };
 
