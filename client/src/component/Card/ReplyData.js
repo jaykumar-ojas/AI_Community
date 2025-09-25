@@ -75,7 +75,7 @@ const ReplyData = ({ content }) => {
     <div className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
       {!expanded ? (
         <>
-          <div className="h-8 overflow-hidden">
+          <div className="h-6 overflow-hidden">
             <DisplayContent displayContent={displayContent} />
           </div>
 
