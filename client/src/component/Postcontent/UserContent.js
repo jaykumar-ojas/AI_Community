@@ -209,51 +209,61 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   };
 
   const handleLikePost = async () => {
-    if (!currentUser.id) {
-      showNotification("Please log in to like posts","warning");
-      return;
+  if (!currentUser.id) {
+    showNotification("Please log in to like posts", "warning");
+    return;
+  }
+
+  // Keep a copy in case we need to rollback
+  const prevPost = { ...postData };
+  const prevLiked = userLiked;
+  const prevDisliked = userDisliked;
+
+  // Optimistically update UI
+  let updatedPost = { ...postData };
+
+  if (userLiked) {
+    // Remove like
+    updatedPost.likes = updatedPost.likes.filter(
+      (id) => id !== currentUser.id
+    );
+  } else {
+    // Add like
+    if (!updatedPost.likes) updatedPost.likes = [];
+    if (!updatedPost.likes.includes(currentUser.id)) {
+      updatedPost.likes.push(currentUser.id);
     }
 
-    try {
-      const response = await axios.post(`${baseUrl}/${postData?._id}/like`, {
-        userId: currentUser.id,
-      });
-
-      if (response.status === 200) {
-        // Update local state to reflect the change
-        const updatedPost = { ...postData };
-
-        if (userLiked) {
-          // Remove like
-          updatedPost.likes = updatedPost.likes.filter(
-            (id) => id !== currentUser.id
-          );
-        } else {
-          // Add like and remove dislike if exists
-          if (!updatedPost.likes) updatedPost.likes = [];
-          if (!updatedPost.likes.includes(currentUser.id)) {
-            updatedPost.likes.push(currentUser.id);
-          }
-
-          // Remove from dislikes if present
-          if (
-            updatedPost.dislikes &&
-            updatedPost.dislikes.includes(currentUser.id)
-          ) {
-            updatedPost.dislikes = updatedPost.dislikes.filter(
-              (id) => id !== currentUser.id
-            );
-          }
-        }
-
-        setPostData(updatedPost);
-        setUserLiked(!userLiked);
-        if (userDisliked) setUserDisliked(false);
-      }
-    } catch (error) {
-      showNotification("Error liking post. Please try again.");
+    // Remove from dislikes if present
+    if (updatedPost.dislikes?.includes(currentUser.id)) {
+      updatedPost.dislikes = updatedPost.dislikes.filter(
+        (id) => id !== currentUser.id
+      );
     }
-  };
+  }
+
+  setPostData(updatedPost);
+  setUserLiked(!userLiked);
+  if (userDisliked) setUserDisliked(false);
+
+  try {
+    const response = await axios.post(`${baseUrl}/${postData?._id}/like`, {
+      userId: currentUser.id,
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Like failed");
+    }
+  } catch (error) {
+    // Rollback if error
+    setPostData(prevPost);
+    setUserLiked(prevLiked);
+    setUserDisliked(prevDisliked);
+
+    showNotification("Error liking post. Please try again.");
+  }
+};
+
 
   const handleDislikePost = async () => {
     if (!currentUser.id) {
@@ -417,11 +427,11 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
     <div className="w-full border dark:border-gray-700 rounded-lg dark:bg-transparent relative shadow-lg flex flex-col gap-0">
       {/* user header */}
       <div className="flex justify-between border-b dark:border-gray-700 items-center md:px-2 w-full h-full">
-        <div className="flex justify-between items-center gap-1 sm:mx-2">
+        <div className="flex m-1 justify-between items-center gap-1 sm:mx-2">
           <div className="w-8 h-8  flex-shrink-0">
             <UserIconCard id={postData?.userId}></UserIconCard>
           </div>
-          <div className="dark:text-white text-black">
+          <div className="dark:text-white ml-2 text-black">
             <UserNameCard id={postData?.userId}></UserNameCard>
           </div>
         </div>

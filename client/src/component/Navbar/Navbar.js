@@ -14,6 +14,7 @@ import UserIconCard from "../Card/UserIconCard";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import "./wave-btn.css";
+import logoName from "./logoName.png";
 
 // Create context for forum visibility
 export const ForumContext = createContext();
@@ -21,7 +22,7 @@ export const ForumContext = createContext();
 const navigation = [
   { name: "Home", href: "/", current: true },
   {
-    name: "generate image",
+    name: `generate image`,
     href: "/post",
     current: false,
     isSpecial: true, // mark Post as special (only used in desktop render)
@@ -143,13 +144,21 @@ export default function Navbar({ showForum, setShowForum }) {
               <div className="relative flex h-full items-center space-x-4 overflow-hidden">
                 <Link
                   to={"/"}
-                  className="h-14 w-14 flex items-center justify-center rounded-md"
+                  className="flex items-center justify-center rounded-md"
                 >
-                  <img
+                  <div className="flex items-center justify-center">
+                    <img
                     src={logo}
                     alt="Logo"
-                    className="h-full w-full object-contain p-1"
+                    className="h-full w-14 object-contain p-1"
                   />
+                  <img
+                    src={logoName}
+                    alt="LogoAvatar"
+                    className="h-full w-24 -ml-1 object-contain p-1"
+                  />
+                  </div>
+                  
                 </Link>
                 {/* Desktop links */}
                 <div className="hidden sm:flex space-x-2">

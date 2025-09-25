@@ -239,7 +239,7 @@ const HeaderContent = ({ topic, onDelete }) => {
 
         {/* Media Attachments */}
         {topic?.mediaAttachments?.length > 0 && (
-          <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {topic.mediaAttachments.map((attachment, index) => (
               <div
                 key={index}
@@ -257,7 +257,7 @@ const HeaderContent = ({ topic, onDelete }) => {
               <img
                 src={topic.imageUrl}
                 alt="Generated topic image"
-                className="max-h-[400px] max-w-xl rounded-md w-auto object-cover"
+                className="max-h-[400px] rounded-md w-auto object-cover"
               />
           </div>
         )}
