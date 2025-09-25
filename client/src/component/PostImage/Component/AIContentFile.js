@@ -277,8 +277,8 @@ const generateAIImage = async () => {
     // Set description
     setDesc((prev) =>
       prev
-        ? `${prev}\n\nAI Generated Image Prompt: ${aiPrompt}`
-        : `AI Generated Image Prompt: ${aiPrompt}`
+        ? `${prev}\n\n${aiPrompt}`
+        : `${aiPrompt}`
     );
     setAiPrompt("");
 

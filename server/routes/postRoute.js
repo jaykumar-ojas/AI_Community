@@ -282,6 +282,38 @@ router.delete('/delete/:id', async (req, res) => {
 
 
 // getting all the post user login or not
+// router.get('/allget', async (req, res) => {
+//     try {
+//         // Get page and limit from query parameters
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 9;
+//         const skip = (page - 1) * limit;
+//         console.log("page no for post", page);
+
+//         // Find posts with pagination - only fetch the posts for the requested page
+//         const userposts = await postdb.find()
+//             .skip(skip)  // Skip the posts from previous pages
+//             .limit(limit + 1); // Request one extra item to check if more exist
+
+//         // Check if there are more posts
+//         const hasMore = userposts.length > limit;
+//         // Remove the extra item if it exists
+//         const postsToReturn = hasMore ? userposts.slice(0, limit) : userposts;
+
+
+//         res.status(200).json({
+//             status: 200,
+//             userposts: postsToReturn,
+//             hasMore, // Just return whether there are more posts
+//             page: page // Return the current page for client reference
+//         });
+//     }
+//     catch (error) {
+//         console.error("Error retrieving all posts:", error);
+//         res.status(422).json({ status: 422, error });
+//     }
+// });
+
 router.get('/allget', async (req, res) => {
     try {
         // Get page and limit from query parameters
@@ -290,22 +322,21 @@ router.get('/allget', async (req, res) => {
         const skip = (page - 1) * limit;
         console.log("page no for post", page);
 
-        // Find posts with pagination - only fetch the posts for the requested page
+        // Find posts with pagination - sorted by latest createdAt first
         const userposts = await postdb.find()
-            .skip(skip)  // Skip the posts from previous pages
+            .sort({ createdAt: -1 })  // 🔥 latest first
+            .skip(skip)  
             .limit(limit + 1); // Request one extra item to check if more exist
 
         // Check if there are more posts
         const hasMore = userposts.length > limit;
-        // Remove the extra item if it exists
         const postsToReturn = hasMore ? userposts.slice(0, limit) : userposts;
-
 
         res.status(200).json({
             status: 200,
             userposts: postsToReturn,
-            hasMore, // Just return whether there are more posts
-            page: page // Return the current page for client reference
+            hasMore,
+            page
         });
     }
     catch (error) {
@@ -313,6 +344,7 @@ router.get('/allget', async (req, res) => {
         res.status(422).json({ status: 422, error });
     }
 });
+
 
 // getting post from post id 
 router.post('/getPostById', async (req, res) => {
