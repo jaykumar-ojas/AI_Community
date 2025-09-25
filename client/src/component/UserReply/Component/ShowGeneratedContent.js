@@ -14,7 +14,7 @@ const ShowGeneratedContent = ({ postingData, conversationHistory = [] }) => {
   return (
     <div
       ref={contentRef}
-      className="flex flex-col gap-4 p-4 bg-gray-50 "
+      className="flex flex-col gap-4 p-4 bg-gray-50 dark:bg-gray-500 "
     >
       {/* Conversation History Indicator */}
       {conversationHistory && conversationHistory.length > 0 && (
@@ -74,7 +74,7 @@ const ShowAiText = ({ aiText, modelInfo }) => {
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[80%] bg-white px-4 py-3 rounded-2xl shadow-md text-sm text-gray-800 border border-gray-100">
+      <div className="max-w-[80%] bg-white dark:bg-gray-700 px-4 py-3 rounded-2xl shadow-md text-sm text-gray-800 dark:text-gray-200 border dark:border-gray-500 border-gray-300">
         <div
           className="prose prose-sm text-gray-800"
           dangerouslySetInnerHTML={{ __html: parseMarkdown(aiText) }}
@@ -89,7 +89,7 @@ const ShowAiText = ({ aiText, modelInfo }) => {
                 onError={(e) => (e.target.style.display = "none")}
               />
             )}
-            <span>
+            <span className="dark:text-gray-300 text-gray-500">
               {modelInfo.providerName} · {modelInfo.modelName}
             </span>
           </div>

@@ -83,7 +83,7 @@ export default function Navbar({ showForum, setShowForum }) {
       onClick: () => setShowForum(false), // Close forum when Home is clicked
     },
     {
-      name: "generate image",
+      name: "generate",
       href: "/post",
       icon: PlusIcon,
       iconSolid: PlusIcon,
@@ -306,13 +306,20 @@ export default function Navbar({ showForum, setShowForum }) {
               <div className="relative flex h-full items-center space-x-4 overflow-hidden">
                 <Link
                   to={"/"}
-                  className="h-12 w-12 flex items-center justify-center rounded-md"
+                  className="h-12 flex items-center justify-center rounded-md"
                 >
-                  <img
+                  <div className="flex items-center justify-center">
+                    <img
                     src={logo}
                     alt="Logo"
-                    className="h-full w-full object-contain p-1"
+                    className="h-full w-14 object-contain p-1"
                   />
+                  <img
+                    src={logoName}
+                    alt="LogoAvatar"
+                    className="h-full w-24 -ml-1 object-contain p-1"
+                  />
+                  </div>
                 </Link>
 
                 {/* Navigation links removed */}
@@ -320,6 +327,7 @@ export default function Navbar({ showForum, setShowForum }) {
 
               {/* User icon bell icon */}
               <div className="flex items-center space-x-4">
+                {loginData && <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50 }/>}
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center ">
                   <button

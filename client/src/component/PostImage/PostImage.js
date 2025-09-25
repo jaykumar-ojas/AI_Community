@@ -145,9 +145,19 @@ const PostImageContent = () => {
         <div className="w-full h-full relative bg-transparent p-2 pt-0">
           <div className="flex flex-col">
             <div className="flex justify-between items-center mx-2 mb-2">
-              <div className="text-md text-gray-900 dark:text-text_header">
-                Upload your creativity
-              </div>
+              <div className="text-lg gap-2 font-extrabold tracking-wide">
+  <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+    Imagine.
+  </span>
+  <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+    Generate.
+  </span>
+  <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+    Share.
+  </span>
+</div>
+
+
               <div className="relative bg-transparent flex justify-end gap-4 ">
                 <button
                   onClick={handleClear}

@@ -242,7 +242,7 @@ const ShowCommentContent = ({ reply }) => {
 
   return (
     <div key={reply?._id} className={`relative flex justify-start ${isDeleted ? 'opacity-60' : ''}`}>
-      <div className="w-8 h-8 flex-shrink-0">
+      <div className="w-8 h-8 flex-shrink-0 z-20">
         {isDeleted ? (
           <div className="w-8 h-8 relative z-10  rounded-full bg-gray-300  flex items-center justify-center text-xs text-gray-600 cursor-not-allowed">
             !
@@ -279,19 +279,19 @@ const ShowCommentContent = ({ reply }) => {
               <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="px-1 py-0 text-gray-600 dark:text-time_header hover:bg-btn_bg rounded-full"
+                  className="px-1 py-0 text-gray-600 dark:text-time_header hover:bg-gray-300 hover:bg-btn_bg rounded-full"
                 >
                   ⋮
                 </button>
                 {/* Dropdown menu */}
                 {isOpen && (
-                  <div className="absolute left-0 w-full bg-white shadow-lg rounded-md z-10">
+                  <div className="absolute -left-1/2 -translate-x-1/2 w-full shadow-lg rounded-md z-10">
                     <button
                       onClick={() => {
                         handleDeleteReply();
                         setIsOpen(false);
                       }}
-                      className="w-full p-2 bg-bg_comment_box text-red-600 hover:bg-btn_bg"
+                      className="w-full px-4 py-2  dark:bg-bg_comment_box  text-red-600 hover:bg-gray-300 hover:dark:bg-gray-800"
                     >
                       <DeleteIcon />
                     </button>

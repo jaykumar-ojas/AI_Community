@@ -13,6 +13,7 @@ import { useWebSocket } from "../../AiForumPage/components/WebSocketContext";
 import { useParams } from "react-router-dom";
 import { ForumContext } from "../../ContextProvider/ModelContext";
 import UserIconCard from "../../Card/UserIconCard";
+import {useNotification} from "../../ContextProvider/NotificationContext";
 
 import {
   DeleteIcon,
@@ -72,6 +73,7 @@ const ShowReplyContent = ({
   setShowReply,
   onReplyDeleted, // Add this new prop
 }) => {
+  const {showNotification} = useNotification();
   const { setReplyIdForContext, setViewBox, setUserName } =
     useContext(ForumContext);
   const { topicId } = useParams();
@@ -163,7 +165,7 @@ const ShowReplyContent = ({
   // Handle reply like
   const handleReplyLike = async () => {
     if (!loginData || !loginData.validuserone) {
-      alert("Please log in to like replies");
+      showNotification("Please log in to like replies","warning");
       return;
     }
 
@@ -199,7 +201,7 @@ const ShowReplyContent = ({
   // Handle reply dislike
   const handleReplyDislike = async (replyId) => {
     if (!loginData || !loginData.validuserone) {
-      alert("Please log in to dislike replies");
+      showNotification("Please log in to dislike replies","warning");
       return;
     }
 
@@ -245,7 +247,7 @@ const ShowReplyContent = ({
   return (
 
     <div key={reply?._id} className={`flex justify-start ${isReplyDeleted ? 'opacity-100' : ''}`}>
-    <div className="w-8 h-8 flex-shrink-0">
+    <div className="w-8 h-8 flex-shrink-0 z-30">
   {isReplyDeleted ? (
     <div className="w-8 h-8 relative z-10  rounded-full bg-gray-300  flex items-center justify-center text-xs text-gray-600 cursor-not-allowed">
       !
@@ -287,19 +289,19 @@ const ShowReplyContent = ({
               <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="px-1 py-0 text-time_header hover:bg-btn_bg rounded-full"
+                  className="px-1 py-0 text-time_header hover:bg-gray-300 hover:dark:bg-btn_bg rounded-full"
                 >
                   ⋮
                 </button>
                 {/* Dropdown menu */}
                 {isOpen && (
-                  <div className="absolute left-0 w-full bg-white shadow-lg rounded-md z-10">
+                  <div className="absolute -left-1/2 -translate-x-1/2 w-full shadow-lg rounded-md z-10">
                     <button
                       onClick={() => {
                         handleDeleteReply();
                         setIsOpen(false);
                       }}
-                      className="w-full p-2 bg-bg_comment_box text-red-600 hover:bg-btn_bg"
+                      className="w-full px-4 py-2  dark:bg-bg_comment_box  text-red-600 hover:bg-gray-300 hover:dark:bg-gray-800"
                     >
                       <DeleteIcon />
                     </button>

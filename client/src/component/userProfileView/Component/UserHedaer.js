@@ -569,23 +569,13 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                   {/* Subscriptions Popover */}
                   {showSubscriptions && isOwnProfile && (
                     <>
-                      <div className="fixed inset-0 z-40 bg-black/25" />
                       <div
                         ref={subscriptionsRef}
-                        className="absolute z-50 top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-80 overflow-hidden w-64 sm:w-72 md:w-80 max-w-[calc(100vw-2rem)]"
+                        className="absolute z-50 right-0 mt-2  border border-gray-400 rounded-xl overflow-y-auto"
                       >
-                        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                          <h3 className="font-semibold text-gray-800">Following</h3>
-                          <button
-                            onClick={() => setShowSubscriptions(false)}
-                            className="text-gray-400 hover:text-gray-600 p-1 text-xl leading-none"
-                          >
-                            ×
-                          </button>
-                        </div>
-                        <div className="max-h-64 overflow-y-auto">
+                        {/* <div className="max-h-80 border border-gray-400 rounded-xl overflow-y-auto"> */}
                           <SubscriptionsList userId={id} />
-                        </div>
+                        {/* </div> */}
                       </div>
                     </>
                   )}

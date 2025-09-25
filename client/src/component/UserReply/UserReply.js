@@ -447,8 +447,12 @@ const UserReply = ({ forum = false }) => {
                 </span>
               </button>
               <span className={`text-xs font-medium transition-colors ${isContextAware ? 'text-like_color' : 'text-gray-800 dark:text-gray-200'}`}>
-                Context Aware
+                Context Engine
               </span>
+              <span className="bg-gradient-to-r mt-2 from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-[8px] text-transparent font-semibold">
+  (beta)
+</span>
+
             </div>
 
             {/* Context Loading Message */}
