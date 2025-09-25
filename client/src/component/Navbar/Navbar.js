@@ -21,7 +21,7 @@ export const ForumContext = createContext();
 const navigation = [
   { name: "Home", href: "/", current: true },
   {
-    name: "generate image",
+    name: `generate image`,
     href: "/post",
     current: false,
     isSpecial: true, // mark Post as special (only used in desktop render)
