@@ -41,6 +41,7 @@ const CommentReview = () => {
   const [structureReply, setStructureReply] = useState();
   const [threadView, setThreadView] = useState(false);
   const [expandedThreads, setExpandedThreads] = useState({});
+  const [lastThreadContext, setLastThreadContext] = useState(null);
 
   useEffect(() => {
     if (comments) {
@@ -97,7 +98,7 @@ const CommentReview = () => {
       unsubscribeCommentDeleted();
       unsubscribeCommentReaction();
     };
-  }, [id, queryClient]);
+  }, [id, queryClient, joinPost, leavePost, subscribeToEvent]);
 
   const toggleThreadExpansion = (replyId) => {
     setExpandedThreads((prev) => ({
@@ -106,13 +107,36 @@ const CommentReview = () => {
     }));
   };
 
-  const handleViewThread = (replyId) => {
-    setThreadView(replyId);
+  const findCommentById = (list, targetId) => {
+    for (const item of list || []) {
+      if (item._id === targetId) return item;
+      if (item.children?.length) {
+        const found = findCommentById(item.children, targetId);
+        if (found) return found;
+      }
+    }
+    return null;
   };
+
+  // When we come BACK from a thread view, scroll to the lastThreadContext element
+  useEffect(() => {
+    if (threadView === null && lastThreadContext && structureReply?.length) {
+      setTimeout(() => {
+        const el = document.getElementById(`reply-${lastThreadContext}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("bg-amber-50", "rounded");
+          setTimeout(() => el.classList.remove("bg-amber-50", "rounded"), 2000);
+          setLastThreadContext(null);
+        }
+      }, 50);
+    }
+  }, [threadView, lastThreadContext, structureReply]);
 
   if (isLoading) {
     return <ReplySkeletonLayout />;
   }
+
 
   if (error) {
     return (
@@ -128,6 +152,34 @@ const CommentReview = () => {
     );
   }
 
+  if (threadView) {
+    const thread = findCommentById(structureReply, threadView);
+    return (
+      <div className="thread-view">
+        <button
+          className="text-blue-600 hover:underline mb-2 text-sm"
+          onClick={() => setThreadView(null)}
+        >
+          ← Back to comments
+        </button>
+        {thread ? (
+          <div className="md:ml-2">
+            <RecurrsionLoopComment
+              reply={thread}
+              expandedThreads={expandedThreads}
+              setExpandedThreads={setExpandedThreads}
+              threadView={threadView}
+              setThreadView={setThreadView}
+              setLastThreadContext={setLastThreadContext}
+            />
+          </div>
+        ) : (
+          <div className="text-center text-gray-500">Thread not found</div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="relative flex w-full items-center gap-2 mb-2">
@@ -136,16 +188,21 @@ const CommentReview = () => {
             Comments
           </h1>
           <div className="w-4 h-4 mt-1 md:mt-2 text-[10px] md:text-xs font-medium border border-gray-600 dark:border-time_header text-gray-800 dark:text-time_header dark:bg-bg_scroll rounded">
-            {comments?.length || 0}
+            {structureReply?.length || 0}
           </div>
         </div>
       </div>
 
       <div className="replyContent w-full pt-2">
-        {!threadView && structureReply?.length > 0 ? (
+        {structureReply?.length > 0 ? (
           structureReply.map((reply, index) => (
             <div key={reply._id || index} className="ml-2">
-              <RecurrsionLoopComment reply={reply} scrollToId={scrollToId} />
+              <RecurrsionLoopComment
+                reply={reply}
+                scrollToId={scrollToId}
+                setThreadView={setThreadView}
+                setLastThreadContext={setLastThreadContext}
+              />
             </div>
           ))
         ) : (

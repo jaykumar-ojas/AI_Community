@@ -40,7 +40,7 @@ export const LogOutUser = () => {
       localStorage.removeItem('userData');  
       localStorage.removeItem("userdatatoken");
       while (localStorage.getItem("userdatatoken") !== null ||  localStorage.getItem("userData") !== null ) {
-        console.log("Waiting for localStorage to clear...");
+      //  console.log("Waiting for localStorage to clear...");
         await sleep(500); // Wait 500ms and check again
       }
 

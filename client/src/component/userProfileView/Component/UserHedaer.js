@@ -39,7 +39,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
-    console.log("Login data:", loginData);
+    // console.log("Login data:", loginData);
     fetchUserProfile(id);
     if (loginData?.validuserone?._id && id !== loginData?.validuserone?._id) {
       checkSubscriptionStatus(id);
@@ -69,7 +69,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
 
    const fetchUserProfile = async (userId) => {
     try {
-      console.log("Fetching user profile for user ID:", userId);
+      // console.log("Fetching user profile for user ID:", userId);
       const response = await fetch(
         `${baseUrl}/get-user-profile/${userId}`,
         {
@@ -102,7 +102,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const checkSubscriptionStatus = async (userId) => {
     try {
       const token = localStorage.getItem("userdatatoken");
-      console.log("Checking subscription with token:", token);
+      // console.log("Checking subscription with token:", token);
       const response = await fetch(`${baseUrl}/check/${userId}`, {
         method: "GET",
         headers: {
@@ -112,7 +112,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
       });
 
       const data = await response.json();
-      console.log("Subscription status:", data);
+      // console.log("Subscription status:", data);
       setIsSubscribed(data.isSubscribed);
     } catch (error) {
       console.error("Error checking subscription status:", error);
@@ -232,7 +232,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
         formData.append("profilePicture", profilePicture);
       }
 
-      console.log(formData, "this is form data");
+      // console.log(formData, "this is form data");
 
       const response = await fetch(`${baseUrl}/updateProfile`, {
         method: "POST",

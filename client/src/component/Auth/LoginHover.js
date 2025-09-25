@@ -28,7 +28,7 @@ const LoginHover = ({onClose}) => {
     }
   }, [popupMessage]);
 
-  console.log(inpVal);
+ // console.log(inpVal);
   const setVal=(e)=>{
     
     const {name,value}=e.target;
@@ -111,16 +111,17 @@ const LoginHover = ({onClose}) => {
     const res = await data.json();
 
     if(!data || data.status==401){
-      console.log("invalid user");
+    //  console.log("invalid user");
     }
     else{
       setLoginData(res);
-      console.log("user login already",res);
+     // console.log("user login already",res);
       history("/");
     }
   }
   catch(error){
-    console.log("this si error",error);
+    console.log("");
+  
   }
   }
 

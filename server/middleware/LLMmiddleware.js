@@ -16,8 +16,11 @@ const { decodeId } = require('../utils/hashids');
 dotenv.config();
 
 
+// const apiKey =  process.env.GEMINI_API_KEY,
 // model defined
-const genAI = new GoogleGenerativeAI("AIzaSyCrBM4stDGV58k4Kywt-xoZafjzveW6ZSA");
+const genAI = new GoogleGenerativeAI(
+  process.env.GEMINI_API_KEY
+);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY, // Replace with your OpenAI API key
@@ -978,11 +981,47 @@ function formatContextForAI(ancestorContext) {
   return prompt;
 }
 
+const imageGenerator = async(text)=>{
+  try{
+    if(!text){
+      console.error("No text provided for image generation");
+      return null;
+    }
+    console.log("Generating image with prompt:", text);
+
+    // Create a new OpenAI instance with the API key
+   
+    // Call the OpenAI API to generate an image
+    const response = await openai.images.generate({
+      model: "dall-e-3", // Using dall-e-2 which has fewer content restrictions
+      prompt: text,
+      n: 1,
+      size: "1024x1024",
+    });
+  
+    // Extract the image URL from the response
+    if (response && response.data && response.data[0] && response.data[0].url) {
+      const imageUrl = response.data[0].url;
+      console.log("Successfully generated image URL");
+      return imageUrl;
+    } else {
+      console.error("Invalid response structure from OpenAI");
+      return null;
+    }
+  }
+  catch(error){
+    console.error("Error in imageGenerator function:", error);
+    return null;
+  }
+}
+
+
 module.exports ={
     openai,
     model,
     describeImage,
     promptEnhancer,
+    imageGenerator,
     promptEnhancerAI,
     textSuggestion,
     fetchAncestorContext,

@@ -28,7 +28,7 @@ export const ValidUserForPage = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   const removeData = () => {
-    console.log("i m running when you put login by google")
+  //  console.log("i m running when you put login by google")
     localStorage.removeItem("userdatatoken");
     localStorage.removeItem("userData");
     setLoginData(null);
@@ -36,10 +36,10 @@ export const ValidUserForPage = () => {
 
   const validateUser = async () => {
     let token = localStorage.getItem("userdatatoken");
-    console.log(token,"this is i am on genral funcion");
+   // console.log(token,"this is i am on genral funcion");
 
     if (!token) {
-      console.log("i didnt recive any token taht y i delete all data");
+    //  console.log("i didnt recive any token taht y i delete all data");
       removeData();
       return false;
     }
@@ -66,7 +66,7 @@ export const ValidUserForPage = () => {
       const res = await response.json();
 
       if (!res || res.status === 401) {
-        console.log("i didnt recive any good status taht y i delete all data");
+     //   console.log("i didnt recive any good status taht y i delete all data");
         removeData();
         return false;
       } else {
@@ -75,7 +75,7 @@ export const ValidUserForPage = () => {
         return true;
       }
     } catch (error) {
-      console.log("Error in validate page:", error);
+     // console.log("Error in validate page:", error);
       // Don't remove data on network errors
       return false;
     }

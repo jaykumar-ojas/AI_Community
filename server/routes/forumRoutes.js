@@ -613,7 +613,7 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
     try {
       const { dynamicId, parentReplyId, userId, userName } = req.body;
       console.log("getting dynamci id",dynamicId);
-      const realId = dynamicId;
+      const realId = decodeId (dynamicId);
       console.log("real ID",realId);
 
       // Parse content as array of content blocks

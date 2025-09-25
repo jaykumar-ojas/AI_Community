@@ -146,7 +146,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
 
   useEffect(() => {
     
-    console.log("UserContent received post:", post);
+  //  console.log("UserContent received post:", post);
     if (post) {
       setPostData(post);
 

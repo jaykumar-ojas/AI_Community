@@ -172,7 +172,7 @@ const [sparkles, setSparkles] = useState([]);
     };
 
   useEffect(() => {
-    console.log("UserContent received post:", post);
+    //console.log("UserContent received post:", post);
     if (post) {
       setPostData(post);
 

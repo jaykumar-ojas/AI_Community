@@ -90,13 +90,13 @@ app.use("/", aiModelRoutes);
 
 // WebSocket event handlers
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  // console.log('A user connected');
 
   // Join a topic room
   socket.on('join_topic', (topicId) => {
     const room = `topic_${topicId}`;
     socket.join(room);
-    console.log(`User joined room: ${room}`);
+    // console.log(`User joined room: ${room}`);
   });
 
   // Leave a topic room

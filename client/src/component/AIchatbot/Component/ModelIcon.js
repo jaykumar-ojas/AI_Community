@@ -17,7 +17,9 @@ const ModelIcon = ({ modelName, name=true }) => {
           )}`
         );
         if (response.data.success) {
+         // console.log(response.data.data);
           setIconUrl(response.data.data.iconUrl);
+       //   console.log(modelName, response.data.data.iconUrl);
         }
       } catch (err) {
         setIconUrl(null);

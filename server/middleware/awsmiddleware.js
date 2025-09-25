@@ -1,14 +1,14 @@
-const express = require('express')
-const multer = require('multer')
+const express = require('express');
+const multer = require('multer');
 const crypto = require("crypto");
 const sharp = require("sharp");
 const axios = require('axios');
 
-const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { Upload } = require("@aws-sdk/lib-storage");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const dotenv = require('dotenv');
-const { stat } = require('fs');
 dotenv.config();
 
 // Generate a random filename for any file type
@@ -18,6 +18,7 @@ const bucketName = process.env.BUCKET;
 const bucketRegion = process.env.REGION;
 const accessKey = process.env.S3_ACCESS_KEY;
 const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+
 const s3 = new S3Client({
     credentials: {
         accessKeyId: accessKey,
@@ -67,7 +68,6 @@ const upload = multer({
 
 const awsuploadMiddleware = async (req, res, next) => {
     console.log("Middleware triggered. Single file:", req.file);
-    console.log("i m here");
 
     try {
         let allFiles = [];
@@ -125,17 +125,22 @@ const awsuploadMiddleware = async (req, res, next) => {
             const fileName = randomFileName();
             console.log("Generated file name:", fileName);
 
-            const params = {
-                Bucket: bucketName,
-                Key: fileName,
-                Body: buffer,
-                ContentType: file.mimetype,
-            };
+            console.log("Uploading to S3 bucket (multipart parallel upload)");
 
-            console.log("Uploading to S3 bucket");
+            const parallelUpload = new Upload({
+                client: s3,
+                params: {
+                    Bucket: bucketName,
+                    Key: fileName,
+                    Body: buffer,
+                    ContentType: file.mimetype,
+                },
+                queueSize: 5, // concurrency
+                partSize: 5 * 1024 * 1024, // 5MB chunks
+                leavePartsOnError: false,
+            });
 
-            const command = new PutObjectCommand(params);
-            await s3.send(command);
+            await parallelUpload.done();
             console.log("File uploaded successfully");
 
             const fileUrl = await generateSignedUrl(fileName);
@@ -163,23 +168,15 @@ const awsuploadMiddleware = async (req, res, next) => {
 
 const generateSignedUrl = async(keys)=>{
     try{
-        // Return a placeholder URL if keys is undefined or null
         if (!keys) {
             console.warn("Warning: Attempted to generate signed URL with empty key");
             return "";
         }
 
-        const getObjectParams = {
-            Bucket: bucketName,
-            Key: keys,
-        }
-        const command = new GetObjectCommand(getObjectParams);
-        // const url = await getSignedUrl(s3, command, { expiresIn: 120 }); // URL valid for 7 days
-        const url =`https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/${keys}`;
-        return url;
+        // Instead of generating presigned, using direct public URL
+        return `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/${keys}`;
     }catch (error) {
         console.error("Error generating signed URL:", error);
-        // Return a placeholder URL instead of throwing an error
         return "https://via.placeholder.com/300?text=Image+Error";
     }
 }
@@ -203,82 +200,167 @@ const awsdeleteMiddleware = async(key) => {
     } catch(error) {
         console.error("Error deleting file from S3:", error);
         console.error("File key:", key);
-        // Don't throw the error, just return false to indicate failure
         return false;
     }
 };
 
+// const uploadImageFromUrl = async (imageUrl) => {
+//     try {
+//         console.log("Uploading image from URL");
+//         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        
+//         const contentType = response.headers['content-type'];
+//         if (!allowedMimeTypes.includes(contentType)) {
+//             throw new Error("Unsupported file type.");
+//         }
+        
+//         const fileName = `${randomFileName(16)}.${contentType.split('/')[1]}`;
+//         console.log("fileName", fileName);
+
+//         const parallelUpload = new Upload({
+//             client: s3,
+//             params: {
+//                 Bucket: bucketName,
+//                 Key: fileName,
+//                 Body: response.data,
+//                 ContentType: contentType,
+//             },
+//             queueSize: 5,
+//             partSize: 5 * 1024 * 1024,
+//         });
+
+//         await parallelUpload.done();
+
+//         const fileUrl = await generateSignedUrl(fileName);
+//         console.log(`Image uploaded successfully: ${fileName}`);
+//         return {
+//             fileName : fileName,
+//             fileType: "image",
+//             fileUrl,
+//             fileSize: "",
+//             uploadedAt: new Date(),
+//         }
+//     } catch (error) {
+//         console.error("Error uploading image:", error);
+//         throw error;
+//     }
+// };
+
+// const uploadImageFromBlob = async (blob, fileName = null) => {
+//   try {
+//     const generatedFileName = fileName || `${randomFileName(16)}.png`;
+//     const buffer = Buffer.from(blob,"base64");
+
+//     const parallelUpload = new Upload({
+//         client: s3,
+//         params: {
+//             Bucket: bucketName,
+//             Key: generatedFileName,
+//             Body: buffer,
+//             ContentType: "image/png",
+//         },
+//         queueSize: 5,
+//         partSize: 5 * 1024 * 1024,
+//     });
+
+//     await parallelUpload.done();
+
+//     const fileUrl = await generateSignedUrl(generatedFileName);
+
+//     return {
+//       fileName: generatedFileName,
+//       fileType: "image/png",
+//       fileUrl,
+//       fileSize: buffer.length,
+//       uploadedAt: new Date(),
+//     };
+//   } catch (error) {
+//     console.error("Error uploading blob to S3:", error);
+//     throw error;
+//   }
+// };
+
 const uploadImageFromUrl = async (imageUrl) => {
     try {
-        // Fetch the image from the provided URL
-        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-        
-        // Determine the file type (MIME type) from response headers
+        console.log("Uploading image from URL");
+
+        // Fetch image as stream instead of full buffer
+        const response = await axios.get(imageUrl, { responseType: 'stream' });
         const contentType = response.headers['content-type'];
+
         if (!allowedMimeTypes.includes(contentType)) {
             throw new Error("Unsupported file type.");
         }
-        
-        // Generate a unique file name
+
         const fileName = `${randomFileName(16)}.${contentType.split('/')[1]}`;
-        
-        // Upload to S3
-        const uploadParams = {
-            Bucket: bucketName,
-            Key: fileName,
-            Body: response.data,
-            ContentType: contentType,
-        };
-        
-        await s3.send(new PutObjectCommand(uploadParams));
+        console.log("Generated fileName:", fileName);
+
+        // Parallel multipart upload directly from stream
+        const parallelUpload = new Upload({
+            client: s3,
+            params: {
+                Bucket: bucketName,
+                Key: fileName,
+                Body: response.data,  // stream
+                ContentType: contentType,
+            },
+            queueSize: 5,             // concurrency
+            partSize: 5 * 1024 * 1024 // 5MB
+        });
+
+        await parallelUpload.done();
+
         const fileUrl = await generateSignedUrl(fileName);
         console.log(`Image uploaded successfully: ${fileName}`);
         return {
-            fileName : fileName,
-            fileType: "image",
+            fileName,
+            fileType: contentType,
             fileUrl,
-            fileSize: "",
+            fileSize: response.headers['content-length'] || "",
             uploadedAt: new Date(),
-        }
+        };
     } catch (error) {
-        console.error("Error uploading image:", error);
+        console.error("Error uploading image from URL:", error);
         throw error;
     }
 };
 
+
 const uploadImageFromBlob = async (blob, fileName = null) => {
-  try {
-    // If no filename is provided, generate a random one
-    const generatedFileName = fileName || `${randomFileName(16)}.png`;
-    const buffer = Buffer.from(blob,"base64");
+    try {
+        const generatedFileName = fileName || `${randomFileName(16)}.png`;
 
-    // Detect MIME type (optional: default to image/png)
-    
+        // Convert base64 blob to buffer
+        const buffer = Buffer.from(blob, "base64");
 
-    const params = {
-      Bucket: bucketName,
-      Key: generatedFileName,
-      Body: buffer,
-      ContentType: "image/png",
-    };
+        // Use multipart parallel upload
+        const parallelUpload = new Upload({
+            client: s3,
+            params: {
+                Bucket: bucketName,
+                Key: generatedFileName,
+                Body: buffer,
+                ContentType: "image/png",
+            },
+            queueSize: 5,
+            partSize: 5 * 1024 * 1024,
+        });
 
-    // Upload to S3
-    await s3.send(new PutObjectCommand(params));
+        await parallelUpload.done();
 
-    // Get public/signed URL
-    const fileUrl = await generateSignedUrl(generatedFileName);
+        const fileUrl = await generateSignedUrl(generatedFileName);
 
-    return {
-      fileName: generatedFileName,
-      fileType: "image/png",
-      fileUrl,
-      fileSize: buffer.length,
-      uploadedAt: new Date(),
-    };
-  } catch (error) {
-    console.error("Error uploading blob to S3:", error);
-    throw error;
-  }
+        return {
+            fileName: generatedFileName,
+            fileType: "image/png",
+            fileUrl,
+            fileSize: buffer.length,
+            uploadedAt: new Date(),
+        };
+    } catch (error) {
+        console.error("Error uploading blob to S3:", error);
+        throw error;
+    }
 };
 
 
@@ -290,9 +372,3 @@ module.exports={
     uploadImageFromUrl,
     uploadImageFromBlob
 };
-
-
-
-
-
-

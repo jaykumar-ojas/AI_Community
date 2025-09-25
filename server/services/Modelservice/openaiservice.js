@@ -28,7 +28,7 @@ async function generateImageBase64openai(prompt, model, aspectRatio) {
   const response = await openai.images.generate({
     model,
     prompt,
-    size: aspectRatio || "1024:1024",
+    size: aspectRatio || "1024x1024",
     response_format: "b64_json" 
   });
   console.log("i come backg rom calling ,", response);

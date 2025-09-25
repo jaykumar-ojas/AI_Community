@@ -82,6 +82,7 @@ const ModelList = ({forum=false, userForum=false, userComment=false, closeDropdo
     }, [modelConfig, modelType]);
 
     // Removed auto-selection of default model - user must manually select
+  //  console.log("model config", modelConfig);
 
     const handleModelSelect = (modelName,provider) => {
         setModel(modelName);

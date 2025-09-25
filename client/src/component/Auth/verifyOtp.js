@@ -12,7 +12,7 @@ const EmailVerification = () => {
 
 
   const otpPageValid = async () => {
-    console.log("second i am");
+ //   console.log("second i am");
     const data = await fetch(`${baseUrl}/isvalid`, {
       method: "GET",
       headers: {
@@ -51,7 +51,7 @@ const EmailVerification = () => {
   const handleSubmit = async(e) => {
     e.preventDefault();
     const enteredOtp = otp.join("");
-    console.log("Entered OTP:", enteredOtp);
+   // console.log("Entered OTP:", enteredOtp);
     const data = await fetch(`${baseUrl}/verify-otp`, {
         method: "POST",
         headers: {
@@ -63,9 +63,9 @@ const EmailVerification = () => {
         })
       });
       const res = await data.json();
-      console.log(res);
+    //  console.log(res);
       if(res.status===200){
-        console.log(res);
+      //  console.log(res);
         history(`/update-password/${res.token}`);
       }
       else if(res.status===401){
@@ -78,7 +78,7 @@ const EmailVerification = () => {
 
   // Handle resend OTP
   const handleResend = () => {
-    console.log("Resend OTP clicked");
+  //  console.log("Resend OTP clicked");
     setIsResendDisabled(true); // Disable resend button
     setTimer(120); // Reset timer to 2 minutes
     // Add your resend OTP logic here (e.g., API call to resend OTP)

@@ -81,7 +81,7 @@ export const modelCreditConfig = {
     "gemini-2.5-flash-image-preview": { cost: 2 },
     "gemini-2.0-flash-preview-image-generation": { cost: 1 },
 
-    "ultra": { cost: 4 },
+    "sd-ultra": { cost: 4 },
     "core": { cost: 2 },
     "sd3.5-large": { cost: 3 },
     "sd3.5-large-turbo": { cost: 3 },
