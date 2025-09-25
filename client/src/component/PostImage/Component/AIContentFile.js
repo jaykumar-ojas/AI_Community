@@ -341,11 +341,11 @@ const generateAIImage = async () => {
                   ) : (
                     <>
                       <img
-                        className="h-5 w-5 object-cover rounded-full"
+                        className="h-5 w-24 object-cover rounded-full"
                         src={modelIcon}
                         alt="Default model"
                       />
-                      <span className="text-gray-500 text-sm">Select Model</span>
+                      <span className="dark:text-gray-300 text-gray-800 text-sm">Select Model</span>
                     </>
                   )}
                 </div>
@@ -446,7 +446,7 @@ const generateAIImage = async () => {
               disabled={isEnhancing || !aiPrompt.trim()}
               className="flex-1 px-4 py-2 bg-green-700 text-white text-sm font-semibold rounded-xl shadow-md transition-all disabled:opacity-70"
             >
-              {isEnhancing ? "Enhancing..." : "Enhance"}
+              {isEnhancing ? "Enhancing..." : "Enhance Prompt"}
             </button>
             <button
               onClick={generateAIImage}

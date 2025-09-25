@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import UserContent from "./UserContent";
@@ -7,6 +7,7 @@ import RelatedCard from "../Card/RelatedCard";
 import ModelList from "./CommentComponent/Model";
 import AiIcons from "../../asset/AiIcons.png";
 import UserReply from "../UserReply/UserReply";
+import { CommentContext } from "../ContextProvider/CommentModelContext";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -70,6 +71,8 @@ const PostContent = () => {
   const queryClient = useQueryClient();
   const [showIcon, setShowICon] = useState(false);
   const [showCommentsMobile, setShowCommentsMobile] = useState(false);
+  const { setReplyIdForContext, viewBox, setUserName } =
+      useContext(CommentContext);
   
   // Try to find the post in the existing cached posts list (from useInfiniteQuery)
   const postFromCache = queryClient.getQueryData(['posts'])?.pages
@@ -193,7 +196,7 @@ const PostContent = () => {
             <UserReply />
           </div>
 
-          <div className={`fixed bg-white left-0 right-0 ${showCommentsMobile ? "block" : "hidden"} z-30 bottom-0 block md:hidden`}>
+          <div className={`fixed bg-white left-0 right-0 ${viewBox ? "block" : "hidden"} z-30 bottom-0 block md:hidden`}>
             <UserReply />
           </div>
         </div>

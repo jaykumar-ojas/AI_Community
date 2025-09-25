@@ -31,8 +31,13 @@ const ForumSystem = () => {
   return (
     <div className=" md:border-x-2 border-[#DBDBDB]  dark:border-gray-600  dark:bg-black flex flex-col h-[calc(100vh-6.6rem)] md:h-full">
       {/* Header with search - now with transparent/dark background */}
-      <div className="p-2 sticky top-0  backdrop-blur-sm">
-        <h2 className="text-xl text-gray-900 dark:text-gray-300 font-bold mb-2">AI Forum</h2>
+      <div className="p-1 sticky top-0  backdrop-blur-sm">
+        <div className=" text-2xl font-bold tracking-wide mb-2 
+  bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 
+  bg-clip-text text-transparent">
+  MindMesh
+</div>
+
         {/* <div className="relative">
           <input
             type="text"

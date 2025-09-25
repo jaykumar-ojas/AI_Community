@@ -44,8 +44,8 @@ const SubscriptionsList = ({ userId }) => {
     }
 
     return (
-        <div className="p-2 bg-gray-800 rounded-lg border border-gray-600 max-h-48 overflow-y-auto">
-            <h3 className="text-sm font-semibold mb-2 text-white text-center">Following</h3>
+        <div className="px-2 dark:bg-gray-800 border-gray-300 bg-gray-100 rounded-lg  max-h-48 overflow-y-auto">
+            <h3 className="text-sm font-semibold mb-2 dark:text-gray-200 text-gray-800 text-center">Following</h3>
             {subscriptions.length === 0 ? (
                 <p className="text-gray-300 text-xs text-center">Not following anyone yet</p>
             ) : (
@@ -54,15 +54,15 @@ const SubscriptionsList = ({ userId }) => {
                         <Link 
                             to={`/sample-user/${encodeId(user._id)}`} 
                             key={user._id}
-                            className="flex items-center space-x-2 p-1 hover:bg-gray-700 text-white rounded transition-colors"
+                            className="flex items-center gap-4 space-x-2 p-1 hover:dark:bg-gray-700 hover:bg-gray-400 text-white rounded transition-colors"
                         >
-                            <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                            <div className="md:w-8 md:h-8 w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
                                 < UserIconCard
                                     id = {user._id}
                                 />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="font-medium text-xs truncate">{user.userName}</p>
+                                <p className="font-medium text-gray-800 dark:text-gray-200 text-xs md:text-sm truncate">{user.userName}</p>
                             </div>
                         </Link>
                     ))}
