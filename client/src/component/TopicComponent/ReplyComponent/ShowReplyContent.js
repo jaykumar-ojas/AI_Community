@@ -69,7 +69,6 @@ const ShowReplyContent = ({
   hasChildren,
   show,
   showReply,
-
   setShowReply,
   onReplyDeleted, // Add this new prop
 }) => {
@@ -319,7 +318,8 @@ const ShowReplyContent = ({
         {reply?.mediaAttachments?.length > 0 && (
           <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
             {reply?.mediaAttachments.map((attachment, index) => (
-              <ShowMedia attachment={attachment} />
+              <ShowMedia key={attachment._id || attachment.id || index} attachment={attachment} />
+              
             ))}
           </div>
         )}

@@ -23,17 +23,17 @@ const providerNames = {
 
 // Provider icon URLs mapping (all models from a provider share same icon)
 const providerIcons = {
-  openai: "https://registry.npmmirror.com/@lobehub/icons-static-png/1.49.0/files/dark/openai.png",
+  openai: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/chatgpt-icon.png",
   google: "https://registry.npmmirror.com/@lobehub/icons-static-png/1.62.0/files/dark/gemini-color.png",
   meta: "https://custom.typingmind.com/assets/models/llama.png",
-  grok: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/grok.png",
-  qwen: "https://custom.typingmind.com/assets/models/llama.png",
+  grok: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/grok-icon.png",
+  qwen: "https://crystalpng.com/wp-content/uploads/2025/02/Qwen-04-150x150.png",
   flux: "https://tjzk.replicate.delivery/models_organizations_avatar/01ed70be-0d47-4a4a-85fb-32c02cdd4ab5/bfl.png",
   stable: "https://custom.typingmind.com/assets/models/stability.png",
   runway: "https://images.seeklogo.com/logo-png/49/1/runway-logo-png_seeklogo-496519.png",
   anthropic: "https://registry.npmmirror.com/@lobehub/icons-static-png/1.49.0/files/dark/claude-color.png",
   deepseek: "https://registry.npmmirror.com/@lobehub/icons-static-png/1.62.0/files/dark/deepseek-color.png",
-  xai: "https://via.placeholder.com/64x64?text=xAI",
+  xai: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/grok-icon.png",
 };
 
 // Upload all models (text + image) to DB

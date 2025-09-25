@@ -35,7 +35,7 @@ const FeedbackPage=()=>{
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitted Feedback:", formData);
+  //  console.log("Submitted Feedback:", formData);
     alert("Feedback submitted (check console)");
   };
 

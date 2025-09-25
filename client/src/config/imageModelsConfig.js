@@ -29,7 +29,7 @@ const imageModelsConfig = {
   },
 
   // --- Stable Diffusion ---
-  "ultra": {
+  "sd-ultra": {
     displayName: "Stable Diffusion Ultra",
     provider: "stable",
     emoji: "🖌️",

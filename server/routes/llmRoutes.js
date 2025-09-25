@@ -226,12 +226,12 @@ router.get("/models-info", (req, res) => {
       "qwen/qwen3-32b": "Qwen3 32B",
 
       // --- stable ---
-      ultra: "Stable Diffusion Ultra",
-      core: "Stable Diffusion Core",
-      "sd3.5-large": "Stable Diffusion 3.5 Large",
-      "sd3.5-large-turbo": "Stable Diffusion 3.5 Large Turbo",
-      "sd3.5-medium": "Stable Diffusion 3.5 Medium",
-      "sd3.5-flash": "Stable Diffusion 3.5 Flash",
+      "ultra": "Stable Diffusion Ultra",
+      "core": "Stable Diffusion Core",
+      "sd3.5-large": "sd 3.5 Large",
+      "sd3.5-large-turbo": "sd 3.5 Large Turbo",
+      "sd3.5-medium": "sd 3.5 Medium",
+      "sd3.5-flash": "sd 3.5 Flash",
 
       // --- flux ---
       "flux-kontext-pro": "Flux Kontext Pro",

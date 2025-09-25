@@ -4,11 +4,25 @@ const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 
 async function ultra(prompt, aspectRatio) {
   const { default: axios } = await import("axios");
-  conlsole.log("i m in ultra", aspectRatio);
+
+  // Allowed aspect ratios as per Stability API
+  const validAspectRatios = [
+    "21:9", "16:9", "3:2", "5:4", "1:1",
+    "4:5", "2:3", "9:16", "9:21"
+  ];
+
+  // Fallback to '1:1' if invalid aspect ratio is passed
+  if (!validAspectRatios.includes(aspectRatio)) {
+    console.warn(`⚠️ Invalid aspect ratio "${aspectRatio}", defaulting to "1:1"`);
+    aspectRatio = "1:1";
+  }
+
+  console.log("i m in ultra", aspectRatio);
+
   const payload = {
     prompt,
     output_format: "png",
-    aspect_ratio: aspectRatio || "1:1",
+    aspect_ratio: aspectRatio,
   };
 
   const response = await axios.postForm(
@@ -32,13 +46,25 @@ async function ultra(prompt, aspectRatio) {
   }
 }
 
+
 async function core(prompt, aspectRatio) {
   const { default: axios } = await import("axios");
+
+  const validAspectRatios = [
+    "21:9", "16:9", "3:2", "5:4", "1:1",
+    "4:5", "2:3", "9:16", "9:21"
+  ];
+
+  // Fallback to '1:1' if invalid aspect ratio is passed
+  if (!validAspectRatios.includes(aspectRatio)) {
+    console.warn(`⚠️ Invalid aspect ratio "${aspectRatio}", defaulting to "1:1"`);
+    aspectRatio = "1:1";
+  }
 
   const payload = {
     prompt,
     output_format: "png",
-    aspect_ratio: aspectRatio || "1:1",
+    aspect_ratio: aspectRatio,
   };
 
   const response = await axios.postForm(

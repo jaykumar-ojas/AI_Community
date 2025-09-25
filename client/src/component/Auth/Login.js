@@ -67,7 +67,7 @@ const Login = () => {
           }, 1500);
         }
         else{
-          console.log(res);
+         // console.log(res);
           showNotification(res.error,"error");
           setIsLoading(false);
         }
@@ -99,7 +99,7 @@ const Login = () => {
     }
     else{
       setLoginData(res);
-      console.log("user login already",res);
+     // console.log("user login already",res);
       history("/");
     }
   }

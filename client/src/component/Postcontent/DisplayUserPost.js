@@ -41,8 +41,8 @@ const RenderUserPosts = () => {
   });
   
   useEffect(() => {
-    console.log("RenderUserPosts component mounted/refreshed");
-    console.log("Login data:", loginData);
+    // console.log("RenderUserPosts component mounted/refreshed");
+    // console.log("Login data:", loginData);
     
     if (loginData && loginData.validuserone) {
       setCurrentUser({
@@ -141,7 +141,7 @@ const RenderUserPosts = () => {
       });
       
       const data = await response.json();
-      console.log("User posts:", data);
+     // console.log("User posts:", data);
       
       if (data.status === 200) {
         setUserPosts(data.userposts);

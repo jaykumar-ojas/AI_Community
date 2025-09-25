@@ -13,10 +13,10 @@ const PixelLoader = ({ imgUrl }) => {
     img.crossOrigin = "anonymous"; // Handle cross-origin issues if any
 
     // Log the URL to confirm
-    console.log("Loading image from:", sampleImg);
+  //  console.log("Loading image from:", sampleImg);
 
     img.onload = () => {
-      console.log("Image loaded successfully");
+     // console.log("Image loaded successfully");
       
       // Create a canvas element
       const canvas = document.createElement("canvas");

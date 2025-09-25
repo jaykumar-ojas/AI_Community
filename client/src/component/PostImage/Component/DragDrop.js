@@ -23,11 +23,28 @@ const DragAndDrop = () => {
 
   // 🔥 rotating engaging messages
   const messages = [
-    "✨ Your image canvas is forming...",
-    "🎨 Adding colors and textures...",
-    "🌀 Polishing details for perfection...",
-    "⚡ Almost ready... hang tight!",
-  ];
+  "✨ Your image canvas is forming...",
+  "🎨 Adding colors and textures...",
+  "🌀 Polishing details for perfection...",
+  "⚡ Almost ready... hang tight!",
+  "🔮 Summoning creativity from the void...",
+  "🖌️ Painting strokes of imagination...",
+  "🌌 Mixing stardust with colors...",
+  "⚙️ Aligning tiny artistic gears...",
+  "🎭 Giving life to your vision...",
+  "📸 Adjusting the perfect frame...",
+  "🧩 Assembling all the creative pieces...",
+  "🌈 Splashing a bit more color magic...",
+  "🔍 Perfecting the tiniest details...",
+  "💡 Bright ideas are sparking up...",
+  "🚀 Creativity is blasting off...",
+  "🌟 Adding some final sparkles...",
+  "🧵 Weaving imagination into reality...",
+  "🎇 Almost there, your masterpiece awaits...",
+  "🔔 Just a moment, magic is ringing...",
+  "🏆 Done soon — a work of art is coming!"
+];
+
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 

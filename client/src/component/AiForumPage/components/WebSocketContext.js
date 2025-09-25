@@ -42,7 +42,7 @@ export const WebSocketProvider = ({ children }) => {
 
   // Emit new topic event
   const emitNewTopic = (topic) => {
-    console.log("i am coming here for updating");
+   // console.log("i am coming here for updating");
     if (socket && topic) {
       socket.emit("new_topic", topic);
     }

@@ -3,6 +3,7 @@ import ShowCommentContent from "./ShowCommentContent";
 import UserIconCard from "../../Card/UserIconCard";
 import UserNameCard from "../../Card/UserNameCard";
 
+const MAX_DEPTH = 3;
 const getLineColor = (depth) => {
   const colors = [
     "border-red-400",
@@ -15,7 +16,14 @@ const getLineColor = (depth) => {
   return colors[depth % colors.length]; // cycle through colors
 };
 
-const RecurrsionLoopComment = ({ reply, depth = 0, isLastChild, scrollToId }) => {
+const RecurrsionLoopComment = ({
+  reply,
+  depth = 0,
+  isLastChild,
+  scrollToId,
+  setThreadView = () => {},
+  setLastThreadContext = () => {},
+}) => {
   const [view, setView] = useState(true);
   const hasChildren = reply?.children && reply?.children.length > 0;
 
@@ -109,15 +117,29 @@ const RecurrsionLoopComment = ({ reply, depth = 0, isLastChild, scrollToId }) =>
 
       {hasChildren && view && (
         <div>
-          {reply?.children.map((childReply, index) => (
-            <RecurrsionLoopComment
-              key={childReply?._id}
-              reply={childReply}
-              depth={depth + 1}
-              isLastChild={index === reply.children.length - 1}
-              scrollToId={scrollToId}
-            />
-          ))}
+          {depth + 1 < MAX_DEPTH ? (
+            reply?.children.map((childReply, index) => (
+              <RecurrsionLoopComment
+                key={childReply?._id}
+                reply={childReply}
+                depth={depth + 1}
+                isLastChild={index === reply.children.length - 1}
+                scrollToId={scrollToId}
+                setThreadView={setThreadView}
+                setLastThreadContext={setLastThreadContext}
+              />
+            ))
+          ) : (
+            <div
+              className="pl-8 text-blue-600 text-sm cursor-pointer hover:underline"
+              onClick={() => {
+                setLastThreadContext(reply._id);
+                setThreadView(reply._id);
+              }}
+            >
+              Continue thread →
+            </div>
+          )}
         </div>
       )}
     </div>

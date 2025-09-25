@@ -11,7 +11,7 @@ const ForgotPassword = () => {
     setEmail(e.target.value);
   }
   const handleSubmit = async(e) => {
-    console.log(email,"this is email");
+   // console.log(email,"this is email");
     e.preventDefault();
     const data =await fetch(`${baseUrl}/forget-password`,{
       method:'POST',
@@ -34,7 +34,7 @@ const ForgotPassword = () => {
       alert(res.error);
     }
     // Handle password reset logic here
-    console.log("Password reset requested");
+   // console.log("Password reset requested");
   };
 
   return (

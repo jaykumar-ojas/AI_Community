@@ -10,7 +10,7 @@ const BookMark = ({ userId, postId, isBookmarked }) => {
 
 
   const handleBookMark = async () => {
-    console.log("i m going to bacend in");
+   // console.log("i m going to bacend in");
     try {
       const response = await fetch(`${baseUrl}/bookMark/${userId}/${postId}`, {
         method: "POST",
@@ -24,12 +24,12 @@ const BookMark = ({ userId, postId, isBookmarked }) => {
 
       if (response.ok) {
         setBooked(!booked);
-        console.log("i m setting bookedmark",booked);
+      //  console.log("i m setting bookedmark",booked);
       } else {
-        console.error("Bookmark toggle failed:", data.error);
+        console.error("");
       }
     } catch (error) {
-      console.error("Error toggling bookmark:", error);
+      console.error("");
     }
   };
 

@@ -178,7 +178,7 @@ const NewTopicModal = ({ onClose }) => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Generate Content with AI
+              Generate Topic with AI
             </button>
             <p className="text-xs text-gray-500 mt-2 text-center">
               Let AI help you create engaging content for your topic

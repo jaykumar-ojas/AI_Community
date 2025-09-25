@@ -4,7 +4,7 @@ const LazyImageWithBlurAndSpinner = ({ post, lowResUrl, alt }) => {
   const [lowResLoaded, setLowResLoaded] = useState(false);
   const [highResLoaded, setHighResLoaded] = useState(false);
 
- console.log("this is my post",post);
+//  console.log("this is my post",post);
 
   return (
     <div className="relative overflow-hidden w-full h-full bg-gray-100">

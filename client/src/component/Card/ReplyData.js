@@ -23,10 +23,13 @@ const getPlainTextSummary = (html) => {
   return div.textContent || div.innerText || "";
 };
 
-const storingImageUrl = (content)=>{
-  const allUrl = Array.isArray(content) && content.length >0 ? content.map((item)=> item.imageUrl.fileUrl) : [];
+const storingImageUrl = (content) => {
+  const allUrl =
+    Array.isArray(content) && content.length > 0
+      ? content.map((item) => item.imageUrl?.fileUrl)
+      : [];
   return allUrl;
-}
+};
 // ----------------------------
 
 const ReplyData = ({ content }) => {
@@ -35,18 +38,22 @@ const ReplyData = ({ content }) => {
 
   // Theme + MathJax setup
   useHighlightTheme();
-
   const mathJaxLoaded = useMathJax(contentRef, [expanded, content]);
 
   const collapsedLimit = 50;
 
   // Gather all text for summary + word count
   const allUrl = storingImageUrl(content);
-  const allTexts =Array.isArray(content) && content.length > 0? content.map(
-          (item) =>`${item.userText || ""} ${item.prompt || ""} ${item.aiText || ""}`): [];
+  const allTexts =
+    Array.isArray(content) && content.length > 0
+      ? content.map(
+          (item) => `${item.userText || ""} ${item.prompt || ""} ${item.aiText || ""}`
+        )
+      : [];
 
   const combinedCount = wordCount(allTexts.join(" "));
-  const hasImages =Array.isArray(content) && content.some((item) => item?.imageUrl?.fileUrl);
+  const hasImages =
+    Array.isArray(content) && content.some((item) => item?.imageUrl?.fileUrl);
 
   const showSeeMore = combinedCount > collapsedLimit || hasImages;
 
@@ -64,38 +71,35 @@ const ReplyData = ({ content }) => {
   const displayContent =
     content && Array.isArray(content) && content.length > 0 ? content : [];
 
-
   return (
     <div className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
       {!expanded ? (
         <>
-          {/* {collapsedSummary && (
-            <div
-              className="mb-2"
-              dangerouslySetInnerHTML={{
-                __html: parseMarkdown(collapsedSummary),
-              }}
-            />
-          )} */}
           <div className="h-8 overflow-hidden">
-            <DisplayContent displayContent={displayContent}/>
+            <DisplayContent displayContent={displayContent} />
           </div>
-          
 
-          {hasImages && 
-            <div className="flex items-center ">
-              {allUrl?.slice(0,4).map((url,idx) => (
-                <div className={`${idx>0 ?"-ml-8" : ""} flex items-center justify-center`}>
-                  {url && <img
-                    src={url}
-                    className="max-h-[80px] rounded-xl w-auto object-contain"
-                    onError={(e) => (e.target.style.display = "none")}
-                  />}
+          {hasImages && (
+            <div className="flex items-center">
+              {allUrl?.slice(0, 4).map((url, idx) => (
+                <div
+                  key={url || `image-${idx}`}
+                  className={`${idx > 0 ? "-ml-8" : ""} flex items-center justify-center`}
+                >
+                  {url && (
+                    <img
+                      src={url}
+                      className="max-h-[80px] rounded-xl w-auto object-contain"
+                      onError={(e) => (e.target.style.display = "none")}
+                    />
+                  )}
                 </div>
               ))}
-              {allUrl.length >4 && <div className="items-center justify-content">...</div>}
+              {allUrl.length > 4 && (
+                <div className="items-center justify-content">...</div>
+              )}
             </div>
-          }
+          )}
 
           {showSeeMore && (
             <button
@@ -108,7 +112,7 @@ const ReplyData = ({ content }) => {
         </>
       ) : (
         <div ref={contentRef}>
-          <DisplayContent displayContent={displayContent}/>
+          <DisplayContent displayContent={displayContent} />
           {showSeeMore && (
             <button
               onClick={() => setExpanded(false)}
@@ -121,9 +125,7 @@ const ReplyData = ({ content }) => {
       )}
 
       {!mathJaxLoaded && expanded && (
-        <div className="text-xs text-gray-500 mt-2">
-          Loading math renderer...
-        </div>
+        <div className="text-xs text-gray-500 mt-2">Loading math renderer...</div>
       )}
     </div>
   );
@@ -131,59 +133,54 @@ const ReplyData = ({ content }) => {
 
 export default ReplyData;
 
-const DisplayContent = ({displayContent}) => {
+const DisplayContent = ({ displayContent }) => {
   return (
     <>
-    {displayContent?.map((item, index) => (
-            <div
-              key={index}
-              className="mb-4 border-gray-200 dark:border-gray-700"
-            >
-              {item.userText && (
-                <div className="mb-3">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: parseMarkdown(item.userText),
-                    }}
-                  />
-                </div>
-              )}
-              {item.prompt && (
-                <div className="mb-3">
-                  <span className="inline-block mb-2 text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
-                    Prompt
-                  </span>
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: parseMarkdown(item.prompt),
-                    }}
-                  />
-                </div>
-              )}
-              {item.aiText && (
-                <div className="mb-3">
-                  <ModelIcon modelName={item.model} />
-                  <div
-                    className=""
-                    dangerouslySetInnerHTML={{
-                      __html: parseMarkdown(item.aiText),
-                    }}
-                  />
-                </div>
-              )}
-              {item.imageUrl?.fileUrl && (
-                // <img
-                //   src={item.imageUrl.fileUrl}
-                //   alt={item.imageUrl.fileName || "uploaded"}
-                //   className="max-w-md h-auto rounded-md shadow-sm border"
-                // />
-                <ShowUrl url={item.imageUrl.fileUrl} modelInfo={item.model} />
-              )}
+      {displayContent?.map((item, index) => (
+        <div
+          key={item.id || item._id || `content-${index}`}
+          className="mb-4 border-gray-200 dark:border-gray-700"
+        >
+          {item.userText && (
+            <div className="mb-3">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: parseMarkdown(item.userText),
+                }}
+              />
             </div>
-          ))}
+          )}
+          {item.prompt && (
+            <div className="mb-3">
+              <span className="inline-block mb-2 text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
+                Prompt
+              </span>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: parseMarkdown(item.prompt),
+                }}
+              />
+            </div>
+          )}
+          {item.aiText && (
+            <div className="mb-3">
+              <ModelIcon modelName={item.model} />
+              <div
+                className=""
+                dangerouslySetInnerHTML={{
+                  __html: parseMarkdown(item.aiText),
+                }}
+              />
+            </div>
+          )}
+          {item.imageUrl?.fileUrl && (
+            <ShowUrl url={item.imageUrl.fileUrl} modelInfo={item.model} />
+          )}
+        </div>
+      ))}
     </>
-  )
-}
+  );
+};
 
 const ShowUrl = ({ url, modelInfo }) => {
   if (!url) return null;

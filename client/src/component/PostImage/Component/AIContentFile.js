@@ -203,7 +203,7 @@ const generateAIImage = async () => {
   }
 
   try {
-    console.log('Setting isGeneratingImage to true');
+    // console.log('Setting isGeneratingImage to true');
     setIsGeneratingImage(true);
 
     // Prepare request body
@@ -219,7 +219,7 @@ const generateAIImage = async () => {
       requestBody.aspectRatio = selectedAspectRatio;
     }
 
-    console.log('Starting image generation...');
+    // console.log('Starting image generation...');
 
     // --- Call backend ---
     const response = await fetch(`${baseUrl}/generateContent`, {
@@ -230,7 +230,7 @@ const generateAIImage = async () => {
 
     if (!response.ok) throw new Error("Failed to generate image");
     const result = await response.json();
-    console.log('Image generation result:', result);
+    // console.log('Image generation result:', result);
 
     setUserCredit(result?.credit);
 
@@ -284,7 +284,7 @@ const generateAIImage = async () => {
 
     // Wait a bit before stopping the loader to ensure smooth transition
     setTimeout(() => {
-      console.log('Setting isGeneratingImage to false');
+      // console.log('Setting isGeneratingImage to false');
       setIsGeneratingImage(false);
       
       // Then show cropper after loader is hidden

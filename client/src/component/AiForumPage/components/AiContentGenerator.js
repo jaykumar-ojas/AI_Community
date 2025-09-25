@@ -1,25 +1,33 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { LoginContext } from '../../ContextProvider/context';
-import { getAuthHeaders, API_BASE_URL } from './ForumUtils';
+import React, { useState, useContext, useEffect, useRef } from "react";
+import axios from "axios";
+import { LoginContext } from "../../ContextProvider/context";
+import { getAuthHeaders, API_BASE_URL } from "./ForumUtils";
 
 // Component for AI messages
 function AiMessage({ message, isUser = false, modelInfo = null }) {
   return (
-    <div className={`mb-4 ${isUser ? 'bg-white' : 'bg-blue-50'} p-4 rounded-lg shadow-sm`}>
+    <div
+      className={`mb-4 ${
+        isUser ? "bg-white" : "bg-blue-50"
+      } p-4 rounded-lg shadow-sm`}
+    >
       <div className="flex items-center mb-2">
         {!isUser && modelInfo && modelInfo.iconUrl && (
-          <img 
-            src={modelInfo.iconUrl} 
+          <img
+            src={modelInfo.iconUrl}
             alt={`${modelInfo.providerName} icon`}
             className="w-6 h-6 rounded-full mr-2 object-cover"
             onError={(e) => {
-              e.target.style.display = 'none';
+              e.target.style.display = "none";
             }}
           />
         )}
         <span className="font-medium text-blue-600 mr-2">
-          {isUser ? 'You' : modelInfo ? `${modelInfo.providerName} (${modelInfo.modelName})` : 'AI Assistant'}
+          {isUser
+            ? "You"
+            : modelInfo
+            ? `${modelInfo.providerName} (${modelInfo.modelName})`
+            : "AI Assistant"}
         </span>
       </div>
       <div className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -29,25 +37,50 @@ function AiMessage({ message, isUser = false, modelInfo = null }) {
   );
 }
 
-
-const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
+const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
   const { loginData } = useContext(LoginContext);
   const [messages, setMessages] = useState([
-    { content: "Welcome! I can help you generate content for your new topic. What would you like to discuss?", isUser: false, modelInfo: null }
+    {
+      content:
+        "Welcome! I can help you generate content for your new topic. What would you like to discuss?",
+      isUser: false,
+      modelInfo: null,
+    },
   ]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState({ title: '', content: '' });
+  const [generatedContent, setGeneratedContent] = useState({
+    title: "",
+    content: "",
+  });
   const [isGeneratingFinal, setIsGeneratingFinal] = useState(false);
   const [currentModelInfo, setCurrentModelInfo] = useState(null);
   const messagesEndRef = useRef(null);
-  const baseUrl = process.env.REACT_APP_BASE_URL;
 
+  // Loader messages that rotate
+  const engagingMessages = [
+    "💡 Brainstorming your topic idea...",
+    "🤔 Thinking of creative angles...",
+    "✍️ Crafting words into ideas...",
+    "🚀 Almost there, preparing your content...",
+    "🌟 Good things take time, hang tight...",
+  ];
+  const [loaderMsgIndex, setLoaderMsgIndex] = useState(0);
+
+  useEffect(() => {
+    let interval;
+    if (isLoading || isGeneratingFinal) {
+      interval = setInterval(() => {
+        setLoaderMsgIndex((prev) => (prev + 1) % engagingMessages.length);
+      }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading, isGeneratingFinal]);
 
   // Scroll to bottom of messages when new messages are added
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
@@ -55,140 +88,116 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-  
-    // Add user message
-    setMessages(prev => [...prev, { content: inputValue, isUser: true, modelInfo: null }]);
-    
-    // Clear input
+
+    setMessages((prev) => [
+      ...prev,
+      { content: inputValue, isUser: true, modelInfo: null },
+    ]);
     const userPrompt = inputValue;
-    setInputValue('');
+    setInputValue("");
     setIsLoading(true);
-  
+
     try {
-      // Add a "thinking" message
-      setMessages(prev => [...prev, { 
-        content: "Thinking...", 
-        isUser: false,
-        isThinking: true,
-        modelInfo: null
-      }]);
-        
-      // Call the API endpoint with model name
-      const response = await axios.post(`${API_BASE_URL}/generateTopicContent`, {
-        prompt: userPrompt,
-        modelName: "gemini-2.0-flash" // You can make this dynamic based on selected model
-      }, {
-        headers: getAuthHeaders()
-      });
-        
-      // Remove the "thinking" message
-      setMessages(prev => prev.filter(msg => !msg.isThinking));
-      
-      // Check the structure of the response data
-      if (response.data && response.data.content && response.data.content.title && response.data.content.body) {
-        // Store model info for display
+      setMessages((prev) => [
+        ...prev,
+        { content: "Thinking...", isUser: false, isThinking: true },
+      ]);
+
+      const response = await axios.post(
+        `${API_BASE_URL}/generateTopicContent`,
+        {
+          prompt: userPrompt,
+          modelName: "gemini-2.0-flash",
+        },
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+
+      setMessages((prev) => prev.filter((msg) => !msg.isThinking));
+
+      if (
+        response.data &&
+        response.data.content &&
+        response.data.content.title &&
+        response.data.content.body
+      ) {
         if (response.data.modelInfo) {
           setCurrentModelInfo(response.data.modelInfo);
         }
-        
+
         setNewTopic({
           title: response.data.content.title,
           content: response.data.content.body,
           imageUrl: response.data.content.imageUrl,
-          modelInfo: response.data.modelInfo
+          modelInfo: response.data.modelInfo,
         });
         onClose();
       } else {
-        throw new Error('Invalid response structure from API');
+        throw new Error("Invalid response structure from API");
       }
-      
+
       setIsLoading(false);
-    } catch (error) {      // Remove any "thinking" message
-      setMessages(prev => prev.filter(msg => !msg.isThinking));
-      // Add error message
-      setMessages(prev => [...prev, { 
-        content: `Error: ${error.message || 'Could not generate topic content'}. Please check the console for more details.`, 
-        isUser: false,
-        modelInfo: null
-      }]);
+    } catch (error) {
+      setMessages((prev) => prev.filter((msg) => !msg.isThinking));
+      setMessages((prev) => [
+        ...prev,
+        {
+          content: `Error: ${
+            error.message || "Could not generate topic content"
+          }. Please check console for details.`,
+          isUser: false,
+        },
+      ]);
       setIsLoading(false);
     }
   };
 
-  // Generate final content for posting
+  // Generate final content locally
   const handleGenerateFinalContent = async () => {
     setIsGeneratingFinal(true);
-    
     try {
-      // Get all user messages to use as context
       const userMessages = messages
-        .filter(msg => msg.isUser)
-        .map(msg => msg.content)
+        .filter((msg) => msg.isUser)
+        .map((msg) => msg.content)
         .join("\n");
-      
-      // Add a generating message
-      setMessages(prev => [...prev, { 
-        content: "Generating your topic content...", 
-        isUser: false,
-        isGenerating: true,
-        modelInfo: currentModelInfo
-      }]);
 
-      // Generate content locally instead of calling the API
-      // This avoids potential API key issues
       setTimeout(() => {
-        // Remove the generating message
-        setMessages(prev => prev.filter(msg => !msg.isGenerating));
-        
-        // Extract a title from the first user message
-        const firstUserMessage = messages.find(msg => msg.isUser)?.content || "";
-        let suggestedTitle = firstUserMessage.split('.')[0] || "New Topic";
+        const firstUserMessage =
+          messages.find((msg) => msg.isUser)?.content || "";
+        let suggestedTitle = firstUserMessage.split(".")[0] || "New Topic";
         let suggestedContent = "";
-        
-        // Generate content based on the conversation
-        if (userMessages.toLowerCase().includes('star wars')) {
+
+        if (userMessages.toLowerCase().includes("star wars")) {
           suggestedTitle = "Exploring the Star Wars Universe: Fan Discussion";
-          suggestedContent = `# ${suggestedTitle}\n\nThe Star Wars franchise has captivated audiences for generations with its epic storytelling, memorable characters, and groundbreaking visual effects. From the original trilogy that changed cinema forever to the latest Disney+ series, there's always something new to discover and discuss in this vast universe.\n\nIn this topic, I'd like to explore our favorite aspects of Star Wars, including:\n\n- Character arcs and development across the different eras\n- Standout moments from the films and TV shows\n- How the expanded universe (books, comics, games) enhances the story\n- Theories about upcoming content and where the franchise might go next\n\nWhether you're a fan of the Jedi philosophy, the complex political backdrop of the prequels, or simply love watching Mandalorians and Baby Yoda, this is a space to share your thoughts and connect with fellow fans.\n\nWhat's your favorite Star Wars era, character, or story? And what do you hope to see in future Star Wars content?`;
+          suggestedContent = `# ${suggestedTitle}\n\nThe Star Wars franchise has captivated audiences...`;
         } else {
-          // Create a generic but thoughtful forum post based on user messages
-          suggestedContent = `# ${suggestedTitle}\n\n${userMessages}\n\nI'd like to open this topic for discussion with the community. I'm particularly interested in hearing different perspectives and experiences related to this subject.\n\nSome questions to consider:\n- What has been your experience with this topic?\n- Are there aspects of this that you think deserve more attention?\n- How do you see this evolving in the future?\n\nLooking forward to an engaging conversation!`;
+          suggestedContent = `# ${suggestedTitle}\n\n${userMessages}\n\nLet's open this topic for discussion!`;
         }
-        
+
         setGeneratedContent({
           title: suggestedTitle,
-          content: suggestedContent
+          content: suggestedContent,
         });
-        
-        setMessages(prev => [...prev, { 
-          content: "I've generated a title and content for your topic. You can now post it or continue refining it.", 
-          isUser: false,
-          modelInfo: currentModelInfo
-        }]);
-        
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            content:
+              "✨ I've generated a draft topic for you. You can refine or post it.",
+            isUser: false,
+            modelInfo: currentModelInfo,
+          },
+        ]);
+
         setIsGeneratingFinal(false);
-      }, 2000);
+      }, 4000);
     } catch (error) {
-      console.error('Error generating final content:', error);
-      // Remove any generating message
-      setMessages(prev => prev.filter(msg => !msg.isGenerating));
-      setMessages(prev => [...prev, { 
-        content: "I encountered an error generating the final content. Let's try a simpler approach. I've created a basic template that you can customize before posting.", 
-        isUser: false,
-        modelInfo: currentModelInfo
-      }]);
-      
-      // Provide a fallback template
-      const firstUserMessage = messages.find(msg => msg.isUser)?.content || "";
-      setGeneratedContent({
-        title: firstUserMessage.split('.')[0] || "New Discussion Topic",
-        content: `# Discussion: ${firstUserMessage}\n\nI wanted to start a conversation about this topic. What are your thoughts and experiences?\n\n[Add more details here to enrich the discussion]`
-      });
-      
+      console.error(error);
       setIsGeneratingFinal(false);
     }
   };
 
-  // Post the generated content
   const handlePostContent = () => {
     if (onContentGenerated && generatedContent.title && generatedContent.content) {
       onContentGenerated(generatedContent);
@@ -196,143 +205,120 @@ const AiContentGenerator = ({onContentGenerated,setNewTopic, onClose}) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col">
-        {/* Header with back button */}
-        <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[2000] flex items-start justify-center pt-20">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[85vh] flex flex-col relative">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-20">
           <div className="flex items-center">
             <button
               onClick={onClose}
               className="mr-3 text-gray-500 hover:text-gray-700"
-              aria-label="Go back"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+              ←
             </button>
             <h3 className="text-lg font-semibold">AI Content Generator</h3>
           </div>
-          
-          {/* Post button - always visible in header */}
+
           {generatedContent.title && generatedContent.content && (
             <button
               onClick={handlePostContent}
               className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Post Topic
+              ✅ Post Topic
             </button>
           )}
         </div>
-        
-        {/* Chat Container */}
+
+        {/* Chat */}
         <div className="flex-1 p-5 overflow-y-auto bg-gray-50">
-          {messages.map((msg, index) => (
-            <AiMessage 
-              key={index} 
-              message={msg.content} 
+          {messages.map((msg, idx) => (
+            <AiMessage
+              key={idx}
+              message={msg.content}
               isUser={msg.isUser}
               modelInfo={msg.modelInfo}
             />
           ))}
-          
-          {isLoading && !messages.some(msg => msg.isThinking) && (
-            <div className="flex items-center space-x-2 p-4 bg-gray-100 rounded-lg">
-              <div className="animate-pulse flex space-x-2">
-                <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-                <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-                <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
+
+          {(isLoading || isGeneratingFinal) && (
+            <div className="flex flex-col items-center p-4 bg-gray-100 rounded-lg">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
+              <div className="text-sm text-gray-600 font-medium text-center">
+                {engagingMessages[loaderMsgIndex]}
               </div>
-              <div className="text-sm text-gray-500">AI is thinking...</div>
             </div>
           )}
-          <div ref={messagesEndRef} /> {/* Empty div for scrolling to bottom */}
+
+          <div ref={messagesEndRef} />
         </div>
-        
-        {/* Input and Actions */}
+
+        {/* Footer */}
         <div className="p-4 bg-white border-t border-gray-200 sticky bottom-0">
           {generatedContent.title && generatedContent.content ? (
             <div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Generated Title</label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={generatedContent.title}
-                  onChange={(e) => setGeneratedContent({...generatedContent, title: e.target.value})}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Generated Content</label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  rows="5"
-                  value={generatedContent.content}
-                  onChange={(e) => setGeneratedContent({...generatedContent, content: e.target.value})}
-                />
-              </div>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded-lg mb-3"
+                value={generatedContent.title}
+                onChange={(e) =>
+                  setGeneratedContent({
+                    ...generatedContent,
+                    title: e.target.value,
+                  })
+                }
+              />
+              <textarea
+                className="w-full px-3 py-2 border rounded-lg mb-3 resize-none"
+                rows="5"
+                value={generatedContent.content}
+                onChange={(e) =>
+                  setGeneratedContent({
+                    ...generatedContent,
+                    content: e.target.value,
+                  })
+                }
+              />
               <div className="flex justify-between">
                 <button
-                  onClick={() => setGeneratedContent({ title: '', content: '' })}
+                  onClick={() => setGeneratedContent({ title: "", content: "" })}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
                 >
-                  Regenerate
+                  🔄 Regenerate
                 </button>
                 <button
                   onClick={handlePostContent}
-                  className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
+                  className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Post Topic
+                  ✅ Post Topic
                 </button>
               </div>
             </div>
           ) : (
-            <>
-              <form onSubmit={handleSubmit} className="flex mb-4">
-                <input 
-                  type="text"
-                  className="flex-1 border border-gray-200 rounded-md p-3 mr-2 text-sm"
-                  placeholder="Type your message here..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  disabled={isLoading || isGeneratingFinal}
-                />
-                <button 
-                  type="submit"
-                  className="bg-blue-600 text-white font-medium rounded-md px-4 py-2 disabled:opacity-50"
-                  disabled={!inputValue.trim() || isLoading || isGeneratingFinal}
-                >
-                  Send
-                </button>
-              </form>
-              <div className="flex justify-between">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleGenerateFinalContent}
-                  className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center"
-                  disabled={messages.length < 3 || isLoading || isGeneratingFinal}
-                >
-                  {isGeneratingFinal ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                      Generating...
-                    </>
-                  ) : (
-                    'Generate Topic Content'
-                  )}
-                </button>
-              </div>
-            </>
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <input
+                type="text"
+                className="flex-1 border border-gray-200 rounded-md p-3 text-sm"
+                placeholder="Type your message..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                disabled={isLoading || isGeneratingFinal}
+              />
+              <button
+                type="submit"
+                className="bg-blue-600 text-white font-medium rounded-md px-4 py-2 disabled:opacity-50"
+                disabled={!inputValue.trim() || isLoading || isGeneratingFinal}
+              >
+                Generate
+              </button>
+              <button
+                onClick={handleGenerateFinalContent}
+                type="button"
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+                disabled={messages.length < 3 || isLoading || isGeneratingFinal}
+              >
+                {isGeneratingFinal ? "Generating..." : "Finalize"}
+              </button>
+            </form>
           )}
         </div>
       </div>

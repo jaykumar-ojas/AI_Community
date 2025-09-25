@@ -30,7 +30,7 @@ async function googletext(prompt, model, aspectRatio) {
 }
 
 async function google_imagen(prompt, model, aspectRatio) {
-  const ai = await getImagen();
+ const ai = await getImagen();
 console.log("i am in imagen");
 const response = await ai.models.generateImages({
     model: model,
@@ -41,7 +41,7 @@ const response = await ai.models.generateImages({
     },
   });
   const generatedImage = response.generatedImages[0]; 
-      const imgBytes = generatedImage.image.imageBytes;
+  const imgBytes = generatedImage.image.imageBytes;
      return  {imageData:imgBytes};
 }
 

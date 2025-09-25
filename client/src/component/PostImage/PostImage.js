@@ -82,13 +82,7 @@ const PostImageContent = () => {
         formData.append("aiPrompt", aiMetadata.prompt);
       }
 
-      // Log form data for debugging
-      for (let pair of formData.entries()) {
-        console.log(
-          pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
-        );
-      }
-
+      
       // Choose the appropriate upload endpoint
       const uploadEndpoint = aiMetadata
         ? `${baseUrl}/upload-ai`
@@ -107,20 +101,13 @@ const PostImageContent = () => {
       }
 
       const res = await data.json();
-      console.log("Upload response:", res);
+      // console.log("Upload response:", res);
 
       if (res.status === 201) {
-        console.log("Upload successful:", res);
+        // console.log("Upload successful:", res);
         // Check if fileType was properly stored
-        console.log("Stored file type:", res.storePost.fileType);
-        if (aiMetadata) {
-          console.log("AI metadata stored:", {
-            isAIGenerated: res.storePost.isAIGenerated,
-            aiModel: res.storePost.aiModel,
-            aiProvider: res.storePost.aiProvider,
-            aiPrompt: res.storePost.aiPrompt,
-          });
-        }
+        // console.log("Stored file type:", res.storePost.fileType);
+     
 
         setFile(null);
         setDesc("");
@@ -133,20 +120,20 @@ const PostImageContent = () => {
         // Trigger refresh of posts list
         setRefreshKey((oldKey) => oldKey + 1);
 
-        alert("Post uploaded successfully!");
-        console.log(
-          "this is post image id",
-          res?.storePost?._id,
-          res.storePost
-        );
+        showNotification("Post uploaded successfully!", "success");
+        // console.log(
+        //   "this is post image id",
+        //   res?.storePost?._id,
+        //   res.storePost
+        // );
         navigate(`/userPost/${res?.storePost?._id}`);
       } else {
         console.error("Upload failed:", res);
-        alert(`Failed to upload post: ${res.error || "Unknown error"}`);
+        showNotification(`Failed to upload post: ${res.error || "Unknown error"}`, "error");
       }
     } catch (error) {
       console.error("Error during upload:", error);
-      alert(`Upload error: ${error.message || "Unknown error occurred"}`);
+      showNotification(`Upload error: ${error.message || "Unknown error occurred"}`, "error");
     } finally {
       setIsUploading(false);
     }
