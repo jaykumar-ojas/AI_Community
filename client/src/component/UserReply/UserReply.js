@@ -447,7 +447,7 @@ const UserReply = ({ forum = false }) => {
                 </span>
               </button>
               <span className={`text-xs font-medium transition-colors ${isContextAware ? 'text-like_color' : 'text-gray-800 dark:text-gray-200'}`}>
-                Context Aware
+                Context engine
               </span>
             </div>
 

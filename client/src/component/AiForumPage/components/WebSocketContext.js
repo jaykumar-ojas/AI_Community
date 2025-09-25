@@ -19,6 +19,7 @@ export const WebSocketProvider = ({ children }) => {
       transports: ["websocket"],
       withCredentials: true,
     });
+    
     setSocket(newSocket);
 
     return () => {
