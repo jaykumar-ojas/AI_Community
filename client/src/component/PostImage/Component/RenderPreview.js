@@ -4,7 +4,7 @@ import { PostContext } from "../PostContext";
 const RenderPreview = () => {
     const {previewUrl,fileType} = useContext(PostContext); 
     if (!previewUrl) return null;
-    console.log("this is my preview url",previewUrl);
+    // console.log("this is my preview url",previewUrl);
 
     if (fileType === 'image') {
         return (
