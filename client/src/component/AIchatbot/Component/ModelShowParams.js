@@ -30,7 +30,7 @@ const ModelShowParams =({ name, displayName, iconUrl, emoji, provider, active = 
                 <span className={`text-md line-clamp-1 ${iconUrl ? '' : 'ml-7'}`}>{displayName}</span>
                 </div>
                 <div className="">
-                    <DynamicNumberSVG value={modelCreditConfig[name]?.cost} size={25}/>
+                    <DynamicNumberSVG value={modelCreditConfig[name]?.cost} size={6}/>
                 </div>
                
             </button>

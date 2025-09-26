@@ -21,13 +21,13 @@ async function runBatchJob(batchSize = 10) {
 
 
 
-cron.schedule('0 9,18 * * *', async () => {
-  console.log('Starting batch job...');
+cron.schedule('0 0 * * *', async () => {
+  console.log('Starting batch job at midnight...');
   await runBatchJob();
 });
 
 
-router.get('/startBatchJob',async(req,res)=>{
+router.get('/startBatchJobmereyahanparhai',async(req,res)=>{
  try {
     await runBatchJob();
     res.status(200).json({ message: "Batch job completed successfully." });

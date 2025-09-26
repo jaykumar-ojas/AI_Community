@@ -15,6 +15,7 @@ import BookmarkIcon, {
 import UserContentSkeleton from "./UserContentSkeleton";
 import BookMark from "../BookMark/BookMark";
 import { useNotification } from "../ContextProvider/NotificationContext";
+import { CommentContext } from "../ContextProvider/CommentModelContext";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 // AI Model Info Component
@@ -124,6 +125,8 @@ const AIModelInfo = ({ aiMetadata }) => {
 };
 
 const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
+  const { setViewBox,viewBox} =
+      useContext(CommentContext);
   const { showNotification } = useNotification();
   const history = useNavigate();
   const { loginData } = useContext(LoginContext);
@@ -526,6 +529,18 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
                   <CommentIcon />
                 </button>
               )}
+
+               <button
+                  onClick={() => {
+                    // setReplyIdForContext(reply?._id);
+                    // setUserName(reply?.userName);
+                    setViewBox(!viewBox);
+                  }}
+                  className="md:hidden flex items-center gap-1  text-like_color hover:text-like_color transition"
+                >
+                  <ReplyIcon />
+                  <div className="text-xs">Reply</div>
+                </button>
             </div>
             {/* Right side (Bookmark) */}
               <BookMark

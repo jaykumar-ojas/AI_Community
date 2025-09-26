@@ -170,7 +170,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                 </div>
 
                 <div className='flex items-center justify-center'>
-                  <div className="bg-green-100 h-5 text-green-700 text-xs dark:bg-green-900/40 dark:text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <div className="bg-gray-100 h-5 text-gray-700 text-xs dark:bg-gray-900/40 dark:text-gray-300 px-2 py-0.5 rounded-full flex items-center gap-1">
                   {topic.viewCount} <EyeIcon size={12}/>
                 </div>
                  {canDelete && (

@@ -7,8 +7,10 @@ import SubscriptionsList from "./SubscriptionsList";
 import { LoginContext } from "../../ContextProvider/context";
 import { AttachIcon, DragAndDropIcon, PenIcon } from "../../../asset/icons";
 import { encodeId, decodeId} from "../../../utils/hashids"
+import { useNotification } from "../../ContextProvider/NotificationContext";
 
 const UserHeader = ({ posts = [], isLoading, isError, error }) => {
+  const {showNotification} = useNotification();
   const [backgroundLoaded, setBackgroundLoaded] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -17,6 +19,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const [backgroundPreview, setBackgroundPreview] = useState(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [profilePicture, setProfilePicture] = useState(null);
+  const [nameChange, setNameChange] = useState(false);
   const [userName, setUserName] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isTextUpdating, setIsTextUpdating] = useState(false);
@@ -139,7 +142,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
 
   const handleSubscription = async () => {
     if (!loginData?.validuserone?._id) {
-      alert("Please login to subscribe");
+      showNotification("Please login to subscribe","warning");
       return;
     }
 
@@ -172,11 +175,11 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
             : prev.subscribersCount + 1,
         }));
       } else {
-        alert(data.error || "Failed to update subscription");
+        showNotification(data.error || "Failed to update subscription","error");
       }
     } catch (error) {
       console.error("Error updating subscription:", error);
-      alert("An error occurred. Please try again.");
+      showNotification("An error occurred. Please try again.","error");
     } finally {
       setIsSubscribing(false);
     }
@@ -245,7 +248,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
       const data = await response.json();
 
       if (data.status === 200) {
-        alert("Profile updated successfully!");
+        showNotification("Profile updated successfully!","success");
       //   setProfileUser(data.user);
 
         //console.log("Profile user:", profileUser);
@@ -258,7 +261,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
         // Refresh the profile data
         fetchUserProfile(id);
       } else {
-        alert(data.message || "Update failed");
+        showNotification(data.message || "Update failed","info");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -329,7 +332,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                 </button>
               ) : (
                 <div className="flex items-center space-x-2">
-                  {(backgroundImage || profilePicture) && (
+                  {(backgroundImage || profilePicture || nameChange) && (
                     <button
                       onClick={handleUpdateProfileData}
                       disabled={isUploadingBackground || isUploadingProfile}
@@ -452,14 +455,14 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
       <div className=" from-transparent  pt-16">
         <div className="relative flex flex-col justify-end md:items-center md:gap-8 md:pt-4 sm:gap-4 sm:justify-end sm:flex sm:pt-1 sm:flex-row">
           {/* Left: Name & Bio */}
-          <div className="pt-20 w-full md:mb-0 md:p-4 sm:py-2 sm:px-0 sm:w-1/3">
+          <div className="md:pt-20 w-full md:mb-0 md:p-4 sm:py-2 sm:px-0 sm:w-1/3">
             {profileUser ? (
               <>
                 {isOwnProfile && isUpdating ? (
                   <input
                     type="text"
                     value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
+                    onChange={(e) => {setUserName(e.target.value); setNameChange(true)}}
                     className="text-center sm:text-start font-bold text-gray-800 md:text-2xl sm:text-2xl lg:text-3xl border-2 border-blue-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:border-blue-500 bg-white shadow-lg"
                     placeholder="Enter your name"
                   />
@@ -513,7 +516,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
           </div>
 
           {/* Right: Stats */}
-          <div className="w-full p-4 pb-6 px-12 md:mb-0 flex flex-row gap-2 text-center justify-between md:mr-8 md:gap-6 sm:gap-2 sm:px-1 sm:pr-4 sm:py-3 sm:w-1/3 lg:gap-8">
+          <div className="w-full md:p-4 pb-6 px-12 md:mb-0 flex flex-row gap-2 text-center justify-between md:mr-8 md:gap-6 sm:gap-2 sm:px-1 sm:pr-4 sm:py-3 sm:w-1/3 lg:gap-8">
             {profileUser ? (
               <>
                 <div>
