@@ -294,8 +294,8 @@ const generateAIImage = async () => {
     }, 1000); // Show success for 1 second
 
   } catch (error) {
-    console.error("Error generating AI image:", error);
-    alert("Failed to generate image: " + error.message);
+    //console.error("Error generating AI image:", error);
+    showNotification("This prompt may contain flagged content (e.g., personal names). Please revise the prompt or switch to a different model : " + error.message);
     setIsGeneratingImage(false);
   }
 };

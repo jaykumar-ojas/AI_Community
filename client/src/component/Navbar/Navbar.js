@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import "./wave-btn.css";
 import logoName from "./logoName.png";
+import Switch from "./toggle";
 
 // Create context for forum visibility
 export const ForumContext = createContext();
@@ -222,12 +223,14 @@ export default function Navbar({ showForum, setShowForum }) {
                       }}
                     />
                   )}
-                  <button
+                  {/* <button
                     onClick={() => setDarkMode(!darkMode)}
                     className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:scale-110 transition"
                   >
-                    {darkMode ? "☀️" : "🌙"}
-                  </button>
+                    <Switch darkMode={darkMode} setDarkMode={setDarkMode} />
+                  </button> */}
+                  <Switch darkMode={darkMode} setDarkMode={setDarkMode} />
+
                   {isAuthenticated() && loginData ? (
                     <Menu as="div" className="relative z-10">
                       <MenuButton className="flex items-center focus:outline-none">
@@ -330,12 +333,15 @@ export default function Navbar({ showForum, setShowForum }) {
                 {loginData && <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50 }/>}
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center ">
-                  <button
+                  {/* <button
                     onClick={() => setDarkMode(!darkMode)}
                     className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:scale-110 transition"
                   >
                     {darkMode ? "☀️" : "🌙"}
-                  </button>
+                  </button> */}
+                  <Switch darkMode={darkMode} setDarkMode={setDarkMode} size="sm" />
+
+
                   <Menu as="div" className="relative z-10">
                     <MenuButton className="flex items-center focus:outline-none p-2 hover:bg-gray-800 rounded-full transition">
                       <BellIcon className="h-6 w-6 dark:text-white text-gray-900" />

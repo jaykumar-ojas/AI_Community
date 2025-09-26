@@ -125,6 +125,7 @@ const Login = () => {
         <div className="flex flex-col justify-center items-center w-full md:w-1/2 bg-black text-white px-8 py-10">
           <div className="text-center">
             <p className="text-3xl font-semibold mb-2">Welcome to PixxelMind</p>
+            <p className="text-md font-semibold mb-2">(where creativity meets you)</p>
             <p className="text-lg text-gray-300">Login</p>
           </div>
     

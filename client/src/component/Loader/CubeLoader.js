@@ -49,7 +49,7 @@ const CubeSpinner = ({
 
   return (
     <>
-      <style jsx>{`
+      <style>{`
         @keyframes cubeSpinner {
           0% {
             transform: rotate(45deg) rotateX(-25deg) rotateY(25deg);
