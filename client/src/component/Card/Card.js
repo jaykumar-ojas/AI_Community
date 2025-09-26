@@ -11,8 +11,10 @@ import axios from "axios";
 import AIModelInfo from "../Postcontent/UserContent";
 import {encodeId} from "../../utils/hashids"
 import LoginHover from "../Auth/LoginHover";
+import { useNotification } from "../ContextProvider/NotificationContext";
 
 const Card = ({ post }) => {
+  const { showNotification } = useNotification();
   const [showLogin, setShowLogin] = useState(false);
   const { loginData } = useContext(LoginContext);
   const [userLiked, setUserLiked] = useState(false);
@@ -117,14 +119,14 @@ const [sparkles, setSparkles] = useState([]);
 
     if (response.status !== 200) throw new Error("Like failed");
   } catch (error) {
-    console.error("Error liking post:", error);
+    console.error("");
 
     // Rollback if API fails
     setPostData(prevPostData);
     setUserLiked(prevUserLiked);
     setUserDisliked(prevUserDisliked);
 
-    alert("Error liking post. Please try again.");
+     showNotification("Error liking post. Please try again.");
   }
 };
 
