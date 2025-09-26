@@ -330,7 +330,7 @@ export default function Navbar({ showForum, setShowForum }) {
 
               {/* User icon bell icon */}
               <div className="flex items-center space-x-4">
-                {loginData && <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50 }/>}
+                {loginData && <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50} size={5}/>}
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center ">
                   {/* <button
