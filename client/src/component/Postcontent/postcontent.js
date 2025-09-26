@@ -154,7 +154,7 @@ const PostContent = () => {
             {showIcon && <ModelList/> }
             <button onClick={handleIconClick} className="justify-center m-2 items-center"><img src={AiIcons} alt="model" className="w-10 h-10 rounded-full"></img></button>
             </div> */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin dakr:scrollbar-thumb-gray-500 scrollbar-thumb-gray-300 dark:scrollbar-track-bg_comment_box md:px-24 sm:px-0">
+          <div className="flex-1 overflow-y-auto scrollbar-thin dark:scrollbar-thumb-gray-500 scrollbar-thumb-gray-300 dark:scrollbar-track-bg_comment_box md:px-24 sm:px-0">
             <div className="mb-6">
               <UserContent
                 post={post}
@@ -196,7 +196,7 @@ const PostContent = () => {
             <UserReply />
           </div>
 
-          <div className={`fixed bg-white left-0 right-0 ${viewBox ? "block" : "hidden"} z-30 bottom-0 block md:hidden`}>
+          <div className={`fixed bg-white dark:bg-transparent left-0 right-0 ${viewBox ? "block" : "hidden"} z-30 bottom-0 block md:hidden`}>
             <UserReply />
           </div>
         </div>

@@ -153,7 +153,7 @@ const TopicContent = () => {
         <UserReply forum={true} />
       </div>
       {viewBox && (
-        <div ref={mobileReplyRef} className="fixed z-50 bottom-0 left-0 right-0 bg-white md:hidden">
+        <div ref={mobileReplyRef} className="fixed z-50 bottom-0 left-0 right-0 bg-white dark:bg-transparent md:hidden">
           <UserReply forum={true} />
         </div>
       )}

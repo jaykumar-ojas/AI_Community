@@ -98,7 +98,7 @@ export const ReplyIcon = ({ isActive }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4 mr-1 flex items-center justify-content"
+      className="h-4 w-4 mr-1 flex items-center justify-content animate-pop"
       fill="none"
       viewBox="0 0 24 24"
       stroke={isActive ? "#10b981" : "currentColor"} // Green when active
@@ -245,7 +245,7 @@ export const thumbsDownSvg = (filled = false) => {
 export const AttachIcon = ({ isActive }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5 mr-1"
+    className="sm:h-5 sm:w-5 h-4 w-4 mr-1"
     fill="none"
     viewBox="0 0 24 24"
     stroke={isActive ? "#8b5cf6" : "currentColor"} // Purple when active
@@ -544,10 +544,10 @@ export const BookmarkIcon = ({ isBookmarked }) => {
 
 
 
-export const DynamicNumberSVG = ({ value, size=36 }) => {
+export const DynamicNumberSVG = ({ value, size=8 }) => {
   return (
-   <div className="loader border-r-2 rounded-full border-yellow-500 bg-yellow-300 
-aspect-square w-8 flex justify-center items-center text-yellow-700">{value}</div>
+   <div className={`loader border-r-2 rounded-full border-yellow-500 bg-yellow-300 
+aspect-square w-${size} text-xs flex justify-center items-center text-yellow-700`}>{value}</div>
   );
 };
 

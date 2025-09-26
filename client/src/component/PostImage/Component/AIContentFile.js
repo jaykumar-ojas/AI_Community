@@ -437,7 +437,7 @@ const generateAIImage = async () => {
             value={aiPrompt}
             onChange={(e) => setAiPrompt(e.target.value)}
             placeholder="Describe the image you want to create..."
-            className="flex-1 p-4 bg-gray-200 dark:bg-bg_comment placeholder-gray-600 border border-gray-400 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:dark:ring-purple-400 focus:ring-ring-purple-400 resize-none text-gray-800 dark:text-time_header text-sm"
+            className="w-full p-4 bg-gray-200 dark:placeholder-gray-400 placeholder-gray-600 dark:bg-bg_comment border border-gray-300 dark:border-gray-700 rounded-lg  focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none text-gray-800 dark:text-gray-200 text-sm"
             rows="5"
           />
           <div className="flex flex-row gap-4">

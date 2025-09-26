@@ -17,14 +17,16 @@ import { ChevronDown, Send, Brain, Zap } from "lucide-react";
 import modelIcon from "../../asset/IconImage/ModelIcon.png";
 import ModelList from "../AIchatbot/Component/ModelList";
 import { CommentContext } from "../ContextProvider/CommentModelContext";
-import { fetchModelInfo, describeImagesInBackground } from "./Component/ReplyApi";
+import {
+  fetchModelInfo,
+  describeImagesInBackground,
+} from "./Component/ReplyApi";
 import { UseSetUserCredit } from "../GlobalFunction/GlobalFunctionForResue";
 
 import { CubeSpinner } from "../ui/CubeSpinner";
 import ErrorBar from "../Card/ErrorBar";
 import { useNotification } from "../ContextProvider/NotificationContext";
 import { decodeId } from "../../utils/hashids";
-
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -37,7 +39,7 @@ const CONTEXT_MESSAGES = [
   "Understanding the conversation…",
   "Crafting contextual insights…",
   "Processing discussion flow…",
-  "Weaving context magic…"
+  "Weaving context magic…",
 ];
 
 const UserReply = ({ forum = false }) => {
@@ -47,8 +49,7 @@ const UserReply = ({ forum = false }) => {
   const params = useParams();
 
   const dynamicId = forum ? params.topicId : params.id;
-  const dynamicId1 = forum ? decodeId (params.topicId) : params.id;
-
+  const dynamicId1 = forum ? decodeId(params.topicId) : params.id;
 
   const forumContext = useContext(ForumContext);
   const commentContext = useContext(CommentContext);
@@ -95,7 +96,9 @@ const UserReply = ({ forum = false }) => {
   // Conversation builder
   const buildConversationPrompt = (history, newPrompt) => {
     let historyString = history
-      .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
+      .map(
+        (msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`
+      )
       .join("\n");
     return `You are an AI assistant. Below is the conversation so far:\n\n${historyString}\n\nThe user now says:\n"${newPrompt}"\n\nPlease respond helpfully as the assistant:\nAssistant:`;
   };
@@ -136,16 +139,20 @@ const UserReply = ({ forum = false }) => {
 
   // -------------------
   // Generate content
-  const handleGenerateSubmit = async (e, useEnhancedPrompt = null, useOriginalText = null) => {
+  const handleGenerateSubmit = async (
+    e,
+    useEnhancedPrompt = null,
+    useOriginalText = null
+  ) => {
     if (!loginData) {
       showNotification("user not Login", "warning");
       return;
     }
     if (e) e.preventDefault();
-    
+
     const promptToUse = useEnhancedPrompt || newReply.trim();
     const textToRender = useOriginalText || newReply.trim();
-    
+
     if (!promptToUse) return;
 
     setLoading(true);
@@ -178,9 +185,13 @@ const UserReply = ({ forum = false }) => {
         provider,
       };
 
-      const response = await axios.post(`${baseUrl}/generateContent`, generatePayload, {
-        headers: getAuthHeaders(),
-      });
+      const response = await axios.post(
+        `${baseUrl}/generateContent`,
+        generatePayload,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (response.data.success) {
         const modelInfo = await fetchModelInfo(model);
@@ -196,7 +207,8 @@ const UserReply = ({ forum = false }) => {
               } else if (data?.imageData) {
                 const binary = atob(data.imageData);
                 const bytes = new Uint8Array(binary.length);
-                for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
+                for (let j = 0; j < binary.length; j++)
+                  bytes[j] = binary.charCodeAt(j);
                 const blob = new Blob([bytes], { type: "image/png" });
                 updated.imageUrl = URL.createObjectURL(blob);
                 updated.imageBlob = data.imageData;
@@ -241,7 +253,7 @@ const UserReply = ({ forum = false }) => {
 
     try {
       const suggestResponse = await axios.post(
-        `${baseUrl}/suggest/${replyIdForContext || dynamicId1 }`,
+        `${baseUrl}/suggest/${replyIdForContext || dynamicId1}`,
         {
           newPrompt: newReply.trim(),
           contextType: forum ? "forumReply" : "comment",
@@ -253,10 +265,10 @@ const UserReply = ({ forum = false }) => {
       if (suggestResponse.data.success) {
         const enhancedPrompt = suggestResponse.data.finalprompt;
         const originalUserText = newReply.trim();
-        
+
         // Stop contexting when generation starts
         setContextLoading(false);
-        
+
         // Automatically trigger generation with enhanced prompt
         await handleGenerateSubmit(null, enhancedPrompt, originalUserText);
       } else {
@@ -331,7 +343,10 @@ const UserReply = ({ forum = false }) => {
           const combinedPostingData = [
             ...updatedPostingData,
             ...selectedFiles.map((file) => ({
-              imageUrl: { fileUrl: URL.createObjectURL(file), fileName: file.name },
+              imageUrl: {
+                fileUrl: URL.createObjectURL(file),
+                fileName: file.name,
+              },
             })),
           ];
           setPostedReplies((prev) => [
@@ -356,7 +371,6 @@ const UserReply = ({ forum = false }) => {
     setConversationHistory([]);
     setPostingData([]);
   };
-
 
   return (
     <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-700 rounded-md  dark:bg-gray-800  bg-transparent  z-50">
@@ -400,18 +414,20 @@ const UserReply = ({ forum = false }) => {
               className="flex items-center gap-2 border dark:border-gray-300 border-gray-800 px-2 py-1 rounded-lg shadow-sm hover:shadow-md transition-all"
             >
               {model ? (
-                <span className="font-medium text-xs text-gray-900 dark:text-gray-200">{model}</span>
+                <span className="font-medium sm:text-xs text-[8px] text-gray-900 dark:text-gray-200 line-clamp-1">
+                  {model}
+                </span>
               ) : (
                 <span className="text-gray-500">
                   <img
-                    className="h-5 w-full object-cover bg-white rounded-full"
+                    className="sm:h-5 h-3 w-full object-cover bg-white rounded-full"
                     src={modelIcon}
                     alt="model"
                   />
                 </span>
               )}
               <ChevronDown
-                className={`h-4 w-4 text-gray-800 dark:text-gray-300 transition-transform ${
+                className={`sm:h-4 sm:w-4 h-3 w-3 text-gray-800 dark:text-gray-300 transition-transform ${
                   isDropdownOpen ? "rotate-180" : ""
                 }`}
               />
@@ -425,42 +441,52 @@ const UserReply = ({ forum = false }) => {
             )}
 
             {/* Cool Context Aware Toggle */}
-            <div className="flex items-center gap-2">
+            {!contextLoading && <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setIsContextAware(!isContextAware)}
                 className={`
-                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-400 ease-in-out 
-                  ${isContextAware ? 'bg-gradient-to-r from-like_color to-purple-600' : 'bg-gray-300 dark:bg-gray-500'}
+                  relative inline-flex sm:h-6 h-4 sm:w-11 w-8 items-center rounded-full transition-colors duration-400 ease-in-out 
+                  ${
+                    isContextAware
+                      ? "bg-gradient-to-r from-like_color to-purple-600"
+                      : "bg-gray-300 dark:bg-gray-500"
+                  }
                 `}
                 disabled={contextLoading}
               >
                 <span
                   className={`
-                    inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out shadow-lg
-                    ${isContextAware ? 'translate-x-6' : 'translate-x-1'}
+                    inline-block sm:h-4  sm:w-4 h-3 w-3 transform rounded-full bg-white transition-transform duration-200 ease-in-out shadow-lg
+                    ${isContextAware ? "sm:translate-x-6 translate-x-4" : "translate-x-1"}
                   `}
                 >
                   {isContextAware && (
-                    <Brain className="h-3 w-3 text-like_color absolute top-0.5 left-0.5" />
+                    <Brain className="h-3 w-3 text-like_color absolute top-0 left-0 sm:top-0.5 sm:left-0.5" />
                   )}
                 </span>
               </button>
-              <span className={`text-xs font-medium transition-colors ${isContextAware ? 'text-like_color' : 'text-gray-800 dark:text-gray-200'}`}>
-                Context Engine
-
-              </span>
-              <span className="bg-gradient-to-r mt-2 from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-[8px] text-transparent font-semibold">
-  (beta)
-</span>
-
-            </div>
+              <div className="mb-1 sm:mb-0">
+                <span
+                  className={`sm:text-xs text-[9px]  font-medium transition-colors  ${
+                    isContextAware
+                      ? "text-like_color"
+                      : "text-gray-800 dark:text-gray-200"
+                  }`}
+                >
+                  Context Engine
+                </span>
+                <span className="bg-gradient-to-r mt-2 from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-[8px] text-transparent font-semibold">
+                  (beta)
+                </span>
+              </div>
+            </div>}
 
             {/* Context Loading Message */}
             {contextLoading && (
               <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-1 rounded-full border border-blue-200">
                 <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-xs text-blue-600 font-medium animate-pulse">
+                <span className="sm:text-xs text-[8px]   text-blue-600 font-medium animate-pulse line-clamp-1">
                   {contextMessage}
                 </span>
               </div>
@@ -470,7 +496,7 @@ const UserReply = ({ forum = false }) => {
               <button
                 type="button"
                 onClick={clearConversationHistory}
-                className="text-xs text-gray-500 hover:text-red-600 px-2 py-1 rounded border border-gray-300 hover:border-red-300"
+                className="sm:text-xs text-[8px]  text-gray-500 hover:text-red-600 px-2 py-1  rounded border border-gray-300 hover:border-red-300"
               >
                 Clear History ({conversationHistory.length})
               </button>
@@ -509,13 +535,20 @@ const UserReply = ({ forum = false }) => {
                   (!newReply.trim() && postingData.length === 0)
                 }
               >
-                {isLoading ? "Posting..." : <Send size={20} className="rotate-45" />}
+                {isLoading ? (
+                  "Posting..."
+                ) : (
+                  <Send size={20} className="rotate-45" />
+                )}
               </button>
             )}
           </div>
         </div>
 
-        <ShowSelectedFile selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} />
+        <ShowSelectedFile
+          selectedFiles={selectedFiles}
+          setSelectedFiles={setSelectedFiles}
+        />
       </form>
     </div>
   );

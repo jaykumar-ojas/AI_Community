@@ -18,10 +18,10 @@ const Description = () => {
           value={desc}
           placeholder="Speak to people..."
           rows="6"
-          className="w-full p-4 bg-gray-200 placeholder-gray-600 dark:bg-bg_comment border border-gray-400 dark:border-gray-700 rounded-lg  focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none text-time_header text-sm"
+          className="w-full p-4 bg-gray-200 dark:placeholder-gray-400 placeholder-gray-600 dark:bg-bg_comment border border-gray-300 dark:border-gray-700 rounded-lg  focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none text-gray-800 dark:text-gray-200 text-sm"
         />
 
-        <div className="absolute bottom-2 right-3 text-xs text-gray-400">
+        <div className="absolute bottom-2 right-3 text-xs dark:text-gray-200 text-gray-800">
           {desc?.length || ""}
         </div>
       </div>
