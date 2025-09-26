@@ -97,29 +97,28 @@ const AIModelInfo = ({ aiMetadata }) => {
 
   return (
     <div className="bg-gradient-to-r from-purple-100 to-blue-100  rounded-lg ">
-      <div className="flex flex-row  items-center justify-center gap-2 mb-2">
-        {modelIcon ? (
-          <img
-            src={modelIcon}
-            alt={`${aiMetadata.aiModel} icon`}
-            className="w-6 h-6 rounded-full object-cover"
-            onError={(e) => {
-              e.target.style.display = "none";
-            }}
-          />
-        ) : (
-          <span className="text-lg">🤖</span>
-        )}
-        {/* <span className="font-semibold text-purple-800">AI Generated</span>
-        <span className="text-xs bg-purple-200 text-purple-700 px-2 py-1 rounded-full">
-          {displayName}
-        </span> */}
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs md:text-lg text-gray-800">
-            {aiMetadata.aiProvider || "Unknown Provider"}
-          </span>
-        </div>
-      </div>
+      <div className="flex flex-row items-center justify-center gap-2 ">
+  <span
+    className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs md:text-sm font-medium 
+               bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 
+               text-white shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300"
+  >
+    {modelIcon ? (
+      <img
+        src={modelIcon}
+        alt={`${aiMetadata.aiModel} icon`}
+        className="w-5 h-5 rounded-full object-cover"
+        onError={(e) => {
+          e.target.style.display = "none";
+        }}
+      />
+    ) : (
+      <span className="text-base">🤖</span>
+    )}
+    {aiMetadata.aiProvider || "Unknown Provider"}
+  </span>
+</div>
+
     </div>
   );
 };
@@ -491,7 +490,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
       {/* AI Model Info */}
 
       {/* user media content */}
-      <div className="w-full min-h-[300px]  bg-neutral-100 relative flex justify-center items-center">
+      <div className="w-full min-h-[300px] dark:bg-[#1A1A1A] bg-neutral-100 relative flex justify-center items-center">
         <div
           className={`w-full flex items-center justify-center overflow-hidden ${
             postData?.fileType === "image" ? "cursor-pointer" : ""
