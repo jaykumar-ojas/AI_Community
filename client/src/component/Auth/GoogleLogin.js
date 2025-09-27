@@ -1,9 +1,11 @@
 import React from "react";
 
+
+const baseUrl=process.env.REACT_APP_BASE_URL;
 const GoogleLogin = () => {
  
     const loginwithGoogle =()=>{
-        window.open("http://localhost:8099/auth/google/callback","_self");
+        window.open(`${baseUrl}/auth/google/callback`,"_self");
     }
     return (
         <div className="my-6">

@@ -52,7 +52,7 @@ const DragAndDrop = () => {
     if (isGeneratingImage) {
       const interval = setInterval(() => {
         setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
-      }, 2500); // change every 2.5s
+      }, 5000); // change every 2.5s
       return () => clearInterval(interval);
     }
   }, [isGeneratingImage]);
@@ -115,7 +115,7 @@ const DragAndDrop = () => {
       {/* 🔥 Spinner with rotating messages */}
       {isGeneratingImage && !showCropper && !previewUrl ? (
         <div className="flex flex-col items-center justify-center w-full md:h-[67vh] h-[30vh] rounded-lg border-2 border-dashed border-gray-400 bg-black">
-          <CubeSpinner size="w-16 h-16" color="orange" />
+          <CubeSpinner size="w-13 h-13" color="orange" />
 
           {/* Rotating message */}
           <p className="mt-4 text-sm text-gray-300 animate-pulse">

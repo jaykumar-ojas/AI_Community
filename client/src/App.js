@@ -30,7 +30,7 @@ import { NotificationProvider } from "./component/ContextProvider/NotificationCo
 
 import ForumSystem from "./component/AiForumPage/ForumSystem";
 import FeedbackPage from "./component/Navbar/feedback";
-
+import { ModelsProvider } from "./component/PostImage/ModelsContext";
 
 const Layout = () => {
   const location = useLocation();
@@ -102,7 +102,9 @@ function App() {
       <WebSocketProvider>
         <ForumContext>
           <CommentModelProvider>
-            <RouterProvider router={router} />
+            <ModelsProvider>
+                <RouterProvider router={router} />
+              </ModelsProvider>
           </CommentModelProvider>
         </ForumContext>
       </WebSocketProvider>
