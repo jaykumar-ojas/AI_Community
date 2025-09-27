@@ -2,29 +2,29 @@
 
 const modelCreditConfig = {
   text: {
-    "gpt-5": { cost: 5 },
-    "gpt-5-mini": { cost: 2 },
-    "gpt-5-nano": { cost: 1 },
-    "gpt-4.1": { cost: 4 },
-    "o4-mini": { cost: 2 },
+   "gpt-5": { cost: 10 },
+    "gpt-5-mini": { cost: 8 },
+    "gpt-5-nano": { cost: 7 },
+    "gpt-4.1": { cost: 5 },
+    "o4-mini": { cost: 4 },
 
-    "gemini-2.5-pro": { cost: 4 },
-    "gemini-2.5-flash": { cost: 2 },
-    "gemini-2.0-flash": { cost: 1 },
-    "gemini-2.0-flash-lite": { cost: 1 },
+    "gemini-2.5-pro": { cost: 8 },
+    "gemini-2.5-flash": { cost: 5 },
+    "gemini-2.0-flash": { cost: 4 },
+    "gemini-2.0-flash-lite": { cost: 3 },
 
-    "meta-llama/llama-4-maverick-17b-128e-instruct": { cost: 3 },
-    "meta-llama/llama-4-scout-17b-16e-instruct": { cost: 2 },
-    "llama-3.3-70b-versatile": { cost: 3 },
-    "llama-3.1-8b-instant": { cost: 1 },
-    "meta-llama/llama-guard-4-12b": {cost: 3},
+    "meta-llama/llama-4-maverick-17b-128e-instruct": { cost: 6 },
+    "meta-llama/llama-4-scout-17b-16e-instruct": { cost: 5 },
+    "llama-3.3-70b-versatile": { cost: 4 },
+    "llama-3.1-8b-instant": { cost: 3 },
+    "meta-llama/llama-guard-4-12b": {cost:2},
 
-    "grok-4": { cost: 4 },
-    "grok-3-mini": { cost: 2 },
-    "grok-3-mini-fast": { cost: 1 },
+    "grok-4": { cost: 10 },
+    "grok-3-mini": { cost: 8 },
+    "grok-3-mini-fast": { cost: 5 },
 
-    "mistralai/Mixtral-8x7B-Instruct-v0.1": { cost: 2 },
-    "mistralai/Mistral-7B-Instruct-v0.3": { cost: 1 },
+    "mistralai/Mixtral-8x7B-Instruct-v0.1": { cost: 7 },
+    "mistralai/Mistral-7B-Instruct-v0.3": { cost: 6 },
 
     "anthropic/claude-sonnet-4": { cost: 4 },
     "claude-3-7-sonnet-latest": { cost: 3 },
@@ -36,39 +36,40 @@ const modelCreditConfig = {
     "deepseek/deepseek-chat-v3.1": { cost: 2 },
     "deepseek-chat": { cost: 1 },
 
-    "qwen/qwen3-32b": { cost: 3 },
-    "qwen-max": { cost: 2 },
-    "qwen-turbo": { cost: 1 }
+    "qwen/qwen3-32b": { cost: 6 },
+    "qwen-max": { cost: 5 },
+    "qwen-turbo": { cost: 5 }
   },
 
   image: {
-    "gpt-image-1": { cost: 6 },   // most costly
-    "dall-e-3": { cost: 5 },
-    "dall-e-2": { cost: 3 },
+   
+    "gpt-image-1": { cost: 20 },   // most costly
+    "dall-e-3": { cost: 10 },
+    "dall-e-2": { cost: 5 },
 
-    "grok-2-image": { cost: 3 },
+    "grok-2-image": { cost: 12 },
 
-    "imagen-4.0-ultra-generate-001": { cost: 5 },
-    "imagen-4.0-generate-001": { cost: 3 },
-    "imagen-4.0-fast-generate-001": { cost: 2 },
-    "imagen-3.0-generate-002": { cost: 1 },
+    "imagen-4.0-ultra-generate-001": { cost: 15 },
+    "imagen-4.0-generate-001": { cost: 12 },
+    "imagen-4.0-fast-generate-001": { cost: 10 },
+    "imagen-3.0-generate-002": { cost: 10 },
 
-    "gemini-2.5-flash-image-preview": { cost: 2 },
-    "gemini-2.0-flash-preview-image-generation": { cost: 1 },
+    "gemini-2.5-flash-image-preview": { cost: 9 },
+    "gemini-2.0-flash-preview-image-generation": { cost: 8 },
 
-    "sd-ultra": { cost: 4 },
-    "core": { cost: 2 },
-    "sd3.5-large": { cost: 3 },
-    "sd3.5-large-turbo": { cost: 3 },
-    "sd3.5-medium": { cost: 2 },
-    "sd3.5-flash": { cost: 1 },
+    "sd-ultra": { cost: 15 },
+    "core": { cost: 12 },
+    "sd3.5-large": { cost: 10 },
+    "sd3.5-large-turbo": { cost: 9 },
+    "sd3.5-medium": { cost: 8 },
+    "sd3.5-flash": { cost: 7 },
 
-    "flux-pro": { cost: 3 },
-    "flux-pro-1.1": { cost: 4 },
-    "flux-pro-1.1-ultra": { cost: 5 },
-    "flux-kontext-pro": { cost: 2 },
-    "flux-kontext-max": { cost: 3 },
-    "flux-dev": { cost: 1 },
+    "flux-pro": { cost: 8 },
+    "flux-pro-1.1": { cost: 9 },
+    "flux-pro-1.1-ultra": { cost: 10 },
+    "flux-kontext-pro": { cost: 15 },
+    "flux-kontext-max": { cost: 13 },
+    "flux-dev": { cost: 7 },
 
     "alibaba/qwen-image": { cost: 2 },
     "gen4_image": { cost: 3 }
