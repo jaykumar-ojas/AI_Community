@@ -47,7 +47,7 @@ const promptEnhancer =async(req,res,next)=>{
         // if (!description) {
         //   return res.status(400).json({ error: "Prompt is required" });
         // }
-        const CONSTANT_PROMPT = "As a professional prompt engineer give prompt to generate image by this descirption and strict limit of 100 words: ";
+        const CONSTANT_PROMPT = "As a professional prompt engineer give prompt to generate image by this descirption and strict limit of 100 words: only give prompt not anything else. Description: or further adjustment questions only prompt";
         const final_prompt = CONSTANT_PROMPT +  userPrompt;
     
         const result = await model.generateContent(final_prompt);

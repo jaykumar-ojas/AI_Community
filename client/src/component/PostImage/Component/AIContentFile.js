@@ -8,7 +8,7 @@ import imageModelsConfig from "../../../config/imageModelsConfig";
 
 import { useNotification } from "../../ContextProvider/NotificationContext";
 import { LoginContext } from "../../ContextProvider/context";
-
+import { ModelsContext } from "../ModelsContext";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -24,11 +24,13 @@ const AIContentFile = () => {
     setSelectedImageModel,
     setAiMetadata,
   } = useContext(PostContext);
+  //const { availableModels, isLoadingModels } = useContext(ModelsContext);
 
   const { isGeneratingImage, setIsGeneratingImage } = useContext(PostContext);
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const [availableModels, setAvailableModels] = useState({});
-  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  //  const [availableModels, setAvailableModels] = useState({});
+  //  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const { availableModels, isLoadingModels } = useContext(ModelsContext);
   const { originalFileRef, setDesc } = useContext(PostContext);
   const [provider, setProvider] = useState("");
   const setUserCredit = UseSetUserCredit();
@@ -47,56 +49,61 @@ const AIContentFile = () => {
   const {loginData} = useContext(LoginContext);
 
 
-  const fetchIconUrl = async (modelName) => {
-    const res = await fetch(
-      `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.success ? data.data.iconUrl : null;
-  };
+  // const fetchIconUrl = async (modelName) => {
+  //   const res = await fetch(
+  //     `${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`
+  //   );
+  //   if (!res.ok) return null;
+  //   const data = await res.json();
+  //   return data.success ? data.data.iconUrl : null;
+  // };
 
-  // Fetch available models from backend
-  useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        setIsLoadingModels(true);
-        const response = await fetch(`${baseUrl}/models-info`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            const models = data.data.image || {};
-
-            // Merge with local config and fetch icons
-            const enrichedModels = {};
-            for (const [key, config] of Object.entries(models)) {
-              const iconUrl = await fetchIconUrl(key);
-              const localConfig = imageModelsConfig[key] || {};
+  // //Fetch available models from backend
+  // useEffect(() => {
+  //   const fetchModels = async () => {
+  //     try {
+  //       setIsLoadingModels(true);
+  //       const response = await fetch(`${baseUrl}/models-info`);
+  //       if (response.ok) {
+  //         const data = await response.json();
+  //         if (data.success) {
+  //           const models = data.data.image || {};
               
-              enrichedModels[key] = {
-                ...config,
-                ...localConfig, // Override with local config
-                iconUrl: iconUrl || null,
-              };
-            }
+  //           // Merge with local config and fetch icons
+  //           const enrichedModels = {};
+  //           for (const [key, config] of Object.entries(models)) {
+  //             const iconUrl = await fetchIconUrl(key);
+  //             const localConfig = imageModelsConfig[key] || {};
+              
+  //             enrichedModels[key] = {
+  //               ...config,
+  //               ...localConfig, // Override with local config
+  //               iconUrl: iconUrl || null,
+  //             };
+  //           }
 
-            setAvailableModels({ image: enrichedModels });
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching models:", error);
-        // Fallback to local config
-        setAvailableModels({
-          image: imageModelsConfig,
-        });
-      } finally {
-        setIsLoadingModels(false);
-      }
-    };
-    fetchModels();
-  }, []);
+  //           setAvailableModels({ image: enrichedModels });
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching models:", error);
+  //       // Fallback to local config
+  //       setAvailableModels({
+  //         image: imageModelsConfig,
+  //       });
+  //     } finally {
+  //       setIsLoadingModels(false);
+  //     }
+  //   };
+  //   fetchModels();
+  // }, []);
+
+
 
   // Close dropdown when clicking outside
+ 
+ 
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -203,10 +210,8 @@ const generateAIImage = async () => {
   }
 
   try {
-    // console.log('Setting isGeneratingImage to true');
     setIsGeneratingImage(true);
 
-    // Prepare request body
     const requestBody = {
       prompt: aiPrompt,
       model: selectedImageModel,
@@ -214,41 +219,50 @@ const generateAIImage = async () => {
       provider: imageModels[selectedImageModel]?.provider,
     };
 
-    // Add aspect ratio if selected
     if (selectedAspectRatio && selectedAspectRatio !== 'auto') {
       requestBody.aspectRatio = selectedAspectRatio;
     }
 
-    // console.log('Starting image generation...');
-
-    // --- Call backend ---
     const response = await fetch(`${baseUrl}/generateContent`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(requestBody),
     });
 
-    if (!response.ok) throw new Error("Failed to generate image");
-    const result = await response.json();
-    // console.log('Image generation result:', result);
-
-    setUserCredit(result?.credit);
-
-    // --- Validate response ---
-    const { imageData, imageUrl, provider } = result.data || {};
-    if (!(result.success && (imageData || imageUrl))) {
-      throw new Error("Invalid response format");
+    // If non-2xx, try to parse body for details and throw enriched error
+    if (!response.ok) {
+      let errBody = null;
+      try { errBody = await response.json(); } catch (e) { /* ignore parse errors */ }
+      const err = new Error(errBody?.message || `Failed to generate image (status ${response.status})`);
+      err.status = response.status;
+      err.body = errBody;
+      throw err;
     }
 
-    // --- Convert image data to File ---
+    const result = await response.json();
+    setUserCredit(result?.credit);
+
+    // If backend reports failure, include its message/code
+    if (!result.success) {
+      const err = new Error(result.message || "Image generation failed");
+      err.code = result.code || null;
+      err.body = result;
+      throw err;
+    }
+
+    const { imageData, imageUrl } = result.data || {};
+    if (!(imageData || imageUrl)) {
+      const err = new Error("Invalid response format");
+      err.body = result;
+      throw err;
+    }
+
     let file;
     if (imageData) {
-      // Case 1: base64 → Blob
       const byteArray = Uint8Array.from(atob(imageData), (c) => c.charCodeAt(0));
       const blob = new Blob([byteArray], { type: "image/png" });
       file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
     } else if (imageUrl) {
-      // Case 2: fetch from URL → Blob
       const proxyUrl = `${baseUrl}/proxy-image?url=${encodeURIComponent(imageUrl)}`;
       const imgResponse = await fetch(proxyUrl);
       const blob = await imgResponse.blob();
@@ -257,7 +271,6 @@ const generateAIImage = async () => {
 
     if (!file) throw new Error("No image file created");
 
-    // --- Save metadata ---
     const modelConfig = imageModels[selectedImageModel];
     const aiMetadata = {
       model: selectedImageModel,
@@ -268,13 +281,11 @@ const generateAIImage = async () => {
     };
     if (setAiMetadata) setAiMetadata(aiMetadata);
 
-    // --- Update UI state ---
     originalFileRef.current = file;
     setFile(file);
     setFileType("image");
     setPreviewUrl(URL.createObjectURL(file));
-    
-    // Set description
+
     setDesc((prev) =>
       prev
         ? `${prev}\n\n${aiPrompt}`
@@ -282,20 +293,30 @@ const generateAIImage = async () => {
     );
     setAiPrompt("");
 
-    // Wait a bit before stopping the loader to ensure smooth transition
     setTimeout(() => {
-      // console.log('Setting isGeneratingImage to false');
       setIsGeneratingImage(false);
-      
-      // Then show cropper after loader is hidden
       setTimeout(() => {
         setShowCropper(true);
       }, 300);
-    }, 1000); // Show success for 1 second
+    }, 1000);
 
   } catch (error) {
-    //console.error("Error generating AI image:", error);
-    showNotification("This prompt may contain flagged content (e.g., personal names). Please revise the prompt or switch to a different model : " + error.message);
+    // Determine user-friendly message based on error details
+    const msg = (error && error.message) ? error.message.toLowerCase() : "";
+
+    if (!loginData || error.status === 401 || /unauthor|not\s+logged/i.test(msg)) {
+      showNotification("you are not logged in","info");
+    } else if (
+      error.body?.code === 'INSUFFICIENT_CREDITS' ||
+      /credit|insufficient/i.test(msg) ||
+      (error.body && /credit|insufficient/i.test(JSON.stringify(error.body).toLowerCase()))
+    ) {
+      showNotification("Not enough credits","info");
+    } else {
+      // Keep your existing flagged-content fallback
+      showNotification("This prompt may contain flagged content (e.g., personal names). Please revise the prompt or switch to a different model : " + (error.message || error));
+    }
+
     setIsGeneratingImage(false);
   }
 };
@@ -304,9 +325,6 @@ const generateAIImage = async () => {
 
   return (
     <>
-
-
-
       <div className="md:px-6">
         <div className="flex flex-col gap-4 mb-4">
           {/* Header Row */}
