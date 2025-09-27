@@ -43,20 +43,20 @@ const TopicContent = () => {
   },[]);
 
   // Close mobile reply box when clicking outside
-  useEffect(() => {
-    if (!viewBox) return;
-    function handleOutside(event) {
-      if (mobileReplyRef.current && !mobileReplyRef.current.contains(event.target)) {
-        setViewBox(false);
-      }
-    }
-    document.addEventListener('mousedown', handleOutside);
-    document.addEventListener('touchstart', handleOutside, { passive: true });
-    return () => {
-      document.removeEventListener('mousedown', handleOutside);
-      document.removeEventListener('touchstart', handleOutside);
-    };
-  }, [viewBox, setViewBox]);
+  // useEffect(() => {
+  //   if (!viewBox) return;
+  //   // function handleOutside(event) {
+  //   //   if (mobileReplyRef.current && !mobileReplyRef.current.contains(event.target)) {
+  //   //     setViewBox(false);
+  //   //   }
+  //   // }
+  //   document.addEventListener('mousedown', handleOutside);
+  //   document.addEventListener('touchstart', handleOutside, { passive: true });
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleOutside);
+  //     document.removeEventListener('touchstart', handleOutside);
+  //   };
+  // }, [viewBox, setViewBox]);
 
   const {
     data: topic,
