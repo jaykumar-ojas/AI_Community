@@ -2,7 +2,7 @@ FormData = require("form-data");
 require("dotenv").config();
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 
-async function ultra(prompt, aspectRatio) {
+async function ultra(prompt, model, aspectRatio) {
   const { default: axios } = await import("axios");
 
   // Allowed aspect ratios as per Stability API
@@ -47,8 +47,10 @@ async function ultra(prompt, aspectRatio) {
 }
 
 
-async function core(prompt, aspectRatio) {
+async function core(prompt, model, aspectRatio) {
   const { default: axios } = await import("axios");
+
+  console.log("i m in core before", aspectRatio);
 
   const validAspectRatios = [
     "21:9", "16:9", "3:2", "5:4", "1:1",
@@ -67,6 +69,8 @@ async function core(prompt, aspectRatio) {
     aspect_ratio: aspectRatio,
   };
 
+  console.log("i m in core", aspectRatio);
+
   const response = await axios.postForm(
     "https://api.stability.ai/v2beta/stable-image/generate/core",
     axios.toFormData(payload, new FormData()),
@@ -83,8 +87,6 @@ async function core(prompt, aspectRatio) {
   if (response.status === 200) {
     const base64Image = Buffer.from(response.data, "binary").toString("base64");
     return { imageData: base64Image };
-
-   // return {ImageData:response.data};
   } else {
     throw new Error(`${response.status}: ${response.data.toString()}`);
   }
