@@ -61,7 +61,7 @@ const ModelIcon = ({ modelName }) => {
 };
 
 const ShowCommentContent = ({ reply }) => {
-  const { setReplyIdForContext, setViewBox,viewBox, setUserName } =
+  const { setReplyIdForContext, setViewBox, setUserName } =
     useContext(CommentContext);
   const [isOpen, setIsOpen] = useState(false);
   const { emitCommentReaction, emitDeleteComment } = useWebSocket();
@@ -327,7 +327,7 @@ const ShowCommentContent = ({ reply }) => {
               onClick={() => {
                 setReplyIdForContext(reply?._id);
                 setUserName(reply?.userName);
-                setViewBox(!viewBox);
+                setViewBox(true);
               }}
               className="flex items-center gap-1  text-like_color hover:text-like_color transition"
             >

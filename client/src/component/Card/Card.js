@@ -222,7 +222,7 @@ const [sparkles, setSparkles] = useState([]);
 
   return (
     <div
-      className="group relative cursor-pointer px-1 md:px-0 mb-3 md:mb-0"
+      className="group relative cursor-pointer pb-2 md:pb-0"
       onClick={handleCardClick}
     >
 
