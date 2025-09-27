@@ -188,7 +188,7 @@ const HeaderContent = ({ topic, onDelete }) => {
             </span>
           </div>
           {/* Three dots menu for author actions */}
-          {isAuthor && (
+          {/* {isAuthor && (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setShowMenu((prev) => !prev)}
@@ -212,7 +212,7 @@ const HeaderContent = ({ topic, onDelete }) => {
                 </div>
               )}
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Content */}

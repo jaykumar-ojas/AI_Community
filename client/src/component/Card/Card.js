@@ -11,10 +11,8 @@ import axios from "axios";
 import AIModelInfo from "../Postcontent/UserContent";
 import {encodeId} from "../../utils/hashids"
 import LoginHover from "../Auth/LoginHover";
-import { useNotification } from "../ContextProvider/NotificationContext";
 
 const Card = ({ post }) => {
-  const { showNotification } = useNotification();
   const [showLogin, setShowLogin] = useState(false);
   const { loginData } = useContext(LoginContext);
   const [userLiked, setUserLiked] = useState(false);
@@ -119,14 +117,14 @@ const [sparkles, setSparkles] = useState([]);
 
     if (response.status !== 200) throw new Error("Like failed");
   } catch (error) {
-    console.error("");
+    console.error("Error liking post:", error);
 
     // Rollback if API fails
     setPostData(prevPostData);
     setUserLiked(prevUserLiked);
     setUserDisliked(prevUserDisliked);
 
-     showNotification("Error liking post. Please try again.");
+    alert("Error liking post. Please try again.");
   }
 };
 
@@ -224,7 +222,7 @@ const [sparkles, setSparkles] = useState([]);
 
   return (
     <div
-      className="group relative cursor-pointer pb-2 md:pb-0"
+      className="group relative cursor-pointer px-1 mb-2 md:px-0 md:mb-0"
       onClick={handleCardClick}
     >
 
@@ -313,6 +311,3 @@ const [sparkles, setSparkles] = useState([]);
 };
 
 export default Card;
-
-
-
