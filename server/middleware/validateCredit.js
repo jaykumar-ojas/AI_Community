@@ -63,13 +63,13 @@ const resetAllCredits = async () => {
     // Set all users' credit = 50
     const userResult = await userdb.updateMany(
       {}, // no filter → applies to all docs
-      { $set: { credit: 50 } }
+      { $set: { credit: 100 } }
     );
 
     // Set all google users' credit = 50
     const googleResult = await googledb.updateMany(
       {},
-      { $set: { credit: 50 } }
+      { $set: { credit: 100 } }
     );
 
     console.log("✅ User collection reset:", userResult.modifiedCount);

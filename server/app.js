@@ -6,6 +6,7 @@ const cookieparser= require("cookie-parser")
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+// const serverless = require("serverless-http");
 const io = new Server(server, {
   cors: {
     origin: ["https://pixxelmind.com", "http://localhost:3000", "http://192.168.31.212:3000"],
@@ -64,11 +65,14 @@ app.use(
 app.use(cookieparser());
 
 // Test route to verify server is running
-app.get("/", (req, res) => {
-  res.json({ message: "Server is running" });
-});
+// app.get("/", (req, res) => {
+//   res.json({ message: "Server is running" });
+// });
 
 // for google authenticating full code in googleroute in any problem
+// app.get("/", (req, res) => {
+//   res.send("Hello World! server is running");
+// });
 
 app.use("/",userRouter);
 app.use("/",awsRoute);
@@ -173,3 +177,5 @@ io.on('connection', (socket) => {
 server.listen(8099, () => {
   console.log("Server started at port 8099");
 });
+
+// module.exports.handler = serverless(app);
