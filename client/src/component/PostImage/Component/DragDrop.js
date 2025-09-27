@@ -115,7 +115,7 @@ const DragAndDrop = () => {
       {/* 🔥 Spinner with rotating messages */}
       {isGeneratingImage && !showCropper && !previewUrl ? (
         <div className="flex flex-col items-center justify-center w-full md:h-[67vh] h-[30vh] rounded-lg border-2 border-dashed border-gray-400 bg-black">
-          <CubeSpinner size="w-13 h-13" color="orange" />
+          <CubeSpinner size="w-10 h-10" color="orange" />
 
           {/* Rotating message */}
           <p className="mt-4 text-sm text-gray-300 animate-pulse">
