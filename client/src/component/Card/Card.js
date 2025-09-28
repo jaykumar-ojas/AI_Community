@@ -242,20 +242,20 @@ const [sparkles, setSparkles] = useState([]);
           </div>
       </div>
         {post?.isAIGenerated && post?.aiModel && (
-        <div className="flex items-center gap-1 bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-semibold ml-2">
-          {modelIcon ? (
-            <img 
-              src={modelIcon} 
-              alt={`${post.aiModel} icon`}
-              className="w-6 h-6 rounded-full object-cover"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          ) : null}
-
-          <span className="truncate">{post?.aiModel}</span>
+        <div className="flex overflow-hidden items-center gap-1 bg-purple-600 text-white text-xs px-2 py-1 rounded-full font-semibold ml-2">
+          <div>
+        {modelIcon ? (
+          <img 
+            src={modelIcon} 
+            alt={`${post.aiModel} icon`}
+            className="w-6 h-6 rounded-full object-cover"
+          />
+        ) : null}
         </div>
+
+        <div className="truncate">{post?.aiModel}</div>
+</div>
+
       )}
       
       {/* Mobile AI model badge - positioned below user info */}
