@@ -6,12 +6,10 @@ const axios = require('axios');
 
 const { S3Client, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { Upload } = require("@aws-sdk/lib-storage");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-
 const dotenv = require('dotenv');
 dotenv.config();
 
-// Generate a random filename for any file type
+// Generate a random filename
 const randomFileName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex');
 
 const bucketName = process.env.BUCKET;
@@ -27,9 +25,8 @@ const s3 = new S3Client({
     region: bucketRegion
 });
 
-const router = require("express").Router();
-
 const storage = multer.memoryStorage();
+
 const allowedMimeTypes = [
     // Images
     'image/jpeg',
@@ -51,9 +48,8 @@ const allowedMimeTypes = [
 ];
 
 const upload = multer({
-    storage: storage,
+    storage,
     fileFilter: (req, file, cb) => {
-        console.log("MIME Type:", file.mimetype);
         if (allowedMimeTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
@@ -61,262 +57,141 @@ const upload = multer({
         }
     },
     limits: {
-        fileSize: 50 * 1024 * 1024,
-        fieldSize: 50 * 1024 * 1024  // 50MB limit
+        fileSize: 50 * 1024 * 1024, // 50MB
+        fieldSize: 50 * 1024 * 1024
     } 
 });
 
-const awsuploadMiddleware = async (req, res, next) => {
-    console.log("Middleware triggered. Single file:", req.file);
+// ------------------- AWS Upload Middleware -------------------
 
+const awsuploadMiddleware = async (req, res, next) => {
     try {
         let allFiles = [];
 
-        // Support for upload.single()
-        if (req.file) {
-            allFiles = [req.file];
-        }
+        if (req.file) allFiles = [req.file];
+        else if (Array.isArray(req.files)) allFiles = req.files;
+        else if (req.files && typeof req.files === 'object') allFiles = Object.values(req.files).flat();
 
-        // Support for upload.array()
-        else if (Array.isArray(req.files)) {
-            allFiles = req.files;
-        }
-
-        // Support for upload.fields()
-        else if (req.files && typeof req.files === 'object') {
-            allFiles = Object.values(req.files).flat();
-        }
-
-        if (allFiles.length === 0) {
-            console.log("No files to process");
-            return next();
-        }
+        if (allFiles.length === 0) return next();
 
         req.uploadedFiles = [];
 
         for (const file of allFiles) {
             const fileType = file.mimetype.split("/")[0];
             let buffer;
+            let uploadFileName;
+            let contentType = file.mimetype;
 
             if (fileType === "image") {
                 try {
-                    const image = sharp(file.buffer);
-                    const metadata = await image.metadata();
+                    // Convert all images to WebP and resize
+                    buffer = await sharp(file.buffer)
+                        .resize({ width: 800, fit: "inside" }) // adjust width as needed
+                        .webp({ quality: 80 })
+                        .toBuffer();
 
-                    if (metadata.width > 1920 || metadata.height > 1080) {
-                        buffer = await image
-                            .resize({
-                                width: metadata.width > 1920 ? 1920 : undefined,
-                                height: metadata.height > 1080 ? 1080 : undefined,
-                                fit: "inside",
-                            })
-                            .toBuffer();
-                    } else {
-                        buffer = await image.toBuffer();
-                    }
-                } catch (sharpError) {
-                    console.error("Error processing image with sharp:", sharpError);
+                    uploadFileName = `${randomFileName()}.webp`;
+                    contentType = "image/webp";
+                } catch (err) {
+                    console.error("Sharp image processing error:", err);
                     buffer = file.buffer;
+                    uploadFileName = `${randomFileName()}.webp`;
+                    contentType = "image/webp";
                 }
             } else {
                 buffer = file.buffer;
+                uploadFileName = randomFileName();
             }
 
-            const fileName = randomFileName();
-            console.log("Generated file name:", fileName);
-
-            console.log("Uploading to S3 bucket (multipart parallel upload)");
-
+            // Parallel multipart upload
             const parallelUpload = new Upload({
                 client: s3,
                 params: {
                     Bucket: bucketName,
-                    Key: fileName,
+                    Key: uploadFileName,
                     Body: buffer,
-                    ContentType: file.mimetype,
+                    ContentType: contentType,
                 },
-                queueSize: 5, // concurrency
-                partSize: 5 * 1024 * 1024, // 5MB chunks
+                queueSize: 5,
+                partSize: 5 * 1024 * 1024,
                 leavePartsOnError: false,
             });
 
             await parallelUpload.done();
-            console.log("File uploaded successfully");
 
-            const fileUrl = await generateSignedUrl(fileName);
-            console.log("Generated signed URL:", fileUrl);
+            const fileUrl = await generateSignedUrl(uploadFileName);
 
             req.uploadedFiles.push({
-                fileName,
+                fileName: uploadFileName,
                 originalField: file.fieldname,
-                fileType: file.mimetype,
+                fileType: contentType,
                 fileUrl,
-                fileSize: file.size,
+                fileSize: buffer.length,
                 uploadedAt: new Date(),
             });
         }
 
         next();
     } catch (error) {
-        console.error("Error uploading file:", error);
-        return res
-            .status(500)
-            .json({ status: 500, error: "Error uploading file: " + error.message });
+        console.error("Error uploading files:", error);
+        return res.status(500).json({ status: 500, error: error.message });
     }
 };
 
+// ------------------- Generate Signed URL -------------------
 
-const generateSignedUrl = async(keys)=>{
-    try{
-        if (!keys) {
-            console.warn("Warning: Attempted to generate signed URL with empty key");
-            return "";
-        }
+const generateSignedUrl = async (key) => {
+    if (!key) return "";
+    return `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/${key}`;
+};
 
-        // Instead of generating presigned, using direct public URL
-        return `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/${keys}`;
-    }catch (error) {
-        console.error("Error generating signed URL:", error);
-        return "https://via.placeholder.com/300?text=Image+Error";
-    }
-}
+// ------------------- Delete from S3 -------------------
 
-const awsdeleteMiddleware = async(key) => {
+const awsdeleteMiddleware = async (key) => {
     try {
-        console.log("Attempting to delete file from S3:", key);
-        
-        const params = {
-            Bucket: bucketName,
-            Key: key,
-        };
-        
-        const command = new DeleteObjectCommand(params);
+        const command = new DeleteObjectCommand({ Bucket: bucketName, Key: key });
         const result = await s3.send(command);
-        
-        console.log("File deleted successfully from S3:", key);
-        console.log("Delete result:", result);
-        
+        console.log("Deleted S3 file:", key);
         return true;
-    } catch(error) {
-        console.error("Error deleting file from S3:", error);
-        console.error("File key:", key);
+    } catch (error) {
+        console.error("Error deleting S3 file:", key, error);
         return false;
     }
 };
 
-// const uploadImageFromUrl = async (imageUrl) => {
-//     try {
-//         console.log("Uploading image from URL");
-//         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-        
-//         const contentType = response.headers['content-type'];
-//         if (!allowedMimeTypes.includes(contentType)) {
-//             throw new Error("Unsupported file type.");
-//         }
-        
-//         const fileName = `${randomFileName(16)}.${contentType.split('/')[1]}`;
-//         console.log("fileName", fileName);
-
-//         const parallelUpload = new Upload({
-//             client: s3,
-//             params: {
-//                 Bucket: bucketName,
-//                 Key: fileName,
-//                 Body: response.data,
-//                 ContentType: contentType,
-//             },
-//             queueSize: 5,
-//             partSize: 5 * 1024 * 1024,
-//         });
-
-//         await parallelUpload.done();
-
-//         const fileUrl = await generateSignedUrl(fileName);
-//         console.log(`Image uploaded successfully: ${fileName}`);
-//         return {
-//             fileName : fileName,
-//             fileType: "image",
-//             fileUrl,
-//             fileSize: "",
-//             uploadedAt: new Date(),
-//         }
-//     } catch (error) {
-//         console.error("Error uploading image:", error);
-//         throw error;
-//     }
-// };
-
-// const uploadImageFromBlob = async (blob, fileName = null) => {
-//   try {
-//     const generatedFileName = fileName || `${randomFileName(16)}.png`;
-//     const buffer = Buffer.from(blob,"base64");
-
-//     const parallelUpload = new Upload({
-//         client: s3,
-//         params: {
-//             Bucket: bucketName,
-//             Key: generatedFileName,
-//             Body: buffer,
-//             ContentType: "image/png",
-//         },
-//         queueSize: 5,
-//         partSize: 5 * 1024 * 1024,
-//     });
-
-//     await parallelUpload.done();
-
-//     const fileUrl = await generateSignedUrl(generatedFileName);
-
-//     return {
-//       fileName: generatedFileName,
-//       fileType: "image/png",
-//       fileUrl,
-//       fileSize: buffer.length,
-//       uploadedAt: new Date(),
-//     };
-//   } catch (error) {
-//     console.error("Error uploading blob to S3:", error);
-//     throw error;
-//   }
-// };
+// ------------------- Upload Image from URL -------------------
 
 const uploadImageFromUrl = async (imageUrl) => {
     try {
-        console.log("Uploading image from URL");
+        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const buffer = await sharp(response.data)
+            .resize({ width: 800, fit: "inside" })
+            .webp({ quality: 80 })
+            .toBuffer();
 
-        // Fetch image as stream instead of full buffer
-        const response = await axios.get(imageUrl, { responseType: 'stream' });
-        const contentType = response.headers['content-type'];
+        const fileName = `${randomFileName()}.webp`;
 
-        if (!allowedMimeTypes.includes(contentType)) {
-            throw new Error("Unsupported file type.");
-        }
-
-        const fileName = `${randomFileName(16)}.${contentType.split('/')[1]}`;
-        console.log("Generated fileName:", fileName);
-
-        // Parallel multipart upload directly from stream
         const parallelUpload = new Upload({
             client: s3,
             params: {
                 Bucket: bucketName,
                 Key: fileName,
-                Body: response.data,  // stream
-                ContentType: contentType,
+                Body: buffer,
+                ContentType: "image/webp",
             },
-            queueSize: 5,             // concurrency
-            partSize: 5 * 1024 * 1024 // 5MB
+            queueSize: 5,
+            partSize: 5 * 1024 * 1024,
         });
 
         await parallelUpload.done();
 
         const fileUrl = await generateSignedUrl(fileName);
-        console.log(`Image uploaded successfully: ${fileName}`);
+
         return {
             fileName,
-            fileType: contentType,
+            fileType: "image/webp",
             fileUrl,
-            fileSize: response.headers['content-length'] || "",
+            fileSize: buffer.length,
             uploadedAt: new Date(),
         };
     } catch (error) {
@@ -325,22 +200,24 @@ const uploadImageFromUrl = async (imageUrl) => {
     }
 };
 
+// ------------------- Upload Image from Blob -------------------
 
 const uploadImageFromBlob = async (blob, fileName = null) => {
     try {
-        const generatedFileName = fileName || `${randomFileName(16)}.png`;
+        const buffer = await sharp(Buffer.from(blob, "base64"))
+            .resize({ width: 800, fit: "inside" })
+            .webp({ quality: 80 })
+            .toBuffer();
 
-        // Convert base64 blob to buffer
-        const buffer = Buffer.from(blob, "base64");
+        const generatedFileName = fileName || `${randomFileName()}.webp`;
 
-        // Use multipart parallel upload
         const parallelUpload = new Upload({
             client: s3,
             params: {
                 Bucket: bucketName,
                 Key: generatedFileName,
                 Body: buffer,
-                ContentType: "image/png",
+                ContentType: "image/webp",
             },
             queueSize: 5,
             partSize: 5 * 1024 * 1024,
@@ -352,7 +229,7 @@ const uploadImageFromBlob = async (blob, fileName = null) => {
 
         return {
             fileName: generatedFileName,
-            fileType: "image/png",
+            fileType: "image/webp",
             fileUrl,
             fileSize: buffer.length,
             uploadedAt: new Date(),
@@ -363,9 +240,7 @@ const uploadImageFromBlob = async (blob, fileName = null) => {
     }
 };
 
-
-
-module.exports={
+module.exports = {
     generateSignedUrl,
     awsuploadMiddleware,
     awsdeleteMiddleware,

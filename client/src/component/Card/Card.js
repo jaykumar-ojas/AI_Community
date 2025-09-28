@@ -4,7 +4,6 @@ import { LoginContext } from "../../component/ContextProvider/context";
 import Login from "../Auth/Login";
 import UserIconCard from "../Card/UserIconCard";
 import UserNameCard from "../Card/UserNameCard";
-import PixelLoader from "../Loader/PixelLoader";
 import MasonryMediaGrid from "./MansoryMediaGrid";
 import { heartSvg, thumbsDownSvg, Sparkle } from "../../asset/icons";
 import axios from "axios";
@@ -24,6 +23,7 @@ const Card = ({ post }) => {
   const [postData, setPostData] = useState(post);
   const [modelIcon, setModelIcon] = useState(null);
   const [isMediaLoaded, setIsMediaLoaded] = useState(false);
+  const [mediaLoading, setMediaLoading] = useState(true);
   
   const baseUrl = process.env.REACT_APP_BASE_URL;
   
@@ -215,7 +215,16 @@ const [sparkles, setSparkles] = useState([]);
   };
  const handleMediaLoad = () => {
     setIsMediaLoaded(true);
+    setMediaLoading(false);
   };
+
+  // Reset media loading state when post changes
+  useEffect(() => {
+    if (post) {
+      setMediaLoading(true);
+      setIsMediaLoaded(false);
+    }
+  }, [post]);
 
 
   const mediaInfo = getMediaInfo();
@@ -226,7 +235,11 @@ const [sparkles, setSparkles] = useState([]);
       onClick={handleCardClick}
     >
 
-  <MasonryMediaGrid url={mediaInfo?.url} type={mediaInfo?.type}  onLoad={handleMediaLoad}/>
+  <MasonryMediaGrid 
+    url={mediaInfo?.url} 
+    type={mediaInfo?.type}  
+    onLoad={handleMediaLoad}
+  />
 
 
 
