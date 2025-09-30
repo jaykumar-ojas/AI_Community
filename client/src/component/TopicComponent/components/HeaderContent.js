@@ -107,8 +107,8 @@ const HeaderContent = ({ topic, onDelete }) => {
       );
 
       if (response.status === 200) {
-        const userId = loginData.validuserone._id;
-        const liked = response.data.liked;
+        const userId = loginData?.validuserone?._id;
+        const liked = response?.data?.liked;
 
         setTopicLikes(
           liked
@@ -225,7 +225,7 @@ const HeaderContent = ({ topic, onDelete }) => {
         >
                   <div
             className="prose dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: parseMarkdown(topic.content) }}
+            dangerouslySetInnerHTML={{ __html: parseMarkdown(topic?.content) }}
           />
         </div>
 
