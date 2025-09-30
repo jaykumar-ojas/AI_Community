@@ -24,7 +24,7 @@ router.get("/:type/:id", async (req, res) => {
     // Fetch data based on type
     if (type === "post") data = await postdb.findById(id);
     else if (type === "postThread") data = await postReplydb.findById(id);
-    else if (type === "forum") data = await forumdb.findById(id);
+    else if (type === "forumog") data = await forumdb.findById(id);
     else if (type === "forumThread") data = await forumReplydb.findById(id);
     else return res.status(404).send("Type not found");
 
@@ -36,7 +36,7 @@ router.get("/:type/:id", async (req, res) => {
     // Assign meta using your helper functions
     if (type === "post") meta = postData(data, id);
     else if (type === "postThread") meta = postComment(data, id);
-    else if (type === "forum") meta = forumTopicData(data, id);
+    else if (type === "forumog") meta = forumTopicData(data, id);
     else if (type === "forumThread") meta = forumReplyData(data, id);
 
     //  meta.image = await convertToJpegAndSave(meta?.image);

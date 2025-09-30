@@ -106,7 +106,7 @@ const TopicContent = () => {
         <h2 className="font-semibold text-sm md:text-lg text-black dark:text-text_header flex-1">
           {threadView ? "Thread" : topic?.title}
         </h2>
-        <ShareFile pos={"top-6 right-3"} id={topic?._id} type={"forum"} text={topic?.title.slice(0,200)}/>
+        <ShareFile pos={"top-6 right-3"} id={topic?._id} type={"forumog"} text={topic?.title.slice(0,200)}/>
       </div>
 
       {/* Scrollable Content */}
