@@ -14,7 +14,7 @@ const { decodeId } = require("../utils/hashids");
 
 
 router.get("/:type/:id", async (req, res) => {
-  const { type, id } = req.params;
+  let { type, id } = req.params;
   id = decodeId(id);
   let data, meta;
 
