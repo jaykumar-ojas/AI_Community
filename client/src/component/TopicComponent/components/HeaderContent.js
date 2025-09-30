@@ -23,6 +23,7 @@ import HeaderSkeleton from "./HeaderSkeleton";
 import { parseMarkdown } from "../../../utils/parseMarkdown"; 
 import { useMathJaxAndHighlight } from "../../../utils/useMathJaxAndHighlight";
 import LikeDislike from "../../Card/LikeDislike";
+import ShareFile from "../../Share/ShareFile";
 // Add a simple three dots icon (vertical ellipsis)
 const ThreeDotsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

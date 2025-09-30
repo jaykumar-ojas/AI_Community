@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ShowCommentContent from "./ShowCommentContent";
 import UserIconCard from "../../Card/UserIconCard";
 import UserNameCard from "../../Card/UserNameCard";
+import { useParams } from "react-router-dom";
 
 const MAX_DEPTH = 3;
 const getLineColor = (depth) => {
@@ -20,23 +21,34 @@ const RecurrsionLoopComment = ({
   reply,
   depth = 0,
   isLastChild,
-  scrollToId,
   setThreadView = () => {},
   setLastThreadContext = () => {},
 }) => {
   const [view, setView] = useState(true);
   const hasChildren = reply?.children && reply?.children.length > 0;
-
+  const params = useParams();
+  const scrollToId = params['comment'];
   const commentRef = useRef(null);
 
   useEffect(() => {
     if (scrollToId && reply?._id === scrollToId && commentRef.current) {
-      commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-
-      commentRef.current.classList.add("ring-2", "ring-yellow-400", "rounded");
-      setTimeout(() => {
-        commentRef.current?.classList.remove("ring-2", "ring-yellow-400", "rounded");
-      }, 2000);
+      // delay to avoid race condition with rendering
+      const timer = setTimeout(() => {
+        commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  
+        // adjust upwards a bit so it's slightly hidden
+        setTimeout(() => {
+          window.scrollBy({ top: -40, behavior: "smooth" });
+        }, 300);
+  
+        // highlight effect
+        commentRef.current.classList.add("bg-amber-50", "rounded");
+        setTimeout(() => {
+          commentRef.current?.classList.remove("bg-amber-50", "rounded");
+        }, 2000);
+      }, 1000); // <-- delay before running scroll logic
+  
+      return () => clearTimeout(timer);
     }
   }, [scrollToId, reply?._id]);
 

@@ -33,6 +33,8 @@ const notificationRoutes = require("./routes/notificationRoute");
 const bookMarkRoutes = require("./routes/bookMarkRoute");
 
 const aiModelRoutes = require("./routes/aiModelRoutes");
+const shareRoute = require("./routes/share");
+const path = require("path");
 
 
 
@@ -65,14 +67,16 @@ app.use(
 app.use(cookieparser());
 
 // Test route to verify server is running
-// app.get("/", (req, res) => {
-//   res.json({ message: "Server is running" });
-// });
+app.get("/", (req, res) => {
+  res.json({ message: "Server is running" });
+});
 
 // for google authenticating full code in googleroute in any problem
-// app.get("/", (req, res) => {
-//   res.send("Hello World! server is running");
-// });
+app.get("/", (req, res) => {
+  res.send("Hello World! server is running");
+});
+
+// app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 app.use("/",userRouter);
 app.use("/",awsRoute);
@@ -89,6 +93,7 @@ app.use("/", subscriptionRoutes);
 app.use("/",notificationRoutes);
 app.use("/",bookMarkRoutes);
 app.use("/", aiModelRoutes);
+app.use("/",shareRoute);
 
 
 

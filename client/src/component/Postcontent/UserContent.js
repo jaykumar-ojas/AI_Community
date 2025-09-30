@@ -11,16 +11,18 @@ import BookmarkIcon, {
   ReplyIcon,
   CommentIcon,
   PostLikeIcon,
+  ShareIcon,
 } from "../../asset/icons";
 import UserContentSkeleton from "./UserContentSkeleton";
 import BookMark from "../BookMark/BookMark";
 import { useNotification } from "../ContextProvider/NotificationContext";
 import { CommentContext } from "../ContextProvider/CommentModelContext";
+import ShareButtons from "../Share/Share";
+import ShareFile from "../Share/ShareFile";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 // AI Model Info Component
 const AIModelInfo = ({ aiMetadata }) => {
-  
   const [modelInfo, setModelInfo] = useState(null);
   const [modelIcon, setModelIcon] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -98,34 +100,32 @@ const AIModelInfo = ({ aiMetadata }) => {
   return (
     <div className="bg-gradient-to-r from-purple-100 to-blue-100  rounded-lg ">
       <div className="flex flex-row items-center justify-center gap-2 ">
-  <span
-    className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs md:text-sm font-medium 
+        <span
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs md:text-sm font-medium 
                bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 
                text-white shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300"
-  >
-    {modelIcon ? (
-      <img
-        src={modelIcon}
-        alt={`${aiMetadata.aiModel} icon`}
-        className="w-5 h-5 rounded-full object-cover"
-        onError={(e) => {
-          e.target.style.display = "none";
-        }}
-      />
-    ) : (
-      <span className="text-base">🤖</span>
-    )}
-    {aiMetadata.aiProvider || "Unknown Provider"}
-  </span>
-</div>
-
+        >
+          {modelIcon ? (
+            <img
+              src={modelIcon}
+              alt={`${aiMetadata.aiModel} icon`}
+              className="w-5 h-5 rounded-full object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          ) : (
+            <span className="text-base">🤖</span>
+          )}
+          {aiMetadata.aiProvider || "Unknown Provider"}
+        </span>
+      </div>
     </div>
   );
 };
 
 const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
-  const { setViewBox,viewBox} =
-      useContext(CommentContext);
+  const { setViewBox, viewBox } = useContext(CommentContext);
   const { showNotification } = useNotification();
   const history = useNavigate();
   const { loginData } = useContext(LoginContext);
@@ -137,6 +137,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   const [userLiked, setUserLiked] = useState(false);
   const [userDisliked, setUserDisliked] = useState(false);
   const isauthor = loginData?.validuserone?._id == postData?.userId;
+  const [showShare, setShowShare] = useState(false);
 
   // for expansion of words
   const [expanded, setExpanded] = useState(false);
@@ -144,11 +145,10 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   const isLong = words.length > 20;
   // Show only first 20 words if not expanded
   const displayText = expanded ? words.join(" ") : words.slice(0, 20).join(" ");
-  const [booked,setBooked]=useState(false);
+  const [booked, setBooked] = useState(false);
 
   useEffect(() => {
-    
-  //  console.log("UserContent received post:", post);
+    //  console.log("UserContent received post:", post);
     if (post) {
       setPostData(post);
 
@@ -157,7 +157,6 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         const userId = loginData.validuserone._id;
         setUserLiked(post.likes.includes(userId));
         setUserDisliked(post.dislikes.includes(userId));
-       
       }
     }
   }, [post]);
@@ -175,7 +174,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         const userId = loginData.validuserone._id;
         setUserLiked(postData?.likes.includes(userId));
         setUserDisliked(postData?.dislikes.includes(userId));
-        setBooked(postData?.BookMark?.includes(loginData?.validuserone?._id))
+        setBooked(postData?.BookMark?.includes(loginData?.validuserone?._id));
       }
     }
   }, [loginData, postData]);
@@ -203,69 +202,74 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         // Refresh the page or redirect
         window.location.reload();
       } else {
-        showNotification("Failed to delete post: " + (result.error || "Unknown error"),"error");
+        showNotification(
+          "Failed to delete post: " + (result.error || "Unknown error"),
+          "error"
+        );
       }
     } catch (error) {
-      showNotification("Error occurred while deleting post. Please try again.","warning");
+      showNotification(
+        "Error occurred while deleting post. Please try again.",
+        "warning"
+      );
     }
   };
 
   const handleLikePost = async () => {
-  if (!currentUser.id) {
-    showNotification("Please log in to like posts", "warning");
-    return;
-  }
-
-  // Keep a copy in case we need to rollback
-  const prevPost = { ...postData };
-  const prevLiked = userLiked;
-  const prevDisliked = userDisliked;
-
-  // Optimistically update UI
-  let updatedPost = { ...postData };
-
-  if (userLiked) {
-    // Remove like
-    updatedPost.likes = updatedPost.likes.filter(
-      (id) => id !== currentUser.id
-    );
-  } else {
-    // Add like
-    if (!updatedPost.likes) updatedPost.likes = [];
-    if (!updatedPost.likes.includes(currentUser.id)) {
-      updatedPost.likes.push(currentUser.id);
+    if (!currentUser.id) {
+      showNotification("Please log in to like posts", "warning");
+      return;
     }
 
-    // Remove from dislikes if present
-    if (updatedPost.dislikes?.includes(currentUser.id)) {
-      updatedPost.dislikes = updatedPost.dislikes.filter(
+    // Keep a copy in case we need to rollback
+    const prevPost = { ...postData };
+    const prevLiked = userLiked;
+    const prevDisliked = userDisliked;
+
+    // Optimistically update UI
+    let updatedPost = { ...postData };
+
+    if (userLiked) {
+      // Remove like
+      updatedPost.likes = updatedPost.likes.filter(
         (id) => id !== currentUser.id
       );
+    } else {
+      // Add like
+      if (!updatedPost.likes) updatedPost.likes = [];
+      if (!updatedPost.likes.includes(currentUser.id)) {
+        updatedPost.likes.push(currentUser.id);
+      }
+
+      // Remove from dislikes if present
+      if (updatedPost.dislikes?.includes(currentUser.id)) {
+        updatedPost.dislikes = updatedPost.dislikes.filter(
+          (id) => id !== currentUser.id
+        );
+      }
     }
-  }
 
-  setPostData(updatedPost);
-  setUserLiked(!userLiked);
-  if (userDisliked) setUserDisliked(false);
+    setPostData(updatedPost);
+    setUserLiked(!userLiked);
+    if (userDisliked) setUserDisliked(false);
 
-  try {
-    const response = await axios.post(`${baseUrl}/${postData?._id}/like`, {
-      userId: currentUser.id,
-    });
+    try {
+      const response = await axios.post(`${baseUrl}/${postData?._id}/like`, {
+        userId: currentUser.id,
+      });
 
-    if (response.status !== 200) {
-      throw new Error("Like failed");
+      if (response.status !== 200) {
+        throw new Error("Like failed");
+      }
+    } catch (error) {
+      // Rollback if error
+      setPostData(prevPost);
+      setUserLiked(prevLiked);
+      setUserDisliked(prevDisliked);
+
+      showNotification("Error liking post. Please try again.");
     }
-  } catch (error) {
-    // Rollback if error
-    setPostData(prevPost);
-    setUserLiked(prevLiked);
-    setUserDisliked(prevDisliked);
-
-    showNotification("Error liking post. Please try again.");
-  }
-};
-
+  };
 
   const handleDislikePost = async () => {
     if (!currentUser.id) {
@@ -314,7 +318,6 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
   const openInNewTab = (url) => {
     window.open(url, "_blank", "noreferrer");
   };
-
 
   if (!post) {
     return <UserContentSkeleton />;
@@ -512,7 +515,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
                 onClick={handleLikePost}
                 title={userLiked ? "Remove like" : "Like this post"}
               >
-                <PostLikeIcon isLiked={userLiked}/>
+                <PostLikeIcon isLiked={userLiked} />
                 <span className="text-lg text-gray-700 dark:text-gray-200 font-medium">
                   {postData?.likes ? postData?.likes.length : 0}
                 </span>
@@ -529,25 +532,29 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
                 </button>
               )}
 
-               <button
-                  onClick={() => {
-                    // setReplyIdForContext(reply?._id);
-                    // setUserName(reply?.userName);
-                    setViewBox(!viewBox);
-                  }}
-                  className="md:hidden flex items-center gap-1  text-like_color hover:text-like_color transition"
-                >
-                  <ReplyIcon />
-                  <div className="text-xs">Reply</div>
-                </button>
+              <button
+                onClick={() => {
+                  // setReplyIdForContext(reply?._id);
+                  // setUserName(reply?.userName);
+                  setViewBox(!viewBox);
+                }}
+                className="md:hidden flex items-center gap-1  text-like_color hover:text-like_color transition"
+              >
+                <ReplyIcon />
+                <div className="text-xs">Reply</div>
+              </button>
             </div>
-            {/* Right side (Bookmark) */}
+
+            <div className="flex justify-content items-center ">
+               
+              <ShareFile id={postData?._id} type={"post"} text={postData?.desc.slice(0,200)}/>
+              {/* Right side (Bookmark) */}
               <BookMark
                 postId={postData?._id}
                 userId={loginData?.validuserone?._id}
                 isBookmarked={booked}
               />
-
+            </div>
           </div>
         </div>
 

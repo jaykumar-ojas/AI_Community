@@ -10,7 +10,7 @@ const PostCard = ({ post }) => {
   return (
     <div
        onClick={() => navigate(`/userPost/${post?._id}`)}
-      className="relative m-0 p-0 border-2 aspect-square overflow-hidden cursor-pointer group"
+      className="relative m-0 p-0 border border-gray-300 dark:border-gray-600 aspect-square overflow-hidden cursor-pointer group"
     >
       <div className="relative h-full w-full">
         <PostCardLazy

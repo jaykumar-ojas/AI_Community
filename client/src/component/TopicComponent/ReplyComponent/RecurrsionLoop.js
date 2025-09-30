@@ -3,6 +3,7 @@ import ShowReplyContent from "./ShowReplyContent";
 import { LoginContext } from "../../ContextProvider/context";
 import UserIconCard from "../../Card/UserIconCard";
 import UserNameCard from "../../Card/UserNameCard";
+import { useLocation, useParams } from "react-router-dom";
 
 const MAX_DEPTH = 3; // keep your depth limit if you used it earlier
 
@@ -23,7 +24,6 @@ const RecurrsionLoop = ({
   depth = 0,
   isLastChild,
   onReplyDeleted,
-  scrollToId,
   setThreadView,
   setLastThreadContext = () => {},
 }) => {
@@ -32,17 +32,35 @@ const RecurrsionLoop = ({
   const hasChildren = reply?.children && reply?.children.length > 0;
   const [view, setView] = useState(true);
   const commentRef = useRef(null);
+  const location = useLocation();
+  const params = useParams("comment");
+  const scrollToId = params["comment"];
+  
+  console.log(params);
+  console.log(scrollToId);
 
   useEffect(() => {
-    if (scrollToId && reply?._id === scrollToId && commentRef.current) {
+  if (scrollToId && reply?._id === scrollToId && commentRef.current) {
+    // delay to avoid race condition with rendering
+    const timer = setTimeout(() => {
       commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
 
+      // adjust upwards a bit so it's slightly hidden
+      setTimeout(() => {
+        window.scrollBy({ top: -40, behavior: "smooth" });
+      }, 300);
+
+      // highlight effect
       commentRef.current.classList.add("bg-amber-50", "rounded");
       setTimeout(() => {
         commentRef.current?.classList.remove("bg-amber-50", "rounded");
       }, 2000);
-    }
-  }, [scrollToId, reply?._id]);
+    }, 1000); // <-- delay before running scroll logic
+
+    return () => clearTimeout(timer);
+  }
+}, [scrollToId, reply?._id]);
+
 
   return (
     <div

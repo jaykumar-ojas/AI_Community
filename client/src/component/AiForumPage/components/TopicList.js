@@ -6,6 +6,7 @@ import { useWebSocket } from './WebSocketContext';
 import { formatDate, getAuthHeaders, handleAuthError, API_BASE_URL, TOPICS_URL } from './ForumUtils';
 import { DisLikeIcon, LikeIcon, UpvoteIcon, DownvoteIcon, CommentIcon } from '../../../asset/icons';
 import UserIconCard from '../../Card/UserIconCard';
+import UserNameCard from '../../Card/UserNameCard';
 import { encodeId } from '../../../utils/hashids';
 import { EyeIcon } from 'lucide-react';
 import LikeDislike from '../../Card/LikeDislike';
@@ -170,7 +171,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                 </div>
 
                 <div className='flex items-center justify-center'>
-                  <div className="bg-gray-100 h-5 text-gray-700 text-xs dark:bg-gray-900/40 dark:text-gray-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <div className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-1 py-0.5 rounded-full h-5 flex flex-row text-xs justify-center items-center gap-1">
                   {topic.viewCount} <EyeIcon size={12}/>
                 </div>
                  {canDelete && (
@@ -224,7 +225,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
                 <div className="w-6 h-6 flex-shrink-0"><UserIconCard id={topic?.userId}/></div>
 
                 <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full">
-                  {topic.userName}
+                  <UserNameCard id={topic?.userId}/>
                 </span>
 
                 <span className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full">

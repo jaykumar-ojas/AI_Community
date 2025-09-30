@@ -203,7 +203,6 @@ const PostContent = () => {
 
         {/* Right Section - Sticky Sidebar */}
         <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar dark:bg-bg_comment_box rounded-xl hidden md:block md:w-[30%]">
-          <div className="border border-gray-300 rounded-lg">
             <div className="text-lg text-md justify-center text-gray-800 dark:text-text_comment p-2 font-semibold">
               More Related Content
             </div>
@@ -220,7 +219,6 @@ const PostContent = () => {
                 </div>
               )}
             </div>
-          </div>
         </div>
       </div>
     </div>
