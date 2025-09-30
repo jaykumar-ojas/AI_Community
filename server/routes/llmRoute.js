@@ -2,7 +2,7 @@ const express = require("express");
 const router = new express.Router();
 const axios = require('axios');
 const mongoose = require('mongoose');
-
+const authenticate = require("../middleware/authenticate"); 
 const {
     openai,
     model,
@@ -69,7 +69,7 @@ const {
 // });
 
 
-router.post('/suggest/:id', fetchAncestorContext, textSuggestionWithContext, (req, res) => {
+router.post('/suggest/:id', authenticate, fetchAncestorContext, textSuggestionWithContext, (req, res) => {
   res.json({
     success: true,
     finalprompt: req.contextForAI.suggestion,
