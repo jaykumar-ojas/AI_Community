@@ -10,7 +10,7 @@ import { useNotification } from "../ContextProvider/NotificationContext";
 import { decodeId, encodeId } from "../../utils/hashids";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const ShareButtons = ({ id, text, type }) => {
-  alert(id);
+  // alert(id);
   const { showNotification } = useNotification();
   const shareUrl = `${baseUrl}/${type}/${encodeId(id)}`;
   // const shareUrl = `https://obstreperous-renetta-soupy.ngrok-free.dev/post/68d983362a25fac395480b70`;
