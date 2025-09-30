@@ -5,8 +5,8 @@ import PostCard from "../userProfileView/Component/PostCard";
 
 const RelatedCard = ({ post }) => {
     return (
-        <div className="flex flex-col w-full border border-gray-200 dark:border-bg_comment my-1 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out max-w-5xl mr-auto ml-2 overflow-hidden">
-             <div className="p-2">
+        <div className="flex flex-col p-2 w-full border border-gray-200 dark:border-bg_comment my-1 rounded-md shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out max-w-5xl overflow-hidden">
+             <div className="">
                 {/* User Info */}
                 <div className="flex flex-row items-center mb-3">
                     <div className="w-6 h-6 rounded-full overflow-hidden mr-3 flex-shrink-0">
@@ -18,7 +18,7 @@ const RelatedCard = ({ post }) => {
                 </div>
             </div>
             {/* Post Image - Maintains original aspect ratio */}
-            <div className="px-4">
+            <div className="">
                 {/* If PostCard doesn't preserve aspect ratio, use img directly */}
                 {post?.signedUrl || post?.imageUrl || post?.image ? (
                     <img 

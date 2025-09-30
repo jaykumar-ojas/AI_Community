@@ -17,6 +17,7 @@ import { LikeIcon, DisLikeIcon, BackArrow, UpvoteIcon, DownvoteIcon } from "../.
 import UserReply from "../UserReply/UserReply";
 import HeaderSkeleton from "./components/HeaderSkeleton";
 import { encodeId } from '../../utils/hashids';
+import ShareFile from "../Share/ShareFile";
 
 
 
@@ -105,24 +106,7 @@ const TopicContent = () => {
         <h2 className="font-semibold text-sm md:text-lg text-black dark:text-text_header flex-1">
           {threadView ? "Thread" : topic?.title}
         </h2>
-        {!threadView && (
-          <div className="flex items-center space-x-2">
-            {/* <button
-              className={`flex items-center ${
-                isTopicLiked ? "text-blue-600" : "text-gray-500"
-              } hover:text-blue-600`}
-            >
-              <UpvoteIcon isLiked={isTopicLiked} />
-            </button>
-            <button
-              className={`flex items-center ${
-                isTopicDisliked ? "text-red-600" : "text-gray-500"
-              } hover:text-red-600`}
-            >
-              <DownvoteIcon isDisliked={isTopicDisliked} />
-            </button> */}
-          </div>
-        )}
+        <ShareFile pos={"top-6 right-3"} id={topic?._id} type={"forum"} text={topic?.title.slice(0,200)}/>
       </div>
 
       {/* Scrollable Content */}

@@ -92,9 +92,10 @@ router.post(
 );
 
 // Registration OTP verification endpoint
-router.post("/verify-otp", async (req, res) => {
+router.post("/verify-otp/:id", async (req, res) => {
     try {
-        const { email, enteredOtp } = req.body;
+        const { enteredOtp } = req.body;
+        const email = userS
         if (!enteredOtp) {
             return res.status(400).json({ status: 400, error: "OTP is required" });
         }

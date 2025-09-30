@@ -22,6 +22,7 @@ import {
 import ReplyData from "../../Card/ReplyData";
 import { CommentContext } from "../../ContextProvider/CommentModelContext";
 import LikeDislike from "../../Card/LikeDislike";
+import ShareFile from "../../Share/ShareFile";
 
 
 const ModelIcon = ({ modelName }) => {
@@ -268,12 +269,13 @@ const ShowCommentContent = ({ reply }) => {
             
           </div>
           {/* Move ModelIcon to the right corner, after the delete button */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             {firstModelName && !isDeleted && (
               <div className="ml-2">
                 <ModelIcon modelName={firstModelName} />
               </div>
             )}
+            <ShareFile h={16} w={16} id={reply?._id} type={"postThread"} text={reply?.content[0]?.userText.slice(0,200)}/>
 
             {isAuthor && !isDeleted && (
               <div className="relative">

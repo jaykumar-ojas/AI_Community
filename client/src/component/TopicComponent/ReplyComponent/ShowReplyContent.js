@@ -25,6 +25,7 @@ import {
 } from "../../../asset/icons";
 import ReplyData from "../../Card/ReplyData";
 import LikeDislike from "../../Card/LikeDislike";
+import ShareFile from "../../Share/ShareFile";
 
 // Add ModelIcon component
 const ModelIcon = ({ modelName, name=true }) => {
@@ -284,7 +285,7 @@ const ShowReplyContent = ({
               <ModelIcon modelName={modelName} name={false} />
             </div>
           ))}
-
+            <ShareFile h={16} w={16} id={reply?._id} type={"forumThread"} text={reply?.content[0]?.userText.slice(0,200)}/>
             {isAuthor && !isReplyDeleted && (
               <div className="relative">
                 <button

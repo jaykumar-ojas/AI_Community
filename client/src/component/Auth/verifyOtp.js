@@ -52,7 +52,7 @@ const EmailVerification = () => {
     e.preventDefault();
     const enteredOtp = otp.join("");
    // console.log("Entered OTP:", enteredOtp);
-    const data = await fetch(`${baseUrl}/verify-otp`, {
+    const data = await fetch(`${baseUrl}/verify-otp/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,9 +63,9 @@ const EmailVerification = () => {
         })
       });
       const res = await data.json();
-    //  console.log(res);
+     console.log(res);
       if(res.status===200){
-      //  console.log(res);
+       console.log(res);
         history(`/update-password/${res.token}`);
       }
       else if(res.status===401){

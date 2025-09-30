@@ -78,14 +78,14 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <ForgotPassword /> },
       { path: "verify-otp/:id", element: <VerfiyOtp /> },
       { path: "update-password/:id", element: <UpdatePassword /> },
-      { path: "userPost/:id", element: <PostContent /> },
+      { path: "userPost/:id/:comment?", element: <PostContent /> },
       { path: "ai-aggregator/:topicId", element: <AIAggregator /> },
-      { path: "forum/topic/:topicId/:replyId?", element: <AIAggregator /> },
+      { path: "forum/topic/:topicId/:comment?", element: <AIAggregator /> },
       { path: "t/:topicId", element: <TopicContent /> },
       { path: "loader", element: <PixelLoader /> },
       { path: "sample-user/:id", element: <UserProfile /> },
       { path: "post", element:<PostImage/>},
-      {path: "userPost/edit/:id", element: <UserEdit/>},
+      {path: "userPost/edit/:id?", element: <UserEdit/>},
       {path: "forum", element: <ForumSystem/>},
       {path: "feedback", element: <FeedbackPage/>}
     ]
