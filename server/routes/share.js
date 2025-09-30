@@ -10,7 +10,7 @@ const path = require("path");
 const axios = require("axios");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
-const { decodeId } = require("../utils/hashids");
+const { decodeId, encodeId } = require("../utils/hashids");
 
 
 router.get("/:type/:id", async (req, res) => {
@@ -132,7 +132,7 @@ const forumTopicData = (data, id) => {
     title: data?.title || "PixxelMind Forum Topic",
     description: (data?.content || "Join the discussion on PixxelMind!").substring(0, 150),
     image,
-    url: `https://pixxelmind.com/forum/topic/${id}`,
+    url: `https://pixxelmind.com/forum/topic/${encodeId(id)}`,
     siteName: "PixxelMind"
   };
 };
@@ -154,7 +154,7 @@ const forumReplyData = (data, id) => {
     title: data?.content?.[0]?.userText || "PixxelMind Forum Reply",
     description: (data?.content?.[0]?.aiText || data?.description || "Join the discussion on PixxelMind!").substring(0, 150),
     image,
-    url: `https://pixxelmind.com/forum/topic/${data.topicId}/${id}`,
+    url: `https://pixxelmind.com/forum/topic/${encodeId(data.topicId)}/${id}`,
     siteName: "PixxelMind"
   };
 };

@@ -21,7 +21,7 @@ const ShareButtons = ({ id, text, type }) => {
     case "post":
       message = `Hey, look what I generated:\n${text}`;
       break;
-    case "forum":
+    case "forumog":
       message = `Come join the discussion:\n${text}`;
       break;
     case "postThread":

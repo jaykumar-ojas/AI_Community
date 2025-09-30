@@ -25,7 +25,7 @@ const fetchTopic = async (topicId) => {
   const response = await axios.get(`${API_BASE_URL}/forum/topics/${topicId}`, {
     headers: getAuthHeaders(),
   });
-  return response.data.topic;
+  return response?.data?.topic;
 };
 
 const TopicContent = () => {
