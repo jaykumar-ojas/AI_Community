@@ -373,7 +373,7 @@ const UserReply = ({ forum = false }) => {
   };
 
   return (
-    <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-700 rounded-md  dark:bg-gray-800  bg-transparent  z-50">
+    <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-700 rounded-md  dark:bg-gray-800  bg-transparent  z-40">
       {error && <ErrorBar message={error} onClose={() => setError("")} />}
 
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box">

@@ -25,7 +25,7 @@ import LikeDislike from "../../Card/LikeDislike";
 import ShareFile from "../../Share/ShareFile";
 
 
-const ModelIcon = ({ modelName }) => {
+const ModelIcon = ({ modelName, name=true }) => {
   const [iconUrl, setIconUrl] = useState(null);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const ModelIcon = ({ modelName }) => {
         className="w-4 h-4 md:w-6 md:h-6 rounded-full"
         // style={{ width: 24, height: 24, borderRadius: "50%" }}
       />
-      <span className="text-xs text-blue-700 font-medium">{modelName}</span>
+      {name && <span className="text-xs text-blue-700 font-medium">{modelName}</span>}
     </div>
   );
 };
@@ -81,12 +81,16 @@ const ShowCommentContent = ({ reply }) => {
     return words.slice(0, wordLimit).join(" ") + "...";
   };
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  const [modelNameArray,setModelNameArray]=useState([]);
+  
 
   useEffect(() => {
     if (reply && loginData) {
       setReplyLikes(reply?.likes);
       setReplyDislikes(reply?.dislikes);
       setIsAuthor(reply?.userId === loginData?.validuserone._id);
+      const models = getAllModelNames();
+      setModelNameArray(models);
     }
   }, [reply, loginData]);
 
@@ -96,6 +100,15 @@ const ShowCommentContent = ({ reply }) => {
       setIsDisLiked(replyDislikes?.includes(loginData.validuserone._id));
     }
   }, [replyLikes, replyDislikes, loginData]);
+
+  const getAllModelNames = () => {
+    if (Array.isArray(reply?.content)) {
+      return reply.content
+        .filter(item => item.model) // keep only items with a model
+        .map(item => item.model);   // extract model names
+    }
+    return [];
+  };
 
   const handleDeleteReply = async () => {
     if (!loginData || !loginData.validuserone) {
@@ -270,11 +283,14 @@ const ShowCommentContent = ({ reply }) => {
           </div>
           {/* Move ModelIcon to the right corner, after the delete button */}
           <div className="flex items-center justify-center gap-2">
-            {firstModelName && !isDeleted && (
-              <div className="ml-2">
-                <ModelIcon modelName={firstModelName} />
-              </div>
-            )}
+            {modelNameArray.map((modelName, index) => (
+            <div
+              key={index}
+              className={index === 0 ? "ml-0" : "-ml-8"} // overlap only after first
+            >
+              <ModelIcon modelName={modelName} name={false} />
+            </div>
+          ))}
             <ShareFile h={16} w={16} id={reply?._id} type={"postThread"} text={reply?.content[0]?.userText.slice(0,200)}/>
 
             {isAuthor && !isDeleted && (

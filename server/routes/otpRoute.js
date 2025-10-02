@@ -49,6 +49,7 @@ router.post(
                 subject: "Verification Code",
                 text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
             };
+            console.log("this is otp",otp);
 
             // Check if the user already has an OTP entry
             let user = await otpdb.findOne({ email });

@@ -6,6 +6,88 @@ import { useHighlightTheme } from "../../hooks/useHighlightTheme";
 import { useMathJax } from "../../hooks/useMathJax";
 import { AiShowIcon } from "../../asset/icons";
 import ModelIcon from "../AIchatbot/Component/ModelIcon";
+import ImagePreviewCard from "./ImagePreivewCard";
+
+
+
+const ShowUrl = ({ url, modelInfo }) => {
+  const [showPreview,setShowPreview]=useState(false);
+  const handleClosePreview = () =>{
+    setShowPreview(!showPreview);
+  }
+   if (!url) return null;
+  return (
+    <div className="flex justify-start">
+      <div onClick={handleClosePreview} className="max-w-[100%] bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-500 cursor-pointer">
+        {modelInfo && (
+          <div className="flex items-center justify-between p-1 border-b border-gray-100 dark:border-gray-500 bg-gray-50 dark:bg-gray-300">
+            <div className="flex items-center text-xs space-x-2">
+              <ModelIcon modelName={modelInfo} />
+            </div>
+          </div>
+        )}
+        <div className="bg-white flex items-center justify-center">
+          <img
+            src={url}
+            className="max-h-[180px] w-auto object-contain"
+            alt="Generated content"
+            onError={(e) => (e.target.style.display = "none")}
+          />
+        </div>
+      </div>
+      {showPreview && <ImagePreviewCard imgUrl={url} modelInfo={modelInfo} onClose={handleClosePreview}/>}
+    </div>
+  );
+};
+
+const DisplayContent = ({ displayContent }) => {
+  return (
+    <>
+      {displayContent?.map((item, index) => (
+        <div
+          key={item.id || item._id || `content-${index}`}
+          className="mb-4 border-gray-200 dark:border-gray-700"
+        >
+          {item.userText && (
+            <div className="mb-3">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: parseMarkdown(item.userText),
+                }}
+              />
+            </div>
+          )}
+          {item.prompt && (
+            <div className="mb-3">
+              <span className="inline-block mb-2 text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
+                Prompt
+              </span>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: parseMarkdown(item.prompt),
+                }}
+              />
+            </div>
+          )}
+          {item.aiText && (
+            <div className="mb-3">
+              <ModelIcon modelName={item.model} />
+              <div
+                className=""
+                dangerouslySetInnerHTML={{
+                  __html: parseMarkdown(item.aiText),
+                }}
+              />
+            </div>
+          )}
+          {item.imageUrl?.fileUrl && (
+            <ShowUrl url={item.imageUrl.fileUrl} modelInfo={item.model} />
+          )}
+        </div>
+      ))}
+    </>
+  );
+};
 // ---- local text helpers ----
 
 const wordCount = (str = "") =>
@@ -133,77 +215,6 @@ const ReplyData = ({ content }) => {
 
 export default ReplyData;
 
-const DisplayContent = ({ displayContent }) => {
-  return (
-    <>
-      {displayContent?.map((item, index) => (
-        <div
-          key={item.id || item._id || `content-${index}`}
-          className="mb-4 border-gray-200 dark:border-gray-700"
-        >
-          {item.userText && (
-            <div className="mb-3">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(item.userText),
-                }}
-              />
-            </div>
-          )}
-          {item.prompt && (
-            <div className="mb-3">
-              <span className="inline-block mb-2 text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
-                Prompt
-              </span>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(item.prompt),
-                }}
-              />
-            </div>
-          )}
-          {item.aiText && (
-            <div className="mb-3">
-              <ModelIcon modelName={item.model} />
-              <div
-                className=""
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(item.aiText),
-                }}
-              />
-            </div>
-          )}
-          {item.imageUrl?.fileUrl && (
-            <ShowUrl url={item.imageUrl.fileUrl} modelInfo={item.model} />
-          )}
-        </div>
-      ))}
-    </>
-  );
-};
 
-const ShowUrl = ({ url, modelInfo }) => {
-  if (!url) return null;
 
-  return (
-    <div className="flex justify-start">
-      <div className="max-w-[100%] bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-500">
-        {modelInfo && (
-          <div className="flex items-center justify-between p-1 border-b border-gray-100 dark:border-gray-500 bg-gray-50 dark:bg-gray-300">
-            <div className="flex items-center space-x-2">
-              <ModelIcon modelName={modelInfo} />
-            </div>
-          </div>
-        )}
-        <div className="bg-white flex items-center justify-center">
-          <img
-            src={url}
-            className="max-h-[180px] w-auto object-contain"
-            alt="Generated content"
-            onError={(e) => (e.target.style.display = "none")}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
+

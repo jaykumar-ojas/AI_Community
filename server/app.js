@@ -34,6 +34,7 @@ const bookMarkRoutes = require("./routes/bookMarkRoute");
 
 const aiModelRoutes = require("./routes/aiModelRoutes");
 const shareRoute = require("./routes/share");
+const seedingRoute = require('./routes/seedingRoute');
 const path = require("path");
 
 
@@ -94,6 +95,8 @@ app.use("/",notificationRoutes);
 app.use("/",bookMarkRoutes);
 app.use("/", aiModelRoutes);
 app.use("/",shareRoute);
+app.use("/",seedingRoute);
+
 
 
 
