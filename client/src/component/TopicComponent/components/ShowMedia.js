@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import ImagePreviewCard from "../../Card/ImagePreivewCard";
 
 const ShowMedia = ({ attachment }) => {
   const { fileType, fileUrl, fileName } = attachment || {};
@@ -7,9 +8,14 @@ const ShowMedia = ({ attachment }) => {
   const isVideo = fileType?.startsWith("video/");
   const isAudio = fileType?.startsWith("audio/");
   const isUnknown = !isImage && !isVideo && !isAudio;
+  const [showPreview,setShowPreview] = useState(false);
+  const handlePreview = ()=>{
+    setShowPreview(!showPreview);
+  }
 
   return (
-    <div className="bg-bg_comment_box">
+    <div onClick={handlePreview} className="bg-bg_comment_box">
+      {showPreview && <ImagePreviewCard imgUrl={fileUrl} onClose={handlePreview}/>}
        {isImage && (
     <img
       src={fileUrl}
