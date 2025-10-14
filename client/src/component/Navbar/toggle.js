@@ -21,11 +21,11 @@ const StyledWrapper = styled.div`
     display: block;
     /* Switch size will scale based on props */
     --width-of-switch: ${({ size }) =>
-      size === "sm" ? "2.5em" : size === "lg" ? "4.5em" : "3.5em"};
+      size === "sm" ? "2.5em" : size === "lg" ? "4.5em" : "2.8em"};
     --height-of-switch: ${({ size }) =>
-      size === "sm" ? "1.4em" : size === "lg" ? "2.5em" : "2em"};
+      size === "sm" ? "1.4em" : size === "lg" ? "2.5em" : "1.5em"};
     --size-of-icon: ${({ size }) =>
-      size === "sm" ? "1em" : size === "lg" ? "1.8em" : "1.4em"};
+      size === "sm" ? "1em" : size === "lg" ? "1.8em" : "1.2em"};
     --slider-offset: ${({ size }) =>
       size === "sm" ? "0.2em" : size === "lg" ? "0.35em" : "0.3em"};
     position: relative;

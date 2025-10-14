@@ -12,6 +12,9 @@ import { EyeIcon } from 'lucide-react';
 import LikeDislike from '../../Card/LikeDislike';
 import { useNotification } from '../../ContextProvider/NotificationContext';
 
+import '../../../asset/IconImage/ComponetCSS/LikeDisLike.css'
+
+
 const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   const {showNotification} = useNotification();
   const { loginData } = useContext(LoginContext);
@@ -148,119 +151,112 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   };
 
   return (
-    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+    <div className="grid gap-2 grid-cols-1">
   {topics.length > 0 ? (
-    topics.map(topic => {
+    topics.map((topic) => {
       const isLiked = topic.likes?.includes(loginData?.validuserone?._id);
       const isDisliked = topic.dislikes?.includes(loginData?.validuserone?._id);
-      const isAuthor = loginData?.validuserone?._id.toString() === topic.userId.toString();
-      const isAdmin = loginData?.validuserone?.role === 'admin';
+      const isAuthor =
+        loginData?.validuserone?._id.toString() === topic.userId.toString();
+      const isAdmin = loginData?.validuserone?.role === "admin";
       const canDelete = isAuthor || isAdmin;
 
       return (
         <div
           key={topic._id}
-          className="p-1 w-full  hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-colors cursor-pointer"
           onClick={() => handleTopicClick(topic)}
+          className="group relative bg-white dark:bg-nav_hover border border-gray-200 dark:border-gray-900 rounded-2xl p-3 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-300 cursor-pointer overflow-hidden"
         >
-          <div className="flex flex-col w-full justify-between">
-            {/* this is first one */}
-              <div className="flex justify-between items-center">
-                <div className="text-sm font-semibold  text-gray-900 dark:text-white line-clamp-2 hover:text-blue-600 transition">
-                  {topic.title}
-                </div>
+          {/* Hover gradient overlay */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-r from-blue-500 to-purple-500 transition duration-300 rounded-2xl"></div>
 
-                <div className='flex items-center justify-center'>
-                  <div className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-1 py-0.5 rounded-full h-5 flex flex-row text-xs justify-center items-center gap-1">
-                  {topic.viewCount} <EyeIcon size={12}/>
-                </div>
-                 {canDelete && (
-                  <div className="relative">
+          {/* Title */}
+          <div className="flex justify-between items-start">
+            <h2 className="text-[17px] font-semibold font-merriweather text-gray-900  dark:text-low_text line-clamp-2 group-hover:text-theme_color2 transition">
+              {topic.title}
+            </h2>
+
+            {/* Options Menu */}
+            {canDelete && (
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenMenuId(openMenuId === topic._id ? null : topic._id);
+                  }}
+                  className="p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <circle cx="10" cy="4" r="1.5" />
+                    <circle cx="10" cy="10" r="1.5" />
+                    <circle cx="10" cy="16" r="1.5" />
+                  </svg>
+                </button>
+
+                {openMenuId === topic._id && (
+                  <div
+                    className="absolute right-0 mt-2 w-28 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        setOpenMenuId(openMenuId === topic._id ? null : topic._id);
+                      onClick={() => {
+                        handleDeleteTopic(topic._id);
+                        setOpenMenuId(null);
                       }}
-                      className="p-1 text-gray-500 hover:bg-blue-100 dark:hover:bg-gray-700 rounded-full"
-                      aria-label="Open menu"
+                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-xl"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <circle cx="10" cy="4" r="1.5" />
-                        <circle cx="10" cy="10" r="1.5" />
-                        <circle cx="10" cy="16" r="1.5" />
-                      </svg>
+                      Delete
                     </button>
-                    {openMenuId === topic._id && (
-                      <div
-                        className="absolute right-0 mt-2 w-28 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-10"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => {
-                            handleDeleteTopic(topic._id);
-                            setOpenMenuId(null);
-                          }}
-                          className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
                   </div>
                 )}
-                </div>
-               
               </div>
-            {/* this is content one */}
-              <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-1">
-                {topic.content}
-              </p>
+            )}
+          </div>
 
+          {/* Content Preview */}
+          <p className="text-[13px] font-jetbrain text-gray-600 dark:text-gray-200 line-clamp-2 mb-3">
+            {topic.content}
+          </p>
 
-            {/* Bottom Row */}
-            <div className="flex flex-row items-center justify-between gap-1 w-full mt-1">
-              
-              {/* Meta Info */}
-              <div className="flex flex-wrap items-center text-xs ">
-                <div className="w-6 h-6 flex-shrink-0"><UserIconCard id={topic?.userId}/></div>
-
-                <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full">
-                  <UserNameCard id={topic?.userId}/>
-                </span>
-
-                <span className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full">
-                  {formatDate(topic.createdAt)}
-                </span>
-
-                <span className="bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  {topic.replyCount} <CommentIcon h={4} w={4}/>
-                </span>
-
+          {/* Footer */}
+          <div className="flex items-center justify-between w-full text-xs overflow-hidden">
+            {/* Left Section (User + Date + Replies) */}
+            <div className="flex items-center min-w-0 gap-1 overflow-hidden">
+              <div className="flex-shrink-0 w-6 h-6">
+                <UserIconCard id={topic?.userId} />
               </div>
 
-              {/* Vote Buttons */}
-              <LikeDislike topic={topic} like = {handleTopicLike} dislike={handleTopicDislike}/>
-              {/* <div className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-700 rounded-full px-3 py-1 self-start sm:self-auto">
-                <button
-                  onClick={(e) => handleTopicLike(topic._id, e)}
-                  className={`p-1 rounded-full transition transform hover:scale-110 ${
-                    isLiked ? 'text-green-600' : 'text-gray-500 dark:text-gray-400'
-                  }`}
-                >
-                  <UpvoteIcon isLiked={isLiked}/>
-                </button>
-                <span className="text-xs text-gray-700 dark:text-gray-300">{topic.likes?.length || 0}</span>
+              <span className="truncate max-w-[90px] sm:max-w-[120px] bg-blue-100 text-blue-700 dark:bg-nav_hover2 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">
+                <UserNameCard id={topic?.userId} hover={false} size={5} />
+              </span>
 
-                <button
-                  onClick={(e) => handleTopicDislike(topic._id, e)}
-                  className={`p-1 rounded-full transition transform hover:scale-110 ${
-                    isDisliked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
-                  }`}
-                >
-                  <DownvoteIcon isDisliked={isDisliked}/>
-                </button>
-                <span className="text-xs text-gray-700 dark:text-gray-300">{topic.dislikes?.length || 0}</span>
-              </div> */}
+              <span className="bg-gray-100 text-gray-700 dark:bg-nav_hover2 dark:text-low_text px-2 py-0.5 rounded-full flex-shrink-0">
+                {formatDate(topic.createdAt)}
+              </span>
+
+              {topic.replyCount > 0 && (
+                <span className="bg-purple-100 text-purple-700 dark:bg-nav_hover2 dark:text-low_text px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0">
+                  {topic.replyCount} <CommentIcon h={4} w={4} />
+                </span>
+              )}
+            </div>
+
+            {/* Right Section (Views + Like/Dislike) */}
+            <div className="flex items-center flex-shrink-0 gap-2">
+              <div className="bg-gray-100 dark:bg-nav_hover2 text-gray-700 dark:text-low_text px-2 py-0.5 rounded-full flex items-center gap-1">
+                {topic.viewCount} <EyeIcon size={12} />
+              </div>
+              <div className="bg-gray-100 dark:bg-nav_hover2 text-gray-700 dark:text-low_text px-2 py-0.5 rounded-full flex items-center gap-1">
+                {topic.likes?.length} <Like />
+              </div>
+              <div className="bg-gray-100 dark:bg-nav_hover2 text-gray-700 dark:text-low_text px-2 py-0.5 rounded-full flex items-center gap-1">
+                {topic?.dislikes?.length} <DisLike />
+              </div>
             </div>
           </div>
         </div>
@@ -271,7 +267,41 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
   )}
 </div>
 
+
+
   );
 };
 
 export default TopicList; 
+
+
+const Like = ({ size = 14 }) => {
+  return (
+    <svg 
+      className="svgs-like" 
+      width={size} 
+      height={size} 
+      xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 512 512"
+      fill="currentColor"
+    >
+      <path d="M313.4 32.9c26 5.2 42.9 30.5 37.7 56.5l-2.3 11.4c-5.3 26.7-15.1 52.1-28.8 75.2H464c26.5 0 48 21.5 48 48c0 18.5-10.5 34.6-25.9 42.6C497 275.4 504 288.9 504 304c0 23.4-16.8 42.9-38.9 47.1c4.4 7.3 6.9 15.8 6.9 24.9c0 21.3-13.9 39.4-33.1 45.6c.7 3.3 1.1 6.8 1.1 10.4c0 26.5-21.5 48-48 48H294.5c-19 0-37.5-5.6-53.3-16.1l-38.5-25.7C176 420.4 160 390.4 160 358.3V320 272 247.1c0-29.2 13.3-56.7 36-75l7.4-5.9c26.5-21.2 44.6-51 51.2-84.2l2.3-11.4c5.2-26 30.5-42.9 56.5-37.7zM32 192H96c17.7 0 32 14.3 32 32V448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32z"></path>
+    </svg>
+  );
+};
+
+const DisLike = ({ size = 14 }) => {
+  return (
+    <svg 
+      className="svgs-dislike" 
+      width={size} 
+      height={size} 
+      xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 512 512"
+      fill="currentColor"
+      style={{ transform: 'rotate(180deg)' }}
+    >
+      <path d="M313.4 32.9c26 5.2 42.9 30.5 37.7 56.5l-2.3 11.4c-5.3 26.7-15.1 52.1-28.8 75.2H464c26.5 0 48 21.5 48 48c0 18.5-10.5 34.6-25.9 42.6C497 275.4 504 288.9 504 304c0 23.4-16.8 42.9-38.9 47.1c4.4 7.3 6.9 15.8 6.9 24.9c0 21.3-13.9 39.4-33.1 45.6c.7 3.3 1.1 6.8 1.1 10.4c0 26.5-21.5 48-48 48H294.5c-19 0-37.5-5.6-53.3-16.1l-38.5-25.7C176 420.4 160 390.4 160 358.3V320 272 247.1c0-29.2 13.3-56.7 36-75l7.4-5.9c26.5-21.2 44.6-51 51.2-84.2l2.3-11.4c5.2-26 30.5-42.9 56.5-37.7zM32 192H96c17.7 0 32 14.3 32 32V448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32z"></path>
+    </svg>
+  );
+};

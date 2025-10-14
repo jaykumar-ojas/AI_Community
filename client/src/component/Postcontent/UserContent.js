@@ -102,7 +102,7 @@ const AIModelInfo = ({ aiMetadata }) => {
       <div className="flex flex-row items-center justify-center gap-2 ">
         <span
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs md:text-sm font-medium 
-               bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 
+               bg-gradient-to-r from-theme_color4 via-purple-500 to-pink-500 
                text-white shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300"
         >
           {modelIcon ? (
@@ -352,10 +352,10 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
       );
     } else if (fileType === "video") {
       return (
-        <div className="relative w-full h-full bg-gradient-to-br from-blue-900 to-purple-900">
+        <div className="w-full max-h-[500px] rounded-lg bg-transparent relative flex items-center justify-center">
           <video
             src={postData?.imgUrl}
-            className="w-full h-full object-contain"
+            className="max-h-[500px] w-auto object-contain"
             controls
             preload="metadata"
             onError={(e) => {
@@ -516,7 +516,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
                 title={userLiked ? "Remove like" : "Like this post"}
               >
                 <PostLikeIcon isLiked={userLiked} />
-                <span className="text-lg text-gray-700 dark:text-gray-200 font-medium">
+                <span className="text-lg text-gray-700 dark:text-low_text font-inter">
                   {postData?.likes ? postData?.likes.length : 0}
                 </span>
               </button>
@@ -559,7 +559,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
         </div>
 
         {/* Description */}
-        <div className="p-2 pt-0 leading-snug sm:text-[16px] text-[14px] text-gray-800 dark:text-time_header">
+        <div className="p-2 pt-0 font-nunito leading-snug sm:text-[16px] text-[14px] text-gray-800 dark:text-low_text">
           {postData?.desc ? (
             <>
               {displayText}
@@ -567,7 +567,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
               {isLong && (
                 <button
                   onClick={() => setExpanded(!expanded)}
-                  className="ml-1 text-blue-500 hover:underline"
+                  className="ml-1 text-theme_color4 font-nunito text-sm font-semibold hover:underline"
                 >
                   {expanded ? "View Less" : "View More"}
                 </button>

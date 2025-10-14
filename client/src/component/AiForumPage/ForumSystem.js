@@ -29,27 +29,12 @@ const ForumSystem = () => {
   }, []);
 
   return (
-    <div className=" md:border-x-2 border-[#DBDBDB]  dark:border-gray-600  dark:bg-black flex flex-col h-[calc(100vh-6.6rem)] md:h-full">
+    <div className="dark:bg-black flex flex-col h-[calc(100vh-6.6rem)] md:h-full">
       {/* Header with search - now with transparent/dark background */}
       <div className="p-1 sticky top-0  backdrop-blur-sm">
-        <div className=" text-2xl font-bold tracking-wide mb-2 
-  bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 
-  bg-clip-text text-transparent">
-  MindMesh
+        <div className=" text-2xl font-inter font-semibold text-theme_color3">
+  Community
 </div>
-
-        {/* <div className="relative">
-          <input
-            type="text"
-            placeholder="Search discussions..."
-            className="w-full px-4 py-2 pr-10 border border-gray-700 rounded-lg bg-black/40 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
-          />
-          <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-        </div> */}
       </div>
 
       {/* Navigation Tabs - with dark theme styling */}
@@ -57,7 +42,7 @@ const ForumSystem = () => {
 <div className="relative flex dark:bg-black/40 backdrop-blur-sm  border-y border-gray-400  gap-2  overflow-hidden">
   {/* Slim sliding background indicator */}
   <span
-    className="absolute h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-md transition-all duration-500 ease-in-out"
+    className="absolute h-8 rounded-full bg-gradient-to-r from-theme_color to-theme_color2 shadow-md transition-all duration-500 ease-in-out"
     style={{
       top: "50%",
       transform: "translateY(-50%)",
@@ -68,7 +53,7 @@ const ForumSystem = () => {
 
   <button
     className={`flex-1 relative z-10 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
-      ${currentTab === "popular" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+      ${currentTab === "popular" ? "text-white font-semibold" : "text-gray-800 dark:text-low_text"}`}
     onClick={() => setCurrentTab("popular")}
   >
     Popular
@@ -76,7 +61,7 @@ const ForumSystem = () => {
 
   <button
     className={`flex-1 relative z-10 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
-      ${currentTab === "recent" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+      ${currentTab === "recent" ? "text-white font-semibold" : "text-gray-800 dark:text-low_text"}`}
     onClick={() => setCurrentTab("recent")}
   >
     Recent
@@ -84,7 +69,7 @@ const ForumSystem = () => {
 
   <button
     className={`flex-1 relative z-10 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
-      ${currentTab === "my" ? "text-white font-semibold" : "text-gray-800 dark:text-gray-300"}`}
+      ${currentTab === "my" ? "text-white font-semibold" : "text-gray-800 dark:text-low_text"}`}
     onClick={() => setCurrentTab("my")}
   >
     My Topics
@@ -112,18 +97,13 @@ const ForumSystem = () => {
 
   <button
     onClick={() => setIsNewTopicModalOpen(true)}
-    className="w-full mr-2 bg-gradient-to-r from-blue-500 to-blue-600  md:p-3 p-2 rounded-lg text-gray-100 flex items-center justify-center gap-2"
+    className="w-full mr-2 bg-gradient-to-r from-theme_color to-theme_color2 md:p-3 p-2 rounded-lg text-black flex items-center justify-center gap-2"
     disabled={!loginData}
   >
     <PlusIcon/>
-    <span>
-      {loginData ? "Create your Topic" : "Login to Create Topic"}
+    <span className='font-inter font-bold'>
+      Create a Discussion
     </span>
-
-
-    {/* waves + shimmer */}
-    <div className="waves"></div>
-    <div className="shimmer"></div>
   </button>
 
 

@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
     profilePictureUrl :{ type: String, default:""},
     backgroundImage:{ type:String, default:""},
     backgroundImageUrl:{ type: String, default:""},
-    credit:{type:Number,default:100},
+    credit:{type:Number,default:300},
+    founding_member:{ type: Boolean, default : false},
     email:{ type:String, required:true,unique:true,
         validate(value){
             if(!validator.isEmail(value)){

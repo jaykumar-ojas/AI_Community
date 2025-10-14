@@ -251,7 +251,7 @@ const [sparkles, setSparkles] = useState([]);
             <UserIconCard id={post?.userId} />
           </div>
           <div>
-            <UserNameCard id={post?.userId} />
+            <UserNameCard id={post?.userId} hover={false} size={5}/>
           </div>
       </div>
         {post?.isAIGenerated && post?.aiModel && (

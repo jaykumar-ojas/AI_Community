@@ -53,9 +53,9 @@ const Page = () => {
   }, []);
 
   const breakpointColumnsObj = {
-    default: 3,
-    1024: 3,
-    768: 3,
+    default: 4,
+    1024: 4,
+    768: 2,
   };
 
   // Mobile breakpoint for single column
@@ -98,7 +98,7 @@ const Page = () => {
                       className="sm:h-[calc(100vh-3.5rem)] h-[calc(100vh-6.1rem)] overflow-y-auto no-scrollbar md:pt-2" // i change it dont know the effect on infinite scroll
                     >
                       {/* Desktop: Multi-column masonry */}
-                      <div className="hidden sm:block">
+                      <div>
                         <Masonry
                           breakpointCols={breakpointColumnsObj}
                           className="flex gap-2"
@@ -113,13 +113,13 @@ const Page = () => {
                       </div>
 
                       {/* Mobile: Single column without spacing */}
-                      <div className="sm:hidden">
+                      {/* <div className="sm:hidden grid grid-col-2">
                         {allPosts.map((post) => (
-                          <div key={post?._id} className="w-full">
+                          <div key={post?._id} className="w-full ">
                             <Card post={post} />
                           </div>
                         ))}
-                      </div>
+                      </div> */}
                     </div>
                   </InfiniteScroll>
                 ) : (

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = new express.Router();
+const mongoose = require("mongoose");
 const multer = require('multer');
 const postdb = require("../models/postSchema");
 const userdb = require("../models/userSchema");
@@ -493,5 +494,33 @@ router.post('/:id/dislike', async (req, res) => {
         });
     }
 });
+
+
+// router.get("/update-likes", async (req, res) => {
+//   try {
+//     const docs = await postdb.find({});
+
+//     for (const doc of docs) {
+//       // Generate random number between 1 and 100
+//       const likeCount = Math.floor(Math.random() * 100) + 1;
+
+//       // Create array of random ObjectIds
+//       const likesArray = Array.from({ length: likeCount }, () => new mongoose.Types.ObjectId());
+
+//       await postdb.updateOne(
+//         { _id: doc._id },
+//         { $set: { likes: likesArray } }
+//       );
+//     }
+
+//     res.status(200).json({ message: "✅ Random ObjectId likes updated for all documents" });
+//   } catch (error) {
+//     console.error("❌ Error updating likes:", error);
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// });
+
+
+
 
 module.exports = router;

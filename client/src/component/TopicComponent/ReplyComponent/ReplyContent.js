@@ -196,11 +196,11 @@ const ReplyContent = () => {
   return (
     <div>
       <div className="relative flex items-center md:p-2 mb-2">
-        <h1 className="my-1 md: my-0 text-md md:text-xl w-full font-semibold text-gray-900 dark:text-text_comment tracking-wide">
-          Replies
+        <h1 className="font-playfair my-1 md: my-0 text-md md:text-xl w-full font-semibold text-gray-900 dark:text-text_comment tracking-wide">
+          Discussion
         </h1>
       </div>
-      <div className="replyContent">
+      <div className="replyContent font-manrope font-extralight">
         {replies?.length > 0 ? (
           replies.map((reply, index) => (
             <div key={reply._id || index} className="md:ml-2">

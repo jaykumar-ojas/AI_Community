@@ -21,14 +21,8 @@ import Switch from "./toggle";
 export const ForumContext = createContext();
 
 const navigation = [
-  { name: "Home", href: "/", current: true },
-  {
-    name: `generate image`,
-    href: "/post",
-    current: false,
-    isSpecial: true, // mark Post as special (only used in desktop render)
-  },
- // {name : "Feedback", href:'/feedback', current:false},
+  { name: "Home", href: "/", },
+  { name: `generate image`,href: "/post",},
 ];
 
 function classNames(...classes) {
@@ -138,7 +132,7 @@ export default function Navbar({ showForum, setShowForum }) {
         as="nav"
         className="sticky top-0 z-50 min-h-[3rem] hidden sm:block"
       >
-        <div className="relative bg-gray-200 dark:bg-gray-900 min-h-[3rem]">
+        <div className="relative bg-neutral-50 dark:bg-bg_dark min-h-[3rem]">
           <div className="relative z-10 max-w-[97%] mx-auto px-4 sm:px-6 lg:px-0">
             <div className="flex justify-between items-center h-14">
               {/* Logo and Navigation Links */}
@@ -151,7 +145,7 @@ export default function Navbar({ showForum, setShowForum }) {
                     <img
                     src={logo}
                     alt="Logo"
-                    className="h-full w-14 object-contain p-1"
+                    className="h-full w-12 object-contain p-1"
                   />
                   <img
                     src={logoName}
@@ -163,36 +157,25 @@ export default function Navbar({ showForum, setShowForum }) {
                 </Link>
                 {/* Desktop links */}
                 <div className="hidden sm:flex space-x-2">
-                  {navigation.map((item) =>
-                    item.isSpecial ? (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        aria-current={item.current ? "page" : undefined}
-                        className="px-3 py-2 rounded-md text-sm"
-                      >
-                        <button type="button" className="wave-post-btn wave-post-sm">
-                          <span>{item.name}</span>
-                          <div className="waves" aria-hidden></div>
-                          <div className="shimmer" aria-hidden></div>
-                        </button>
-                      </Link>
-                    ) : (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className={classNames(
-                          item.current
-                            ? "text-like_color font-semibold"
-                            : "text-gray-900 dark:text-text_header hover:text-like_color",
-                          "px-3 py-2 rounded-md text-sm"
-                        )}
-                        aria-current={item.current ? "page" : undefined}
-                      >
-                        {item.name}
-                      </Link>
-                    )
-                  )}
+                {navigation.map((item) => {
+                  const isCurrent = location.pathname === item.href; // dynamically check
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={classNames(
+                        isCurrent
+                          ? "text-theme_dark_color dark:text-theme_color"
+                          : " rounded-md  text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover",
+                        "px-2 font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200"
+                      )}
+                      aria-current={isCurrent ? "page" : undefined}
+                    >
+                      {item.name}
+                    </Link>
+                  );
+                })}
+
                 </div>
 
                 {/* Navigation links removed */}
@@ -205,8 +188,8 @@ export default function Navbar({ showForum, setShowForum }) {
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
                   <Menu as="div" className="relative z-10">
-                    <MenuButton className="flex items-center focus:outline-none p-2 hover:dark:bg-gray-800 hover:bg-gray-200 rounded-full transition">
-                      <BellIcon className="h-6 w-6 text-gray-900 dark:text-white" />
+                    <MenuButton className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
+                      <BellIcon className="h-6 w-6 stroke-[2]" />
                     </MenuButton>
                     <MenuItems
                       as="div"
@@ -223,12 +206,6 @@ export default function Navbar({ showForum, setShowForum }) {
                       }}
                     />
                   )}
-                  {/* <button
-                    onClick={() => setDarkMode(!darkMode)}
-                    className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:scale-110 transition"
-                  >
-                    <Switch darkMode={darkMode} setDarkMode={setDarkMode} />
-                  </button> */}
                   <Switch darkMode={darkMode} setDarkMode={setDarkMode} />
 
                   {isAuthenticated() && loginData ? (
@@ -238,45 +215,26 @@ export default function Navbar({ showForum, setShowForum }) {
                           <UserIconCard id={loginData?.validuserone?._id} />
                         </div>
                       </MenuButton>
-                      <MenuItems className="bg-white absolute right-0 mt-2 w-48 shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <MenuItems className="bg-gray-100 dark:bg-black font-[Arial,sans-serif] font-semibold absolute right-0 mt-2 w-48 shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <MenuItem>
-                          {({ active }) => (
                             <Link
                               to={`/userprofile/${encodeId(
                                 loginData?.validuserone?._id
                               )}`}
-                              className={`block px-4 py-2 text-sm ${
-                                active ? "bg-gray-100" : "text-gray-700"
-                              }`}
+                              className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover "
+                              `}
                             >
                               Your Profile
                             </Link>
-                          )}
                         </MenuItem>
                         <MenuItem>
-                          {({ active }) => (
-                            <a
-                              href="#"
-                              className={`block px-4 py-2 text-sm ${
-                                active ? "bg-gray-100" : "text-gray-700"
-                              }`}
-                            >
-                              Settings
-                            </a>
-                          )}
-                        </MenuItem>
-                        <MenuItem>
-                          {({ active }) => (
                             <a
                               href="#"
                               onClick={handleLogout}
-                              className={`block px-4 py-2 text-sm ${
-                                active ? "bg-gray-100" : "text-gray-700"
-                              }`}
+                              className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover`}
                             >
                               Sign Out
                             </a>
-                          )}
                         </MenuItem>
                       </MenuItems>
                     </Menu>
@@ -286,10 +244,8 @@ export default function Navbar({ showForum, setShowForum }) {
                       className="px-3 py-2 rounded-md text-sm"
                       aria-current={location.pathname === "/login" ? "page" : undefined}
                     >
-                      <button type="button" className="wave-post-btn wave-signin wave-post-sm">
-                        <span>Sign In</span>
-                        <div className="waves" aria-hidden></div>
-                        <div className="shimmer" aria-hidden></div>
+                      <button type="button" className="p-1 px-2 rounded-md font-[Arial,sans-serif] font-semibold text-gray-800 dark:text-low_text dark:hover:bg-nav_hover dark:hover:text-theme_color">
+                        Sign In
                       </button>
                     </Link>
                   )}
@@ -306,7 +262,7 @@ export default function Navbar({ showForum, setShowForum }) {
           <div className="relative z-10 px-2">
             <div className="flex justify-between items-center h-12">
               {/* Logo and Navigation Links */}
-              <div className="relative flex h-full items-center space-x-4 overflow-hidden">
+              <div className="font-[Arial,sans-serif] font-semibold relative flex h-full items-center space-x-4 overflow-hidden">
                 <Link
                   to={"/"}
                   className="h-12 flex items-center justify-center rounded-md"
@@ -329,85 +285,59 @@ export default function Navbar({ showForum, setShowForum }) {
               </div>
 
               {/* User icon bell icon */}
-              <div className="flex items-center space-x-4">
-                {loginData && <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50} size={5}/>}
+               <div className="flex items-center space-x-2">
+
+                {loginData && <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50 } size={5}/>}
                 {/* Notification and Profile Dropdown */}
-                <div className="flex items-center ">
-                  {/* <button
-                    onClick={() => setDarkMode(!darkMode)}
-                    className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:scale-110 transition"
-                  >
-                    {darkMode ? "☀️" : "🌙"}
-                  </button> */}
-                  <Switch darkMode={darkMode} setDarkMode={setDarkMode} size="sm" />
-
-
+                <div className="flex items-center space-x-4">
                   <Menu as="div" className="relative z-10">
-                    <MenuButton className="flex items-center focus:outline-none p-2 hover:bg-gray-800 rounded-full transition">
-                      <BellIcon className="h-6 w-6 dark:text-white text-gray-900" />
+                    <MenuButton className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
+                      <BellIcon className="h-6 w-6 " />
                     </MenuButton>
                     <MenuItems
                       as="div"
-                      className="absolute left-1/2 -translate-x-2/3 mt-3 w-80 max-h-[80vh] rounded-lg shadow-2xl backdrop-blur-md focus:outline-none overflow-hidden z-50"
+                      className="absolute left-1/2 -translate-x-2/3 mt-3 w-96 max-h-[80vh] rounded-lg shadow-2xl backdrop-blur-md focus:outline-none overflow-hidden z-50"
                     >
                       <NotificationComponent isOpen={true} onClose={() => {}} />
                     </MenuItems>
                   </Menu>
+                  {showNotification && (
+                    <NotificationComponent
+                      isOpen={true}
+                      onClose={() => {
+                        setShowNotification(false);
+                      }}
+                    />
+                  )}
+                  <Switch darkMode={darkMode} setDarkMode={setDarkMode} />
+
                   {isAuthenticated() && loginData ? (
                     <Menu as="div" className="relative z-10">
                       <MenuButton className="flex items-center focus:outline-none">
-                        {/* <img
-                          src={
-                            loginData?.validuserone?.profilePictureUrl ||
-                            loginData?.validuserone?.image
-                          }
-                          alt="Profile"
-                          className="h-8 w-8 rounded-full"
-                          referrerPolicy="no-referrer"
-                        /> */}
                         <div className="h-8 w-8 flex flex-shrink-0 pointer-events-none">
                           <UserIconCard id={loginData?.validuserone?._id} />
                         </div>
                       </MenuButton>
-                      <MenuItems className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <MenuItems className="bg-gray-100 dark:bg-black font-[Arial,sans-serif] font-semibold absolute right-0 mt-2 w-48 shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <MenuItem>
-                          {({ active }) => (
                             <Link
                               to={`/userprofile/${encodeId(
                                 loginData?.validuserone?._id
                               )}`}
-                              className={`block px-4 py-2 text-sm ${
-                                active ? "bg-gray-100" : "text-gray-700"
-                              }`}
+                              className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover "
+                              `}
                             >
                               Your Profile
                             </Link>
-                          )}
                         </MenuItem>
                         <MenuItem>
-                          {({ active }) => (
-                            <a
-                              href="#"
-                              className={`block px-4 py-2 text-sm ${
-                                active ? "bg-gray-100" : "text-gray-700"
-                              }`}
-                            >
-                              Settings
-                            </a>
-                          )}
-                        </MenuItem>
-                        <MenuItem>
-                          {({ active }) => (
                             <a
                               href="#"
                               onClick={handleLogout}
-                              className={`block px-4 py-2 text-sm ${
-                                active ? "bg-gray-100" : "text-gray-700"
-                              }`}
+                              className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover`}
                             >
                               Sign Out
                             </a>
-                          )}
                         </MenuItem>
                       </MenuItems>
                     </Menu>
@@ -417,13 +347,11 @@ export default function Navbar({ showForum, setShowForum }) {
                       className="px-3 py-2 rounded-md text-sm"
                       aria-current={location.pathname === "/login" ? "page" : undefined}
                     >
-                      <button type="button" className="wave-post-btn wave-signin wave-post-sm">
-                        <span>Sign In</span>
-                        <div className="waves" aria-hidden></div>
-                        <div className="shimmer" aria-hidden></div>
+                      <button type="button" className="p-1 px-2 rounded-md font-[Arial,sans-serif] font-semibold text-gray-800 dark:text-low_text dark:hover:bg-nav_hover dark:hover:text-theme_color">
+                        Sign In
                       </button>
                     </Link>
-                   )}
+                  )}
                 </div>
               </div>
             </div>
@@ -432,7 +360,7 @@ export default function Navbar({ showForum, setShowForum }) {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-900">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-bg_dark border-t border-gray-200 dark:border-gray-900">
         <div className="flex items-center justify-around">
           {mobileNavItems.map((item, index) => {
             const Component = item.isTab ? "button" : Link;
@@ -450,8 +378,8 @@ export default function Navbar({ showForum, setShowForum }) {
                 className={classNames(
                   "flex flex-col items-center justify-center pt-1 px-3 rounded-xl transition-all duration-200",
                   item.isActive
-                    ? "text-blue-600"
-                    : "text-gray-600 dark:text-white hover:text-gray-900",
+                    ? "text-theme_color"
+                    : "text-gray-600 dark:text-low_text hover:text-[#1a1a1a]",
                   item.isSpecial
                     ? "bg-blue-600 text-white hover:bg-blue-700 rounded-full p-3 -mt-4 shadow-lg"
                     : ""
@@ -462,7 +390,7 @@ export default function Navbar({ showForum, setShowForum }) {
                     className={classNames(
                       "relative",
                       item.isActive
-                        ? "ring-2 ring-blue-600 ring-offset-1 rounded-full"
+                        ? "ring-2 ring-theme_color ring-offset-1 rounded-full"
                         : ""
                     )}
                   >
@@ -486,8 +414,8 @@ export default function Navbar({ showForum, setShowForum }) {
                     className={classNames(
                       "text-xs mt-1 font-medium",
                       item.isActive
-                        ? "text-blue-600"
-                        : "text-gray-600 dark:text-white"
+                        ? "text-theme_color"
+                        : "text-gray-600 dark:text-low_text"
                     )}
                   >
                     {item.name}
