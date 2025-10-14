@@ -99,20 +99,20 @@ const TopicContent = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Fixed Topic Header */}
-      <div className="bg-gray-100 dark:bg-bg_comment_box md:px-4 px-2 py-2 flex items-center flex-shrink-0">
+      <div className="bg-gray-100 dark:bg-nav_hover md:px-4 px-2 py-2 flex items-center flex-shrink-0">
         <button onClick={()=>{navigate('/')}} className="md:mr-3 mr-1 text-gray-500 hover:text-time_header">
           <BackArrow />
         </button>
-        <h2 className="font-semibold text-sm md:text-lg text-black dark:text-text_header flex-1">
+        <div className="font-semibold font-playfair text-sm md:text-lg text-black dark:text-text_header flex-1">
           {threadView ? "Thread" : topic?.title}
-        </h2>
+        </div>
         <ShareFile pos={"top-6 right-3"} id={topic?._id} type={"forumog"} text={topic?.title.slice(0,200)}/>
       </div>
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-500 scrollbar-track-gray-100 dark:scrollbar-track-bg_comment_box">
         <div className="space-y-4">
-          <div className="dark:bg-bg_comment_box rounded-xl p-4">
+          <div className="dark:bg-nav_hover rounded-xl p-4">
             {isLoading ? <HeaderSkeleton /> : topic && <HeaderContent topic={topic} onDelete={handleDelete} />}
             {isError && (
               <div className="text-red-500 text-center">
@@ -126,7 +126,7 @@ const TopicContent = () => {
               </div>
             )}
           </div>
-          <div className="bg-gray-100 dark:bg-bg_comment_box rounded-xl p-4 pt-0">
+          <div className="bg-gray-100 dark:bg-nav_hover rounded-xl p-4 pt-0">
             <ReplyContent />
           </div>
         </div>

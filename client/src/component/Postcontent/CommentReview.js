@@ -184,16 +184,16 @@ const CommentReview = () => {
     <div>
       <div className="relative flex w-full items-center gap-2 mb-2">
         <div className="flex gap-2 text-center justify-center">
-          <h1 className="sticky text-md md:text-xl w-full font-semibold text-gray-900 dark:text-text_comment tracking-wide">
-            Comments
-          </h1>
-          <div className="w-4 h-4 mt-1 md:mt-2 text-[10px] md:text-xs font-medium border border-gray-600 dark:border-time_header text-gray-800 dark:text-time_header dark:bg-bg_scroll rounded">
+          <div className="sticky font-playfair text-md md:text-xl w-full font-semibold text-gray-900 dark:text-low_text tracking-wide">
+            Discussion
+          </div>
+          <div className="w-4 h-4 mt-1 md:mt-2 text-[10px] md:text-xs font-medium border border-gray-600 dark:border-time_header text-gray-800 dark:text-time_header dark:bg-nav_hover rounded">
             {structureReply?.length || 0}
           </div>
         </div>
       </div>
 
-      <div className="replyContent w-full pt-2">
+      <div className="replyContent w-full pt-2 font-manrope font-">
         {structureReply?.length > 0 ? (
           structureReply.map((reply, index) => (
             <div key={reply._id || index} className="ml-2">

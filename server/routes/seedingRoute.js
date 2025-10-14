@@ -1,7 +1,8 @@
 // routes/seedUsers.js
 const express = require("express");
 const router = express.Router();
-const userdb = require('../models/userSchema'); // adjust path to your mongoose model
+const userdb = require('../models/userSchema'); 
+const googledb = require('../models/googleSchema');// adjust path to your mongoose model
 
 // Test users
 const users = [
@@ -46,17 +47,39 @@ router.get("/seed-users", async (req, res) => {
   }
 });
 
-
-router.get("/delete-test-users", async (req, res) => {
+router.get('/set-founding-member', async (req, res) => {
   try {
-    const emails = users.map(u => `${u}@gmail.com`);
-    const result = await userdb.deleteMany({ email: { $in: emails } });
-    res.json({ message: "🗑️ Test users deleted successfully", deletedCount: result.deletedCount });
+    const result = await userdb.updateMany(
+      { founding_member: { $exists: false } },
+      { $set: { founding_member: false } }
+    );
+
+    const result2 = await googledb.updateMany(
+      { founding_member: { $exists: false } },
+      { $set: { founding_member: false } }
+    );
+
+    res.json({
+      message: "Field 'founding_member' set to false for missing documents",
+      modifiedCount: result.modifiedCount +result2.modifiedCount
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to delete test users" });
+    res.status(500).json({ error: 'Server error' });
   }
 });
+
+
+// router.get("/delete-test-users", async (req, res) => {
+//   try {
+//     const emails = users.map(u => `${u}@gmail.com`);
+//     const result = await userdb.deleteMany({ email: { $in: emails } });
+//     res.json({ message: "🗑️ Test users deleted successfully", deletedCount: result.deletedCount });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Failed to delete test users" });
+//   }
+// });
 
 
 module.exports = router;

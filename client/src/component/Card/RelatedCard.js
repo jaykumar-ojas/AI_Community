@@ -5,7 +5,7 @@ import PostCard from "../userProfileView/Component/PostCard";
 
 const RelatedCard = ({ post }) => {
     return (
-        <div className="flex flex-col p-2 w-full border border-gray-200 dark:border-bg_comment my-1 rounded-md shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out max-w-5xl overflow-hidden">
+        <div className="flex flex-col p-2 w-full  dark:border-bg_comment  rounded-md shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out max-w-5xl overflow-hidden">
              <div className="">
                 {/* User Info */}
                 <div className="flex flex-row items-center mb-3">
@@ -13,7 +13,7 @@ const RelatedCard = ({ post }) => {
                         <UserIconCard id={post?.userId} />
                     </div>
                     <div className="text-base font-semibold text-gray-800 dark:text-time_header">
-                        <UserNameCard id={post?.userId} />
+                        <UserNameCard id={post?.userId} size={6} />
                     </div>
                 </div>
             </div>

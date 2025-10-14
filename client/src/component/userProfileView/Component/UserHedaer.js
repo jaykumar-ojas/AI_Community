@@ -8,6 +8,7 @@ import { LoginContext } from "../../ContextProvider/context";
 import { AttachIcon, DragAndDropIcon, PenIcon } from "../../../asset/icons";
 import { encodeId, decodeId} from "../../../utils/hashids"
 import { useNotification } from "../../ContextProvider/NotificationContext";
+import founderImage from "../../../asset/founderImage.png";
 
 const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const {showNotification} = useNotification();
@@ -40,6 +41,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const [profileUser, setProfileUser] = useState();
   const { id } = useParams();
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  console.log(profileUser);
 
   useEffect(() => {
     // console.log("Login data:", loginData);
@@ -421,13 +423,13 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
             )}
 
             {/* Hidden image for load detection */}
-            <img
+            {profilePicture && <img
               src={profileUser?.profilePictureUrl}
               alt=""
               className="hidden"
               onLoad={() => setProfileLoaded(true)}
               onError={() => setProfileLoaded(true)}
-            />
+            />}
           </div>
         </div>
       </div>
@@ -468,10 +470,27 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                   />
                 ) : (
 
-
-                  <h1 className="flex mx-auto text-start justify-center font-bold text-black dark:text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
-                    {profileUser?.userName}
+                <div className="flex flex-row gap-0.5 mx-auto text-start justify-center">
+                  <h1 className="font-bold text-black dark:text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
+                    {profileUser?.userName} 
                   </h1>
+                  <div className="relative group inline-block">
+                    <img
+                      src={founderImage}
+                      alt="Founder Badge"
+                      className="sm:h-10 h-6  select-none cursor-pointer"
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable="false"
+                    />
+                    <div className="absolute w-44 top-full z-20 mb-2 hidden group-hover:block bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-sm font-semibold px-3 py-2 rounded-lg shadow-lg">
+                      <img src={founderImage} alt="founder Badge" className="h-4 w-4" />
+                      Founder Badge
+                      <p className="text-xs text-gray-600  dark:text-low_text mt-1">
+                        Early creators and core community member.
+                      </p>
+                    </div>
+                  </div>
+                  </div>
                 )}
                 {/* <p className="pt-2 text-center justify-center text-sm text-white/90 sm:text-md sm:text-start md:text-lg drop-shadow-lg">
 

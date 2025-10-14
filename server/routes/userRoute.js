@@ -347,20 +347,10 @@ router.get("/get-profile-picture", authenticate, async(req, res) => {
             throw new Error("User not found");
         }
         
-        let profilePictureUrl = "";
+        let profilePictureUrl = user.profilePictureUrl;
         
         // For regular users
-        if (user.constructor.modelName === "users" && user.profilePicture) {
-            profilePictureUrl = await generateSignedUrl(user.profilePicture);
-        } 
-        // For Google users, use either the uploaded profile picture or the Google image
-        else if (user.constructor.modelName === "googleAuth") {
-            if (user.profilePicture) {
-                profilePictureUrl = await generateSignedUrl(user.profilePicture);
-            } else {
-                profilePictureUrl = user.image; // Use Google profile image
-            }
-        }
+        
         
         res.status(200).json({status: 200, profilePictureUrl});
     } catch (error) {
@@ -383,11 +373,8 @@ router.get("/get-background-image", authenticate, async(req, res) => {
             throw new Error("User not found");
         }
         
-        let backgroundImageUrl = "";
+        let backgroundImageUrl = user.backgroundImageUrl;
         
-        if (user.backgroundImage) {
-            backgroundImageUrl = await generateSignedUrl(user.backgroundImage);
-        }
         
         res.status(200).json({status: 200, backgroundImageUrl});
     } catch (error) {

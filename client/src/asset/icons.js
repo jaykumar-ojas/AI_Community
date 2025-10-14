@@ -171,7 +171,7 @@ export const CommentIcon = ({ h = 5, w = 5, ...props }) => {
       strokeLinecap="round"
       strokeLinejoin="round"
       viewBox="0 0 24 24"
-      className={`h-${h} w-${w} transition-all duration-300 dark:stroke-time_header`}
+      className={`h-${h} w-${w} transition-all duration-300 dark:stroke-low_text`}
       {...props}
     >
       <path d="M21 6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11l4 4V6z" />
@@ -709,6 +709,154 @@ export const RedditIcon = () =>{
     </svg>
   )
 }
+
+
+
+export const FounderBadge = ({ width =40 , height = 40 }) => {
+  return (
+      <svg viewBox="0 0 300 380" width={width} height={height} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="goldMetal" cx="50%" cy="40%">
+            <stop offset="0%" style={{ stopColor: '#FFF9E6', stopOpacity: 1 }} />
+            <stop offset="30%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+            <stop offset="60%" style={{ stopColor: '#DAA520', stopOpacity: 1 }} />
+            <stop offset="85%" style={{ stopColor: '#B8860B', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#8B6914', stopOpacity: 1 }} />
+          </radialGradient>
+          
+          <radialGradient id="scallop" cx="50%" cy="50%">
+            <stop offset="0%" style={{ stopColor: '#FFE87C', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#F4C430', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#B8860B', stopOpacity: 1 }} />
+          </radialGradient>
+          
+          <radialGradient id="centerGold" cx="45%" cy="35%">
+            <stop offset="0%" style={{ stopColor: '#FFFACD', stopOpacity: 1 }} />
+            <stop offset="40%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+            <stop offset="70%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#CC8400', stopOpacity: 1 }} />
+          </radialGradient>
+          
+          <linearGradient id="ribbonRed" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#FF6B6B', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#EE5A5A', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#DC143C', stopOpacity: 1 }} />
+          </linearGradient>
+          
+          <linearGradient id="ribbonHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style={{ stopColor: '#FF8888', stopOpacity: 0.8 }} />
+            <stop offset="50%" style={{ stopColor: '#FF6B6B', stopOpacity: 0.3 }} />
+            <stop offset="100%" style={{ stopColor: '#EE5A5A', stopOpacity: 0 }} />
+          </linearGradient>
+          
+          <linearGradient id="starGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#FF8C00', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#CC6600', stopOpacity: 1 }} />
+          </linearGradient>
+          
+          <filter id="shadow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+            <feOffset dx="0" dy="8" result="offsetblur"/>
+            <feFlood floodColor="#000000" floodOpacity="0.3"/>
+            <feComposite in2="offsetblur" operator="in"/>
+            <feMerge>
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        {/* Left Ribbon */}
+        <g filter="url(#shadow)">
+          <path d="M 120 200 Q 90 250, 80 320 Q 80 340, 70 360 L 70 380 Q 85 365, 100 360 Q 110 355, 115 340 Q 120 310, 140 260 Z" 
+                fill="url(#ribbonRed)"/>
+          <path d="M 120 200 Q 90 250, 80 320 Q 80 340, 70 360 L 75 360 Q 88 345, 95 330 Q 105 300, 130 250 Z" 
+                fill="url(#ribbonHighlight)" 
+                opacity="0.6"/>
+          <path d="M 125 210 Q 100 255, 88 315" 
+                fill="none" 
+                stroke="#B22222" 
+                strokeWidth="2" 
+                opacity="0.4"/>
+        </g>
+        
+        {/* Right Ribbon */}
+        <g filter="url(#shadow)">
+          <path d="M 180 200 Q 210 250, 220 320 Q 220 340, 230 360 L 230 380 Q 215 365, 200 360 Q 190 355, 185 340 Q 180 310, 160 260 Z" 
+                fill="url(#ribbonRed)"/>
+          <path d="M 180 200 Q 210 250, 220 320 Q 220 340, 230 360 L 225 360 Q 212 345, 205 330 Q 195 300, 170 250 Z" 
+                fill="url(#ribbonHighlight)" 
+                opacity="0.6"/>
+          <path d="M 175 210 Q 200 255, 212 315" 
+                fill="none" 
+                stroke="#B22222" 
+                strokeWidth="2" 
+                opacity="0.4"/>
+        </g>
+        
+        {/* Scalloped Edge Circle */}
+        <g filter="url(#shadow)">
+          <g>
+            <circle cx="150" cy="70" r="20" fill="url(#scallop)"/>
+            <circle cx="185" cy="78" r="20" fill="url(#scallop)"/>
+            <circle cx="213" cy="100" r="20" fill="url(#scallop)"/>
+            <circle cx="228" cy="130" r="20" fill="url(#scallop)"/>
+            <circle cx="230" cy="165" r="20" fill="url(#scallop)"/>
+            <circle cx="218" cy="198" r="20" fill="url(#scallop)"/>
+            <circle cx="193" cy="223" r="20" fill="url(#scallop)"/>
+            <circle cx="162" cy="235" r="20" fill="url(#scallop)"/>
+            <circle cx="150" cy="240" r="20" fill="url(#scallop)"/>
+            <circle cx="138" cy="235" r="20" fill="url(#scallop)"/>
+            <circle cx="107" cy="223" r="20" fill="url(#scallop)"/>
+            <circle cx="82" cy="198" r="20" fill="url(#scallop)"/>
+            <circle cx="70" cy="165" r="20" fill="url(#scallop)"/>
+            <circle cx="72" cy="130" r="20" fill="url(#scallop)"/>
+            <circle cx="87" cy="100" r="20" fill="url(#scallop)"/>
+            <circle cx="115" cy="78" r="20" fill="url(#scallop)"/>
+          </g>
+          
+          <circle cx="150" cy="155" r="85" fill="url(#goldMetal)"/>
+        </g>
+        
+        {/* Inner Circle Ring */}
+        <circle cx="150" cy="155" r="72" fill="none" stroke="url(#scallop)" strokeWidth="3" opacity="0.6"/>
+        
+        {/* Center Light Circle */}
+        <circle cx="150" cy="155" r="65" fill="url(#centerGold)" filter="url(#glow)"/>
+        
+        {/* Inner Ring Detail */}
+        <circle cx="150" cy="155" r="58" fill="none" stroke="#FFE87C" strokeWidth="2" opacity="0.7"/>
+        
+        {/* Center Star */}
+        <g filter="url(#glow)">
+          <path d="M150 115 L160 140 L187 143 L166 162 L172 189 L150 175 L128 189 L134 162 L113 143 L140 140 Z" 
+                fill="url(#starGradient)"/>
+          <path d="M150 120 L158 140 L178 142 L162 157 L166 177 L150 166 L134 177 L138 157 L122 142 L142 140 Z" 
+                fill="#FF9933" 
+                opacity="0.5"/>
+        </g>
+        
+        {/* Subtle Edge Shadows on Badge */}
+        <circle cx="150" cy="155" r="85" fill="none" stroke="#8B6914" strokeWidth="2" opacity="0.4"/>
+        
+        {/* Ribbon Folds */}
+        <g opacity="0.3">
+          <path d="M 120 200 L 125 210 L 120 220" fill="none" stroke="#8B0000" strokeWidth="1.5"/>
+          <path d="M 180 200 L 175 210 L 180 220" fill="none" stroke="#8B0000" strokeWidth="1.5"/>
+        </g>
+      </svg>
+  );
+};
+
+
 
 
 

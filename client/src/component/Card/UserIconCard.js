@@ -53,6 +53,7 @@ const UserIconCard = ({ id }) => {
           className="w-full h-full object-cover"
           onError={() => setImgError(true)}
         />
+        
       ) : (
         <div className="w-full h-full bg-gray-300 text-gray-700 flex items-center justify-center">
           <span className="text-lg font-semibold">
