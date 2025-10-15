@@ -13,6 +13,7 @@ import { useWebSocket } from "../../AiForumPage/components/WebSocketContext";
 import { useParams } from "react-router-dom";
 import { ForumContext } from "../../ContextProvider/ModelContext";
 import UserIconCard from "../../Card/UserIconCard";
+import UserNameCard from "../../Card/UserNameCard";
 import {useNotification} from "../../ContextProvider/NotificationContext";
 
 import {
@@ -265,7 +266,7 @@ const ShowReplyContent = ({
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
             <div className={`font-normal mr-2 text-[14px] md:text-[13.5px] ${isReplyDeleted ? 'text-gray-500 italic' : 'text-gray-900 dark:text-text_header'}`}>
-              {reply?.userName}
+              <UserNameCard id={reply?.userId} size={6}/>
             </div>
             <div className="mr-2 flex justify-center items-center">
               <div className="w-1 h-1 mr-1 rounded-full bg-gray-800 dark:bg-time_header"></div>
@@ -330,29 +331,6 @@ const ShowReplyContent = ({
         {/* Actions Section */}
         <div className="pt-1 flex items-center gap-2 text-xs text-gray-500">
           <LikeDislike topic={reply} like={handleReplyLike} dislike={handleReplyDislike}/>
-                  {/* <div className="bg-gray-200 border border-gray-300 dark:border-none dark:bg-btn_bg flex p-1 px-2 rounded-xl gap-2">
-                    <button
-                      onClick={handleReplyLike}
-                      disabled={isReplyDeleted}
-                      className={`flex items-center gap-0.5 hover:text-like_color text-black dark:text-gray-500 transition ${
-                        isLiked && "text-like_color"
-                      } ${isReplyDeleted ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <UpvoteIcon isLiked={isLiked} />
-                      {replyLikes?.length || 0}
-                    </button>
-        
-                    <button
-                      onClick={handleReplyDislike}
-                      disabled={isReplyDeleted}
-                      className={`flex items-center gap-1 hover:text-red-600 text-black dark:text-gray-500 transition ${
-                        isDisliked && "text-red-600"
-                      } ${isReplyDeleted ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <DownvoteIcon isDisliked={isDisliked} />
-                      {replyDislikes?.length || 0}
-                    </button>
-                  </div> */}
                   {!isReplyDeleted && (
                     <button
                       // onClick={() => setShowReplyBox(true)}
@@ -361,7 +339,7 @@ const ShowReplyContent = ({
                         setUserName(reply?.userName);
                         setViewBox(true);
                       }}
-                      className="flex items-center gap-1  text-like_color hover:text-like_color transition"
+                      className="flex items-center gap-1  text-theme_color4 font-medium hover:text-like_color transition"
                     >
                       <ReplyIcon />
         

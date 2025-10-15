@@ -154,7 +154,7 @@ const ReplyData = ({ content }) => {
     content && Array.isArray(content) && content.length > 0 ? content : [];
 
   return (
-    <div className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
+    <div className="text-[13px] leading-relaxed  text-gray-800 dark:low_text">
       {!expanded ? (
         <>
           <div className="h-6 overflow-hidden">
@@ -186,7 +186,7 @@ const ReplyData = ({ content }) => {
           {showSeeMore && (
             <button
               onClick={() => setExpanded(true)}
-              className="text-blue-600 dark:text-blue-400 text-xs hover:underline"
+              className="text-theme_color3 dark:theme_color4 font-medium text-xs hover:underline"
             >
               View More
             </button>
@@ -198,7 +198,7 @@ const ReplyData = ({ content }) => {
           {showSeeMore && (
             <button
               onClick={() => setExpanded(false)}
-              className="text-blue-600 dark:text-blue-400 text-xs hover:underline"
+              className="text-theme_color3 dark:text-theme_color4 font-medium text-xs hover:underline"
             >
               View Less
             </button>

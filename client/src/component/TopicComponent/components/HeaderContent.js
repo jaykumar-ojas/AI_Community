@@ -169,7 +169,7 @@ const HeaderContent = ({ topic, onDelete }) => {
   }
 
   return (
-    <div className="flex justify-start mb-0">
+    <div className="flex font-poppins leading-relaxed font-normal justify-start mb-0">
       {/* User Icon Outside */}
       <div className="w-8 h-8  flex-shrink-0">
         <UserIconCard id={topic?.userId} />
@@ -180,8 +180,8 @@ const HeaderContent = ({ topic, onDelete }) => {
         {/* Header: User Info */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2  text-gray-700">
-            <span className="font-normal text-sm text-black dark:text-text_header">
-              <UserNameCard id={topic?.userId} />
+            <span className="font-normal text-[14px] sm:text-md text-black dark:text-low_text">
+              <UserNameCard id={topic?.userId} size={6} />
             </span>
             <div className="w-1 h-1 bg-gray-800 dark:bg-time_header rounded-full"></div>
             <span className="text-xs text-gray-700 dark:text-time_header">
@@ -219,7 +219,7 @@ const HeaderContent = ({ topic, onDelete }) => {
         {/* Content */}
         <div
           ref={contentRef}
-          className={`md:pt-2 pt-1 md:text-sm text-[14px]text-black dark:text-text_content whitespace-pre-wrap leading-snug [&>p]:my-0.5 [&>ul]:my-0.5 [&>li]:my-0.5 ${
+          className={`md:pt-2 pt-1 text-[13px] md:text-sm text-[14px]text-black dark:text-text_content whitespace-pre-wrap leading-snug [&>p]:my-0.5 [&>ul]:my-0.5 [&>li]:my-0.5 ${
             expanded ? "" : "line-clamp-4"
           }`}
         >
@@ -232,7 +232,7 @@ const HeaderContent = ({ topic, onDelete }) => {
         {showToggle && (
           <button
             onClick={() => setExpanded((prev) => !prev)}
-            className="ml-2 text-blue-600 hover:underline font-small text-xs"
+            className="ml-2 text-theme_color2 hover:underline font-small text-xs"
           >
             {expanded ? "View Less" : "View More"}
           </button>
@@ -271,7 +271,7 @@ const HeaderContent = ({ topic, onDelete }) => {
               setViewBox(true);
               setReplyIdForContext(null);
             }}
-            className="flex items-center justify-content gap-1 text-like_color hover:text-like_color transition"
+            className="flex items-center justify-content gap-1 text-theme_color4 hover:text-like_color transition"
           >
             <ReplyIcon />
             <div className="text-xs">Reply</div>

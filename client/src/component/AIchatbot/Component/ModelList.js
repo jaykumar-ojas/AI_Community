@@ -141,18 +141,18 @@ const SideBarModelsView = ({model, modelType, modelConfig, handleTypeSelect, han
          <div className="w-full flex flex-col bg-transparent rounded-lg shadow-sm">
             {/* Model Type Selection */}
             <div className="p-2 border-b dark:border-gray-800 border-gray-300">
-                <div className="font-semibold mb-2 text-gray-900 dark:text-text_header text-l flex items-center">
+                <div className="font-semibold mb-2 text-gray-900 dark:text-low_text text-l flex items-center">
                     <ModelIcon className="mr-2" />
                     <span>MODELS</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex font-['serif',sans-serif] justify-between items-center gap-2">
                     {['text', 'image'].map(type => (
                         <button
                             key={type}
                             className={`px-4 py-1 rounded-md w-full text-sm flex items-center justify-center space-x-2 transition-all duration-150 ${
                                 modelType === type
-                                    ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
-                                    : 'text-black dark:text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
+                                    ? 'bg-theme_color3 text-black font-medium transform scale-[1.02]'
+                                    : 'text-black dark:text-low_text hover:dark:text-black hover:bg-theme_color4 hover:transform hover:scale-[1.02]'
                             }`}
                             onClick={() => handleTypeSelect(type)}
                         >

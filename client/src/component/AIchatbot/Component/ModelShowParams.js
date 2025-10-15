@@ -7,10 +7,10 @@ const ModelShowParams =({ name, displayName, iconUrl, emoji, provider, active = 
         <li>
             <button
                 type="button"
-                className={`w-full  px-2 py-2 rounded-md transition-all duration-150 cursor-pointer flex justify-between items-center space-x-2 ${
+                className={`w-full font-['Inter'] font-semibold  px-2 py-2 rounded-md transition-all duration-150 cursor-pointer flex justify-between items-center space-x-2 ${
                     active
-                        ? 'bg-like_color text-text_header font-medium transform scale-[1.02]'
-                        : 'text-black text-sm dark:text-text_header hover:bg-like_color hover:transform hover:scale-[1.02]'
+                        ? 'text-text_header font-medium transform scale-[1.02]'
+                        : 'text-black text-md dark:text-low_text hover:dark:text-theme_color2 hover:transform hover:scale-[1.02]'
                 }`}
                 onClick={() => onClick(name,provider)}
             >

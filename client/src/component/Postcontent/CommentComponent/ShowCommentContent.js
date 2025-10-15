@@ -23,6 +23,7 @@ import ReplyData from "../../Card/ReplyData";
 import { CommentContext } from "../../ContextProvider/CommentModelContext";
 import LikeDislike from "../../Card/LikeDislike";
 import ShareFile from "../../Share/ShareFile";
+import UserNameCard from "../../Card/UserNameCard";
 
 
 const ModelIcon = ({ modelName, name=true }) => {
@@ -271,7 +272,7 @@ const ShowCommentContent = ({ reply }) => {
         <div className="flex items-center justify-between">
           <div className="flex justify-start items-center">
             <div className={`font-normal mr-2 text-sm ${isDeleted ? 'text-gray-500 italic' : 'text-black dark:text-text_header'}`}>
-              {reply?.userName}
+              <UserNameCard id={reply?.userId} size={6}/> 
             </div>
             <div className="mr-2 flex justify-center items-center">
               <div className="w-1 h-1 mr-1 rounded-full bg-time_header"></div>
@@ -347,7 +348,7 @@ const ShowCommentContent = ({ reply }) => {
                 setUserName(reply?.userName);
                 setViewBox(true);
               }}
-              className="flex items-center gap-1  text-like_color hover:text-like_color transition"
+              className="flex items-center gap-1  text-theme_color4 hover:text-like_color transition"
             >
               <ReplyIcon />
 

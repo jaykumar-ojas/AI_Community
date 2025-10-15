@@ -78,13 +78,13 @@ const RecurrsionLoop = ({
       {/* vertical hidden line */}
       {!hasChildren && (
         <div
-          className={`absolute top-0 left-0 h-full border-l border-gray-100 dark:border-bg_comment_box `}
+          className={`absolute top-0 left-0 h-full border-l border-gray-100 dark:border-nav_hover `}
           style={{ marginLeft: "0.75rem" }}
         />
       )}
       {!view && (
         <div
-          className={`absolute top-0 left-0 h-full border-l border-gray-100 dark:border-bg_comment_box`}
+          className={`absolute top-0 left-0 h-full border-l border-gray-100 dark:border-nav_hover`}
           style={{ marginLeft: "0.75rem" }}
         />
       )}
@@ -122,7 +122,7 @@ const RecurrsionLoop = ({
 
       {isLastChild && (
         <div
-          className="absolute left-0 w-1  h-full bg-gray-100 dark:bg-bg_comment_box z-10"
+          className="absolute left-0 w-1  h-full bg-gray-100 dark:bg-nav_hover z-10"
           style={{
             marginLeft: "-1.25rem",
           }}

@@ -5,7 +5,6 @@ import UserContent from "./UserContent";
 import CommentReview from "./CommentReview";
 import RelatedCard from "../Card/RelatedCard";
 import ModelList from "./CommentComponent/Model";
-import AiIcons from "../../asset/AiIcons.png";
 import UserReply from "../UserReply/UserReply";
 import { CommentContext } from "../ContextProvider/CommentModelContext";
 
@@ -164,7 +163,7 @@ const PostContent = () => {
             </div>
 
             {/* Comments (desktop always visible, mobile toggled) */}
-            <div className={`flex-1 bg-gray-100 dark:bg-bg_comment_box p-4 rounded-xl ${showCommentsMobile ? "block" : "block"} md:block`}>
+            <div className={`flex-1 bg-gray-100 dark:bg-nav_hover p-4 rounded-xl ${showCommentsMobile ? "block" : "block"} md:block`}>
               <CommentReview />
             </div>
 
@@ -202,8 +201,8 @@ const PostContent = () => {
         </div>
 
         {/* Right Section - Sticky Sidebar */}
-        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar dark:bg-bg_comment_box rounded-xl hidden md:block md:w-[30%]">
-            <div className="text-lg text-md justify-center text-gray-800 dark:text-text_comment p-2 font-semibold">
+        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar dark:bg-nav_hover rounded-xl hidden md:block md:w-[30%]">
+            <div className="text-lg text-md justify-center text-gray-800 dark:text-low_text p-2 font-semibold">
               More Related Content
             </div>
             <div className="grid grid-cols-1">
@@ -214,7 +213,7 @@ const PostContent = () => {
                   <RelatedCard key={item?._id || index} post={item} />
                 ))
               ) : (
-                <div className="col-span-3 text-center dark:bg-bg_comment text-gray-500">
+                <div className="col-span-3 text-center dark:bg-nav_hover text-gray-500">
                   No related content found
                 </div>
               )}

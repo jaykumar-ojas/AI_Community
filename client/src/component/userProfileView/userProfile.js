@@ -1,4 +1,3 @@
-import bg from "../../asset/backGroundImage.png";
 import UserHeader from "./Component/UserHedaer";
 import TabProfile from "./Component/TabProfile";
 import { useState } from "react";
@@ -38,9 +37,8 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen bg-transparent relative p-0 sm:p-6"
-      // style={{ backgroundImage: `url(${bg})` }}
     >
-      <div className="max-w-7xl mx-auto bg-gray-100 dark:bg-bg_comment_box sm:rounded-xl shadow-lg overflow-hidden">
+      <div className="max-w-7xl mx-auto bg-gray-100 dark:bg-nav_hover sm:rounded-xl shadow-lg overflow-hidden">
         <UserHeader posts={posts} isLoading={isLoading} isError={isError} error={error} />
         {/* Content Section */}
         <div className="p-4 border-gray-200 text-white">

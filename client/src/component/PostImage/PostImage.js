@@ -13,7 +13,7 @@ import { useNotification } from "../ContextProvider/NotificationContext";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const PostImageContent = () => {
-  const {showNotification} = useNotification();
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const { loginData } = useContext(LoginContext);
@@ -32,7 +32,6 @@ const PostImageContent = () => {
   } = useContext(PostContext);
 
   const [showGenerateAI, setShowGenerateAI] = useState(false);
-  
 
   const getCroppedFile = useCroppedFile();
 
@@ -55,7 +54,7 @@ const PostImageContent = () => {
       }
 
       if (!file) {
-        showNotification("Please add a description or upload a file","error");
+        showNotification("Please add a description or upload a file", "error");
         return;
       }
 
@@ -82,7 +81,6 @@ const PostImageContent = () => {
         formData.append("aiPrompt", aiMetadata.prompt);
       }
 
-      
       // Choose the appropriate upload endpoint
       const uploadEndpoint = aiMetadata
         ? `${baseUrl}/upload-ai`
@@ -107,7 +105,6 @@ const PostImageContent = () => {
         // console.log("Upload successful:", res);
         // Check if fileType was properly stored
         // console.log("Stored file type:", res.storePost.fileType);
-     
 
         setFile(null);
         setDesc("");
@@ -129,11 +126,17 @@ const PostImageContent = () => {
         navigate(`/userPost/${res?.storePost?._id}`);
       } else {
         console.error("Upload failed:", res);
-        showNotification(`Failed to upload post: ${res.error || "Unknown error"}`, "error");
+        showNotification(
+          `Failed to upload post: ${res.error || "Unknown error"}`,
+          "error"
+        );
       }
     } catch (error) {
       console.error("Error during upload:", error);
-      showNotification(`Upload error: ${error.message || "Unknown error occurred"}`, "error");
+      showNotification(
+        `Upload error: ${error.message || "Unknown error occurred"}`,
+        "error"
+      );
     } finally {
       setIsUploading(false);
     }
@@ -145,30 +148,29 @@ const PostImageContent = () => {
         <div className="w-full h-full relative bg-transparent p-2 pt-0">
           <div className="flex flex-col">
             <div className="flex justify-between items-center mx-2 mb-2">
-              <div className="text-lg gap-2 font-extrabold tracking-wide">
-  <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-    Imagine.
-  </span>
-  <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-    Generate.
-  </span>
-  <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-    Share.
-  </span>
-</div>
-
+              <div className="text-lg gap-2 font-extrabold font-lato tracking-wide">
+                <span className="bg-gradient-to-r from-theme_color3 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Imagine.
+                </span>
+                <span className="bg-gradient-to-r from-theme_color3 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Generate.
+                </span>
+                <span className="bg-gradient-to-r from-theme_color3 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Share.
+                </span>
+              </div>
 
               <div className="relative bg-transparent flex justify-end gap-4 ">
                 <button
                   onClick={handleClear}
-                  className="border dark:border-gray-700 border-gray-400 mt-2 bg-gray-300 dark:bg-gray-500 p-2 px-8 text-gray-500 dark:text-white font-bold rounded-md hover:bg-gray-800 disabled:opacity-50"
+                  className="border dark:border-nav_hover border-gray-400 mt-2 bg-gray-300 dark:bg-nav_hover2 p-2 px-8 text-gray-500 dark:text-low_text font-bold rounded-md hover:bg-nav_hover disabled:opacity-50"
                   disabled={isUploading}
                 >
                   Clear
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="border border-blue-700 mt-2 bg-like_color px-8 p-2 text-white font-bold rounded-md hover:bg-blue-800 disabled:opacity-50 "
+                  className="border border-theme_color2 mt-2 bg-theme_color2 px-8 p-2 text-white font-bold rounded-md hover:bg-theme_color disabled:opacity-50 "
                   disabled={isUploading}
                 >
                   {isUploading ? "Uploading..." : "Post"}
@@ -190,25 +192,17 @@ const PostImageContent = () => {
 
       <div className="block md:hidden p-2 mb-16">
         {/* upload creativity */}
-        <div className="flex justify-between items-center mx-2">
-          <div className="text-md text-text_header">Upload your creativity</div>
-          <div className="flex justify-between gap-2">
-            <button
-              onClick={handleClear}
-              className="border border-gray-700 p-1 px-2 bg-gray-500 text-white font-bold rounded-md disabled:opacity-50"
-              disabled={isUploading}
-            >
-              Clear
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="border border-blue-700 p-1 px-2 bg-like_color text-white font-bold rounded-md 7disabled:opacity-50 "
-              disabled={isUploading}
-            >
-              {isUploading ? "Uploading..." : "Post"}
-            </button>
+          <div className="text-lg gap-2 font-extrabold tracking-wide">
+            <span className="bg-gradient-to-r from-theme_color3 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Imagine.
+            </span>
+            <span className="bg-gradient-to-r from-theme_color3 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Generate.
+            </span>
+            <span className="bg-gradient-to-r from-theme_color3 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Share.
+            </span>
           </div>
-        </div>
 
         {/* drag and drop and other things */}
         <div className="mt-4">
