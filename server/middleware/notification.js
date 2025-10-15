@@ -1,4 +1,5 @@
 const notificationDb = require('../models/notificationSchema');
+const { sendReplyNotificationEmail } = require('./emailNotification');
 
 
 // {
@@ -10,7 +11,7 @@ const notificationDb = require('../models/notificationSchema');
 //     },
 //     { timestamps: true }
 
-const notifiyUser = async ({parentId, userId, postId = "", commentId = "", topicId = "", desc = "", type, action}) => {
+const notifiyUser = async ({parentId, userId, postId = "", commentId = "", topicId = "", desc = "", type, action, replierUserName = "", replyTypeOverride = ""}) => {
     try {
         if (action === "like") {
             if (type === "forum") {
@@ -30,11 +31,11 @@ const notifiyUser = async ({parentId, userId, postId = "", commentId = "", topic
             }
         } else if (action === "comment") {
             if (type === "forum") {
-                desc = `Commented on your topic${desc ? '\n' + desc : ''}`;
+                desc = `Commented on topic${desc ? '\n' + desc : ''}`;
             } else if (type === "comment") {
                 desc = `Commented on your reply${desc ? '\n' + desc : ''}`;
             } else if (type === "post") {
-                desc = `Commented on your post${desc ? '\n' + desc : ''}`;
+                desc = `Commented on post${desc ? '\n' + desc : ''}`;
             }
         }
 
@@ -50,6 +51,39 @@ const notifiyUser = async ({parentId, userId, postId = "", commentId = "", topic
 
         await notificationData.save();
         console.log("Notification successful");
+
+        // Send email notification for comment actions
+        if (action === "comment" && replierUserName) {
+            // Avoid emailing the actor themselves
+            if (String(parentId) === String(userId)) {
+                return;
+            }
+
+            let replyType = replyTypeOverride || "";
+            if (!replyType) {
+                if (type === "forum") {
+                    replyType = topicId ? "topic" : "forum_reply";
+                } else if (type === "comment") {
+                    replyType = postId ? "post" : "comment";
+                } else if (type === "post") {
+                    replyType = "post";
+                }
+            }
+            console.log(commentId, "comment id for email");
+            // Send email notification asynchronously (don't wait for it)
+            sendReplyNotificationEmail({
+                recipientUserId: parentId,
+                replierUserId: userId,
+                replierUserName: replierUserName,
+                postId: postId,
+                topicId: topicId,
+                commentId: commentId,
+                replyType: replyType,
+                replyContent: desc
+            }).catch(emailError => {
+                console.error("Email notification failed:", emailError);
+            });
+        }
     } catch (error) {
         console.error("Notification failed:", error);
     }

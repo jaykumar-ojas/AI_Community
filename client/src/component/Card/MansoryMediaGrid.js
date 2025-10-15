@@ -9,8 +9,11 @@ const MasonryMediaGrid = ({ url, type, minHeight = 100, maxHeight = 600 }) => {
   const [error, setError] = useState(false);
   const [height, setHeight] = useState(minHeight);
 
+
   // Lazy load with Intersection Observer (preload before fully visible)
+
   useEffect(() => {
+    const rootElem = getScrollParent(containerRef.current);
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -18,6 +21,7 @@ const MasonryMediaGrid = ({ url, type, minHeight = 100, maxHeight = 600 }) => {
           observer.disconnect();
         }
       },
+
       { rootMargin: "150px", threshold: 0.05 } // preload a bit early
     );
 

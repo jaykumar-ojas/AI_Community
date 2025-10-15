@@ -10,6 +10,7 @@ const authenticate = require("../middleware/authenticate");
 const {awsuploadMiddleware, generateSignedUrl, awsdeleteMiddleware} = require("../middleware/awsmiddleware");
 
 const jwt = require("jsonwebtoken");
+const { sendWelcomeEmail } = require("../middleware/emailNotification");
 const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
 const {decodeId} = require("../utils/hashids");
 // Configure multer for file uploads
@@ -60,6 +61,16 @@ router.post("/register",async(req,res)=>{
                     token
                 }
        
+        // Fire-and-forget welcome email
+        try {
+            sendWelcomeEmail({
+                recipientEmail: storedata.email,
+                recipientUserName: storedata.userName
+            });
+        } catch (e) {
+            console.error("Welcome email failed (non-blocking):", e);
+        }
+
         res.status(201).json({status:201,token:token,validuserone:storedata});
        }
     }

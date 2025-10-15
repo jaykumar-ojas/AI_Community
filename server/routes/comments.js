@@ -133,16 +133,38 @@ router.post("/comments/post",authenticate,upload.array("media", 5),awsuploadMidd
       // post.commentCount = (post.commentCount || 0) + 1;
       // await post.save();
 
-      // Send notification
-      notifiyUser({
-        parentId: parentCommentId?.userId || post?.userId,
-        userId: actualUserId,
-        postId: postId,
-        commentId: parentReplyId ? parentReplyId : "",
-        desc: parentCommentId?.content[0]?.userText,
-        type: "comment",
-        action: "comment",
-      });
+      // Send notifications
+      // 1) Notify parent reply author when replying to a reply
+      if (parentCommentId?.userId) {
+        notifiyUser({
+          parentId: parentCommentId.userId,
+          userId: actualUserId,
+          postId: postId,
+          topicId: "",
+          commentId: parentReplyId,
+          desc: savedReply.content[0]?.userText || "",
+          type: "comment",
+          action: "comment",
+          replierUserName: actualUserName,
+          replyTypeOverride: "comment"
+        });
+      }
+
+      // 2) Always notify post owner (if different from parent reply author)
+      if (post?.userId) {
+        notifiyUser({
+          parentId: post.userId,
+          userId: actualUserId,
+          postId: postId,
+          topicId: "",
+          commentId: savedReply._id,
+          desc: savedReply.content[0]?.userText || "",
+          type: "post",
+          action: "comment",
+          replierUserName: actualUserName,
+          replyTypeOverride: "post"
+        });
+      }
 
       res.status(201).json({ status: 201, reply: savedReply });
     } catch (error) {
