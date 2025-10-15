@@ -13,6 +13,21 @@ const MasonryMediaGrid = ({ url, type, onLoad }) => {
   const [imageDimensions, setImageDimensions] = useState(null);
   const containerRef = useRef(null);
 
+  // Find the nearest scrollable ancestor (falls back to null -> viewport)
+  const getScrollParent = (node) => {
+    if (!node) return null;
+    let parent = node.parentElement;
+    while (parent) {
+      // prefer explicit id used by the page if present
+      if (parent.id === "scrollableDiv") return parent;
+      const style = window.getComputedStyle(parent);
+      const overflowY = style.overflowY;
+      if (/(auto|scroll|overlay)/.test(overflowY)) return parent;
+      parent = parent.parentElement;
+    }
+    return null;
+  };
+
   // Preload image to get dimensions
   useEffect(() => {
     if (url && type === "image") {
@@ -50,6 +65,7 @@ const MasonryMediaGrid = ({ url, type, onLoad }) => {
 
   // Intersection Observer for lazy loading
   useEffect(() => {
+    const rootElem = getScrollParent(containerRef.current);
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -60,7 +76,8 @@ const MasonryMediaGrid = ({ url, type, onLoad }) => {
       },
       {
         threshold: 0.1,
-        rootMargin: '50px'
+        root: rootElem, // observe relative to the scrollable container if found
+        rootMargin: "100px", // preload a bit earlier
       }
     );
 

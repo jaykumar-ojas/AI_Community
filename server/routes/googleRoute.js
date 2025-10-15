@@ -3,6 +3,7 @@ const express = require("express");
 const router = new express.Router();
 const goodledb = require('../models/googleSchema');
 const jwt = require("jsonwebtoken");
+const { sendWelcomeEmail } = require("../middleware/emailNotification");
 
 const keySecret = "8eH3$!q@LkP%zT^Xs#fD9&hVJ*aR07v";
 const session = require("express-session");
@@ -40,6 +41,15 @@ passport.use(
           });
 
           await googleuser.save();
+          // First-time Google signup → send welcome email (non-blocking)
+          try {
+            sendWelcomeEmail({
+              recipientEmail: googleuser.email,
+              recipientUserName: googleuser.userName
+            });
+          } catch (e) {
+            console.error("Welcome email failed (google first-signin, non-blocking):", e);
+          }
         }
         return done(null, googleuser);
       } catch (error) {

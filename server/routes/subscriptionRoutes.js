@@ -227,7 +227,7 @@ router.get('/check/:userId', authenticate, async (req, res) => {
 });
 
 // Get subscription stats for a user
-router.get('/stats/:userId?', authenticate, async (req, res) => {
+router.get('/stats/:userId?',  async (req, res) => {
     try {
         const userId = decodeId(req.params.userId) || req.rootuser._id;
         

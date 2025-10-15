@@ -710,15 +710,38 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
       // Increment reply count on the topic
       topic.replyCount += 1;
       await topic.save();
-      notifiyUser({
-        parentId: parentCommentId?.userId || topic?.userId,
-        userId,
-        topicId: topic?._id,
-        commentId: parentReplyId ? parentReplyId : "",
-        desc: parentCommentId?.content[0]?.userText,
-        type: "forum",
-        action: "comment"
-      });    
+      // Send notifications
+      // 1) Notify parent reply author when replying to a reply
+      if (parentCommentId?.userId) {
+        notifiyUser({
+          parentId: parentCommentId.userId,
+          userId: actualUserId,
+          postId: "",
+          topicId: topic?._id,
+          commentId: parentReplyId,
+          desc: savedReply.content[0]?.userText || "",
+          type: "forum",
+          action: "comment",
+          replierUserName: actualUserName,
+          replyTypeOverride: "forum_reply"
+        });
+      }
+
+      // 2) Always notify topic owner (if different from parent reply author)
+      if (topic?.userId) {
+        notifiyUser({
+          parentId: topic.userId,
+          userId: actualUserId,
+          postId: "",
+          topicId: topic?._id,
+          commentId: savedReply._id,
+          desc: savedReply.content[0]?.userText || "",
+          type: "forum",
+          action: "comment",
+          replierUserName: actualUserName,
+          replyTypeOverride: "topic"
+        });
+      }
 
       res.status(201).json({ status: 201, reply: savedReply });
     } catch (error) {
