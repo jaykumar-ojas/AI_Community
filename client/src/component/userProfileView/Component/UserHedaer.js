@@ -385,7 +385,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
             {/* Profile Picture Container - Only show when loaded */}
             {profileLoaded && (
               <div
-                className="w-28 h-28 md:w-36 md:h-36 sm:w-32 sm:h-32 lg:w-48 lg:h-48 rounded-[30px] border-4 border-white shadow-xl bg-cover bg-center bg-gray-200 overflow-hidden"
+                className="w-28 h-28 md:w-36 md:h-36 sm:w-32 sm:h-32 lg:w-48 lg:h-48 rounded-[30px] border-4 border-theme_color2 shadow-xl bg-cover bg-center bg-gray-200 overflow-hidden"
                 style={{
                   backgroundImage: `url(${
                     profilePicturePreview || profileUser?.profilePictureUrl
@@ -454,10 +454,10 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
       )}
 
       {/* Content Section */}
-      <div className=" from-transparent  pt-16">
-        <div className="relative flex flex-col justify-end md:items-center md:gap-8 md:pt-4 sm:gap-4 sm:justify-end sm:flex sm:pt-1 sm:flex-row">
+      <div className=" from-transparent md:pt-4 pt-16">
+        <div className="relative flex flex-col justify-end md:items-center md:gap-8   sm:justify-end sm:flex  sm:flex-row">
           {/* Left: Name & Bio */}
-          <div className="md:pt-20 w-full md:mb-0 md:p-4 sm:py-2 sm:px-0 sm:w-1/3">
+          <div className=" w-full justify-start md:mb-0 sm:py-2 sm:px-0 sm:w-1/3">
             {profileUser ? (
               <>
                 {isOwnProfile && isUpdating ? (
@@ -471,10 +471,11 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                 ) : (
 
                 <div className="flex flex-row gap-0.5 mx-auto text-start justify-center">
-                  <h1 className="font-bold text-black dark:text-white md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
+                  <h1 className="font-bold text-black dark:text-low_text md:text-2xl sm:text-2xl sm:text-start lg:text-3xl drop-shadow-lg">
                     {profileUser?.userName} 
                   </h1>
-                  <div className="relative group inline-block">
+
+                  {profileUser?.founding_member && <div className="relative group inline-block">
                     <img
                       src={founderImage}
                       alt="Founder Badge"
@@ -489,7 +490,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                         Early creators and core community member.
                       </p>
                     </div>
-                  </div>
+                  </div>}
                   </div>
                 )}
                 {/* <p className="pt-2 text-center justify-center text-sm text-white/90 sm:text-md sm:text-start md:text-lg drop-shadow-lg">
@@ -541,7 +542,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                 <div>
 
 
-                  <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+                  <div className="text-lg font-bold text-black dark:text-low_text tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
 
                     {isError ? (
 
@@ -552,18 +553,18 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                   </div>
 
 
-                  <div className="text-sm font-medium text-black dark:text-white  drop-shadow">
+                  <div className="text-sm font-medium text-black dark:text-low_text  drop-shadow">
 
                     Posts
                   </div>
                 </div>
                 <div>
 
-    <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+    <div className="text-lg font-bold text-black dark:text-low_text tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
 
                     {subscriptionStats?.subscribersCount || 0}
                   </div>
-                  <div className="text-sm font-medium text-black dark:text-gray-200 drop-shadow">
+                  <div className="text-sm font-medium text-black dark:text-low_text drop-shadow">
                     Followers
                   </div>
                 </div>
@@ -573,7 +574,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                     className={`text-center ${isOwnProfile ? 'cursor-pointer' : ''}`}
                     onClick={isOwnProfile ? handleFollowingClick : undefined}
                   >
-                    <div className="text-lg font-bold text-black dark:text-white tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
+                    <div className="text-lg font-bold text-black dark:text-low_text tracking-wide md:text-2xl sm:text-xl lg:text-3xl drop-shadow-lg">
                       {subscriptionStats?.subscribedToCount || 0}
                     </div>
                     {isOwnProfile ? (
@@ -581,7 +582,7 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
                         Following
                       </button>
                     ) : (
-                      <div className="text-sm font-medium text-black dark:text-white text-sm drop-shadow">
+                      <div className="text-sm font-medium text-black dark:text-low_text text-sm drop-shadow">
                         Following
                       </div>
                     )}

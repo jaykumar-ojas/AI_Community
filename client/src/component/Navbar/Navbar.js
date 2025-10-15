@@ -206,7 +206,6 @@ export default function Navbar({ showForum, setShowForum }) {
                       }}
                     />
                   )}
-                  <Switch darkMode={darkMode} setDarkMode={setDarkMode} />
 
                   {isAuthenticated() && loginData ? (
                     <Menu as="div" className="relative z-10">
@@ -309,7 +308,6 @@ export default function Navbar({ showForum, setShowForum }) {
                       }}
                     />
                   )}
-                  <Switch darkMode={darkMode} setDarkMode={setDarkMode} />
 
                   {isAuthenticated() && loginData ? (
                     <Menu as="div" className="relative z-10">
