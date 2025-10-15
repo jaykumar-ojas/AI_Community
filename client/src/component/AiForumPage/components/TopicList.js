@@ -172,7 +172,7 @@ const TopicList = ({ topics: initialTopics, onDeleteTopic, emptyMessage }) => {
 
           {/* Title */}
           <div className="flex justify-between items-start">
-            <h2 className="text-[17px] font-semibold font-merriweather text-gray-900  dark:text-low_text line-clamp-2 group-hover:text-theme_color2 transition">
+            <h2 className="text-[17px] font-semibold font-merriweather text-gray-900  dark:text-low_text line-clamp-2 group-hover:text-theme_color transition">
               {topic.title}
             </h2>
 
