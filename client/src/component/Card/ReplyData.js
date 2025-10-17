@@ -18,18 +18,18 @@ const ShowUrl = ({ url, modelInfo }) => {
    if (!url) return null;
   return (
     <div className="flex justify-start">
-      <div onClick={handleClosePreview} className="max-w-[100%] bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-500 cursor-pointer">
+      <div onClick={handleClosePreview} className="max-w-[100%] bg-nav_hover2 rounded-2xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-500 cursor-pointer">
         {modelInfo && (
-          <div className="flex items-center justify-between p-1 border-b border-gray-100 dark:border-gray-500 bg-gray-50 dark:bg-gray-300">
+          <div className="flex items-center justify-between  border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-nav_hover2">
             <div className="flex items-center text-xs space-x-2">
-              <ModelIcon modelName={modelInfo} />
+              <ModelIcon modelName={modelInfo} data={true}/>
             </div>
           </div>
         )}
-        <div className="bg-white flex items-center justify-center">
+        <div className="flex items-center justify-center">
           <img
             src={url}
-            className="max-h-[180px] w-auto object-contain"
+            className="max-h-[200px] w-auto object-contain"
             alt="Generated content"
             onError={(e) => (e.target.style.display = "none")}
           />
@@ -154,7 +154,7 @@ const ReplyData = ({ content }) => {
     content && Array.isArray(content) && content.length > 0 ? content : [];
 
   return (
-    <div className="text-[13px] leading-relaxed  text-gray-800 dark:low_text">
+    <div className="text-[13px] font-poppins leading-relaxed  text-gray-800 dark:low_text">
       {!expanded ? (
         <>
           <div className="h-6 overflow-hidden">

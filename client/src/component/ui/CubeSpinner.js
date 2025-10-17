@@ -8,10 +8,15 @@ export const CubeSpinner = ({
   // Color variants for customization
   const colorVariants = {
     orange: {
-      bg: 'bg-orange-500/20',
-      border: 'border-orange-500',
-      glow: 'shadow-orange-500/50'
+      bg: 'bg-theme_color/80',
+      border: 'border-theme_color2',
+      glow: 'shadow-theme_color3'
     },
+    // orange: {
+    //   bg: 'bg-orange-500/20',
+    //   border: 'border-orange-500',
+    //   glow: 'shadow-orange-500/50'
+    // },
     blue: {
       bg: 'bg-blue-500/20',
       border: 'border-blue-500',
