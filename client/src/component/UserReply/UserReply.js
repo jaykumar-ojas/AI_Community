@@ -373,7 +373,7 @@ const UserReply = ({ forum = false }) => {
   };
 
   return (
-    <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-700 rounded-md  dark:bg-gray-800  bg-transparent  z-40">
+    <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-900 rounded-md  dark:bg-nav_hover2  bg-transparent  z-40">
       {error && <ErrorBar message={error} onClose={() => setError("")} />}
 
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box">
@@ -383,12 +383,19 @@ const UserReply = ({ forum = false }) => {
       <UserAndModel forum={forum} />
 
       <form>
-        <div className="flex md:mb-1">
+        <div className="flex md:my-1">
           <textarea
-            className="flex-1 px-2 min-h-8 max-h-12 text-gray-900 dark:text-gray-300 text-sm md:text-sm bg-transparent focus:outline-none focus:ring-0  rounded-md resize-none overflow-y-auto break-words"
+            className="flex-1 px-2 text-gray-900 dark:text-low_text font-poppins text-[13px] bg-transparent focus:outline-none focus:ring-0 rounded-md overflow-y-auto break-words"
             placeholder="Write your reply..."
             value={newReply}
             onChange={(e) => setNewReply(e.target.value)}
+            onInput={(e) => {
+              e.target.style.height = "auto";
+              e.target.style.height = `${Math.min(
+                e.target.scrollHeight,
+                120
+              )}px`; // limit height (80px ≈ max-h-20)
+            }}
             disabled={isLoading || loading || contextLoading}
           />
         </div>
@@ -396,7 +403,7 @@ const UserReply = ({ forum = false }) => {
         <div className="flex justify-between items-center">
           {/* Left controls */}
           <div className="flex items-center gap-2 px-1">
-            <label className="dark:text-gray-300 text-gray-600 hover:text-gray-700 cursor-pointer text-xs md:text-sm flex items-center">
+            <label className="dark:text-low_text text-gray-600 hover:text-gray-700 cursor-pointer text-xs md:text-sm flex items-center">
               <input
                 type="file"
                 multiple
@@ -411,23 +418,23 @@ const UserReply = ({ forum = false }) => {
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 border dark:border-gray-300 border-gray-800 px-2 py-1 rounded-lg shadow-sm hover:shadow-md transition-all"
+              className="flex items-center gap-2 border dark:border-low_text border-gray-800 px-2 py-1 rounded-lg shadow-sm hover:shadow-md transition-all"
             >
               {model ? (
-                <span className="font-medium sm:text-xs text-[8px] text-gray-900 dark:text-gray-200 line-clamp-1">
+                <span className="font-medium sm:text-xs text-[8px] text-gray-900 dark:text-theme_color2 line-clamp-1">
                   {model}
                 </span>
               ) : (
                 <span className="text-gray-500">
                   <img
-                    className="sm:h-5 h-3 w-full object-cover bg-white rounded-full"
+                    className="sm:h-5 h-3 w-full object-cover  rounded-full"
                     src={modelIcon}
                     alt="model"
                   />
                 </span>
               )}
               <ChevronDown
-                className={`sm:h-4 sm:w-4 h-3 w-3 text-gray-800 dark:text-gray-300 transition-transform ${
+                className={`sm:h-4 sm:w-4 h-3 w-3 text-gray-800 dark:text-low_text transition-transform ${
                   isDropdownOpen ? "rotate-180" : ""
                 }`}
               />
@@ -441,52 +448,58 @@ const UserReply = ({ forum = false }) => {
             )}
 
             {/* Cool Context Aware Toggle */}
-            {!contextLoading && <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsContextAware(!isContextAware)}
-                className={`
+            {!contextLoading && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsContextAware(!isContextAware)}
+                  className={`
                   relative inline-flex sm:h-6 h-4 sm:w-11 w-8 items-center rounded-full transition-colors duration-400 ease-in-out 
                   ${
                     isContextAware
-                      ? "bg-gradient-to-r from-like_color to-purple-600"
-                      : "bg-gray-300 dark:bg-gray-500"
+                      ? "bg-gradient-to-r from-theme_color to-pink-600"
+                      : "bg-gray-300 dark:bg-nav_hover"
                   }
                 `}
-                disabled={contextLoading}
-              >
-                <span
-                  className={`
-                    inline-block sm:h-4  sm:w-4 h-3 w-3 transform rounded-full bg-white transition-transform duration-200 ease-in-out shadow-lg
-                    ${isContextAware ? "sm:translate-x-6 translate-x-4" : "translate-x-1"}
+                  disabled={contextLoading}
+                >
+                  <span
+                    className={`
+                    inline-block sm:h-4  sm:w-4 h-3 w-3 transform rounded-full bg-low_text transition-transform duration-200 ease-in-out shadow-lg
+                    ${
+                      isContextAware
+                        ? "sm:translate-x-6 translate-x-4"
+                        : "translate-x-1"
+                    }
                   `}
-                >
-                  {isContextAware && (
-                    <Brain className="h-3 w-3 text-like_color absolute top-0 left-0 sm:top-0.5 sm:left-0.5" />
-                  )}
-                </span>
-              </button>
-              <div className="mb-1 sm:mb-0">
-                <span
-                  className={`sm:text-xs text-[9px]  font-medium transition-colors  ${
-                    isContextAware
-                      ? "text-like_color"
-                      : "text-gray-800 dark:text-gray-200"
-                  }`}
-                >
-                  Context Engine
-                </span>
-                <span className="bg-gradient-to-r mt-2 from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-[8px] text-transparent font-semibold">
-                  (beta)
-                </span>
+                  >
+                    {isContextAware && (
+                      <Brain className="h-3 w-3 text-theme_color absolute top-0 left-0 sm:top-0.5 sm:left-0.5" />
+                    )}
+                  </span>
+                </button>
+                <div className="mb-1 sm:mb-0">
+                  <span
+                    className={`sm:text-sm text-[9px]  font-medium transition-colors  ${
+                      isContextAware
+                        ? "text-theme_color"
+                        : "text-gray-800 dark:text-gray-200"
+                    }`}
+                  >
+                    Context Engine
+                  </span>
+                  <span className={` sm:text-xs text-[8px]  font-bold ${isContextAware ? "bg-clip-text bg-gradient-to-r mt-2 from-theme_color2  to-pink-500 text-transparent ":"text-low_text"}`}>
+                    (beta)
+                  </span>
+                </div>
               </div>
-            </div>}
+            )}
 
             {/* Context Loading Message */}
             {contextLoading && (
-              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-1 rounded-full border border-blue-200">
+              <div className="flex items-center gap-2 bg-gradient-to-r from-theme_color3 to-pink-600 px-3 py-1 rounded-full border border-theme_color">
                 <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="sm:text-xs text-[8px]   text-blue-600 font-medium animate-pulse line-clamp-1">
+                <span className="sm:text-xs text-[8px]   text-black font-medium animate-pulse line-clamp-1">
                   {contextMessage}
                 </span>
               </div>
@@ -496,7 +509,7 @@ const UserReply = ({ forum = false }) => {
               <button
                 type="button"
                 onClick={clearConversationHistory}
-                className="sm:text-xs text-[8px]  text-gray-500 hover:text-red-600 px-2 py-1  rounded border border-gray-300 hover:border-red-300"
+                className="sm:text-xs text-[8px] font-bold  text-low_text hover:text-red-600 px-2 py-1  rounded border border-gray-300 hover:border-red-600"
               >
                 Clear History ({conversationHistory.length})
               </button>
@@ -519,7 +532,7 @@ const UserReply = ({ forum = false }) => {
                     <CubeSpinner size="w-8 h-8" color="orange" />
                   </div>
                 ) : (
-                  <SparklesIcon />
+                  <div className="flex  font-playfair bg-theme_color p-2 py-0 rounded-md  font-bold leading-relaxed "><span className="text-[15px] text-white ">Generate</span> <SparklesIcon  size={20}/></div>
                 )}
               </button>
             ) : (
@@ -527,7 +540,7 @@ const UserReply = ({ forum = false }) => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="text-gray-800 dark:text-gray-300 rounded-full p-2 text-sm hover:bg-blue-500 hover:dark:text-gray-600 hover:text-gray-200 "
+                className="text-gray-800 dark:text-low_text rounded-full p-2 text-sm hover:bg-theme_color2 hover:dark:text-white hover:text-gray-200 "
                 disabled={
                   isLoading ||
                   loading ||

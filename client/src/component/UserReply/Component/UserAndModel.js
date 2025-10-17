@@ -10,9 +10,9 @@ const UserAndModel = ({forum=false}) => {
   return (
     <div className="md:px-1 pb-0 px-2">
       {replyIdForContext && (
-        <span className="text-[11px] text-gray-600 dark:text-time_header">
+        <span className="text-[11px] text-gray-600 dark:text-low_text">
           Replying to{" "}
-          <span className="md:font-medium font-bold text-xs md:text-[13px] text-like_color">
+          <span className="md:font-medium font-bold text-xs md:text-[13px] text-theme_color2">
             @{userName}
             <button
               onClick={() => setReplyIdForContext(null)}
@@ -25,7 +25,7 @@ const UserAndModel = ({forum=false}) => {
         </span>
       )}
       {model && (
-        <span className="inline-flex items-center md:font-medium font-bold md:text-[13px] text-xs rounded-lg text-like_color px-1">
+        <span className="inline-flex items-center md:font-medium font-bold md:text-[13px] text-xs rounded-lg text-theme_color px-1">
           @{model}
           <button
             onClick={() => setModel(null)}

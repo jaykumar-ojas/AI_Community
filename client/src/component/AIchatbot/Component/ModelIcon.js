@@ -4,7 +4,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../AiForumPage/components/ForumUtils";
 
 
-const ModelIcon = ({ modelName, name=true }) => {
+const ModelIcon = ({ modelName, name=true ,data=false }) => {
   const [iconUrl, setIconUrl] = useState(null);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const ModelIcon = ({ modelName, name=true }) => {
         className="w-4 h-4 md:w-6 md:h-6 rounded-full"
         // style={{ width: 24, height: 24, borderRadius: "50%" }}
       />
-      {name && <span className="text-xs text-blue-700 font-medium">{modelName}</span>}
+      {name && <span className={`text-xs ${data ? "text-theme_color font-jetbrains" :"text-blue-700"} font-medium`}>{modelName}</span>}
     </div>
   );
 };

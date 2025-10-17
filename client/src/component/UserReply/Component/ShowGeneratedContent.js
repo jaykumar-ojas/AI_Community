@@ -14,12 +14,12 @@ const ShowGeneratedContent = ({ postingData, conversationHistory = [] }) => {
   return (
     <div
       ref={contentRef}
-      className="flex flex-col gap-4 p-4 bg-gray-50 dark:bg-gray-500 "
+      className="flex flex-col gap-4 p-4 bg-gray-50 dark:bg-nav_hover"
     >
       {/* Conversation History Indicator */}
       {conversationHistory && conversationHistory.length > 0 && (
         <div className="flex justify-center mb-2">
-          <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+          <div className="bg-blue-100 text-theme_color3 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
             Memory Active • {conversationHistory.length} messages in history
           </div>
         </div>
@@ -51,7 +51,7 @@ const ShowUserText = ({ userText }) => {
   if (!userText) return null;
   return (
     <div className="flex justify-end">
-      <div className="max-w-[80%] bg-blue-500 text-white px-4 py-2 rounded-2xl shadow-md text-sm">
+      <div className="max-w-[80%] bg-theme_color font-manrope text-white px-4 py-2 rounded-2xl shadow-md text-sm">
         {userText}
       </div>
     </div>
@@ -74,7 +74,7 @@ const ShowAiText = ({ aiText, modelInfo }) => {
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[80%] bg-white dark:bg-gray-700 px-4 py-3 rounded-2xl shadow-md text-sm text-gray-800 dark:text-gray-200 border dark:border-gray-500 border-gray-300">
+      <div className="max-w-[80%] bg-white font-poppins dark:bg-nav_hover2 px-4 py-3 rounded-2xl shadow-md text-sm text-gray-800 dark:text-low_text border dark:border-gray-700 border-gray-300">
         <div
           className="prose prose-sm text-gray-800"
           dangerouslySetInnerHTML={{ __html: parseMarkdown(aiText) }}
@@ -89,7 +89,7 @@ const ShowAiText = ({ aiText, modelInfo }) => {
                 onError={(e) => (e.target.style.display = "none")}
               />
             )}
-            <span className="dark:text-gray-300 text-gray-500">
+            <span className="dark:text-theme_color3 font-semibold font-merriweather text-gray-500">
               {modelInfo.providerName} · {modelInfo.modelName}
             </span>
           </div>
@@ -105,10 +105,10 @@ const ShowUrl = ({ url, modelInfo }) => {
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[80%] bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+      <div className="max-w-[80%] bg-nav_hover2 rounded-2xl shadow-md overflow-hidden border border-gray-700">
         {modelInfo && (
-          <div className="flex items-center justify-between p-2 border-b border-gray-100 bg-gray-50">
-            <div className="text-xs text-gray-600 font-medium">
+          <div className="flex items-center justify-between p-2 border-b border-gray-500 ">
+            <div className="text-xs text-low_text font-medium">
               Generated Image
             </div>
             <div className="flex items-center space-x-2">
@@ -120,7 +120,7 @@ const ShowUrl = ({ url, modelInfo }) => {
                   onError={(e) => (e.target.style.display = "none")}
                 />
               )}
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-theme_color2 font-semibold">
                 {modelInfo.providerName}
               </span>
             </div>
@@ -147,7 +147,7 @@ const ShowUrl = ({ url, modelInfo }) => {
 
 const TextSkeleton = () => (
   <div className="flex justify-start">
-    <div className="max-w-[80%] bg-white px-4 py-3 rounded-2xl shadow-md text-sm border border-gray-100 w-full">
+    <div className="max-w-[80%] bg-nav_hover2 px-4 py-3 rounded-2xl shadow-md text-sm border border-gray-100 w-full">
       <div className="mb-2">
         <LoadingMessage type="text" />
       </div>
@@ -162,7 +162,7 @@ const TextSkeleton = () => (
 
 const ImageSkeleton = () => (
   <div className="flex justify-start">
-    <div className="max-w-[80%] bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 w-full">
+    <div className="max-w-[80%] bg-nav_hover2 rounded-2xl shadow-md overflow-hidden border border-gray-700 w-full">
       <div className="flex flex-col items-center justify-center min-h-[200px] gap-3 p-4">
         <LoadingMessage type="image" />
         <CubeSpinner size="w-12 h-12" color="orange" />

@@ -193,16 +193,16 @@ const BottomModelView = ({model, modelType, modelConfig, handleTypeSelect, handl
       <div className="fixed bottom-12 left-1/4 transform -translate-x-8 w-64 z-50">
         {/* Dropdown list above button */}
 
-        <ul className="absolute bottom-full mb-2 max-w-full max-h-64  overflow-y-auto bg-white  dark:bg-gray-800 rounded-md shadow-lg p-2 z-50">
+        <ul className="absolute bottom-full mb-2 max-w-full max-h-64  overflow-y-auto bg-white  dark:bg-nav_hover rounded-md shadow-lg p-2 z-50">
           <div className="flex space-x-2 mb-2">
             {["text", "image"].map((type) => (
               <button
                 type="button"
                 key={type}
-                className={`px-3 py-1 rounded-md text-sm flex items-center space-x-1 transition-all duration-150 ${
+                className={`px-3 py-1 rounded-md font-lato font-semibold text-sm flex items-center space-x-1 transition-all duration-150 ${
                   modelType === type
-                    ? "bg-like_color text-text_header font-medium"
-                    : "dark:text-text_header text-gray-800 hover:bg-like_color"
+                    ? "bg-theme_color text-low_text  font-medium"
+                    : "dark:text-low_text text-gray-800 hover:bg-theme_color3"
                 }`}
                 onClick={() => handleTypeSelect(type)}
               >
