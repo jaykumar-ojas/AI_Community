@@ -5,7 +5,6 @@ import modelIcon from "../../../asset/IconImage/ModelIcon.png";
 import { getAuthHeaders } from "../../AiForumPage/components/ForumUtils";
 import { UseSetUserCredit } from "../../GlobalFunction/GlobalFunctionForResue";
 import imageModelsConfig from "../../../config/imageModelsConfig";
-
 import { useNotification } from "../../ContextProvider/NotificationContext";
 import { LoginContext } from "../../ContextProvider/context";
 import { ModelsContext } from "../ModelsContext";
@@ -359,7 +358,7 @@ const AIContentFile = () => {
         <div className="flex flex-col gap-4 mb-4">
           {/* Header Row */}
           <div className="flex justify-between items-center">
-            <div className="text-lg font-merriweather font-semibold text-gray-700 dark:text-low_text">
+            <div className="md:text-lg text-md font-merriweather font-semibold text-gray-700 dark:text-low_text">
               AI Image Generation
             </div>
           </div>
@@ -424,7 +423,7 @@ const AIContentFile = () => {
                         <button
                           key={modelKey}
                           onClick={() => handleSelectModel(modelKey)}
-                          className={`flex items-center gap-2 px-3 py-2 text-sm font-manrope first:rounded-t-lg last:rounded-b-lg ${
+                          className={`flex items-center gap-2 px-3 py-2 text-sm font-manrope font-semibold first:rounded-t-lg last:rounded-b-lg ${
                             selectedImageModel === modelKey
                               ? "text-gray-900 dark:text-theme_color font-semibold"
                               : "text-gray-700 dark:text-white dark:hover:text-theme_color2"

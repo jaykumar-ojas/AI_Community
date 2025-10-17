@@ -271,7 +271,7 @@ const HeaderContent = ({ topic, onDelete }) => {
               setViewBox(true);
               setReplyIdForContext(null);
             }}
-            className="flex items-center justify-content gap-1 text-theme_color4 hover:text-like_color transition"
+            className="flex items-center justify-content gap-1 text-theme_color4 hover:text-theme_color transition"
           >
             <ReplyIcon />
             <div className="text-xs">Reply</div>

@@ -206,7 +206,7 @@ const CommentReview = () => {
             </div>
           ))
         ) : (
-          <div>No Comments</div>
+          <div className="font-poppins text-low_text text-center">No Comments</div>
         )}
       </div>
     </div>

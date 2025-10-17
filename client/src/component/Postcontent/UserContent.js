@@ -538,7 +538,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
                   // setUserName(reply?.userName);
                   setViewBox(!viewBox);
                 }}
-                className="md:hidden flex items-center gap-1  text-like_color hover:text-like_color transition"
+                className="md:hidden flex items-center gap-1  text-theme_color4 hover:text-theme_color transition"
               >
                 <ReplyIcon />
                 <div className="text-xs">Reply</div>
