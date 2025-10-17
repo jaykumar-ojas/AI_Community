@@ -10,7 +10,7 @@ const Description = () => {
 
   return (
     <div className="w-full pt-0 md:px-6 md:py-4 relative bg-transparent">
-      <div className="text-xl px-2 font-merriweather font-semibold text-gray-700 dark:text-low_text mb-3">Description</div>
+      <div className="md:text-xl text-md  px-2 font-merriweather font-semibold text-gray-700 dark:text-low_text mb-3">Description</div>
 
       <div className="relative">
         <textarea

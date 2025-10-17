@@ -148,7 +148,7 @@ const PostImageContent = () => {
         <div className="w-full h-full relative bg-transparent p-2 pt-0">
           <div className="flex flex-col">
             <div className="flex justify-between items-center mx-2 mb-2">
-              <div className="text-lg gap-2 font-extrabold font-lato tracking-wide">
+              <div className="md:text-lg text-md gap-2 font-extrabold font-lato tracking-wide">
                 <span className="bg-gradient-to-r from-theme_color3 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                   Imagine.
                 </span>
@@ -211,7 +211,7 @@ const PostImageContent = () => {
           <div className="mt-2">
             <button
               onClick={() => setShowGenerateAI(!showGenerateAI)}
-              className="flex w-full items-center justify-between px-4 py-2 bg-like_color text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition-all"
+              className="flex w-full items-center font-merriweather justify-between px-4 py-2 bg-theme_color text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition-all"
             >
               <span>Generate with AI</span>
               <ChevronDown
@@ -236,9 +236,7 @@ const PostImageContent = () => {
 };
 
 const PostImage = () => (
-  <PostProvider>
     <PostImageContent />
-  </PostProvider>
 );
 
 export default PostImage;

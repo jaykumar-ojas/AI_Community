@@ -170,7 +170,7 @@ const PostContent = () => {
             {/* Mobile only: Related content when comments are hidden */}
             <div className={`md:hidden ${showCommentsMobile ? "hidden" : "hidden"}`}>
               <div className="border border-gray-300 rounded-lg">
-                <div className="text-lg text-md justify-center text-text_comment p-2 font-semibold">
+                <div className="text-lg text-md font-jetbrains justify-center text-low_text p-2 font-semibold">
                   More Related Content
                 </div>
                 <div className="grid grid-cols-1">

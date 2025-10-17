@@ -162,7 +162,7 @@ const DragAndDrop = () => {
           className="w-full md:h-[67vh] h-[30vh] cursor-pointer relative bg-transparent flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-400"
         >
           <DragAndDropIcon />
-          <p className="mb-2 text-sm text-gray-700 dark:text-text_header dark:text-gray-400">
+          <p className="mb-2 md:text-sm text-xs  text-gray-700 dark:text-text_header dark:text-gray-400">
             <span className="font-semibold">Click to upload</span> or drag and drop
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">

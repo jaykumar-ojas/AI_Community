@@ -348,7 +348,7 @@ const ShowCommentContent = ({ reply }) => {
                 setUserName(reply?.userName);
                 setViewBox(true);
               }}
-              className="flex items-center gap-1  text-theme_color4 hover:text-like_color transition"
+              className="flex items-center gap-1  text-theme_color4 hover:text-theme_color transition"
             >
               <ReplyIcon />
 

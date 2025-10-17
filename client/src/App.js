@@ -26,11 +26,14 @@ import UserEdit from "./component/userProfileView/UserEdit";
 import CommentModelProvider from "./component/ContextProvider/CommentModelContext";
 import {BackgroundBeams} from "./component/ui/background-beams";
 
+import { PostContext } from "./component/PostImage/PostContext";
+
 import { NotificationProvider } from "./component/ContextProvider/NotificationContext";
 
 import ForumSystem from "./component/AiForumPage/ForumSystem";
 import FeedbackPage from "./component/Navbar/feedback";
 import { ModelsProvider } from "./component/PostImage/ModelsContext";
+import PostProvider from "./component/PostImage/PostContext";
 
 const Layout = () => {
   const location = useLocation();
@@ -100,6 +103,7 @@ function App() {
     <Context>
       <NotificationProvider>
       <WebSocketProvider>
+        <PostProvider>
         <ForumContext>
           <CommentModelProvider>
             <ModelsProvider>
@@ -107,6 +111,7 @@ function App() {
               </ModelsProvider>
           </CommentModelProvider>
         </ForumContext>
+        </PostProvider>
       </WebSocketProvider>
       </NotificationProvider>
     </Context>
