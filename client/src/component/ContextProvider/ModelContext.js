@@ -10,15 +10,6 @@ const Context=({children})=>{
     const [modelType, setModelType] = useState('text');
     const [provider,setProvider]= useState("");
 
-    // useEffect(() => {
-    //     console.log("i am coming to set userData");
-    //     const storedUser = localStorage.getItem("userData");
-    //     if (storedUser ) {
-    //       setLoginData(JSON.parse(storedUser));
-    //     }
-        
-    //   }, []);
-    //   console.log("this is set loginData,",loginData);
     
     return (
         <ForumContext.Provider value={{model,setModel,viewBox,setViewBox,replyIdForContext,setReplyIdForContext,userName,setUserName,modelType,setModelType,provider,setProvider}}>
