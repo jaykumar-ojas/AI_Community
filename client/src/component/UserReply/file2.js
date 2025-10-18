@@ -22,6 +22,7 @@ import {
   describeImagesInBackground,
 } from "./Component/ReplyApi";
 import { UseSetUserCredit } from "../GlobalFunction/GlobalFunctionForResue";
+
 import { CubeSpinner } from "../ui/CubeSpinner";
 import ErrorBar from "../Card/ErrorBar";
 import { useNotification } from "../ContextProvider/NotificationContext";
@@ -29,6 +30,7 @@ import { decodeId } from "../../utils/hashids";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
+// Engaging context loading messages
 const CONTEXT_MESSAGES = [
   "Contexting your response…",
   "Analyzing thread…",
@@ -49,6 +51,7 @@ const UserReply = ({ forum = false }) => {
   const dynamicId = forum ? params.topicId : params.id;
   const dynamicId1 = forum ? decodeId(params.topicId) : params.id;
 
+  // 🔹 Unique storage key per forum/topic
   const localStorageKey = `userReplyData_${forum ? dynamicId1 : dynamicId}`;
 
   const forumContext = useContext(ForumContext);
@@ -78,10 +81,10 @@ const UserReply = ({ forum = false }) => {
   const [isContextAware, setIsContextAware] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
   const [contextMessage, setContextMessage] = useState("");
-  const [messageIndex, setMessageIndex] = useState(0);
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Rotating context messages
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  // 🧠 Rotate context messages
   useEffect(() => {
     let interval;
     if (contextLoading) {
@@ -98,7 +101,7 @@ const UserReply = ({ forum = false }) => {
     }
   }, [messageIndex, contextLoading]);
 
-  // Conversation builder
+  // 🧠 Conversation builder
   const buildConversationPrompt = (history, newPrompt) => {
     let historyString = history
       .map(
@@ -121,55 +124,28 @@ const UserReply = ({ forum = false }) => {
     setConversationHistory(newHistory);
   }, [postingData]);
 
-  // ✅ Load data from localStorage ON MOUNT
+  // 🧩 Load saved data from localStorage
+  // 🧩 Load saved data from localStorage
   useEffect(() => {
     const savedData = localStorage.getItem(localStorageKey);
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        
-        // Restore all states
         setNewReply(parsed.newReply || "");
+        setPostingData(parsed.postingData || []);
         setSelectedFiles(parsed.selectedFiles || []);
         setModel(parsed.model || "");
         setModelType(parsed.modelType || "text");
         setProvider(parsed.provider || "");
         setConversationHistory(parsed.conversationHistory || []);
-        setIsContextAware(parsed.isContextAware || false);
-        setLoading(parsed.loading || false);
-        setContextLoading(parsed.contextLoading || false);
-        
-        // ✅ FIXED: Restore postingData with proper image URLs
-        const restoredPostingData = (parsed.postingData || []).map(item => {
-          if (item.imageBlob && !item.imageUrl) {
-            // Recreate blob URL from base64 data
-            const binary = atob(item.imageBlob);
-            const bytes = new Uint8Array(binary.length);
-            for (let j = 0; j < binary.length; j++) {
-              bytes[j] = binary.charCodeAt(j);
-            }
-            const blob = new Blob([bytes], { type: "image/png" });
-            return {
-              ...item,
-              imageUrl: URL.createObjectURL(blob)
-            };
-          }
-          return item;
-        });
-        
-        setPostingData(restoredPostingData);
-        
       } catch (err) {
         console.error("Failed to parse saved UserReply data", err);
       }
     }
-    setIsInitialized(true);
-  }, [localStorageKey, setModel, setModelType, setProvider]);
+  }, [localStorageKey]);
 
-  // ✅ Save data to localStorage (debounced) - ONLY AFTER INITIALIZATION
+  // ✅ Debounced saving to localStorage
   useEffect(() => {
-    if (!isInitialized) return;
-    
     const timeout = setTimeout(() => {
       const dataToSave = {
         newReply,
@@ -179,12 +155,10 @@ const UserReply = ({ forum = false }) => {
         modelType,
         provider,
         conversationHistory,
-        isContextAware,
-        loading,
-        contextLoading,
       };
       localStorage.setItem(localStorageKey, JSON.stringify(dataToSave));
-    }, 500);
+    }, 500); // saves 0.5s after typing stops
+
     return () => clearTimeout(timeout);
   }, [
     newReply,
@@ -194,14 +168,10 @@ const UserReply = ({ forum = false }) => {
     modelType,
     provider,
     conversationHistory,
-    isContextAware,
-    loading,
-    contextLoading,
     localStorageKey,
-    isInitialized,
   ]);
 
-  // ✅ Save immediately on unmount (navigation away)
+  // ✅ Extra safeguard — save immediately on unmount (e.g., when navigating away)
   useEffect(() => {
     return () => {
       const dataToSave = {
@@ -212,31 +182,18 @@ const UserReply = ({ forum = false }) => {
         modelType,
         provider,
         conversationHistory,
-        isContextAware,
-        loading,
-        contextLoading,
       };
       localStorage.setItem(localStorageKey, JSON.stringify(dataToSave));
     };
-  }, [
-    newReply,
-    postingData,
-    selectedFiles,
-    model,
-    modelType,
-    provider,
-    conversationHistory,
-    isContextAware,
-    loading,
-    contextLoading,
-    localStorageKey,
-  ]);
+  }, []); // runs once when component unmounts
 
+  // -------------------
   // File handler
   const handleFileSelect = (e) => {
     setSelectedFiles(Array.from(e.target.files));
   };
 
+  // -------------------
   // Background describe images
   useEffect(() => {
     postedReplies.forEach(({ replyId, postingData, processed }) => {
@@ -251,6 +208,7 @@ const UserReply = ({ forum = false }) => {
     });
   }, [postedReplies]);
 
+  // -------------------
   // Generate content
   const handleGenerateSubmit = async (
     e,
@@ -324,7 +282,7 @@ const UserReply = ({ forum = false }) => {
                   bytes[j] = binary.charCodeAt(j);
                 const blob = new Blob([bytes], { type: "image/png" });
                 updated.imageUrl = URL.createObjectURL(blob);
-                updated.imageBlob = data.imageData; // ✅ Save base64 for persistence
+                updated.imageBlob = data.imageData;
               } else if (data?.imageUrl) {
                 updated.imageUrl = data.imageUrl;
               }
@@ -337,11 +295,11 @@ const UserReply = ({ forum = false }) => {
 
         setUserCredit(response?.data?.credit);
         setNewReply("");
+
+        // Reset model after generation
         setModel?.(null);
       } else {
         setError("Failed to generate content");
-        // ✅ Remove loading item on error
-        setPostingData((prev) => prev.filter(item => !item.isLoading));
       }
     } catch (err) {
       setError(
@@ -349,16 +307,16 @@ const UserReply = ({ forum = false }) => {
           err.response?.data?.error ||
           "An error occurred while generating content"
       );
-      // ✅ Remove loading item on error
-      setPostingData((prev) => prev.filter(item => !item.isLoading));
     } finally {
       setLoading(false);
     }
   };
 
+  // -------------------
   // Context aware generate
   const handleContextAwareGenerate = async () => {
     if (!newReply.trim()) return;
+
     setContextLoading(true);
     setError(null);
     setMessageIndex(0);
@@ -401,6 +359,8 @@ const UserReply = ({ forum = false }) => {
     }
   };
 
+  // -------------------
+  // Submit to post
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newReply.trim() && postingData.length === 0) return;
@@ -463,8 +423,8 @@ const UserReply = ({ forum = false }) => {
         setNewReply("");
         setSelectedFiles([]);
         setPostingData([]);
-        setConversationHistory([]);
 
+        // 🧹 Clear saved data after successful post
         localStorage.removeItem(localStorageKey);
       }
     } catch (err) {
@@ -481,7 +441,7 @@ const UserReply = ({ forum = false }) => {
   };
 
   return (
-    <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-900 rounded-md  dark:bg-nav_hover2  bg-transparent  z-40">
+    <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-900 rounded-md dark:bg-nav_hover2 bg-transparent z-40">
       {error && <ErrorBar message={error} onClose={() => setError("")} />}
 
       <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box">
@@ -535,7 +495,7 @@ const UserReply = ({ forum = false }) => {
               ) : (
                 <span className="text-gray-500">
                   <img
-                    className="sm:h-5 h-3 w-full object-cover  rounded-full"
+                    className="sm:h-5 h-3 w-full object-cover rounded-full"
                     src={modelIcon}
                     alt="model"
                   />
@@ -555,31 +515,24 @@ const UserReply = ({ forum = false }) => {
               />
             )}
 
-            {/* Cool Context Aware Toggle */}
             {!contextLoading && (
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setIsContextAware(!isContextAware)}
-                  className={`
-                  relative inline-flex sm:h-6 h-4 sm:w-11 w-8 items-center rounded-full transition-colors duration-400 ease-in-out 
-                  ${
+                  className={`relative inline-flex sm:h-6 h-4 sm:w-11 w-8 items-center rounded-full transition-colors duration-400 ease-in-out ${
                     isContextAware
                       ? "bg-gradient-to-r from-theme_color to-pink-600"
                       : "bg-gray-300 dark:bg-nav_hover"
-                  }
-                `}
+                  }`}
                   disabled={contextLoading}
                 >
                   <span
-                    className={`
-                    inline-block sm:h-4  sm:w-4 h-3 w-3 transform rounded-full bg-low_text transition-transform duration-200 ease-in-out shadow-lg
-                    ${
+                    className={`inline-block sm:h-4 sm:w-4 h-3 w-3 transform rounded-full bg-low_text transition-transform duration-200 ease-in-out shadow-lg ${
                       isContextAware
                         ? "sm:translate-x-6 translate-x-4"
                         : "translate-x-1"
-                    }
-                  `}
+                    }`}
                   >
                     {isContextAware && (
                       <Brain className="h-3 w-3 text-theme_color absolute top-0 left-0 sm:top-0.5 sm:left-0.5" />
@@ -588,7 +541,7 @@ const UserReply = ({ forum = false }) => {
                 </button>
                 <div className="mb-1 sm:mb-0">
                   <span
-                    className={`sm:text-sm text-[9px]  font-medium transition-colors  ${
+                    className={`sm:text-sm text-[9px] font-medium transition-colors ${
                       isContextAware
                         ? "text-theme_color"
                         : "text-gray-800 dark:text-gray-200"
@@ -596,14 +549,19 @@ const UserReply = ({ forum = false }) => {
                   >
                     Context Engine
                   </span>
-                  <span className={` sm:text-xs text-[8px]  font-bold ${isContextAware ? "bg-clip-text bg-gradient-to-r mt-2 from-theme_color2  to-pink-500 text-transparent ":"text-low_text"}`}>
+                  <span
+                    className={`sm:text-xs text-[8px] font-bold ${
+                      isContextAware
+                        ? "bg-clip-text bg-gradient-to-r mt-2 from-theme_color2 to-pink-500 text-transparent"
+                        : "text-low_text"
+                    }`}
+                  >
                     (beta)
                   </span>
                 </div>
               </div>
             )}
 
-            {/* Context Loading Message */}
             {contextLoading && (
               <div className="flex items-center gap-2 bg-gradient-to-r from-theme_color3 to-pink-600 px-3 py-1 rounded-full border border-theme_color">
                 <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -640,7 +598,10 @@ const UserReply = ({ forum = false }) => {
                     <CubeSpinner size="w-8 h-8" color="orange" />
                   </div>
                 ) : (
-                  <div className="flex  font-playfair bg-theme_color p-2 py-0 rounded-md  font-bold leading-relaxed "><span className="text-[15px] text-white ">Generate</span> <SparklesIcon  size={20}/></div>
+                  <div className="flex  font-playfair bg-theme_color p-2 py-0 rounded-md  font-bold leading-relaxed ">
+                    <span className="text-[15px] text-white ">Generate</span>{" "}
+                    <SparklesIcon size={20} />
+                  </div>
                 )}
               </button>
             ) : (
@@ -673,7 +634,6 @@ const UserReply = ({ forum = false }) => {
       </form>
     </div>
   );
-
 };
 
 export default UserReply;
