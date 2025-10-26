@@ -17,7 +17,7 @@ const PostImageContent = () => {
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const { loginData } = useContext(LoginContext);
-  const { file, fileType, desc, completedCrop, aiMetadata } =
+  const { file, fileType, desc, completedCrop, aiMetadata,clearPost } =
     useContext(PostContext);
   const {
     setFile,
@@ -36,14 +36,7 @@ const PostImageContent = () => {
   const getCroppedFile = useCroppedFile();
 
   const handleClear = () => {
-    setFile(null);
-    setDesc("");
-    setPreviewUrl(null);
-    setFileType(null);
-    setShowCropper(false);
-    setCompletedCrop(null);
-    setAiPrompt("");
-    setAiMetadata(null);
+    clearPost();
   };
 
   const handleSubmit = async (e) => {
