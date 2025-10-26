@@ -1,12 +1,20 @@
 
 // llmConfig.js
 
-const { generateTextopenai, generateImageBase64openai, generateImageBase64 } = require('../services/Modelservice/openaiservice');
-const {googletext, google_imagen, generateGeminibanana} = require('../services/Modelservice/googleaiservice');
-const {getGrokResponse, generateGrokImage} = require('../services/Modelservice/xaiservice');
+const { generateTextopenai, generateTextopenaiStream, generateImageBase64openai, generateImageBase64 } = require('../services/Modelservice/openaiservice');
+const {googletext, googletextStream, google_imagen, generateGeminibanana} = require('../services/Modelservice/googleaiservice');
+const {getGrokResponse, getGrokResponseStream, generateGrokImage} = require('../services/Modelservice/xaiservice');
 const { ultra, core, sd3 } = require('../services/Modelservice/stabilityservice');
 const { generateBFL } = require('../services/Modelservice/fluxservice');
-const { metagen } = require('../services/Modelservice/metaservice');
+const { metagen, metagenStream } = require('../services/Modelservice/metaservice');
+
+// Streaming function map
+const streamingFunctions = {
+  generateTextopenai: generateTextopenaiStream,
+  googletext: googletextStream,
+  metagen: metagenStream,
+  getGrokResponse: getGrokResponseStream,
+};
 
 const llmConfig = {
   text: {
@@ -99,7 +107,7 @@ const llmConfig = {
   }
 };
 //console.log("Loaded model configuration:", llmConfig);
-module.exports = llmConfig;
+module.exports = { llmConfig, streamingFunctions };
 
 
 /* 

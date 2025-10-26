@@ -362,7 +362,7 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
               console.error("Error loading video:", e);
             }}
           />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          {/* <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black bg-opacity-50 rounded-full p-5 shadow-lg transform transition-transform hover:scale-110">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -378,10 +378,10 @@ const UserContent = ({ post, onToggleComments, areCommentsOpen }) => {
                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
               </svg>
             </div>
-          </div>
-          <div className="absolute bottom-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm font-medium">
+          </div> */}
+          {/* <div className="absolute bottom-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm font-medium">
             Video
-          </div>
+          </div> */}
         </div>
       );
     } else if (fileType === "audio") {

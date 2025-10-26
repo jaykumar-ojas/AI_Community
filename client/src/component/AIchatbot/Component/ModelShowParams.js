@@ -10,7 +10,7 @@ const ModelShowParams =({ name, displayName, iconUrl, emoji, provider, active = 
                 className={`w-full font-['Inter'] font-semibold  px-2 py-2 rounded-md transition-all duration-150 cursor-pointer flex justify-between items-center space-x-2 ${
                     active
                         ? 'text-text_header font-medium transform scale-[1.02]'
-                        : 'text-black text-md dark:text-low_text hover:dark:text-theme_color2 hover:transform hover:scale-[1.02]'
+                        : 'text-black sm:text-md text-xs dark:text-low_text hover:dark:text-theme_color2 hover:transform hover:scale-[1.02]'
                 }`}
                 onClick={() => onClick(name,provider)}
             >

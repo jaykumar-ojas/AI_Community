@@ -507,7 +507,7 @@ const AIContentFile = () => {
             <button
               onClick={enhancePrompt}
               disabled={isEnhancing || !aiPrompt.trim()}
-              className="flex-1 px-4 py-2 bg-green-700 font-playfair font-bold text-white text-sm font-semibold rounded-xl shadow-md transition-all disabled:opacity-70"
+              className="flex-1 px-4 py-2 bg-pink-800 font-playfair font-bold text-white text-sm font-semibold rounded-xl shadow-md transition-all disabled:opacity-70"
             >
               {isEnhancing ? "Enhancing..." : "Enhance Prompt"}
             </button>
