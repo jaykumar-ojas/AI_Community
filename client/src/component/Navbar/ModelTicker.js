@@ -17,7 +17,7 @@ const ModelTicker = () => {
           <button
             key={index}
             onClick={() => handleClick(model)}
-            className="px-3 hover:text-theme_color3 transition-all duration-300 cursor-pointer"
+            className="px-2 hover:text-theme_color3 transition-all duration-300 cursor-pointer"
           >
             {model}
           </button>

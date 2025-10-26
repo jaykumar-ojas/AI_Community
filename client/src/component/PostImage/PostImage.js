@@ -185,6 +185,7 @@ const PostImageContent = () => {
 
       <div className="block md:hidden p-2 mb-16">
         {/* upload creativity */}
+        <div className="flex flex-row justify-between items-center">
           <div className="text-lg gap-2 font-extrabold tracking-wide">
             <span className="bg-gradient-to-r from-theme_color3 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Imagine.
@@ -196,6 +197,25 @@ const PostImageContent = () => {
               Share.
             </span>
           </div>
+           <div className="relative bg-transparent flex justify-end gap-4 text-xs">
+                <button
+                  onClick={handleClear}
+                  className="border dark:border-nav_hover border-gray-400  bg-gray-300 dark:bg-nav_hover2 p-1.5 px-2 text-gray-500 dark:text-low_text font-bold rounded-md hover:bg-nav_hover disabled:opacity-50"
+                  disabled={isUploading}
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="border border-theme_color2 bg-theme_color2 px-2  text-white font-bold rounded-md hover:bg-theme_color disabled:opacity-50 "
+                  disabled={isUploading}
+                >
+                  {isUploading ? "Uploading..." : "Post"}
+                </button>
+              </div>
+            </div>
+
+          
 
         {/* drag and drop and other things */}
         <div className="mt-4">
