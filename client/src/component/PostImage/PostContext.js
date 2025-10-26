@@ -26,7 +26,6 @@ const PostProvider = ({ children }) => {
 
   const [restored, setRestored] = useState(false);
 
-
   // ===================== REFS =====================
   const imageRef = useRef(null);
   const canvasRef = useRef(null);
@@ -36,43 +35,43 @@ const PostProvider = ({ children }) => {
   const imageLoaderRef = useRef(null);
 
   // ===================== RESTORE STATE ON MOUNT =====================
- useEffect(() => {
-    const savedState = localStorage.getItem("postState");
+  useEffect(() => {
+    const savedState = sessionStorage.getItem("postState");
     if (savedState) {
-        const state = JSON.parse(savedState);
-        setPreviewUrl(state.previewUrl || null);
-        setFileType(state.fileType || null);
-        setShowCropper(state.showCropper || false);
-        setRefreshKey(state.refreshKey || 0);
-        setAiPrompt(state.aiPrompt || "");
-        setDesc(state.desc || "");
-        setSelectedImageModel(state.selectedImageModel || "");
-        setAiMetadata(state.aiMetadata || null);
-        setIsGeneratingImage(state.isGeneratingImage || false);
-        setSelectedAspectRatio(state.selectedAspectRatio || "");
-        setCrop(state.crop || { unit: "%", width: 100, height: 100, x: 5, y: 5 });
+      const state = JSON.parse(savedState);
+      setPreviewUrl(state.previewUrl || null);
+      setFileType(state.fileType || null);
+      setShowCropper(state.showCropper || false);
+      setRefreshKey(state.refreshKey || 0);
+      setAiPrompt(state.aiPrompt || "");
+      setDesc(state.desc || "");
+      setSelectedImageModel(state.selectedImageModel || "");
+      setAiMetadata(state.aiMetadata || null);
+      setIsGeneratingImage(state.isGeneratingImage || false);
+      setSelectedAspectRatio(state.selectedAspectRatio || "");
+      setCrop(state.crop || { unit: "%", width: 100, height: 100, x: 5, y: 5 });
     }
     setRestored(true); // mark restore complete
-}, []);
+  }, []);
 
-  // ===================== SAVE STATE TO localStorage =====================
+  // ===================== SAVE STATE TO sessionStorage =====================
   useEffect(() => {
     if (!restored) return;
     const stateToSave = {
-        previewUrl,
-        fileType,
-        showCropper,
-        refreshKey,
-        aiPrompt,
-        desc,
-        selectedImageModel,
-        aiMetadata,
-        isGeneratingImage,
-        selectedAspectRatio,
-        crop,
+      previewUrl,
+      fileType,
+      showCropper,
+      refreshKey,
+      aiPrompt,
+      desc,
+      selectedImageModel,
+      aiMetadata,
+      isGeneratingImage,
+      selectedAspectRatio,
+      crop,
     };
-    localStorage.setItem("postState", JSON.stringify(stateToSave));
-}, [
+    sessionStorage.setItem("postState", JSON.stringify(stateToSave));
+  }, [
     previewUrl,
     fileType,
     showCropper,
@@ -84,8 +83,8 @@ const PostProvider = ({ children }) => {
     isGeneratingImage,
     selectedAspectRatio,
     crop,
-    restored
-]);
+    restored,
+  ]);
 
   // ===================== HELPER: Convert File to Base64 =====================
   const saveFileAsPreview = (file) => {
@@ -113,7 +112,7 @@ const PostProvider = ({ children }) => {
     setSelectedAspectRatio("");
     setCrop({ unit: "%", width: 100, height: 100, x: 5, y: 5 });
 
-    localStorage.removeItem("postState");
+    sessionStorage.removeItem("postState");
   };
 
   return (

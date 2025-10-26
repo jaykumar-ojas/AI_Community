@@ -100,7 +100,7 @@ const TopicContent = () => {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Fixed Topic Header */}
       <div className="bg-gray-100 dark:bg-nav_hover md:px-4 px-2 py-2 flex items-center flex-shrink-0">
-        <button onClick={()=>{navigate('/')}} className="md:mr-3 mr-1 text-gray-500 hover:text-time_header">
+        <button onClick={()=>{navigate('/')}} className="md:mr-3 mr-1 text-low_text hover:text-time_low_text">
           <BackArrow />
         </button>
         <div className="font-semibold font-playfair text-sm md:text-lg text-black dark:text-text_header flex-1">

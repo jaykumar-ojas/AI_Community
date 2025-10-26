@@ -48,8 +48,8 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] relative overflow-hidden bg-transparent">
-      <div className='hidden md:block h-[calc(100vh-3.5rem)] bg-neutral-100 dark:bg-bg_dark border-r border-gray-300 dark:border-gray-800 w-[18%]'>
+    <div className="flex h-[calc(100vh-4rem)] relative overflow-hidden bg-transparent">
+      <div className='hidden md:block h-[calc(100vh-4rem)] bg-neutral-100 dark:bg-bg_dark border-r border-gray-300 dark:border-gray-800 w-[18%]'>
         <ModelList forum={true} />
       </div>
 
@@ -59,7 +59,7 @@ const ChatBotForum = ({ topicId = null, onBack }) => {
         </div>
       </div>
 
-      <div className="hidden md:flex text-lg text-gray-800 dark:text-text_header h-[calc(100vh-3.5rem)] bg-neutral-100 dark:bg-black  w-[23%] flex-col">
+      <div className="hidden md:flex text-lg text-gray-800 dark:text-text_header h-[calc(100vh-4rem)] bg-neutral-100 dark:bg-black  w-[23%] flex-col">
         <div className="font-semibold font-lora text-lg p-2">Popular discussions, you may like</div>
         <div className="flex-1 overflow-y-auto no-scrollbar">
           <PopularTopics />
