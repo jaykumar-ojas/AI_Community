@@ -247,10 +247,10 @@ const [sparkles, setSparkles] = useState([]);
     {/* User info row (with AI model if AI generated) */}
     <div className="flex justify-between bg-black/5 flex-row gap-2 pb-1 items-center">
       <div className="flex flex-row  justify-start gap-2">
-          <div className="h-6 w-6  flex-shrink-0">
+          <div className="h-6 w-6  flex-shrink-0 hidden md:block">
             <UserIconCard id={post?.userId} />
           </div>
-          <div>
+          <div className="hidden md:block">
             <UserNameCard id={post?.userId} hover={false} size={5}/>
           </div>
       </div>
@@ -266,7 +266,7 @@ const [sparkles, setSparkles] = useState([]);
         ) : null}
         </div>
 
-        <div className="truncate">{post?.aiModel}</div>
+        {/* <div className="truncate">{post?.aiModel}</div> */}
 </div>
 
       )}
@@ -290,7 +290,7 @@ const [sparkles, setSparkles] = useState([]);
     </div>
 
     {/* Description */}
-    <div className="opacity-0 group-hover:opacity-100 group-active:opacity-100 transition duration-300 overflow-y-auto items-center.g justify-center no-scrollbar">
+    <div className="opacity-0 hidden md:block group-hover:opacity-100 group-active:opacity-100 transition duration-300 overflow-y-auto items-center.g justify-center no-scrollbar">
       {post?.desc}
     </div>
 

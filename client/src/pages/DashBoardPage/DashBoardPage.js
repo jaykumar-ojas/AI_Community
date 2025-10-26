@@ -65,9 +65,9 @@ const Page = () => {
 
   return (
     <>
-      <div className="relative h-[calc(100vh-3.5rem)] overflow-hidden">
+      <div className="relative h-full overflow-hidden">
         {/* Content */}
-        <div className="relative z-10 min-h-screen overflow-hidden">
+        <div className="relative z-10  overflow-hidden">
           <div className="mx-auto  md:pb-0 pb-20 ">
             <div className="flex flex-col md:flex-row gap-4 lg:gap-2">
               {/* Main content area */}
@@ -95,7 +95,7 @@ const Page = () => {
                   >
                     <div
                       id="scrollableDiv"
-                      className="sm:h-[calc(100vh-3.5rem)] h-[calc(100vh-6.1rem)] overflow-y-auto no-scrollbar md:pt-2" // i change it dont know the effect on infinite scroll
+                      className="sm:h-[calc(100vh-4rem)] h-[calc(100vh-7.2rem)] overflow-y-auto no-scrollbar md:pt-2" // i change it dont know the effect on infinite scroll
                     >
                       {/* Desktop: Multi-column masonry */}
                       <div>
@@ -136,7 +136,7 @@ const Page = () => {
                   
                 )}
               >
-                <div className="sticky h-[calc(100vh-3.5rem)] overflow-hidden">
+                <div className="sticky h-[calc(100vh-4rem)] overflow-hidden">
                   <ForumSystem />
                 </div>
               </div>

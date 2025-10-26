@@ -147,7 +147,7 @@ const PostContent = () => {
     <div className="bg-transparent w-full overflow-x-hidden h-full">
       <div className="w-full justify-center flex flex-col md:flex-row">
         {/* Left Section */}
-        <div className="relative w-full rounded-xl sm:w-[100%] md:w-[70%] mb-24 md:mb-0 h-[calc(100vh-3.5rem)] flex flex-col">
+        <div className="relative w-full rounded-xl sm:w-[100%] md:w-[70%] mb-24 md:mb-0 h-[calc(100vh-4rem)] flex flex-col">
           {/* model icon list */}
           {/* <div className="absolute z-50 left-0 m-4 hidden md:block mb-8 bottom-0">
             {showIcon && <ModelList/> }
@@ -201,7 +201,7 @@ const PostContent = () => {
         </div>
 
         {/* Right Section - Sticky Sidebar */}
-        <div className="w-full overflow-y-auto h-[calc(100vh-3.5rem)] no-scrollbar dark:bg-nav_hover rounded-xl hidden md:block md:w-[30%]">
+        <div className="w-full overflow-y-auto h-[calc(100vh-4rem)] no-scrollbar dark:bg-nav_hover rounded-xl hidden md:block md:w-[30%]">
             <div className="text-lg text-md justify-center text-gray-800 dark:text-low_text p-2 font-semibold">
               More Related Content
             </div>

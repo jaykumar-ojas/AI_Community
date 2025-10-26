@@ -16,6 +16,7 @@ import axios from "axios";
 import "./wave-btn.css";
 import logoName from "./logoName.png";
 import Switch from "./toggle";
+import ModelTicker from "./ModelTicker";
 
 // Create context for forum visibility
 export const ForumContext = createContext();
@@ -130,11 +131,11 @@ export default function Navbar({ showForum, setShowForum }) {
       {/* Desktop Navbar */}
       <Disclosure
         as="nav"
-        className="sticky top-0 z-50 min-h-[3rem] hidden sm:block"
+        className="sticky top-0 z-50 min-h-[2.5rem] hidden sm:block"
       >
-        <div className="relative bg-neutral-50 dark:bg-bg_dark min-h-[3rem]">
+        <div className="relative bg-neutral-50 dark:bg-bg_dark min-h-[2.5rem]">
           <div className="relative z-10 max-w-[97%] mx-auto px-4 sm:px-6 lg:px-0">
-            <div className="flex justify-between items-center h-14">
+            <div className="flex justify-between items-center h-10">
               {/* Logo and Navigation Links */}
               <div className="relative flex h-full items-center space-x-4 overflow-hidden">
                 <Link
@@ -145,12 +146,12 @@ export default function Navbar({ showForum, setShowForum }) {
                     <img
                     src={logo}
                     alt="Logo"
-                    className="h-full w-12 object-contain p-1"
+                    className="h-full w-12 object-contain p-1 "
                   />
                   <img
                     src={logoName}
                     alt="LogoAvatar"
-                    className="h-full w-24 -ml-1 object-contain p-1"
+                    className="h-full w-24 -ml-1 object-contain p-1 "
                   />
                   </div>
                   
@@ -167,7 +168,7 @@ export default function Navbar({ showForum, setShowForum }) {
                         isCurrent
                           ? "text-theme_dark_color dark:text-theme_color"
                           : " rounded-md  text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover",
-                        "px-2 font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200"
+                        "px-2  font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200"
                       )}
                       aria-current={isCurrent ? "page" : undefined}
                     >
@@ -356,6 +357,8 @@ export default function Navbar({ showForum, setShowForum }) {
           </div>
         </div>
       </div>
+
+      <ModelTicker/>
 
       {/* Mobile Bottom Navigation */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-bg_dark border-t border-gray-200 dark:border-gray-900">
