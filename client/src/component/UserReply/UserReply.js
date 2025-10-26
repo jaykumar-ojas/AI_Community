@@ -80,6 +80,7 @@ const UserReply = ({ forum = false }) => {
   const [contextMessage, setContextMessage] = useState("");
   const [messageIndex, setMessageIndex] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
+  const scrollContainerRef = useRef(null);
 
   // Rotating context messages
   useEffect(() => {
@@ -251,7 +252,7 @@ const UserReply = ({ forum = false }) => {
     });
   }, [postedReplies]);
 
-  // Generate content
+  // Generate content (now with streaming support for text)
   const handleGenerateSubmit = async (
     e,
     useEnhancedPrompt = null,
@@ -291,68 +292,163 @@ const UserReply = ({ forum = false }) => {
           ? buildConversationPrompt(conversationHistory, promptToUse)
           : promptToUse;
 
-      const generatePayload = {
-        model,
-        prompt: conversationPrompt,
-        type: modelType,
-        provider,
-      };
-
-      const response = await axios.post(
-        `${baseUrl}/generateContent`,
-        generatePayload,
-        {
-          headers: getAuthHeaders(),
-        }
-      );
-
-      if (response.data.success) {
-        const modelInfo = await fetchModelInfo(model);
-
-        setPostingData((prev) => {
-          const next = [...prev];
-          for (let i = next.length - 1; i >= 0; i--) {
-            if (next[i].isLoading) {
-              const data = response.data.data;
-              const updated = { ...next[i], isLoading: false, modelInfo };
-              if (data?.text) {
-                updated.aiText = data.text;
-              } else if (data?.imageData) {
-                const binary = atob(data.imageData);
-                const bytes = new Uint8Array(binary.length);
-                for (let j = 0; j < binary.length; j++)
-                  bytes[j] = binary.charCodeAt(j);
-                const blob = new Blob([bytes], { type: "image/png" });
-                updated.imageUrl = URL.createObjectURL(blob);
-                updated.imageBlob = data.imageData; // ✅ Save base64 for persistence
-              } else if (data?.imageUrl) {
-                updated.imageUrl = data.imageUrl;
-              }
-              next[i] = updated;
-              break;
-            }
-          }
-          return next;
-        });
-
-        setUserCredit(response?.data?.credit);
-        setNewReply("");
-        setModel?.(null);
+      // ✅ Use streaming for text generation
+      if (modelType === "text") {
+        await handleStreamingText(conversationPrompt, model, provider);
       } else {
-        setError("Failed to generate content");
-        // ✅ Remove loading item on error
-        setPostingData((prev) => prev.filter(item => !item.isLoading));
+        // Non-streaming for images
+        const generatePayload = {
+          model,
+          prompt: conversationPrompt,
+          type: modelType,
+          provider,
+        };
+
+        const response = await axios.post(
+          `${baseUrl}/generateContent`,
+          generatePayload,
+          {
+            headers: getAuthHeaders(),
+          }
+        );
+
+        if (response.data.success) {
+          const modelInfo = await fetchModelInfo(model);
+
+          setPostingData((prev) => {
+            const next = [...prev];
+            for (let i = next.length - 1; i >= 0; i--) {
+              if (next[i].isLoading) {
+                const data = response.data.data;
+                const updated = { ...next[i], isLoading: false, modelInfo };
+                if (data?.imageData) {
+                  const binary = atob(data.imageData);
+                  const bytes = new Uint8Array(binary.length);
+                  for (let j = 0; j < binary.length; j++)
+                    bytes[j] = binary.charCodeAt(j);
+                  const blob = new Blob([bytes], { type: "image/png" });
+                  updated.imageUrl = URL.createObjectURL(blob);
+                  updated.imageBlob = data.imageData;
+                } else if (data?.imageUrl) {
+                  updated.imageUrl = data.imageUrl;
+                }
+                next[i] = updated;
+                break;
+              }
+            }
+            return next;
+          });
+
+          setUserCredit(response?.data?.credit);
+        } else {
+          setError("Failed to generate content");
+          setPostingData((prev) => prev.filter(item => !item.isLoading));
+        }
       }
+
+      setNewReply("");
+      setModel?.(null);
     } catch (err) {
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
           "An error occurred while generating content"
       );
-      // ✅ Remove loading item on error
       setPostingData((prev) => prev.filter(item => !item.isLoading));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ✅ New streaming function for text
+  const handleStreamingText = async (prompt, model, provider) => {
+    try {
+      const generatePayload = {
+        model,
+        prompt,
+        type: "text",
+        provider,
+      };
+
+      const modelInfo = await fetchModelInfo(model);
+      
+      const response = await fetch(`${baseUrl}/generateContent/stream`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(generatePayload),
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+      let credit = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.type === 'chunk' && data.content) {
+                fullText += data.content;
+                
+                // Update the latest posting data item
+                setPostingData((prev) => {
+                  const next = [...prev];
+                  for (let i = next.length - 1; i >= 0; i--) {
+                    if (next[i].isLoading && next[i].loadingType === "text") {
+                      next[i] = { ...next[i], aiText: fullText };
+                      break;
+                    }
+                  }
+                  return next;
+                });
+                
+                // Immediately trigger scroll after state update
+                setTimeout(() => {
+                  if (scrollContainerRef?.current) {
+                    scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+                  }
+                }, 0);
+              } else if (data.type === 'complete') {
+                credit = data.credit;
+              } else if (data.type === 'error') {
+                throw new Error(data.error);
+              }
+            } catch (e) {
+              console.error('Error parsing SSE data:', e);
+            }
+          }
+        }
+      }
+
+      // Mark as complete
+      setPostingData((prev) => {
+        const next = [...prev];
+        for (let i = next.length - 1; i >= 0; i--) {
+          if (next[i].isLoading && next[i].loadingType === "text") {
+            next[i] = { ...next[i], isLoading: false, modelInfo };
+            break;
+          }
+        }
+        return next;
+      });
+
+      if (credit !== null) {
+        setUserCredit(credit);
+      }
+    } catch (err) {
+      console.error('Streaming error:', err);
+      throw err;
     }
   };
 
@@ -484,8 +580,11 @@ const UserReply = ({ forum = false }) => {
     <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-900 rounded-md  dark:bg-nav_hover2  bg-transparent  z-40">
       {error && <ErrorBar message={error} onClose={() => setError("")} />}
 
-      <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box">
-        <ShowGeneratedContent postingData={postingData} />
+      <div 
+        ref={scrollContainerRef}
+        className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box"
+      >
+        <ShowGeneratedContent postingData={postingData} scrollContainerRef={scrollContainerRef} />
       </div>
 
       <UserAndModel forum={forum} />

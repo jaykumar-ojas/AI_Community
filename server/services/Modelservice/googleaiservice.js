@@ -29,6 +29,20 @@ async function googletext(prompt, model, aspectRatio) {
   return { text: text };
 }
 
+async function* googletextStream(prompt, model, aspectRatio) {
+  const ai = await getGemini();
+  const genModel = ai.getGenerativeModel({ model });
+  
+  const result = await genModel.generateContentStream(prompt);
+  
+  for await (const chunk of result.stream) {
+    const text = chunk.text();
+    if (text) {
+      yield { content: text };
+    }
+  }
+}
+
 async function google_imagen(prompt, model, aspectRatio) {
  const ai = await getImagen();
 console.log("i am in imagen");
@@ -107,6 +121,7 @@ async function generateGeminibanana(prompt, model, aspectRatio) {
 
 module.exports = {
   googletext,
+  googletextStream,
   google_imagen,
   generateGeminibanana,
 };

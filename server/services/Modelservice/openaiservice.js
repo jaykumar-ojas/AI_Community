@@ -20,6 +20,24 @@ async function generateTextopenai(prompt, model, aspectRatio) {
   return {text: response.choices[0].message.content};
 }
 
+async function* generateTextopenaiStream(prompt, model, aspectRatio) {
+  console.log("Generating text with streaming OpenAI model:", model);
+  const openai = await getOpenAI();
+  
+  const stream = await openai.chat.completions.create({
+    model,
+    messages: [{ role: "user", content: prompt }],
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const delta = chunk.choices[0]?.delta;
+    if (delta?.content) {
+      yield { delta };
+    }
+  }
+}
+
 async function generateImageBase64openai(prompt, model, aspectRatio) {
   try{
     console.log("i  coming here");
@@ -133,6 +151,7 @@ async function generateImageBase64(prompt, model = "gpt-image-1", aspectRatio = 
 
 module.exports = {
   generateTextopenai,
+  generateTextopenaiStream,
   generateImageBase64openai,
   generateImageBase64
 };

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const llmService = require("../services/llmService");
 // const { llmConfig } = require('../config/llmConfig');
-const llmConfig = require("../config/modelconfig");
+const { llmConfig, streamingFunctions } = require("../config/modelconfig");
 const modelCreditConfig = require("../config/modelCreditConfig");
 const { reduceCredit, validateCredit } = require("../middleware/validateCredit");
 const authenticate = require("../middleware/authenticate");
@@ -59,9 +59,96 @@ const validateRequest = (req, res, next) => {
 
   // ✅ Attach resolved model function to request
   req.modelFunction = modelFunction;
+  req.fullModelConfig = { provider, model, type };
 
   next();
 };
+
+// Streaming endpoint for text generation
+router.post("/generateContent/stream", authenticate, validateRequest, validateCredit, async (req, res) => {
+  try {
+    const { model, prompt, type, provider, aspectRatio } = req.body;
+    
+    // Only support streaming for text generation
+    if (type !== "text") {
+      return res.status(400).json({
+        success: false,
+        error: "Streaming is only supported for text generation"
+      });
+    }
+
+    // Set headers for SSE (Server-Sent Events)
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    const modelFunctions = req.modelFunction;
+    
+    try {
+      // Get streaming function if available
+      const modelFunc = req.modelFunction;
+      const funcName = modelFunc.name;
+      const streamingFunc = streamingFunctions[funcName];
+      
+      if (streamingFunc) {
+        let fullResponse = "";
+        
+        for await (const chunk of streamingFunc(prompt, model, aspectRatio)) {
+          const chunkText = chunk.delta?.content || chunk.content || chunk;
+          
+          if (chunkText) {
+            fullResponse += chunkText;
+            
+            // Send chunk to client
+            res.write(`data: ${JSON.stringify({ 
+              type: 'chunk', 
+              content: chunkText 
+            })}\n\n`);
+          }
+        }
+
+        // Send completion signal
+        const modelCredit = modelCreditConfig[type][model].cost;
+        const credit = await reduceCredit(req.userId, modelCredit);
+        
+        res.write(`data: ${JSON.stringify({ 
+          type: 'complete', 
+          credit: credit 
+        })}\n\n`);
+        
+        res.end();
+      } else {
+        // Fallback to non-streaming if streaming not available
+        const func = modelFunctions;
+        const response = await func(prompt, model, aspectRatio);
+        
+        const modelCredit = modelCreditConfig[type][model].cost;
+        const credit = await reduceCredit(req.userId, modelCredit);
+        
+        res.write(`data: ${JSON.stringify({ 
+          type: 'complete', 
+          data: response, 
+          credit: credit 
+        })}\n\n`);
+        
+        res.end();
+      }
+    } catch (error) {
+      res.write(`data: ${JSON.stringify({ 
+        type: 'error', 
+        error: error.message 
+      })}\n\n`);
+      res.end();
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "Internal server error",
+    });
+  }
+});
 
 router.post("/generateContent",authenticate, validateRequest, validateCredit, async (req, res) => {
   try {

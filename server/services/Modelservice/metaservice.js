@@ -22,4 +22,19 @@ async function metagen(prompt, model, aspectRatio) {
   return {text : completion.choices[0]?.message?.content || ""};
 }
 
-module.exports = { metagen };
+async function* metagenStream(prompt, model, aspectRatio) {
+  const stream = await groq.chat.completions.create({
+    model,
+    messages: [{ role: "user", content: prompt }],
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const delta = chunk.choices[0]?.delta;
+    if (delta?.content) {
+      yield { delta };
+    }
+  }
+}
+
+module.exports = { metagen, metagenStream };

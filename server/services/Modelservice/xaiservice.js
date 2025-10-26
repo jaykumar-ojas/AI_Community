@@ -27,6 +27,30 @@ async function getGrokResponse( prompt, model, asspectRatio) {
   return {text: completion.choices[0]?.message?.content || ""};
 }
 
+async function* getGrokResponseStream(prompt, model, asspectRatio) {
+  const stream = await client.chat.completions.create({
+    model,
+    messages: [
+      {
+        role: "system",
+        content: "You are a highly intelligent AI assistant.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const delta = chunk.choices[0]?.delta;
+    if (delta?.content) {
+      yield { delta };
+    }
+  }
+}
+
 
 async function generateGrokImage(prompt, model, asBuffer = false, asspectRatio) {
     const response = await client.images.generate({
@@ -43,5 +67,6 @@ async function generateGrokImage(prompt, model, asBuffer = false, asspectRatio) 
 
   module.exports = {
     getGrokResponse,
+    getGrokResponseStream,
     generateGrokImage
   }
