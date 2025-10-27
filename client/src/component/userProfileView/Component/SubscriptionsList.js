@@ -52,7 +52,7 @@ const SubscriptionsList = ({ userId }) => {
                 <div className="space-y-2">
                     {subscriptions.map((user) => (
                         <Link 
-                            to={`/sample-user/${encodeId(user._id)}`} 
+                            to={`/userprofile/${encodeId(user._id)}`} 
                             key={user._id}
                             className="flex items-center gap-4 space-x-2 p-1 hover:dark:bg-gray-700 hover:bg-gray-400 text-white rounded transition-colors"
                         >
