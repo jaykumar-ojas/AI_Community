@@ -29,12 +29,14 @@ const llm = require("./routes/llmRoutes");
 const batchRoutes = require("./routes/batchRoute");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const notificationRoutes = require("./routes/notificationRoute");
-
 const bookMarkRoutes = require("./routes/bookMarkRoute");
-
 const aiModelRoutes = require("./routes/aiModelRoutes");
 const shareRoute = require("./routes/share");
 const seedingRoute = require('./routes/seedingRoute');
+const xmlRoute = require("./routes/xmlRoute");
+
+
+
 const path = require("path");
 
 
@@ -96,6 +98,7 @@ app.use("/",bookMarkRoutes);
 app.use("/", aiModelRoutes);
 app.use("/",shareRoute);
 app.use("/",seedingRoute);
+app.use("/",xmlRoute);
 
 
 

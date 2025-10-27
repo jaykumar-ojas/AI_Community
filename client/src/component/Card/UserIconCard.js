@@ -34,7 +34,7 @@ const UserIconCard = ({ id }) => {
     <div
       onClick={(e) => {
         e.stopPropagation();
-        navigate(`/sample-user/${encodeId(id)}`);
+        navigate(`/userprofile/${encodeId(id)}`);
       }}
       className="relative z-10 w-full h-full rounded-full overflow-hidden cursor-pointer"
     >
