@@ -7,6 +7,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { AiShowIcon } from "../../asset/icons";
 import ModelIcon from "../AIchatbot/Component/ModelIcon";
 import ImagePreviewCard from "./ImagePreivewCard";
+import { CodePreview } from "../ui/CodePreview";
 
 
 
@@ -40,55 +41,148 @@ const ShowUrl = ({ url, modelInfo }) => {
   );
 };
 
+// const DisplayContent = ({ displayContent }) => {
+//   return (
+//     <>
+//       {displayContent?.map((item, index) => (
+//         <div
+//           key={item.id || item._id || `content-${index}`}
+//           className="mb-4 border-gray-200 dark:border-gray-700"
+//         >
+//           {item.userText && (
+//             <div className="mb-3">
+//               <div
+//                 dangerouslySetInnerHTML={{
+//                   __html: parseMarkdown(item.userText),
+//                 }}
+//               />
+//             </div>
+//           )}
+//           {item.prompt && (
+//             <div className="mb-3">
+//               <span className="inline-block mb-2 text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
+//                 Prompt
+//               </span>
+//               <div
+//                 dangerouslySetInnerHTML={{
+//                   __html: parseMarkdown(item.prompt),
+//                 }}
+//               />
+//             </div>
+//           )}
+//           {item.aiText && (
+//             <div className="mb-3">
+//               <ModelIcon modelName={item.model} />
+//               <div
+//                 className=""
+//                 dangerouslySetInnerHTML={{
+//                   __html: parseMarkdown(item.aiText),
+//                 }}
+//               />
+//             </div>
+//           )}
+//           {item.imageUrl?.fileUrl && (
+//             <ShowUrl url={item.imageUrl.fileUrl} modelInfo={item.model} />
+//           )}
+//         </div>
+//       ))}
+//     </>
+//   );
+// };
+// ---- local text helpers ----
 const DisplayContent = ({ displayContent }) => {
+  const renderWithCodeBlocks = (text) => {
+    if (!text) return null;
+
+    // Match Markdown or HTML <pre><code> style blocks
+    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = codeBlockRegex.exec(text)) !== null) {
+      const before = text.slice(lastIndex, match.index);
+      const lang = match[1] || "plaintext";
+      const code = match[2];
+      if (before.trim()) {
+        parts.push(
+          <div
+            key={`text-${lastIndex}`}
+            className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none break-words"
+            dangerouslySetInnerHTML={{ __html: parseMarkdown(before) }}
+          />
+        );
+      }
+      parts.push(
+        <div key={`code-${match.index}`}>
+          <CodePreview code={code} language={lang} />
+        </div>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+
+    const after = text.slice(lastIndex);
+    if (after.trim()) {
+      parts.push(
+        <div
+          key="after-text"
+          className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none break-words"
+          dangerouslySetInnerHTML={{ __html: parseMarkdown(after) }}
+        />
+      );
+    }
+
+    return parts;
+  };
+
   return (
-    <>
+    <div className="w-full">
       {displayContent?.map((item, index) => (
         <div
           key={item.id || item._id || `content-${index}`}
-          className="mb-4 border-gray-200 dark:border-gray-700"
+          className="mb-3 sm:mb-4 border-gray-200 dark:border-gray-700 w-full px-2 sm:px-0"
         >
+          {/* User Text */}
           {item.userText && (
-            <div className="mb-3">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(item.userText),
-                }}
-              />
+            <div className="mb-2 sm:mb-3 break-words">
+              {renderWithCodeBlocks(item.userText)}
             </div>
           )}
+
+          {/* Prompt */}
           {item.prompt && (
-            <div className="mb-3">
-              <span className="inline-block mb-2 text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
+            <div className="mb-2 sm:mb-3 break-words">
+              <span className="inline-block mb-2 text-[10px] sm:text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
                 Prompt
               </span>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(item.prompt),
-                }}
-              />
+              <div className="overflow-x-auto">
+                {renderWithCodeBlocks(item.prompt)}
+              </div>
             </div>
           )}
+
+          {/* AI Text */}
           {item.aiText && (
-            <div className="mb-3">
+            <div className="mb-2 sm:mb-3 break-words">
               <ModelIcon modelName={item.model} />
-              <div
-                className=""
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(item.aiText),
-                }}
-              />
+              <div className="overflow-x-auto">
+                {renderWithCodeBlocks(item.aiText)}
+              </div>
             </div>
           )}
+
+          {/* Image */}
           {item.imageUrl?.fileUrl && (
-            <ShowUrl url={item.imageUrl.fileUrl} modelInfo={item.model} />
+            <div className="w-full overflow-hidden">
+              <ShowUrl url={item.imageUrl.fileUrl} modelInfo={item.model} />
+            </div>
           )}
         </div>
       ))}
-    </>
+    </div>
   );
 };
-// ---- local text helpers ----
+
 
 const wordCount = (str = "") =>
   String(str).trim() ? String(str).trim().split(/\s+/).length : 0;

@@ -6,6 +6,27 @@ const { llmConfig, streamingFunctions } = require("../config/modelconfig");
 const modelCreditConfig = require("../config/modelCreditConfig");
 const { reduceCredit, validateCredit } = require("../middleware/validateCredit");
 const authenticate = require("../middleware/authenticate");
+const fetch = require("node-fetch"); 
+
+router.post("/run", async (req, res) => {
+  const { language, code } = req.body;
+  try {
+    const response = await fetch("https://emkc.org/api/v2/piston/execute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        language,
+        version: "*",
+        files: [{ name: "main." + language, content: code }],
+      }),
+    });
+
+    const result = await response.json();
+    res.json({ output: result.run.output });
+  } catch (error) {
+    res.status(500).json({ error: "Error executing code" });
+  }
+});
 
 
 console.log("llmConfig import check:", {
@@ -365,6 +386,8 @@ router.get("/models-info", (req, res) => {
     });
   }
 });
+
+
 
 module.exports = router;
 
