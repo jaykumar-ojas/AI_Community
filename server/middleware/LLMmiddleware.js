@@ -905,7 +905,7 @@ const promptEnhancerAI = async (prompt) => {
       throw new Error("Prompt is required");
     }
     console.log('prompt',prompt);
-    const userPrompt = "Improve this image generation prompt to create a more detailed, vivid, and artistic description:";
+    const userPrompt = "Improve this image generation prompt to create a more detailed, vivid, and artistic description: give me prompt and only prompt dont say anything else.";
     const final_prompt = userPrompt + "\n\n" + prompt;
 
     const response = await openai.chat.completions.create({

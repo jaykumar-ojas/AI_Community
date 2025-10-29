@@ -36,8 +36,7 @@ const RecurrsionLoop = ({
   const params = useParams("comment");
   const scrollToId = params["comment"];
   
-  console.log(params);
-  console.log(scrollToId);
+ 
 
   useEffect(() => {
   if (scrollToId && reply?._id === scrollToId && commentRef.current) {
