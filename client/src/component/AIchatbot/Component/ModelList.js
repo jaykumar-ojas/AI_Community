@@ -76,6 +76,8 @@ const ModelList = ({forum=false, userForum=false, userComment=false, closeDropdo
         staleTime: 1000 * 60 * 60, // 5 mins
     });
 
+    console.log("this is icon Url",iconUrls);
+
     // Fetch icons after modelConfig is available
     useEffect(() => {
         loadIcons(modelConfig,modelType,iconUrls,setIconUrls);
