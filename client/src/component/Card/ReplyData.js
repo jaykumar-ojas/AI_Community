@@ -114,7 +114,7 @@ const DisplayContent = ({ displayContent }) => {
         );
       }
       parts.push(
-        <div key={`code-${match.index}`}>
+        <div key={`code-${match.index}`} className="my-2 w-full min-w-0 ">
           <CodePreview code={code} language={lang} />
         </div>
       );
@@ -249,44 +249,39 @@ const ReplyData = ({ content }) => {
 
   return (
     <div className="text-[13px] font-poppins leading-relaxed  text-gray-800 dark:low_text">
-      {!expanded ? (
-        <>
-          <div className="h-6 overflow-hidden">
-            <DisplayContent displayContent={displayContent} />
+   {!expanded ? (
+  <>
+    <div className="max-h-[200px] overflow-hidden relative">  {/* Changed from h-6 */}
+      <DisplayContent displayContent={displayContent} />
+      {/* Optional gradient overlay */}
+      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div>
+    </div>
+
+    {hasImages && (
+      <div className="flex items-center">
+        {allUrl?.slice(0, 4).map((url, idx) => (
+          <div
+            key={url || `image-${idx}`}
+            className={`${idx > 0 ? "-ml-8" : ""} flex items-center justify-center`}
+          >
           </div>
+        ))}
+        {allUrl.length > 4 && (
+          <div className="items-center justify-content">...</div>
+        )}
+      </div>
+    )}
 
-          {hasImages && (
-            <div className="flex items-center">
-              {allUrl?.slice(0, 4).map((url, idx) => (
-                <div
-                  key={url || `image-${idx}`}
-                  className={`${idx > 0 ? "-ml-8" : ""} flex items-center justify-center`}
-                >
-                  {url && (
-                    <img
-                      src={url}
-                      className="max-h-[80px] rounded-xl w-auto object-contain"
-                      onError={(e) => (e.target.style.display = "none")}
-                    />
-                  )}
-                </div>
-              ))}
-              {allUrl.length > 4 && (
-                <div className="items-center justify-content">...</div>
-              )}
-            </div>
-          )}
-
-          {showSeeMore && (
-            <button
-              onClick={() => setExpanded(true)}
-              className="text-theme_color3 dark:theme_color4 font-medium text-xs hover:underline"
-            >
-              View More
-            </button>
-          )}
-        </>
-      ) : (
+    {showSeeMore && (
+      <button
+        onClick={() => setExpanded(true)}
+        className="text-theme_color3 dark:theme_color4 font-medium text-xs hover:underline mt-2"
+      >
+        View More
+      </button>
+    )}
+  </>
+)  : (
         <div ref={contentRef}>
           <DisplayContent displayContent={displayContent} />
           {showSeeMore && (
