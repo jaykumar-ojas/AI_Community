@@ -73,12 +73,49 @@ export const hasWebPreview = (language) => {
 };
 
 /**
- * Check if code block should display a preview tab
+ * Check if code is React/JSX
  * @param {string} language - Programming language name
  * @returns {boolean}
  */
-export const shouldShowPreview = (language) => {
-  return isExecutableLanguage(language) || hasWebPreview(language);
+export const isReactCode = (language) => {
+  const reactLangs = ['react', 'jsx', 'tsx'];
+  return reactLangs.includes(language?.toLowerCase());
+};
+
+/**
+ * Check if code is Three.js
+ * @param {string} language - Programming language name
+ * @param {string} code - The code content
+ * @returns {boolean}
+ */
+export const isThreeJsCode = (language, code) => {
+  const threeJsLangs = ['threejs', 'three', 'three.js'];
+  if (threeJsLangs.includes(language?.toLowerCase())) return true;
+  // Check if code imports THREE
+  return code?.includes("import * as THREE") || code?.includes("from 'three'");
+};
+
+/**
+ * Check if code is Mermaid diagram
+ * @param {string} language - Programming language name
+ * @returns {boolean}
+ */
+export const isMermaidCode = (language) => {
+  return language?.toLowerCase() === 'mermaid';
+};
+
+/**
+ * Check if code block should display a preview tab
+ * @param {string} language - Programming language name
+ * @param {string} code - The code content
+ * @returns {boolean}
+ */
+export const shouldShowPreview = (language, code) => {
+  return isExecutableLanguage(language) || 
+         hasWebPreview(language) || 
+         isReactCode(language) ||
+         isThreeJsCode(language, code) ||
+         isMermaidCode(language);
 };
 
 /**
@@ -110,7 +147,11 @@ export const getFileExtension = (language) => {
     csharp: 'cs',
     swift: 'swift',
     kotlin: 'kt',
-    scala: 'scala'
+    scala: 'scala',
+    jsx: 'jsx',
+    tsx: 'tsx',
+    react: 'jsx',
+    mermaid: 'mmd'
   };
   
   return extensions[language?.toLowerCase()] || language?.toLowerCase() || 'txt';
