@@ -240,11 +240,11 @@ const HeaderContent = ({ topic, onDelete }) => {
 
         {/* Media Attachments */}
         {topic?.mediaAttachments?.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3">
             {topic.mediaAttachments.map((attachment, index) => (
               <div
                 key={index}
-                className="w-full h-full rounded-md overflow-hidden border border-gray-200 shadow-sm"
+                
               >
                 <ShowMedia attachment={attachment} />
               </div>

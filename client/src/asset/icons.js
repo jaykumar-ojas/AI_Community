@@ -55,12 +55,18 @@ export const DownvoteIcon = ({ isDownvoted }) => {
   );
 };
 
+export const ReloadIcon = ({})=>{
+  return (
+  <svg className="" fill="white" stroke="white" height="20" viewBox="0 0 48 48" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M35.3 12.7c-2.89-2.9-6.88-4.7-11.3-4.7-8.84 0-15.98 7.16-15.98 16s7.14 16 15.98 16c7.45 0 13.69-5.1 15.46-12h-4.16c-1.65 4.66-6.07 8-11.3 8-6.63 0-12-5.37-12-12s5.37-12 12-12c3.31 0 6.28 1.38 8.45 3.55l-6.45 6.45h14v-14l-4.7 4.7z"></path></svg>
+  )
+}
 
-export const DeleteIcon = ({ isHovered }) => {
+
+export const DeleteIcon = ({ isHovered,size="6" }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="h-6 w-6"
+      className={`h-${size} w-${size}`}
       fill="none"
       viewBox="0 0 24 24"
       stroke={isHovered ? "#ef4444" : "currentColor"} // Red when hovered
@@ -242,10 +248,10 @@ export const thumbsDownSvg = (filled = false) => {
   );
 };
 
-export const AttachIcon = ({ isActive }) => (
+export const AttachIcon = ({ isActive, height=5,smHeight=4}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="sm:h-5 sm:w-5 h-4 w-4 mr-1"
+    className={`h-${smHeight} w-${smHeight} sm:h-${height} sm:w-${height} mr-1 cursor-pointer`}
     fill="none"
     viewBox="0 0 24 24"
     stroke={isActive ? "#8b5cf6" : "currentColor"} // Purple when active

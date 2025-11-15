@@ -34,6 +34,7 @@ import ForumSystem from "./component/AiForumPage/ForumSystem";
 import FeedbackPage from "./component/Navbar/feedback";
 import { ModelsProvider } from "./component/PostImage/ModelsContext";
 import PostProvider from "./component/PostImage/PostContext";
+import NotificationComponent from "./component/Notification/Notification";
 
 const Layout = () => {
   const location = useLocation();
@@ -90,7 +91,8 @@ const router = createBrowserRouter([
       { path: "post", element:<PostImage/>},
       {path: "userPost/edit/:id?", element: <UserEdit/>},
       {path: "forum", element: <ForumSystem/>},
-      {path: "feedback", element: <FeedbackPage/>}
+      {path: "feedback", element: <FeedbackPage/>},
+      {path:"notification", element:<NotificationComponent/>}
     ]
   },
    { path: "/login", element: <BackgroundWrapper><Login /></BackgroundWrapper> },

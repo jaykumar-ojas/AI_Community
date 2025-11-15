@@ -1,6 +1,22 @@
-import {Disclosure,DisclosureButton,DisclosurePanel,Menu,MenuButton,MenuItem,MenuItems,} from "@headlessui/react";
-import {Bars3Icon,BellIcon,HomeIcon,UserIcon,} from "@heroicons/react/24/outline";
-import {HomeIcon as HomeIconSolid,UserIcon as UserIconSolid,} from "@heroicons/react/24/solid";
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from "@headlessui/react";
+import {
+  Bars3Icon,
+  BellIcon,
+  HomeIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import {
+  HomeIcon as HomeIconSolid,
+  UserIcon as UserIconSolid,
+} from "@heroicons/react/24/solid";
 import logo from "./logo.png";
 import { useContext, createContext, useEffect } from "react";
 import { LoginContext } from "../ContextProvider/context";
@@ -17,13 +33,32 @@ import "./wave-btn.css";
 import logoName from "./logoName.png";
 import Switch from "./toggle";
 import ModelTicker from "./ModelTicker";
-
+import { getAuthHeaders } from "../AiForumPage/components/ForumUtils";
+const baseUrl = process.env.REACT_APP_BASE_URL;
 // Create context for forum visibility
 export const ForumContext = createContext();
 
+const fetchUnreadCount = async ({ userId, baseUrl }) => {
+  if (!userId) return { unreadCount: 0 };
+
+  const token = localStorage.getItem("userdatatoken");
+
+  const res = await fetch(`${baseUrl}/getNotification/unreadCount/${userId}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch unread count");
+  }
+
+  const json = await res.json();
+  return { unreadCount: Number(json.unreadCount ?? 0) };
+};
+
 const navigation = [
-  { name: "Home", href: "/", },
-  { name: `generate image`,href: "/post",},
+  { name: "Home", href: "/" },
+  { name: `generate image`, href: "/post" },
 ];
 
 function classNames(...classes) {
@@ -35,19 +70,26 @@ export default function Navbar({ showForum, setShowForum }) {
   const [showNotification, setShowNotification] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [unread, setUnread] = useState(0);
   const [darkMode, setDarkMode] = useState(false);
+  const userId = loginData?.validuserone?._id || null;
 
-//   const { data: userData, isLoading, isError } = useQuery({
-//   queryKey: ["userCredit", loginData?.validuserone?._id],
-//   queryFn: async () => {
-//     const { data } = await axios.get(
-//       `/api/getCredit/${loginData?.validuserone?._id}`
-//     );
-//     return data; // { credit: 120 }
-//   },
-//   enabled: !!loginData?.validuserone?._id, // only run when userId exists
-// });
+  const { data: unreadSummary, refetch: refetchUnread, isFetching: isFetchingUnread, error: unreadError } = useQuery({
+  queryKey: ["notificationsUnread", userId],
+  queryFn: () => fetchUnreadCount({ userId, baseUrl }),
+  enabled: !!userId,
+  refetchInterval: 5 * 60 * 1000, // 5 minutes
+  refetchIntervalInBackground: true, // keeps polling in background tabs (optional)
+  staleTime: 60_000, // 1 minute - adjust as needed
+  cacheTime: 2 * 60_000, // 2 minutes
+  retry: 1,
+});
 
+useEffect(() => {
+  if (!userId) return;
+  const count = unreadSummary?.unreadCount ?? 0;
+  setUnread(count);
+}, [unreadSummary, setUnread, userId]);
 
 
   useEffect(() => {
@@ -84,12 +126,12 @@ export default function Navbar({ showForum, setShowForum }) {
       icon: PlusIcon,
       iconSolid: PlusIcon,
       isActive: location.pathname === "/post",
-       //isSpecial: true, // Special styling for add button
+      //isSpecial: true, // Special styling for add button
     },
     {
       name: "Forum",
-     // onClick: handleForumToggle,
-     href: "/forum",
+      // onClick: handleForumToggle,
+      href: "/forum",
       icon: () => (
         <svg
           className="w-6 h-6"
@@ -111,7 +153,7 @@ export default function Navbar({ showForum, setShowForum }) {
         </svg>
       ),
       isActive: location.pathname === "/forum",
-     // isTab: true,
+      // isTab: true,
     },
     {
       name: "Profile",
@@ -144,39 +186,37 @@ export default function Navbar({ showForum, setShowForum }) {
                 >
                   <div className="flex items-center justify-center">
                     <img
-                    src={logo}
-                    alt="Logo"
-                    className="h-full w-12 object-contain p-1 "
-                  />
-                  <img
-                    src={logoName}
-                    alt="LogoAvatar"
-                    className="h-full w-24 -ml-1 object-contain p-1 "
-                  />
+                      src={logo}
+                      alt="Logo"
+                      className="h-full w-12 object-contain p-1 "
+                    />
+                    <img
+                      src={logoName}
+                      alt="LogoAvatar"
+                      className="h-full w-24 -ml-1 object-contain p-1 "
+                    />
                   </div>
-                  
                 </Link>
                 {/* Desktop links */}
                 <div className="hidden sm:flex space-x-2">
-                {navigation.map((item) => {
-                  const isCurrent = location.pathname === item.href; // dynamically check
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={classNames(
-                        isCurrent
-                          ? "text-theme_dark_color dark:text-theme_color"
-                          : " rounded-md  text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover",
-                        "px-2  font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200"
-                      )}
-                      aria-current={isCurrent ? "page" : undefined}
-                    >
-                      {item.name}
-                    </Link>
-                  );
-                })}
-
+                  {navigation.map((item) => {
+                    const isCurrent = location.pathname === item.href; // dynamically check
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className={classNames(
+                          isCurrent
+                            ? "text-theme_dark_color dark:text-theme_color"
+                            : " rounded-md  text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover",
+                          "px-2  font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200"
+                        )}
+                        aria-current={isCurrent ? "page" : undefined}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
                 </div>
 
                 {/* Navigation links removed */}
@@ -184,29 +224,55 @@ export default function Navbar({ showForum, setShowForum }) {
 
               {/* User icon bell icon */}
               <div className="flex items-center space-x-4">
-
-                {loginData && <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50 }/>}
+                {loginData && (
+                  <DynamicNumberSVG
+                    value={loginData ? loginData?.validuserone?.credit : 50}
+                  />
+                )}
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
                   <Menu as="div" className="relative z-10">
-                    <MenuButton className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
-                      <BellIcon className="h-6 w-6 stroke-[2]" />
+                    <MenuButton
+                      className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition"
+                      aria-label={`Notifications${
+                        unread > 0 ? `, ${unread} unread` : ""
+                      }`}
+                    >
+                      <div className="relative">
+                        <BellIcon className="h-6 w-6 stroke-[2]" />
+                        {unread > 0 && (
+                          <span
+                            className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white bg-red-600 rounded-full shadow-sm"
+                            aria-hidden="true"
+                          >
+                            {unread > 10 ? "10+" : unread}
+                          </span>
+                        )}
+                      </div>
                     </MenuButton>
+
                     <MenuItems
                       as="div"
-                      className="absolute left-1/2 -translate-x-2/3 mt-3 w-96 max-h-[80vh] rounded-lg shadow-2xl backdrop-blur-md focus:outline-none overflow-hidden z-50"
+                      className="absolute right-0 mt-3 w-96 max-h-[80vh] rounded-lg shadow-2xl backdrop-blur-md focus:outline-none overflow-hidden z-50"
                     >
-                      <NotificationComponent isOpen={true} onClose={() => {}} />
+                      {/* pass unread & setUnread so NotificationComponent can update parent */}
+                      <NotificationComponent
+                        onClose={() => {}}
+                        setUnread={setUnread}
+                      />
                     </MenuItems>
                   </Menu>
-                  {showNotification && (
+
+                  {/* {showNotification && (
                     <NotificationComponent
                       isOpen={true}
+                      unread={unread}
+                      setUnread ={setUnread}
                       onClose={() => {
                         setShowNotification(false);
                       }}
                     />
-                  )}
+                  )} */}
 
                   {isAuthenticated() && loginData ? (
                     <Menu as="div" className="relative z-10">
@@ -217,24 +283,24 @@ export default function Navbar({ showForum, setShowForum }) {
                       </MenuButton>
                       <MenuItems className="bg-gray-100 dark:bg-black font-[Arial,sans-serif] font-semibold absolute right-0 mt-2 w-48 shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <MenuItem>
-                            <Link
-                              to={`/userprofile/${encodeId(
-                                loginData?.validuserone?._id
-                              )}`}
-                              className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover "
+                          <Link
+                            to={`/userprofile/${encodeId(
+                              loginData?.validuserone?._id
+                            )}`}
+                            className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover "
                               `}
-                            >
-                              Your Profile
-                            </Link>
+                          >
+                            Your Profile
+                          </Link>
                         </MenuItem>
                         <MenuItem>
-                            <a
-                              href="#"
-                              onClick={handleLogout}
-                              className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover`}
-                            >
-                              Sign Out
-                            </a>
+                          <a
+                            href="#"
+                            onClick={handleLogout}
+                            className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover`}
+                          >
+                            Sign Out
+                          </a>
                         </MenuItem>
                       </MenuItems>
                     </Menu>
@@ -242,9 +308,14 @@ export default function Navbar({ showForum, setShowForum }) {
                     <Link
                       to="/login"
                       className="px-3 py-2 rounded-md text-sm"
-                      aria-current={location.pathname === "/login" ? "page" : undefined}
+                      aria-current={
+                        location.pathname === "/login" ? "page" : undefined
+                      }
                     >
-                      <button type="button" className="p-1 px-2 rounded-md font-[Arial,sans-serif] font-semibold text-gray-800 dark:text-low_text dark:hover:bg-nav_hover dark:hover:text-theme_color">
+                      <button
+                        type="button"
+                        className="p-1 px-2 rounded-md font-[Arial,sans-serif] font-semibold text-gray-800 dark:text-low_text dark:hover:bg-nav_hover dark:hover:text-theme_color"
+                      >
                         Sign In
                       </button>
                     </Link>
@@ -269,15 +340,15 @@ export default function Navbar({ showForum, setShowForum }) {
                 >
                   <div className="flex items-center justify-center">
                     <img
-                    src={logo}
-                    alt="Logo"
-                    className="h-full w-14 object-contain p-1"
-                  />
-                  <img
-                    src={logoName}
-                    alt="LogoAvatar"
-                    className="h-full w-24 -ml-1 object-contain p-1"
-                  />
+                      src={logo}
+                      alt="Logo"
+                      className="h-full w-14 object-contain p-1"
+                    />
+                    <img
+                      src={logoName}
+                      alt="LogoAvatar"
+                      className="h-full w-24 -ml-1 object-contain p-1"
+                    />
                   </div>
                 </Link>
 
@@ -285,21 +356,25 @@ export default function Navbar({ showForum, setShowForum }) {
               </div>
 
               {/* User icon bell icon */}
-               <div className="flex items-center space-x-2">
-
-                {loginData && <DynamicNumberSVG value={loginData ? loginData?.validuserone?.credit : 50 } size={5}/>}
+              <div className="flex items-center space-x-2">
+                {loginData && (
+                  <DynamicNumberSVG
+                    value={loginData ? loginData?.validuserone?.credit : 50}
+                    size={5}
+                  />
+                )}
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
                   <Menu as="div" className="relative z-10">
-                    <MenuButton className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
+                    <MenuButton onClick={()=>{navigate('/notification')}} className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
                       <BellIcon className="h-6 w-6 " />
                     </MenuButton>
-                    <MenuItems
+                    {/* <MenuItems
                       as="div"
                       className="absolute left-1/2 -translate-x-2/3 mt-3 w-96 max-h-[80vh] rounded-lg shadow-2xl backdrop-blur-md focus:outline-none overflow-hidden z-50"
                     >
                       <NotificationComponent isOpen={true} onClose={() => {}} />
-                    </MenuItems>
+                    </MenuItems> */}
                   </Menu>
                   {showNotification && (
                     <NotificationComponent
@@ -319,24 +394,24 @@ export default function Navbar({ showForum, setShowForum }) {
                       </MenuButton>
                       <MenuItems className="bg-gray-100 dark:bg-black font-[Arial,sans-serif] font-semibold absolute right-0 mt-2 w-48 shadow-md rounded-md py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <MenuItem>
-                            <Link
-                              to={`/userprofile/${encodeId(
-                                loginData?.validuserone?._id
-                              )}`}
-                              className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover "
+                          <Link
+                            to={`/userprofile/${encodeId(
+                              loginData?.validuserone?._id
+                            )}`}
+                            className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover "
                               `}
-                            >
-                              Your Profile
-                            </Link>
+                          >
+                            Your Profile
+                          </Link>
                         </MenuItem>
                         <MenuItem>
-                            <a
-                              href="#"
-                              onClick={handleLogout}
-                              className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover`}
-                            >
-                              Sign Out
-                            </a>
+                          <a
+                            href="#"
+                            onClick={handleLogout}
+                            className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover`}
+                          >
+                            Sign Out
+                          </a>
                         </MenuItem>
                       </MenuItems>
                     </Menu>
@@ -344,9 +419,14 @@ export default function Navbar({ showForum, setShowForum }) {
                     <Link
                       to="/login"
                       className="px-3 py-2 rounded-md text-sm"
-                      aria-current={location.pathname === "/login" ? "page" : undefined}
+                      aria-current={
+                        location.pathname === "/login" ? "page" : undefined
+                      }
                     >
-                      <button type="button" className="p-1 px-2 rounded-md font-[Arial,sans-serif] font-semibold text-gray-800 dark:text-low_text dark:hover:bg-nav_hover dark:hover:text-theme_color">
+                      <button
+                        type="button"
+                        className="p-1 px-2 rounded-md font-[Arial,sans-serif] font-semibold text-gray-800 dark:text-low_text dark:hover:bg-nav_hover dark:hover:text-theme_color"
+                      >
                         Sign In
                       </button>
                     </Link>
@@ -358,7 +438,7 @@ export default function Navbar({ showForum, setShowForum }) {
         </div>
       </div>
 
-      <ModelTicker/>
+      <ModelTicker />
 
       {/* Mobile Bottom Navigation */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-bg_dark border-t border-gray-200 dark:border-gray-900">

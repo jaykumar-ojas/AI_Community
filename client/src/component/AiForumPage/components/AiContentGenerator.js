@@ -4,38 +4,23 @@ import { LoginContext } from "../../ContextProvider/context";
 import { getAuthHeaders, API_BASE_URL } from "./ForumUtils";
 
 // Component for AI messages
-function AiMessage({ message, isUser = false, modelInfo = null }) {
+function AiMessage({ message, isUser = false }) {
   return (
-    <div
-      className={`mb-4 ${
-        isUser ? "bg-white" : "bg-blue-50"
-      } p-4 rounded-lg shadow-sm`}
-    >
-      <div className="flex items-center mb-2">
-        {!isUser && modelInfo && modelInfo.iconUrl && (
-          <img
-            src={modelInfo.iconUrl}
-            alt={`${modelInfo.providerName} icon`}
-            className="w-6 h-6 rounded-full mr-2 object-cover"
-            onError={(e) => {
-              e.target.style.display = "none";
-            }}
-          />
-        )}
-        <span className="font-medium text-blue-600 mr-2">
-          {isUser
-            ? "You"
-            : modelInfo
-            ? `${modelInfo.providerName} (${modelInfo.modelName})`
-            : "AI Assistant"}
-        </span>
-      </div>
-      <div className="text-sm leading-relaxed whitespace-pre-wrap">
-        {message}
+    <div className={`mb-4 flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`max-w-[80%] p-2 rounded-lg shadow-sm ${
+          isUser ? "bg-theme_color" : "bg-nav_hover2"
+        }`}
+      >
+        <div className="text-md text-start font-poppins text-white ">
+          {message}
+        </div>
       </div>
     </div>
   );
 }
+
+
 
 const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
   const { loginData } = useContext(LoginContext);
@@ -205,10 +190,10 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[2000] flex items-start justify-center pt-20">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[85vh] flex flex-col relative">
+    <div className="fixed inset-0 z-50 flex text-center justify-center top-[15%] md:top-20">
+      <div className="bg-nav_hover text-low_text font-playfair rounded-lg shadow-xl text-center w-full max-w-3xl h-[70vh] md:h-[85vh] flex flex-col relative">
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-20">
+        <div className="flex justify-between items-center p-4 border-b sticky top-0 z-20">
           <div className="flex items-center">
             <button
               onClick={onClose}
@@ -216,7 +201,7 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
             >
               ←
             </button>
-            <h3 className="text-lg font-semibold">AI Content Generator</h3>
+            <h3 className="text-2xl font-semibold">AI Content Generator</h3>
           </div>
 
           {generatedContent.title && generatedContent.content && (
@@ -230,7 +215,7 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
         </div>
 
         {/* Chat */}
-        <div className="flex-1 p-5 overflow-y-auto bg-gray-50">
+        <div className="flex-1 p-5 overflow-y-auto">
           {messages.map((msg, idx) => (
             <AiMessage
               key={idx}
@@ -241,7 +226,7 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
           ))}
 
           {(isLoading || isGeneratingFinal) && (
-            <div className="flex flex-col items-center p-4 bg-gray-100 rounded-lg">
+            <div className="flex flex-col items-center p-4 rounded-lg">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
               <div className="text-sm text-gray-600 font-medium text-center">
                 {engagingMessages[loaderMsgIndex]}
@@ -253,7 +238,7 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-white border-t border-gray-200 sticky bottom-0">
+        <div className="p-4 border-t border-gray-nav_hover3 sticky bottom-0">
           {generatedContent.title && generatedContent.content ? (
             <div>
               <input
@@ -281,7 +266,7 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
               <div className="flex justify-between">
                 <button
                   onClick={() => setGeneratedContent({ title: "", content: "" })}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  className="px-4 py-2 text-gray-700  rounded-lg hover:bg-gray-200"
                 >
                   🔄 Regenerate
                 </button>
@@ -295,9 +280,9 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex gap-2">
-              <input
+              <textarea
                 type="text"
-                className="flex-1 border border-gray-200 rounded-md p-3 text-sm"
+                className="flex-1 font-poppins  text-low_text bg-nav_hover2 border-nav_hover3 rounded-md p-2 text-sm"
                 placeholder="Type your message..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
@@ -305,7 +290,7 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
               />
               <button
                 type="submit"
-                className="bg-blue-600 text-white font-medium rounded-md px-4 py-2 disabled:opacity-50"
+                className="bg-pink-600 hover:bg-pink-800 text-white font-manrope font-semibold rounded-md px-4 py-2 disabled:opacity-50"
                 disabled={!inputValue.trim() || isLoading || isGeneratingFinal}
               >
                 Generate
@@ -313,7 +298,7 @@ const AiContentGenerator = ({ onContentGenerated, setNewTopic, onClose }) => {
               <button
                 onClick={handleGenerateFinalContent}
                 type="button"
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+                className="bg-theme_color2 hover:bg-theme_color text-black font-manrope font-semibold px-4 py-2 rounded-md disabled:opacity-50"
                 disabled={messages.length < 3 || isLoading || isGeneratingFinal}
               >
                 {isGeneratingFinal ? "Generating..." : "Finalize"}
