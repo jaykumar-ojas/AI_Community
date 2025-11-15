@@ -18,6 +18,7 @@ module.exports = {
         theme_dark_color:'#fe5f04ff',
         nav_hover:'#0d0d0d',
         nav_hover2:'#262626ff',
+        nav_hover3:'#333333ff',
         bg_sidebar:'#040f13',
         nav_color: '#585763',
         bg_scroll : '#20232d',

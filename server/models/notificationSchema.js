@@ -10,6 +10,7 @@ const notificationSchema = new mongoose.Schema(
         commentId : {type:String},
         desc : {type:String},
         field :{type:String},
+        read: { type: Boolean, default: false },
     },
     { timestamps: true }
 )

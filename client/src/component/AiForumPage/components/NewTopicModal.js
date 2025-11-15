@@ -6,6 +6,7 @@ import { getAuthHeaders, handleAuthError, TOPICS_URL } from './ForumUtils';
 import AiContentGenerator from './AiContentGenerator';
 import { useNavigate } from 'react-router-dom';
 import { encodeId } from '../../../utils/hashids';
+import { AttachIcon, SparklesIcon } from "../../../asset/icons";
 
 const NewTopicModal = ({ onClose }) => {
   const { loginData } = useContext(LoginContext);
@@ -98,15 +99,26 @@ const NewTopicModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 z-50 mt-20 flex items-center justify-center overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-xl my-8 flex flex-col max-h-[90vh]">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="text-lg font-semibold">Create New Topic</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+    <div className="fixed inset-0 bg-opacity-50 bg-black/80 z-50 flex items-center justify-center overflow-y-auto">
+      <div className="bg-nav_hover text-low_text font-playfair rounded-lg shadow-xl w-full max-w-2xl my-8 flex flex-col max-h-[90vh]">
+        <div className="flex justify-between items-center p-4 pb-0">
+          <h3 className="text-2xl font-bold">Create A Community</h3>
+          <div className='flex gap-2'>
+          <button
+              onClick={() => setShowAiContent(true)}
+              className="py-1 px-2 bg-pink-600 text-white font-playfair font-semibold rounded-lg hover:bg-pink-800 flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Generate with AI
+            </button>
+          <button onClick={onClose} className="hover:text-gray-600">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+          </div>
         </div>
 
         {error && (
@@ -116,21 +128,21 @@ const NewTopicModal = ({ onClose }) => {
         )}
 
         <div className="p-4 overflow-y-auto flex-grow">
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input
+          <div className="mb-2">
+            <label className="block text-xl font-semibold mb-1">Title</label>
+            <textarea
               type="text"
-              className="w-full px-3  border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 py-1 min-h-16 bg-nav_hover2 font-poppins text-low_text text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-theme_color4"
               placeholder="Topic title"
               value={newTopic.title}
               onChange={(e) => setNewTopic({ ...newTopic, title: e.target.value })}
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+            <label className="block text-xl font-semibold mb-1">Content</label>
             <div className="relative">
             <textarea
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+              className="w-full px-3 py-2 font-poppins bg-nav_hover2 text-low_text text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-theme_color4 min-h-28"
               value={newTopic.content}
               onChange={(e) => setNewTopic({ ...newTopic, content: e.target.value })}
             />
@@ -146,15 +158,20 @@ const NewTopicModal = ({ onClose }) => {
             )}
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Media Attachments</label>
+            <label className='flex'>
             <input
               type="file"
               multiple
               accept="image/*,video/*,audio/*"
               onChange={handleFileSelect}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="hidden"
             />
+            <div className='flex cursor-pointer p-1 px-2 gap-1 rounded-lg bg-nav_hover3 hover:bg-nav_hover2'>
+            <AttachIcon height={8} smHeight={5}/>
+            Attach
+            </div>
+            
+            </label>
             {selectedFiles.length > 0 && (
               <div className="mt-2">
                 <p className="text-sm text-gray-600">Selected files:</p>
@@ -167,32 +184,16 @@ const NewTopicModal = ({ onClose }) => {
                 </ul>
               </div>
             )}
-          </div>
-
-          {/* AI Content Generation Button */}
-          <div className="mb-4 border-t pt-4">
-            <button
-              onClick={() => setShowAiContent(true)}
-              className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Generate Topic with AI
-            </button>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              Let AI help you create engaging content for your topic
-            </p>
-          </div>
+             
         </div>
 
-        <div className="flex justify-end gap-2 p-4 border-t mt-auto">
-          <button onClick={onClose} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+        <div className="flex justify-end gap-2 p-4 ">
+          <button onClick={onClose} className="px-4 py-2 font-manrope font-semibold text-black bg-gray-100 rounded-lg hover:bg-gray-200">
             Cancel
           </button>
           <button
             onClick={handleCreateTopic}
-            className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 text-black font-semibold font-manrope bg-theme_color2 rounded-lg hover:bg-theme_color"
             disabled={!newTopic.title.trim() || !newTopic.content.trim() || isLoading}
           >
             {isLoading ? "Creating..." : "Create Topic"}
@@ -203,7 +204,7 @@ const NewTopicModal = ({ onClose }) => {
       {showAiContent && (
         <AiContentGenerator 
           onClose={() => setShowAiContent(false)} 
-          setNewTopic={(content) => {
+          setNewTopic={(content) => {  
             setNewTopic(content);
             // If content has modelInfo, store it
             if (content.modelInfo) {

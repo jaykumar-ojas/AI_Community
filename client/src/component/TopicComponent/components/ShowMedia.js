@@ -14,37 +14,42 @@ const ShowMedia = ({ attachment }) => {
   }
 
   return (
-    <div onClick={handlePreview} className="bg-bg_comment_box">
+    <div onClick={handlePreview} >
       {showPreview && <ImagePreviewCard imgUrl={fileUrl} onClose={handlePreview}/>}
-       {isImage && (
+     {isImage && (
+  <div className="flex items-center justify-center overflow-hidden rounded-lg border  cursor-pointer border-nav_hover ">
     <img
       src={fileUrl}
       alt={fileName}
-      className="w-full max-h-[200px] object-cover "
+      className="max-w-[200px] h-full object-contain rounded-lg "
       loading="lazy"
       onError={(e) => {
         console.error("Error loading image:", fileUrl);
-        e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
+        e.target.src =
+          "https://via.placeholder.com/400x300?text=Image+Not+Found";
       }}
     />
+  </div>
 )}
 
+
       {isVideo && (
-        <div className="relative min-h-[80px] max-h-[120px]">
-          <video
-            controls
-            className="w-full h-auto"
-            style={{ maxHeight: "120px" }}
-            src={fileUrl}
-            preload="metadata"
-            onError={() =>
-              console.error("Error loading video:", fileUrl)
-            }
-          >
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      )}
+  <div className="relative w-full flex justify-center items-center bg-black overflow-hidden">
+    <video
+      className="h-auto max-w-xl object-contain"
+      src={fileUrl}
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="auto"
+      onError={() => console.error("Error loading video:", fileUrl)}
+    >
+      Your browser does not support the video tag.
+    </video>
+  </div>
+)}
+
 
       {isAudio && (
         <div className="p-2">
