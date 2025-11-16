@@ -133,7 +133,7 @@ useEffect(() => {
     setActiveTab("preview");
 
     try {
-      const response = await fetch("http://localhost:8099/run", {
+      const response = await fetch("https://api.pixxelmind.com/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
