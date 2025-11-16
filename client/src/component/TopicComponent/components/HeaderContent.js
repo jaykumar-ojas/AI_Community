@@ -17,21 +17,15 @@ import {
   LikeIcon,
   DeleteIcon,
   UpvoteIcon,
-  DownvoteIcon
+  DownvoteIcon,
 } from "../../../asset/icons";
 import HeaderSkeleton from "./HeaderSkeleton";
-import { parseMarkdown } from "../../../utils/parseMarkdown"; 
+import { parseMarkdown } from "../../../utils/parseMarkdown";
 import { useMathJaxAndHighlight } from "../../../utils/useMathJaxAndHighlight";
 import LikeDislike from "../../Card/LikeDislike";
 import ShareFile from "../../Share/ShareFile";
+import LikeDislike2 from "../../Card/LikeDislike2";
 // Add a simple three dots icon (vertical ellipsis)
-const ThreeDotsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="4" r="1.5" fill="#888" />
-    <circle cx="10" cy="10" r="1.5" fill="#888" />
-    <circle cx="10" cy="16" r="1.5" fill="#888" />
-  </svg>
-);
 
 const HeaderContent = ({ topic, onDelete }) => {
   const { viewBox, setViewBox, setReplyIdForContext } =
@@ -97,31 +91,52 @@ const HeaderContent = ({ topic, onDelete }) => {
       return;
     }
 
+    const userId = loginData.validuserone._id;
+
+    // --- STEP 1: TAKE SNAPSHOT BEFORE CHANGING ANYTHING ---
+    const prevLikes = [...topicLikes];
+    const prevDislikes = [...topicDislikes];
+    const prevIsLiked = isLiked;
+    const prevIsDisLiked = isDisliked;
+
+    // --- STEP 2: OPTIMISTIC UI UPDATE ---
+    const willBeLiked = !topicLikes.includes(userId);
+
+    setTopicLikes(
+      willBeLiked
+        ? [...topicLikes, userId]
+        : topicLikes.filter((id) => id !== userId)
+    );
+
+    setTopicDislikes(topicDislikes.filter((id) => id !== userId));
+
+    setIsLiked(willBeLiked);
+    setIsDisLiked(false);
+
+    // --- STEP 3: API CALL ---
     try {
       const response = await axios.post(
         `${API_BASE_URL}/forum/topics/${topic._id}/like`,
         {},
-        {
-          headers: getAuthHeaders(),
-        }
+        { headers: getAuthHeaders() }
       );
 
       if (response.status === 200) {
-        const userId = loginData?.validuserone?._id;
-        const liked = response?.data?.liked;
-
-        setTopicLikes(
-          liked
-            ? [...topicLikes, userId]
-            : topicLikes.filter((id) => id !== userId)
-        );
-        setTopicDislikes(topicDislikes.filter((id) => id !== userId));
-        setIsLiked(liked);
-        setIsDisLiked(false);
-        
+        // Server succeeded → keep optimistic UI
+        return;
       }
+
+      // If server sends weird status
+      throw new Error("Unexpected response");
     } catch (error) {
       console.error("Error liking topic:", error);
+
+      // --- STEP 4: ROLLBACK IF FAILED ---
+      setTopicLikes(prevLikes);
+      setTopicDislikes(prevDislikes);
+      setIsLiked(prevIsLiked);
+      setIsDisLiked(prevIsDisLiked);
+
       if (!handleAuthError(error, setError)) {
         setError("Failed to like topic. Please try again.");
       }
@@ -134,38 +149,59 @@ const HeaderContent = ({ topic, onDelete }) => {
       return;
     }
 
+    const userId = loginData.validuserone._id;
+
+    // --- STEP 1: SNAPSHOT OLD STATE ---
+    const prevLikes = [...topicLikes];
+    const prevDislikes = [...topicDislikes];
+    const prevIsLiked = isLiked;
+    const prevIsDisLiked = isDisliked;
+
+    // --- STEP 2: OPTIMISTIC UPDATE ---
+    const willBeDisliked = !topicDislikes.includes(userId);
+
+    setTopicDislikes(
+      willBeDisliked
+        ? [...topicDislikes, userId]
+        : topicDislikes.filter((id) => id !== userId)
+    );
+
+    setTopicLikes(topicLikes.filter((id) => id !== userId));
+
+    setIsDisLiked(willBeDisliked);
+    setIsLiked(false);
+
+    // --- STEP 3: API CALL ---
     try {
       const response = await axios.post(
         `${API_BASE_URL}/forum/topics/${topic._id}/dislike`,
         {},
-        {
-          headers: getAuthHeaders(),
-        }
+        { headers: getAuthHeaders() }
       );
 
       if (response.status === 200) {
-        const userId = loginData.validuserone._id;
-        const disliked = response.data.disliked;
-
-        setTopicDislikes(
-          disliked
-            ? [...topicDislikes, userId]
-            : topicDislikes.filter((id) => id !== userId)
-        );
-        setTopicLikes(topicLikes.filter((id) => id !== userId));
-        setIsDisLiked(disliked);
-        setIsLiked(false);
+        // Server success → keep optimistic changes
+        return;
       }
+
+      throw new Error("Unexpected response");
     } catch (error) {
       console.error("Error disliking topic:", error);
+
+      // --- STEP 4: ROLLBACK IF FAILED ---
+      setTopicLikes(prevLikes);
+      setTopicDislikes(prevDislikes);
+      setIsLiked(prevIsLiked);
+      setIsDisLiked(prevIsDisLiked);
+
       if (!handleAuthError(error, setError)) {
         setError("Failed to dislike topic. Please try again.");
       }
     }
   };
 
-  if(!topic){
-    return <HeaderSkeleton/>
+  if (!topic) {
+    return <HeaderSkeleton />;
   }
 
   return (
@@ -223,7 +259,7 @@ const HeaderContent = ({ topic, onDelete }) => {
             expanded ? "" : "line-clamp-4"
           }`}
         >
-                  <div
+          <div
             className="prose dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: parseMarkdown(topic?.content) }}
           />
@@ -242,10 +278,7 @@ const HeaderContent = ({ topic, onDelete }) => {
         {topic?.mediaAttachments?.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3">
             {topic.mediaAttachments.map((attachment, index) => (
-              <div
-                key={index}
-                
-              >
+              <div key={index}>
                 <ShowMedia attachment={attachment} />
               </div>
             ))}
@@ -255,17 +288,25 @@ const HeaderContent = ({ topic, onDelete }) => {
         {/* Generated Image */}
         {topic?.imageUrl && (
           <div className="flex justify-center pt-4">
-              <img
-                src={topic.imageUrl}
-                alt="Generated topic image"
-                className="max-h-[400px] rounded-md w-auto object-cover"
-              />
+            <img
+              src={topic.imageUrl}
+              alt="Generated topic image"
+              className="max-h-[400px] rounded-md w-auto object-cover"
+            />
           </div>
         )}
 
         {/* Actions Section */}
         <div className="pt-2 flex justify-start items-center gap-2 text-xs text-gray-500">
-          <LikeDislike topic={topic} like={handleTopicLike} dislike={handleTopicDislike}/>
+          <LikeDislike2
+            topic={topic}
+            like={handleTopicLike}
+            dislike={handleTopicDislike}
+            isLiked={isLiked}
+            isDisliked={isDisliked}
+            likeCount = {topicLikes?.length}
+            dislikeCount = {topicDislikes?.length}
+          />
           <button
             onClick={() => {
               setViewBox(true);
@@ -284,5 +325,16 @@ const HeaderContent = ({ topic, onDelete }) => {
 
 export default HeaderContent;
 
-
-
+const ThreeDotsIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="10" cy="4" r="1.5" fill="#888" />
+    <circle cx="10" cy="10" r="1.5" fill="#888" />
+    <circle cx="10" cy="16" r="1.5" fill="#888" />
+  </svg>
+);
