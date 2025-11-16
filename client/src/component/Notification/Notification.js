@@ -192,9 +192,9 @@ const NotificationComponent = ({ onClose, unread, setUnread }) => {
   const handleNav = (notif) => {
     const { postId, topicId, commentId } = notif;
     let url = "#";
-    if (postId && commentId) url = `/userPost/${postId}?comment=${commentId}`;
+    if (postId && commentId) url = `/userPost/${postId}/${commentId}`;
     else if (postId) url = `/userPost/${postId}`;
-    else if (topicId && commentId) url = `/forum/topic/${encodeId(topicId)}?comment=${encodeId(commentId)}`;
+    else if (topicId && commentId) url = `/forum/topic/${encodeId(topicId)}/${encodeId(commentId)}`;
     else if (topicId) url = `/forum/topic/${encodeId(topicId)}`;
     window.location.href = url;
     onClose?.();
