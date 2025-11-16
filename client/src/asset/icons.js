@@ -21,10 +21,10 @@ export const UpvoteIcon = ({ isUpvoted }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4 mr-1"
-      fill={isUpvoted ? "#3b82f6" : "none"} // Blue when upvoted
+      className="h-4 w-4"
+      fill={isUpvoted ? "currentColor" : "none"} // Blue when upvoted
       viewBox="0 0 24 24"
-      stroke={isUpvoted ? "#3b82f6" : "currentColor"}
+      stroke={isUpvoted ? "CurrentColor" : "currentColor"}
     >
       <path
         strokeLinecap="round"
@@ -40,10 +40,10 @@ export const DownvoteIcon = ({ isDownvoted }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4 mr-1"
-      fill={isDownvoted ? "#ef4444" : "none"} // Red when downvoted
+      className="h-4 w-4 "
+      fill={isDownvoted ? "currentColor" : "none"} // Red when downvoted
       viewBox="0 0 24 24"
-      stroke={isDownvoted ? "#ef4444" : "currentColor"}
+      stroke={isDownvoted ? "currentColor" : "currentColor"}
     >
       <path
         strokeLinecap="round"

@@ -24,6 +24,7 @@ import { CommentContext } from "../../ContextProvider/CommentModelContext";
 import LikeDislike from "../../Card/LikeDislike";
 import ShareFile from "../../Share/ShareFile";
 import UserNameCard from "../../Card/UserNameCard";
+import LikeDislike2 from "../../Card/LikeDislike2";
 
 
 const ModelIcon = ({ modelName, name=true }) => {
@@ -155,93 +156,137 @@ const ShowCommentContent = ({ reply }) => {
 
 
 
-  const handleReplyLike = async () => {
-    if (!loginData || !loginData.validuserone) {
-      alert("Please log in to like replies");
+ const handleReplyLike = async () => {
+  if (!loginData || !loginData.validuserone) {
+    alert("Please log in to like replies");
+    return;
+  }
+
+  const userId = loginData.validuserone._id;
+
+  // 1) snapshot current state
+  const prevLikes = [...replyLikes];
+  const prevDislikes = [...replyDislikes];
+  const prevIsLiked = isLiked;
+  const prevIsDisLiked = isDisliked;
+
+  // 2) optimistic update
+  const willBeLiked = !replyLikes.includes(userId);
+
+  const optimisticLikes = willBeLiked
+    ? [...replyLikes, userId]
+    : replyLikes.filter((id) => id !== userId);
+
+  const optimisticDislikes = replyDislikes.filter((id) => id !== userId);
+
+  setReplyLikes(optimisticLikes);
+  setReplyDislikes(optimisticDislikes);
+  setIsLiked(willBeLiked);
+  setIsDisLiked(false);
+
+  // 3) API call
+  try {
+    const response = await axios.post(
+      `${baseUrl}/comments/${reply._id}/like`,
+      {},
+      { headers: getAuthHeaders() }
+    );
+
+    if (response.status === 200) {
+      // SUCCESS → do nothing (optimistic UI stays)
+      
+      // Emit with optimistic state (or server state if you want)
+      emitCommentReaction({
+        commentId: reply._id,
+        postId: reply.postId,
+        likes: optimisticLikes,
+        dislikes: optimisticDislikes,
+      });
+
       return;
     }
 
-    try {
-      const response = await axios.post(
-        `${baseUrl}/comments/${reply?._id}/like`,
-        {},
-        {
-          headers: getAuthHeaders(),
-        }
-      );
+    throw new Error("Unexpected response");
+  } catch (err) {
+    console.error("Error liking reply:", err);
 
-      if (response.status === 200) {
-        const updatedLikes = response.data.liked
-          ? [...replyLikes, loginData.validuserone._id]
-          : replyLikes.filter((id) => id !== loginData.validuserone._id);
-        const updatedDislikes = replyDislikes.filter(
-          (id) => id !== loginData.validuserone._id
-        );
+    // 4) rollback on error
+    setReplyLikes(prevLikes);
+    setReplyDislikes(prevDislikes);
+    setIsLiked(prevIsLiked);
+    setIsDisLiked(prevIsDisLiked);
 
-        setReplyLikes(updatedLikes);
-        setReplyDislikes(updatedDislikes);
-        setIsLiked(!isLiked);
-        setIsDisLiked(false);
-
-        // Emit the reaction through WebSocket
-        emitCommentReaction({
-          commentId: reply._id,
-          postId: reply.postId,
-          likes: updatedLikes,
-          dislikes: updatedDislikes,
-        });
-      }
-    } catch (error) {
-      console.error("Error liking reply:", error);
-      if (!handleAuthError(error, setError)) {
-        setError("Failed to like reply. Please try again.");
-      }
+    if (!handleAuthError(err, setError)) {
+      setError("Failed to like reply. Please try again.");
     }
-  };
+  }
+};
 
-  const handleReplyDislike = async () => {
-    if (!loginData || !loginData.validuserone) {
-      alert("Please log in to dislike replies");
+
+const handleReplyDislike = async () => {
+  if (!loginData || !loginData.validuserone) {
+    alert("Please log in to dislike replies");
+    return;
+  }
+  if (!reply?._id) return;
+
+  const userId = loginData.validuserone._id;
+
+  // 1) snapshot current state
+  const prevLikes = [...replyLikes];
+  const prevDislikes = [...replyDislikes];
+  const prevIsLiked = isLiked;
+  const prevIsDisLiked = isDisliked;
+
+  // 2) optimistic update
+  const willBeDisliked = !replyDislikes.includes(userId);
+
+  const optimisticDislikes = willBeDisliked
+    ? [...replyDislikes, userId]
+    : replyDislikes.filter((id) => id !== userId);
+
+  const optimisticLikes = replyLikes.filter((id) => id !== userId);
+
+  setReplyDislikes(optimisticDislikes);
+  setReplyLikes(optimisticLikes);
+  setIsDisLiked(willBeDisliked);
+  setIsLiked(false);
+
+  // 3) API call
+  try {
+    const res = await axios.post(
+      `${baseUrl}/comments/${reply._id}/dislike`,
+      {},
+      { headers: getAuthHeaders() }
+    );
+
+    if (res?.status === 200) {
+      // success — keep optimistic UI and emit reaction
+      emitCommentReaction({
+        commentId: reply._id,
+        postId: reply.postId,
+        likes: optimisticLikes,
+        dislikes: optimisticDislikes,
+      });
       return;
     }
 
-    try {
-      const response = await axios.post(
-        `${baseUrl}/comments/${reply?._id}/dislike`,
-        {},
-        {
-          headers: getAuthHeaders(),
-        }
-      );
+    throw new Error("Unexpected server response");
+  } catch (err) {
+    console.error("Error disliking reply:", err);
 
-      if (response.status === 200) {
-        const updatedDislikes = response.data.disliked
-          ? [...replyDislikes, loginData.validuserone._id]
-          : replyDislikes.filter((id) => id !== loginData.validuserone._id);
-        const updatedLikes = replyLikes.filter(
-          (id) => id !== loginData.validuserone._id
-        );
+    // 4) rollback on failure
+    setReplyLikes(prevLikes);
+    setReplyDislikes(prevDislikes);
+    setIsLiked(prevIsLiked);
+    setIsDisLiked(prevIsDisLiked);
 
-        setReplyDislikes(updatedDislikes);
-        setReplyLikes(updatedLikes);
-        setIsDisLiked(!isDisliked);
-        setIsLiked(false);
-
-        // Emit the reaction through WebSocket
-        emitCommentReaction({
-          commentId: reply._id,
-          postId: reply.postId,
-          likes: updatedLikes,
-          dislikes: updatedDislikes,
-        });
-      }
-    } catch (error) {
-      console.error("Error disliking reply:", error);
-      if (!handleAuthError(error, setError)) {
-        setError("Failed to dislike reply. Please try again.");
-      }
+    if (!handleAuthError(err, setError)) {
+      setError("Failed to dislike reply. Please try again.");
     }
-  };
+  }
+};
+
 
   // Helper to extract first model name from comment content
   const getFirstModelName = () => {
@@ -339,7 +384,7 @@ const ShowCommentContent = ({ reply }) => {
         </div>
 
         <div className="pt-1 flex items-center gap-2 text-xs text-black dark:text-gray-500">
-          <LikeDislike topic={reply} like={handleReplyLike} dislike={handleReplyDislike}/>
+          <LikeDislike2 topic={reply} like={handleReplyLike} dislike={handleReplyDislike} isLiked={isLiked} isDisliked={isDisliked} likeCount={replyLikes?.length} dislikeCount={replyDislikes?.length}/>
           {!isDeleted && (
             <button
               // onClick={() => setShowReplyBox(true)}

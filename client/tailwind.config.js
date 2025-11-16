@@ -10,6 +10,7 @@ module.exports = {
       colors:{
         bg_dark: '#000000',
         low_text:'#dadadb',
+        low_text2:'#939393ff',
         theme_color:'#fe711d',
         theme_color2 : '#fe792a',
         theme_color3:'#fe863e',   
