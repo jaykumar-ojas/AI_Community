@@ -54,17 +54,17 @@ const HeaderContent = ({ topic, onDelete }) => {
   }, []);
 
   useEffect(() => {
-    if (topic && loginData) {
+    if (topic) {
       setTopicLikes(topic?.likes || []);
       setTopicDislikes(topic?.dislikes || []);
-      setIsAuthor(topic?.userId === loginData?.validuserone._id);
     }
-  }, [topic, loginData]);
+  }, [topic]);
 
   useEffect(() => {
     if (loginData?.validuserone?._id) {
       setIsLiked(topicLikes.includes(loginData.validuserone._id));
       setIsDisLiked(topicDislikes.includes(loginData.validuserone._id));
+      setIsAuthor(topic?.userId === loginData?.validuserone._id);
     }
   }, [topicLikes, topicDislikes, loginData]);
 

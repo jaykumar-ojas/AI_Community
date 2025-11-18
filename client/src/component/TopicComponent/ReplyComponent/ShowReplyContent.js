@@ -101,19 +101,19 @@ const ShowReplyContent = ({
   };
 
   useEffect(() => {
-    if (reply && loginData) {
+    if (reply) {
       setReplyLikes(reply?.likes);
       setReplyDislikes(reply?.dislikes);
-      setIsAuthor(reply?.userId === loginData?.validuserone._id);
       const models = getAllModelNames();
       setModelNameArray(models);
     }
-  }, [reply, loginData]);
+  }, [reply]);
 
   useEffect(() => {
     if (loginData?.validuserone?._id) {
       setIsLiked(replyLikes?.includes(loginData.validuserone._id));
       setIsDisLiked(replyDislikes?.includes(loginData.validuserone._id));
+      setIsAuthor(reply?.userId === loginData?.validuserone._id);
     }
   }, [replyLikes, replyDislikes, loginData]);
 
