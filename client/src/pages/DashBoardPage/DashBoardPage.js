@@ -9,6 +9,7 @@ import { MasonrySkeletonGrid } from "./MansorySkeletonGrid";
 import { LoginContext } from "../../component/ContextProvider/context";
 import { handleGoogleLogin, validateToken } from "../../utils/authUtils";
 import { useNavigate, useOutletContext } from "react-router-dom";
+import ForumTicker from "../../component/AiForumPage/ForumTicker";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const fetchPosts = async ({ pageParam = 1 }) => {
@@ -199,7 +200,7 @@ const Page = () => {
               {/* Main content area */}
               <div
                 className={classNames(
-                  "transition-all duration-300 ease-in-out md:pl-2",
+                  "transition-all duration-300 md:w-[70%] ease-in-out md:pl-2",
                   showForum ? "hidden sm:flex sm:flex-1" : "flex-1"
                 )}
               >
@@ -221,8 +222,10 @@ const Page = () => {
                   >
                     <div
                       id="scrollableDiv"
-                      className="sm:h-[calc(100vh-4rem)] h-[calc(100vh-7.2rem)] overflow-y-auto no-scrollbar md:pt-2"
+                      className="sm:h-[calc(100vh-4rem)] h-[calc(100vh-7.2rem)] relative overflow-y-auto no-scrollbar" // i change it dont know the effect on infinite scroll
                     >
+                      {/* Desktop: Multi-column masonry */}
+                      {/* <ForumTicker/>                       */}
                       <div>
                         <Masonry
                           breakpointCols={breakpointColumnsObj}
