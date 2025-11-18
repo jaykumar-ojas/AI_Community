@@ -66,18 +66,36 @@ const imageModelsConfig = {
     aspectRatios: ["1:1", "16:9", "21:9", "2:3", "3:2", "4:5", "5:4", "9:16", "9:21"],
   },
   // --- Flux ---
-  "flux-pro": {
-    displayName: "Flux Pro",
-    provider: "flux",
-    emoji: "🌊",
-    aspectRatios: "3:7 to 7:3 (~1MP auto)", // handled dynamically
-  },
-  "flux-dev": {
-    displayName: "Flux Dev",
-    provider: "flux",
-    emoji: "🌊",
-    aspectRatios: "3:7 to 7:3 (~1MP auto)",
-  },
+ "flux-kontext-pro": {
+  displayName: "Flux Kontext Pro",
+  provider: "flux",
+  emoji: "🌊",
+  aspectRatios: ["1:1", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "16:9", "9:16", "7:3", "3:7"],
+},
+"flux-kontext-max": {
+  displayName: "Flux Kontext Max",
+  provider: "flux",
+  emoji: "🌊",
+  aspectRatios: ["1:1", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "16:9", "9:16", "7:3", "3:7"],
+},
+"flux-pro-1.1-ultra": {
+  displayName: "Flux Pro 1.1 Ultra",
+  provider: "flux",
+  emoji: "🌊",
+  aspectRatios: ["1:1", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "16:9", "9:16", "7:3", "3:7"],
+},
+"flux-pro-1.1": {
+  displayName: "Flux Pro 1.1",
+  provider: "flux",
+  emoji: "🌊",
+  aspectRatios: ["1:1", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "16:9", "9:16", "7:3", "3:7"],
+},
+"flux-dev": {
+  displayName: "Flux Dev",
+  provider: "flux",
+  emoji: "🌊",
+  aspectRatios: ["1:1", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "16:9", "9:16", "7:3", "3:7"],
+},
   // --- Imagen ---
    "imagen-4.0-generate-001": {
     displayName: "Imagen 4.0",
