@@ -314,7 +314,7 @@ useEffect(() => {
                     </Menu>
                   ) : (
                     <>
-                      <Link
+                      {/* <Link
                         to="/feedback"
                         className={classNames(
                           location.pathname === "/feedback"
@@ -323,8 +323,8 @@ useEffect(() => {
                           "px-2 font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200"
                         )}
                       >
-                        Feedback
-                      </Link>
+                      
+                      </Link> */}
                       <Link
                         to="/login"
                         className="px-3 py-2 rounded-md text-sm"
