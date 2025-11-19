@@ -12,10 +12,12 @@ import {
   BellIcon,
   HomeIcon,
   UserIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import {
   HomeIcon as HomeIconSolid,
   UserIcon as UserIconSolid,
+  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
 } from "@heroicons/react/24/solid";
 import logo from "./logo.png";
 import { useContext, createContext, useEffect } from "react";
@@ -60,6 +62,7 @@ const fetchUnreadCount = async ({ userId, baseUrl }) => {
 const navigation = [
   { name: "Home", href: "/" },
   { name: `generate image`, href: "/post" },
+  { name: "Feedback", href: "/feedback" },
 ];
 
 function classNames(...classes) {
@@ -291,6 +294,14 @@ useEffect(() => {
                           </Link>
                         </MenuItem>
                         <MenuItem>
+                          <Link
+                            to="/feedback"
+                            className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover`}
+                          >
+                            Feedback
+                          </Link>
+                        </MenuItem>
+                        <MenuItem>
                           <a
                             href="#"
                             onClick={handleLogout}
@@ -302,20 +313,33 @@ useEffect(() => {
                       </MenuItems>
                     </Menu>
                   ) : (
-                    <Link
-                      to="/login"
-                      className="px-3 py-2 rounded-md text-sm"
-                      aria-current={
-                        location.pathname === "/login" ? "page" : undefined
-                      }
-                    >
-                      <button
-                        type="button"
-                        className="p-1 px-2 rounded-md font-[Arial,sans-serif] font-semibold text-gray-800 dark:text-low_text dark:hover:bg-nav_hover dark:hover:text-theme_color"
+                    <>
+                      <Link
+                        to="/feedback"
+                        className={classNames(
+                          location.pathname === "/feedback"
+                            ? "text-theme_dark_color dark:text-theme_color"
+                            : "text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover",
+                          "px-2 font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200"
+                        )}
                       >
-                        Sign In
-                      </button>
-                    </Link>
+                        Feedback
+                      </Link>
+                      <Link
+                        to="/login"
+                        className="px-3 py-2 rounded-md text-sm"
+                        aria-current={
+                          location.pathname === "/login" ? "page" : undefined
+                        }
+                      >
+                        <button
+                          type="button"
+                          className="p-1 px-2 rounded-md font-[Arial,sans-serif] font-semibold text-gray-800 dark:text-low_text dark:hover:bg-nav_hover dark:hover:text-theme_color"
+                        >
+                          Sign In
+                        </button>
+                      </Link>
+                    </>
                   )}
                 </div>
               </div>
@@ -399,6 +423,14 @@ useEffect(() => {
                               `}
                           >
                             Your Profile
+                          </Link>
+                        </MenuItem>
+                        <MenuItem>
+                          <Link
+                            to="/feedback"
+                            className={`block px-4 py-2 text-sm hover:bg-gray-200 hover:text-theme_dark_color dark:hover:text-theme_color dark:text-low_text dark:bg-dark dark:hover:bg-nav_hover`}
+                          >
+                            Feedback
                           </Link>
                         </MenuItem>
                         <MenuItem>
