@@ -135,7 +135,10 @@ const Page = () => {
       {/* ---------------- Demo overlay (orange + grey themed) ---------------- */}
       {showDemo && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="
+  fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm
+  md:items-start md:pt-16
+"
           aria-modal="true"
           role="dialog"
         >
