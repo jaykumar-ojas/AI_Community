@@ -34,6 +34,7 @@ const aiModelRoutes = require("./routes/aiModelRoutes");
 const shareRoute = require("./routes/share");
 const seedingRoute = require('./routes/seedingRoute');
 const xmlRoute = require("./routes/xmlRoute");
+const promoCodeRoute = require("./routes/promoCode");
 
 
 
@@ -99,6 +100,7 @@ app.use("/", aiModelRoutes);
 app.use("/",shareRoute);
 app.use("/",seedingRoute);
 app.use("/",xmlRoute);
+app.use("/",promoCodeRoute);
 
 
 

@@ -51,6 +51,8 @@ const reduceCredit = async (userId,credit) => {
         await user.save();
 
 
+
+
         console.log(`Credit reduced. New credit: ${user.credit}`);
         return user.credit;
     } catch (error) {
@@ -58,26 +60,212 @@ const reduceCredit = async (userId,credit) => {
     }
 };
 
-const resetAllCredits = async () => {
+const DEFAULT_CREDIT = 300;
+const DEFAULT_CHUNK_SIZE = 500;
+
+
+async function resetCreditsForModel(model, opts = {}) {
+  const DEFAULT_CREDIT = 300;
+  const DEFAULT_CHUNK_SIZE = 500;
+
+  const defaultCredit = typeof opts.defaultCredit === "number" ? opts.defaultCredit : DEFAULT_CREDIT;
+  const chunkSize = typeof opts.chunkSize === "number" ? opts.chunkSize : DEFAULT_CHUNK_SIZE;
+
+  const pipeline = [
+    { $project: { _id: 1, promoCode: 1, credit: 1 } }, // include current credit to avoid extra reads
+    {
+      $addFields: {
+        sortedPromos: {
+          $cond: [
+            { $isArray: "$promoCode" },
+            {
+              $sortArray: {
+                input: "$promoCode",
+                sortBy: { priority: -1, appliedAt: -1 }
+              }
+            },
+            []
+          ]
+        }
+      }
+    },
+    { $project: { topPromo: { $arrayElemAt: ["$sortedPromos", 0] }, credit: 1 } }
+  ];
+
+  const ops = [];
+  let processed = 0;
+  let toUpdate = 0;
+  let updated = 0;
+
   try {
-    // Set all users' credit = 50
-    const userResult = await userdb.updateMany(
-      {}, // no filter → applies to all docs
-      { $set: { credit: 300 } }
-    );
+    // build aggregation
+    const agg = model.aggregate(pipeline);
 
-    // Set all google users' credit = 50
-    const googleResult = await googledb.updateMany(
-      {},
-      { $set: { credit: 300 } }
-    );
+    // Try to get a cursor (supported by mongoose aggregate)
+    let cursor;
+    try {
+      cursor = agg.cursor({ batchSize: 500 }); // DO NOT call .exec() on the cursor
+    } catch (e) {
+      // Some older setups may throw here; we'll handle fallback below
+      cursor = null;
+    }
 
-    console.log("✅ User collection reset:", userResult.modifiedCount);
-    console.log("✅ Google collection reset:", googleResult.modifiedCount);
+    if (cursor) {
+      // Preferred: use async iterator if available
+      if (typeof cursor[Symbol.asyncIterator] === "function") {
+        for await (const doc of cursor) {
+          processed++;
+          const top = doc.topPromo || null;
+          const currentCredit = typeof doc.credit === "number" ? doc.credit : null;
+
+          const newCredit =
+            top && typeof top.creditValue === "number" && !Number.isNaN(top.creditValue)
+              ? top.creditValue
+              : defaultCredit;
+
+          if (currentCredit !== null && currentCredit === newCredit) continue;
+
+          toUpdate++;
+          ops.push({
+            updateOne: {
+              filter: { _id: doc._id },
+              update: { $set: { credit: newCredit } }
+            }
+          });
+
+          if (ops.length >= chunkSize) {
+            const res = await model.bulkWrite(ops, { ordered: false });
+            updated += (res.modifiedCount ?? res.nModified ?? 0);
+            ops.length = 0;
+          }
+        }
+      } else if (typeof cursor.eachAsync === "function") {
+        // Older cursor API: use eachAsync
+        await cursor.eachAsync(async (doc) => {
+          processed++;
+          const top = doc.topPromo || null;
+          const currentCredit = typeof doc.credit === "number" ? doc.credit : null;
+
+          const newCredit =
+            top && typeof top.creditValue === "number" && !Number.isNaN(top.creditValue)
+              ? top.creditValue
+              : defaultCredit;
+
+          if (currentCredit !== null && currentCredit === newCredit) return;
+
+          toUpdate++;
+          ops.push({
+            updateOne: {
+              filter: { _id: doc._id },
+              update: { $set: { credit: newCredit } }
+            }
+          });
+
+          if (ops.length >= chunkSize) {
+            const res = await model.bulkWrite(ops, { ordered: false });
+            updated += (res.modifiedCount ?? res.nModified ?? 0);
+            ops.length = 0;
+          }
+        });
+      } else {
+        // Last-resort: load small batches via aggregate().exec() if cursor lacks useful iteration
+        const docs = await model.aggregate(pipeline).exec();
+        for (const doc of docs) {
+          processed++;
+          const top = doc.topPromo || null;
+          const currentCredit = typeof doc.credit === "number" ? doc.credit : null;
+
+          const newCredit =
+            top && typeof top.creditValue === "number" && !Number.isNaN(top.creditValue)
+              ? top.creditValue
+              : defaultCredit;
+
+          if (currentCredit !== null && currentCredit === newCredit) continue;
+
+          toUpdate++;
+          ops.push({
+            updateOne: {
+              filter: { _id: doc._id },
+              update: { $set: { credit: newCredit } }
+            }
+          });
+
+          if (ops.length >= chunkSize) {
+            const res = await model.bulkWrite(ops, { ordered: false });
+            updated += (res.modifiedCount ?? res.nModified ?? 0);
+            ops.length = 0;
+          }
+        }
+      }
+    } else {
+      // If .cursor() failed earlier, fallback to aggregation exec (may be memory heavy)
+      const docs = await model.aggregate(pipeline).exec();
+      for (const doc of docs) {
+        processed++;
+        const top = doc.topPromo || null;
+        const currentCredit = typeof doc.credit === "number" ? doc.credit : null;
+
+        const newCredit =
+          top && typeof top.creditValue === "number" && !Number.isNaN(top.creditValue)
+            ? top.creditValue
+            : defaultCredit;
+
+        if (currentCredit !== null && currentCredit === newCredit) continue;
+
+        toUpdate++;
+        ops.push({
+          updateOne: {
+            filter: { _id: doc._id },
+            update: { $set: { credit: newCredit } }
+          }
+        });
+
+        if (ops.length >= chunkSize) {
+          const res = await model.bulkWrite(ops, { ordered: false });
+          updated += (res.modifiedCount ?? res.nModified ?? 0);
+          ops.length = 0;
+        }
+      }
+    }
+
+    // flush remaining ops
+    if (ops.length > 0) {
+      const res = await model.bulkWrite(ops, { ordered: false });
+      updated += (res.modifiedCount ?? res.nModified ?? 0);
+      ops.length = 0;
+    }
+
+    return { success: true, processed, toUpdate, updated };
   } catch (err) {
-    console.error("❌ Error resetting credits:", err);
+    console.error("resetCreditsForModel error:", err);
+    return { success: false, error: err.message || String(err), processed, toUpdate, updated };
   }
-};
+}
+
+
+async function resetAllCredits() {
+  const userModel = userdb;
+  const googleModel = googledb;
+
+  try {
+    const tasks = [];
+    if (userModel) tasks.push(resetCreditsForModel(userModel));   // <-- opts removed
+    if (googleModel) tasks.push(resetCreditsForModel(googleModel)); // <-- opts removed
+
+    const [userRes, googleRes] = await Promise.all(tasks);
+
+    console.log("✅ User collection:", userRes);
+    console.log("✅ Google collection:", googleRes);
+
+    return { user: userRes, google: googleRes };
+  } catch (err) {
+    console.error("❌ Error resetting credits for collections:", err);
+    throw err;
+  }
+}
+
+
+
 
 
 module.exports = { validateCredit, reduceCredit,resetAllCredits };
