@@ -37,8 +37,8 @@ const authenticate = async(req, res, next) => {
             
             next();
         } catch (jwtError) {
-            console.log("JWT verification failed:", jwtError);
-            return res.status(401).json({status: 401, error: "Invalid token"});
+            console.log("please reLogin");
+            return res.status(401).json({status: 401, error: "your session expired please reLogin"});
         }
     } catch (error) {
         console.error("Authentication error:", error);

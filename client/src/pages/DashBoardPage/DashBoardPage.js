@@ -225,7 +225,7 @@ const Page = () => {
                       className="sm:h-[calc(100vh-4rem)] h-[calc(100vh-7.2rem)] relative overflow-y-auto no-scrollbar" // i change it dont know the effect on infinite scroll
                     >
                       {/* Desktop: Multi-column masonry */}
-                      {/* <ForumTicker/>                       */}
+                      <ForumTicker/>                      
                       <div>
                         <Masonry
                           breakpointCols={breakpointColumnsObj}

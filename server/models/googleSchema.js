@@ -13,6 +13,27 @@ const googleSchema = new mongoose.Schema({
     backgroundImageUrl: { type: String, default: "" },
     founding_member:{ type: Boolean, default:false},
     credit:{type:Number,default:300},
+    promoCode: [
+  {
+    code: {
+      type: String,
+      required: true
+    },
+    priority: {
+      type: Number,
+      default: 1
+    },
+    creditValue: {
+      type: Number,
+      default: 0
+    },
+    appliedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }
+],
+
     tokens :[
         {
         token:{

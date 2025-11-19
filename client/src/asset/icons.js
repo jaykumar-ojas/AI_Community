@@ -584,7 +584,7 @@ export const BookmarkIcon = ({ isBookmarked }) => {
 export const DynamicNumberSVG = ({ value, size=8 }) => {
   return (
    <div className={`loader border-r-2 rounded-full border-yellow-500 bg-yellow-300 
-aspect-square w-${size} text-xs flex justify-center items-center text-yellow-700`}>{value}</div>
+aspect-square w-${size} text-xs font-bold flex justify-center items-center text-yellow-900`}>{value}</div>
   );
 };
 

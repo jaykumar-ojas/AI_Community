@@ -34,6 +34,7 @@ import logoName from "./logoName.png";
 import Switch from "./toggle";
 import ModelTicker from "./ModelTicker";
 import { getAuthHeaders } from "../AiForumPage/components/ForumUtils";
+import PromoCard from "../Card/PromoCard";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 // Create context for forum visibility
 export const ForumContext = createContext();
@@ -224,13 +225,21 @@ useEffect(() => {
 
               {/* User icon bell icon */}
               <div className="flex items-center space-x-4">
-                {loginData && (
-                  <DynamicNumberSVG
-                    value={loginData ? loginData?.validuserone?.credit : 50}
-                  />
-                )}
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
+                   {loginData && <Menu as="div" className="relative z-10">
+                      <MenuButton className="flex w-full items-center focus:outline-none">
+                       <DynamicNumberSVG
+                    value={loginData ? loginData?.validuserone?.credit : 50}
+                  />
+                      </MenuButton>
+                      <MenuItems className="absolute right-0 mt-2 w-96">
+                        <MenuItem >
+                          <PromoCard/>
+                        </MenuItem>
+                       
+                      </MenuItems>
+                    </Menu>}
                   <Menu as="div" className="relative z-10">
                     <MenuButton
                       className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition"
@@ -262,18 +271,6 @@ useEffect(() => {
                       />
                     </MenuItems>
                   </Menu>
-
-                  {/* {showNotification && (
-                    <NotificationComponent
-                      isOpen={true}
-                      unread={unread}
-                      setUnread ={setUnread}
-                      onClose={() => {
-                        setShowNotification(false);
-                      }}
-                    />
-                  )} */}
-
                   {isAuthenticated() && loginData ? (
                     <Menu as="div" className="relative z-10">
                       <MenuButton className="flex items-center focus:outline-none">

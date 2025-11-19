@@ -22,6 +22,27 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
+    promoCode: [
+  {
+    code: {
+      type: String,
+      required: true
+    },
+    priority: {
+      type: Number,
+      default: 1
+    },
+    creditValue: {
+      type: Number,
+      default: 0
+    },
+    appliedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }
+],
+
     tokens:[
         {
             token:{
