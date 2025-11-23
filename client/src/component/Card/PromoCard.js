@@ -89,7 +89,7 @@ const PromoCard = ({ userId: propUserId } = {}) => {
 
   return (
     <div className="flex items-center justify-center rounded-2xl bg-gradient-to-b from-black via-zinc-900 to-black">
-      <button onClick={createPromoCode} className="z-50 text-low_text">make</button>
+      {/* <button onClick={createPromoCode} className="z-50 text-low_text">make</button> */}
       <form
         onSubmit={apply}
         className="w-full max-w-lg bg-white/3 dark:bg-white/5 border border-white/6 dark:border-white/10 rounded-2xl shadow-2xl p-6 md:p-4 text-white"

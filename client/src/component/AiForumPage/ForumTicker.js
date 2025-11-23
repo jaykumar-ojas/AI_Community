@@ -92,12 +92,12 @@ const ForumTicker = ({ sortType = "popular", limit = 20 }) => {
         <h2 className="text-lg md:text-md font-semibold text-gray-900 dark:text-low_text font-inter">
           Popular Communities
         </h2>
-        <button
+        {/* <button
           onClick={() => navigate("/forum")}
           className="text-sm md:text-sm text-theme_color hover:text-theme_color2 font-medium transition-colors"
         >
           View All →
-        </button>
+        </button> */}
       </div>
       {canScrollLeft && (
         <button

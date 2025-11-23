@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/standalone": "^7.28.5",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@headlessui/react": "^2.2.0",
@@ -20,6 +21,7 @@
     "hashids": "^2.3.0",
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.469.0",
+    "mermaid": "^11.12.1",
     "motion": "^12.23.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
