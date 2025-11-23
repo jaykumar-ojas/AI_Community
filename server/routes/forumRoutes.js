@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const ForumTopic = require('../models/forumTopicSchema');
 const ForumReply = require('../models/forumReplySchema');
@@ -10,6 +11,8 @@ const { modelSelection } = require('../middleware/LLMmiddleware');
 const {deleteForumById} = require('../middleware/DeleteMiddleware');
 const notifiyUser = require("../middleware/notification");
 const { decodeId, encodeId } = require('../utils/hashids');
+const userdb = require('../models/userSchema');
+const googledb = require('../models/googleSchema');
 const upload = multer({
   storage: multer.memoryStorage(),   // keep files in memory buffer
   limits: {
@@ -754,6 +757,119 @@ router.post('/replies',authenticate,upload.array('media', 5),awsuploadMiddleware
     }
   }
 );
+
+
+router.post("/topic/joined/:topicId", authenticate, async (req, res) => {
+  try {
+    console.log("i come here");
+    const userId = req.userId || req.body.userId;
+    const topicId = req.params.topicId;
+
+    console.log("boring");
+
+    if (!userId) {
+      return res.status(401).json({ message: "User not logged in" });
+    }
+    if (!topicId) {
+      return res.status(400).json({ message: "Topic id is required" });
+    }
+
+    // If you use a decode step for topic ids, call it here; otherwise use rawTopicId
+
+    // validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(topicId)) {
+      return res.status(400).json({ message: "Invalid userId or topicId" });
+    }
+
+    // find user and topic
+    const user = await userdb.findById(userId) || await googledb.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const topic = await ForumTopic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ message: "Topic not found" });
+    }
+
+    // ensure arrays exist
+    user.joined = Array.isArray(user.joined) ? user.joined : [];
+    topic.joined = Array.isArray(topic.joined) ? topic.joined : [];
+
+    const userIdStr = user._id.toString();
+    const topicIdStr = topic._id.toString();
+
+    const alreadyJoined = topic.joined.some((id) => id.toString() === userIdStr);
+
+    if (alreadyJoined) {
+      // Unjoin: remove user from topic.joined and topic from user.joined
+      topic.joined.pull(user._id); // Mongoose array helper
+      user.joined.pull(topic._id);
+
+      await Promise.all([topic.save(), user.save()]);
+
+      return res.status(200).json({
+        message: "Left topic successfully",
+        joined: false,
+        topicId: topicIdStr,
+        userId: userIdStr,
+      });
+    } else {
+      // Join: add user to topic.joined and topic to user.joined
+      // Prevent duplicates just in case
+      if (!topic.joined.some((id) => id.toString() === userIdStr)) {
+        topic.joined.push(user._id);
+      }
+      if (!user.joined.some((id) => id.toString() === topicIdStr)) {
+        user.joined.push(topic._id);
+      }
+
+      await Promise.all([topic.save(), user.save()]);
+
+      return res.status(200).json({
+        message: "Joined topic successfully",
+        joined: true,
+        topicId: topicIdStr,
+        userId: userIdStr,
+      });
+    }
+  } catch (error) {
+    console.error("Error in /topic/joined/:topicId ->", error);
+  }
+});
+
+
+router.post("/topics/batch", async (req, res) => {
+  try {
+    console.log("i come here in batch");
+    const { topicIds, populateAuthor = false } = req.body;
+    if (!Array.isArray(topicIds) || topicIds.length === 0) {
+      return res.status(400).json({ message: "topicIds must be a non-empty array" });
+    }
+    const validatedIds = topicIds
+      .map((id) => (typeof id === "string" ? id.trim() : id))
+      .filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+    if (validatedIds.length === 0) {
+      return res.status(400).json({ message: "No valid topicIds provided" });
+    }
+
+    // Query topics that match any of the ids
+    let query = ForumTopic.find({ _id: { $in: validatedIds } });
+
+    const topics = await query.exec();
+
+    const topicsById = new Map(topics.map((t) => [t._id.toString(), t]));
+    const ordered = validatedIds.map((id) => topicsById.get(id) || null).filter(Boolean);
+
+    return res.status(200).json({ topics: ordered, count: ordered.length });
+  } catch (err) {
+    console.error("Error in POST /topics/batch:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+
 
 
 

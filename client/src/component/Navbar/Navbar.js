@@ -62,6 +62,7 @@ const fetchUnreadCount = async ({ userId, baseUrl }) => {
 const navigation = [
   { name: "Home", href: "/" },
   { name: `generate image`, href: "/post" },
+  {name: 'Community', href:'/forum'}
   { name: "Feedback", href: "/feedback" },
 ];
 

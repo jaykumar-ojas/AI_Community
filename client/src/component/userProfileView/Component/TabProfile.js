@@ -3,10 +3,12 @@ import Audio from "./Audio";
 import Video from "./Video";
 import Image from "./Image";
 import Saved from "./Saved";
+import Community from "./Community";
 
-const tabs = ["Image", "Video", "Audio", "Saved"];
+const tabs = ["Image", "Video", "Audio","Community", "Saved"];
 
-const TabProfile = ({ posts = [], isLoading, isError, error }) => {
+const TabProfile = ({ posts = [],community =[] ,isLoading, isError, error }) => {
+  console.log("this is my coommuntiy",community);
   const [activeTab, setActiveTab] = useState("Image");
 
   const image = useMemo(() => posts.filter((post) => post.fileType === "image"), [posts]);
@@ -38,6 +40,7 @@ const TabProfile = ({ posts = [], isLoading, isError, error }) => {
         {activeTab === "Image" && <Image data={image} />}
         {activeTab === "Video" && <Video data={video} />}
         {activeTab === "Audio" && <Audio data={audio} />}
+        {activeTab == "Community" && <Community data = {community}/>}
         {activeTab === "Saved" && <Saved/>}
       </div>
     </>

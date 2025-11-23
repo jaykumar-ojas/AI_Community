@@ -19,7 +19,7 @@ const fetchUserPosts = async (userId) => {
   if (data.status !== 200) {
     throw new Error("Failed to fetch posts");
   }
-  return data.userposts;
+  return data;
 };
 
 const UserProfile = () => {
@@ -42,7 +42,7 @@ const UserProfile = () => {
         <UserHeader posts={posts} isLoading={isLoading} isError={isError} error={error} />
         {/* Content Section */}
         <div className="p-4 border-gray-200 text-white">
-          <TabProfile posts={posts} isLoading={isLoading} isError={isError} error={error} />
+          <TabProfile posts={posts?.userposts} community= {posts?.community} isLoading={isLoading} isError={isError} error={error} />
         </div>
       </div>
     </div>
