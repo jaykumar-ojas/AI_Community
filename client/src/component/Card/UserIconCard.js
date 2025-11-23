@@ -36,7 +36,7 @@ const UserIconCard = ({ id }) => {
         e.stopPropagation();
         navigate(`/userprofile/${encodeId(id)}`);
       }}
-      className="relative z-10 w-full h-full rounded-full overflow-hidden cursor-pointer"
+      className="relative  w-full h-full rounded-full overflow-hidden cursor-pointer"
     >
       {isLoading ? (
         <Skeleton

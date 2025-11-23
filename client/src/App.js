@@ -93,6 +93,7 @@ const router = createBrowserRouter([
       {path: "forum", element: <ForumSystem/>},
       {path: "feedback", element: <FeedbackPage/>},
       {path:"notification", element:<NotificationComponent/>}
+      
     ]
   },
    { path: "/login", element: <BackgroundWrapper><Login /></BackgroundWrapper> },

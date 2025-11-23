@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +18,7 @@ import UserReply from "../UserReply/UserReply";
 import HeaderSkeleton from "./components/HeaderSkeleton";
 import { encodeId } from '../../utils/hashids';
 import ShareFile from "../Share/ShareFile";
+import UserJoined from "../AiForumPage/components/UserJoined";
 
 
 
@@ -31,6 +32,7 @@ const fetchTopic = async (topicId) => {
 const TopicContent = () => {
   const { topicId } = useParams();
   const { loginData } = useContext(LoginContext);
+  const [isJoined,setIsJoined] = useState(false);
   const { setReplyIdForContext,setUserName, viewBox, setViewBox } =useContext(ForumContext);
   const mobileReplyRef = useRef(null);
   const navigate = useNavigate();
@@ -42,6 +44,8 @@ const TopicContent = () => {
     setUserName(null);
     setViewBox(false);
   },[]);
+
+  
 
   // Close mobile reply box when clicking outside
   // useEffect(() => {
@@ -77,6 +81,13 @@ const TopicContent = () => {
     },
   });
 
+  useEffect(()=>{
+    if(topic){
+      const isMember = topic?.joined.includes(loginData?.validuserone?._id);
+      setIsJoined(isMember);
+    }
+  },[topic]);
+
   const isTopicLiked = true;
   const isTopicDisliked = false;
   const threadView = null;
@@ -106,6 +117,7 @@ const TopicContent = () => {
         <div className="font-semibold font-playfair text-sm md:text-lg text-black dark:text-text_header flex-1">
           {threadView ? "Thread" : topic?.title}
         </div>
+        <UserJoined topic={topic} isJoined={isJoined} setIsJoined={setIsJoined}/>
         <ShareFile pos={"top-6 right-3"} id={topic?._id} type={"forumog"} text={topic?.title.slice(0,200)}/>
       </div>
 
