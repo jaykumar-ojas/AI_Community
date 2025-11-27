@@ -170,12 +170,12 @@ router.post('/get', async (req, res) => {
             return res.status(400).json({ status: 400, error: "Invalid user ID" });
         }
         const userposts = await postdb.find({ userId: realUserId });
-
+        const user = await userdb.findById(realUserId) || await googledb.findById(realUserId);
         if (!userposts || userposts.length === 0) {
             return res.status(200).json({ status: 200, userposts: [] });
         }
 
-        res.status(200).json({ status: 200, userposts: userposts });
+        res.status(200).json({ status: 200, userposts: userposts, community:user.joined });
     }
     catch (error) {
         console.error("Error retrieving user posts:", error);

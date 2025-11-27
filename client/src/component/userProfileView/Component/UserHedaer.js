@@ -41,7 +41,6 @@ const UserHeader = ({ posts = [], isLoading, isError, error }) => {
   const [profileUser, setProfileUser] = useState();
   const { id } = useParams();
   const baseUrl = process.env.REACT_APP_BASE_URL;
-  console.log(profileUser);
 
   useEffect(() => {
     // console.log("Login data:", loginData);

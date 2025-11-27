@@ -63,6 +63,7 @@ const navigation = [
   { name: "Home", href: "/" },
   { name: `generate image`, href: "/post" },
   { name: "AI Chat", href: "/ai-chat" },
+  {name: 'Community', href:'/forum'}
   { name: "Feedback", href: "/feedback" },
 ];
 

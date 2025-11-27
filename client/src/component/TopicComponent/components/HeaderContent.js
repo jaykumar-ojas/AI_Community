@@ -21,9 +21,6 @@ import {
 } from "../../../asset/icons";
 import HeaderSkeleton from "./HeaderSkeleton";
 import { parseMarkdown } from "../../../utils/parseMarkdown";
-import { useMathJaxAndHighlight } from "../../../utils/useMathJaxAndHighlight";
-import LikeDislike from "../../Card/LikeDislike";
-import ShareFile from "../../Share/ShareFile";
 import LikeDislike2 from "../../Card/LikeDislike2";
 // Add a simple three dots icon (vertical ellipsis)
 
