@@ -6,7 +6,7 @@ const { llmConfig, streamingFunctions } = require("../config/modelconfig");
 const modelCreditConfig = require("../config/modelCreditConfig");
 const { reduceCredit, validateCredit } = require("../middleware/validateCredit");
 const authenticate = require("../middleware/authenticate");
-const fetch = require("node-fetch"); 
+const fetch = require("node-fetch");
 
 router.post("/run", async (req, res) => {
   const { language, code } = req.body;
@@ -89,7 +89,7 @@ const validateRequest = (req, res, next) => {
 router.post("/generateContent/stream", authenticate, validateRequest, validateCredit, async (req, res) => {
   try {
     const { model, prompt, type, provider, aspectRatio } = req.body;
-    
+
     // Only support streaming for text generation
     if (type !== "text") {
       return res.status(400).json({
@@ -106,26 +106,26 @@ router.post("/generateContent/stream", authenticate, validateRequest, validateCr
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     const modelFunctions = req.modelFunction;
-    
+
     try {
       // Get streaming function if available
       const modelFunc = req.modelFunction;
       const funcName = modelFunc.name;
       const streamingFunc = streamingFunctions[funcName];
-      
+
       if (streamingFunc) {
         let fullResponse = "";
-        
+
         for await (const chunk of streamingFunc(prompt, model, aspectRatio)) {
           const chunkText = chunk.delta?.content || chunk.content || chunk;
-          
+
           if (chunkText) {
             fullResponse += chunkText;
-            
+
             // Send chunk to client
-            res.write(`data: ${JSON.stringify({ 
-              type: 'chunk', 
-              content: chunkText 
+            res.write(`data: ${JSON.stringify({
+              type: 'chunk',
+              content: chunkText
             })}\n\n`);
           }
         }
@@ -133,33 +133,33 @@ router.post("/generateContent/stream", authenticate, validateRequest, validateCr
         // Send completion signal
         const modelCredit = modelCreditConfig[type][model].cost;
         const credit = await reduceCredit(req.userId, modelCredit);
-        
-        res.write(`data: ${JSON.stringify({ 
-          type: 'complete', 
-          credit: credit 
+
+        res.write(`data: ${JSON.stringify({
+          type: 'complete',
+          credit: credit
         })}\n\n`);
-        
+
         res.end();
       } else {
         // Fallback to non-streaming if streaming not available
         const func = modelFunctions;
         const response = await func(prompt, model, aspectRatio);
-        
+
         const modelCredit = modelCreditConfig[type][model].cost;
         const credit = await reduceCredit(req.userId, modelCredit);
-        
-        res.write(`data: ${JSON.stringify({ 
-          type: 'complete', 
-          data: response, 
-          credit: credit 
+
+        res.write(`data: ${JSON.stringify({
+          type: 'complete',
+          data: response,
+          credit: credit
         })}\n\n`);
-        
+
         res.end();
       }
     } catch (error) {
-      res.write(`data: ${JSON.stringify({ 
-        type: 'error', 
-        error: error.message 
+      res.write(`data: ${JSON.stringify({
+        type: 'error',
+        error: error.message
       })}\n\n`);
       res.end();
     }
@@ -171,18 +171,18 @@ router.post("/generateContent/stream", authenticate, validateRequest, validateCr
   }
 });
 
-router.post("/generateContent",authenticate, validateRequest, validateCredit, async (req, res) => {
+router.post("/generateContent", authenticate, validateRequest, validateCredit, async (req, res) => {
   try {
-    const { model, prompt, type, provider, aspectRatio} = req.body;
+    const { model, prompt, type, provider, aspectRatio } = req.body;
     // Get the function for the specific model from the provider
     const modelFunctions = req.modelFunction;
     console.log("model function", aspectRatio);
-   const func = modelFunctions;
- //  const response = { imageUrl: "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"};
+    const func = modelFunctions;
+    //  const response = { imageUrl: "https://pixxelmindbucket.s3.eu-north-1.amazonaws.com/eaef348587b9ac0bc206d817d07a0523952432a1d1dd6cefa01c294c9681f576"};
     const response = await func(prompt, model, aspectRatio);
 
-   //console.log("response from model function:", response);
- 
+    //console.log("response from model function:", response);
+
     // const response = await new Promise((resolve) => {
     //   setTimeout(() => {
     //     resolve({
@@ -191,10 +191,10 @@ router.post("/generateContent",authenticate, validateRequest, validateCredit, as
     //   }, 10000); // 5 seconds
     // });
 
-   let credit = 0;
-    if(response?.text || response?.imageUrl || response?.imageData){
+    let credit = 0;
+    if (response?.text || response?.imageUrl || response?.imageData) {
       const modelCredit = modelCreditConfig[type][model].cost;
-      credit =await reduceCredit(req.userId,modelCredit);
+      credit = await reduceCredit(req.userId, modelCredit);
     }
 
     console.log(response);

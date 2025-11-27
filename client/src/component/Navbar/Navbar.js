@@ -62,6 +62,7 @@ const fetchUnreadCount = async ({ userId, baseUrl }) => {
 const navigation = [
   { name: "Home", href: "/" },
   { name: `generate image`, href: "/post" },
+  { name: "AI Chat", href: "/ai-chat" },
   { name: "Feedback", href: "/feedback" },
 ];
 
@@ -79,21 +80,21 @@ export default function Navbar({ showForum, setShowForum }) {
   const userId = loginData?.validuserone?._id || null;
 
   const { data: unreadSummary, refetch: refetchUnread, isFetching: isFetchingUnread, error: unreadError } = useQuery({
-  queryKey: ["notificationsUnread", userId],
-  queryFn: () => fetchUnreadCount({ userId, baseUrl }),
-  enabled: !!userId,
-  refetchInterval: 5 * 60 * 1000, // 5 minutes
-  refetchIntervalInBackground: true, // keeps polling in background tabs (optional)
-  staleTime: 60_000, // 1 minute - adjust as needed
-  cacheTime: 2 * 60_000, // 2 minutes
-  retry: 1,
-});
+    queryKey: ["notificationsUnread", userId],
+    queryFn: () => fetchUnreadCount({ userId, baseUrl }),
+    enabled: !!userId,
+    refetchInterval: 5 * 60 * 1000, // 5 minutes
+    refetchIntervalInBackground: true, // keeps polling in background tabs (optional)
+    staleTime: 60_000, // 1 minute - adjust as needed
+    cacheTime: 2 * 60_000, // 2 minutes
+    retry: 1,
+  });
 
-useEffect(() => {
-  if (!userId) return;
-  const count = unreadSummary?.unreadCount ?? 0;
-  setUnread(count);
-}, [unreadSummary, setUnread, userId]);
+  useEffect(() => {
+    if (!userId) return;
+    const count = unreadSummary?.unreadCount ?? 0;
+    setUnread(count);
+  }, [unreadSummary, setUnread, userId]);
 
 
   useEffect(() => {
@@ -230,25 +231,24 @@ useEffect(() => {
               <div className="flex items-center space-x-4">
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
-                   {loginData && <Menu as="div" className="relative z-10">
-                      <MenuButton className="flex w-full items-center focus:outline-none">
-                       <DynamicNumberSVG
-                    value={loginData ? loginData?.validuserone?.credit : 50}
-                  />
-                      </MenuButton>
-                      <MenuItems className="absolute right-0 mt-2 w-96">
-                        <MenuItem >
-                          <PromoCard/>
-                        </MenuItem>
-                       
-                      </MenuItems>
-                    </Menu>}
+                  {loginData && <Menu as="div" className="relative z-10">
+                    <MenuButton className="flex w-full items-center focus:outline-none">
+                      <DynamicNumberSVG
+                        value={loginData ? loginData?.validuserone?.credit : 50}
+                      />
+                    </MenuButton>
+                    <MenuItems className="absolute right-0 mt-2 w-96">
+                      <MenuItem >
+                        <PromoCard />
+                      </MenuItem>
+
+                    </MenuItems>
+                  </Menu>}
                   <Menu as="div" className="relative z-10">
                     <MenuButton
                       className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition"
-                      aria-label={`Notifications${
-                        unread > 0 ? `, ${unread} unread` : ""
-                      }`}
+                      aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""
+                        }`}
                     >
                       <div className="relative">
                         <BellIcon className="h-6 w-6 stroke-[2]" />
@@ -269,7 +269,7 @@ useEffect(() => {
                     >
                       {/* pass unread & setUnread so NotificationComponent can update parent */}
                       <NotificationComponent
-                        onClose={() => {}}
+                        onClose={() => { }}
                         setUnread={setUnread}
                       />
                     </MenuItems>
@@ -387,7 +387,7 @@ useEffect(() => {
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
                   <Menu as="div" className="relative z-10">
-                    <MenuButton onClick={()=>{navigate('/notification')}} className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
+                    <MenuButton onClick={() => { navigate('/notification') }} className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
                       <BellIcon className="h-6 w-6 " />
                     </MenuButton>
                     {/* <MenuItems
@@ -477,9 +477,9 @@ useEffect(() => {
             const props = item.isTab
               ? { onClick: item.onClick }
               : {
-                  to: item.href,
-                  onClick: item.onClick, // Add onClick for all items that have it
-                };
+                to: item.href,
+                onClick: item.onClick, // Add onClick for all items that have it
+              };
 
             return (
               <Component

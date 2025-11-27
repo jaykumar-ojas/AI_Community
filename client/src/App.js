@@ -7,7 +7,7 @@ import Register from "./component/Auth/Register";
 //import UserProfile from "./component/UserProfile/userProfile";
 import Error from "./component/Error/error";
 import UpdatePassword from "./component/Auth/updatePassword";
-import { createBrowserRouter, RouterProvider, useLocation, useNavigate,Outlet } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useLocation, useNavigate, Outlet } from "react-router-dom";
 import React, { useState } from "react";
 import Context from "./component/ContextProvider/context";
 import ForgotPassword from "./component/Auth/ForgotPassword";
@@ -17,14 +17,14 @@ import AIAggregator from "./component/AIchatbot/chatbot";
 import { WebSocketProvider } from "./component/AiForumPage/components/WebSocketContext";
 import NewTopicModal from "./component/AiForumPage/components/NewTopicModal";
 import TopicContent from "./component/TopicComponent/TopicContent";
-import  ForumContext  from "./component/ContextProvider/ModelContext";
+import ForumContext from "./component/ContextProvider/ModelContext";
 import 'react-image-crop/dist/ReactCrop.css';
 import PixelLoader from "./component/Loader/PixelLoader";
 import UserProfile from "./component/userProfileView/userProfile";
 import PostImage from "./component/PostImage/PostImage";
 import UserEdit from "./component/userProfileView/UserEdit";
 import CommentModelProvider from "./component/ContextProvider/CommentModelContext";
-import {BackgroundBeams} from "./component/ui/background-beams";
+import { BackgroundBeams } from "./component/ui/background-beams";
 
 import { PostContext } from "./component/PostImage/PostContext";
 
@@ -35,11 +35,12 @@ import FeedbackPage from "./component/Navbar/feedback";
 import { ModelsProvider } from "./component/PostImage/ModelsContext";
 import PostProvider from "./component/PostImage/PostContext";
 import NotificationComponent from "./component/Notification/Notification";
+import AIChatPage from "./pages/AiChatPage/AIChatPage";
 
 const Layout = () => {
   const location = useLocation();
   const [showForum, setShowForum] = useState(false);
-  
+
   // Paths where you do NOT want the Navbar to appear
   const noNavbarPaths = ["/login", "/register", "/forgot-password"];
   const shouldHideNavbar = noNavbarPaths.includes(location.pathname);
@@ -48,7 +49,7 @@ const Layout = () => {
     <div className="flex flex-col h-screen relative">
       {/* Single BackgroundBeams for the entire layout */}
       <BackgroundBeams className="absolute inset-0 z-0" />
-      
+
       {/* Content overlay - make sure it's above the background */}
       <div className="relative z-10 flex flex-col h-screen">
         {!shouldHideNavbar && <Navbar showForum={showForum} setShowForum={setShowForum} />}
@@ -88,33 +89,34 @@ const router = createBrowserRouter([
       { path: "t/:topicId", element: <TopicContent /> },
       { path: "loader", element: <PixelLoader /> },
       { path: "sample-user/:id", element: <UserProfile /> },
-      { path: "post", element:<PostImage/>},
-      {path: "userPost/edit/:id?", element: <UserEdit/>},
-      {path: "forum", element: <ForumSystem/>},
-      {path: "feedback", element: <FeedbackPage/>},
-      {path:"notification", element:<NotificationComponent/>}
+      { path: "post", element: <PostImage /> },
+      { path: "userPost/edit/:id?", element: <UserEdit /> },
+      { path: "forum", element: <ForumSystem /> },
+      { path: "ai-chat", element: <AIChatPage /> },
+      { path: "feedback", element: <FeedbackPage /> },
+      { path: "notification", element: <NotificationComponent /> }
     ]
   },
-   { path: "/login", element: <BackgroundWrapper><Login /></BackgroundWrapper> },
+  { path: "/login", element: <BackgroundWrapper><Login /></BackgroundWrapper> },
   { path: "/register", element: <BackgroundWrapper><Register /></BackgroundWrapper> },
   { path: "*", element: <BackgroundWrapper><Error /></BackgroundWrapper> },
 ]);
 
 function App() {
-  return (  
+  return (
     <Context>
       <NotificationProvider>
-      <WebSocketProvider>
-        <PostProvider>
-        <ForumContext>
-          <CommentModelProvider>
-            <ModelsProvider>
-                <RouterProvider router={router} />
-              </ModelsProvider>
-          </CommentModelProvider>
-        </ForumContext>
-        </PostProvider>
-      </WebSocketProvider>
+        <WebSocketProvider>
+          <PostProvider>
+            <ForumContext>
+              <CommentModelProvider>
+                <ModelsProvider>
+                  <RouterProvider router={router} />
+                </ModelsProvider>
+              </CommentModelProvider>
+            </ForumContext>
+          </PostProvider>
+        </WebSocketProvider>
       </NotificationProvider>
     </Context>
   );

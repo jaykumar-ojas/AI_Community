@@ -17,7 +17,7 @@ const ShowGeneratedContent = ({ postingData, conversationHistory = [], scrollCon
   const scrollToBottom = (forceScroll = false) => {
     if (scrollContainerRef?.current) {
       const container = scrollContainerRef.current;
-      
+
       if (forceScroll) {
         requestAnimationFrame(() => {
           container.scrollTop = container.scrollHeight;
@@ -54,7 +54,7 @@ const ShowGeneratedContent = ({ postingData, conversationHistory = [], scrollCon
       const interval = setInterval(() => {
         scrollToBottom(true);
       }, 30);
-      
+
       return () => clearInterval(interval);
     }
   }, [postingData]);
@@ -92,8 +92,8 @@ const ShowGeneratedContent = ({ postingData, conversationHistory = [], scrollCon
                 <ImageSkeleton />
               ) : (
                 item.aiText ? (
-                  <ShowAiText 
-                    aiText={item.aiText} 
+                  <ShowAiText
+                    aiText={item.aiText}
                     modelInfo={item.modelInfo}
                     isMemoryAware={conversationHistory && conversationHistory.length > 0}
                     isStreaming={true}
@@ -104,8 +104,8 @@ const ShowGeneratedContent = ({ postingData, conversationHistory = [], scrollCon
               )
             ) : (
               <>
-                <ShowAiText 
-                  aiText={item.aiText} 
+                <ShowAiText
+                  aiText={item.aiText}
                   modelInfo={item.modelInfo}
                   isMemoryAware={conversationHistory && conversationHistory.length > 0}
                 />
@@ -160,7 +160,7 @@ const ShowAiText = ({ aiText, modelInfo, isStreaming = false }) => {
 
   // Extract code blocks from the AI text
   const codeBlocks = extractCodeBlocks(aiText);
-  
+
   // Remove code blocks from text for regular markdown rendering
   let textWithoutCode = aiText;
   codeBlocks.forEach((block) => {
@@ -179,10 +179,10 @@ const ShowAiText = ({ aiText, modelInfo, isStreaming = false }) => {
               const block = codeBlocks.find(b => b.index === blockIndex);
               if (block) {
                 return (
-                  <CodePreview 
+                  <CodePreview
                     key={`code-${idx}`}
-                    code={block.code} 
-                    language={block.language} 
+                    code={block.code}
+                    language={block.language}
                   />
                 );
               }
@@ -353,7 +353,7 @@ const LoadingMessage = ({ type = "text" }) => {
     "🔔 Just a moment, magic is ringing...",
     "🏆 Done soon — a work of art is coming!"
   ];
-  
+
   const phrases = type === "image" ? imagePhrases : textPhrases;
   const [index, setIndex] = useState(0);
 

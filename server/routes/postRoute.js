@@ -86,7 +86,7 @@ router.post('/upload', upload.single('file'), awsuploadMiddleware, async (req, r
                 console.error('❌ Failed to generate embedding for post:', storePost._id, embeddingError.message);
             });
         }
-        
+
         res.status(201).json({ status: 201, storePost });
 
     } catch (error) {
@@ -323,15 +323,89 @@ router.get('/allget', async (req, res) => {
         const skip = (page - 1) * limit;
         console.log("page no for post", page);
 
-        // Find posts with pagination - sorted by latest createdAt first
-        const userposts = await postdb.find()
-            .sort({ createdAt: -1 })  // 🔥 latest first
-            .skip(skip)  
-            .limit(limit + 1); // Request one extra item to check if more exist
+        const pipeline = [
+            // 1. Start with all posts
+            {
+                $project: {
+                    _id: 1,
+                    userId: 1,
+                    desc: 1,
+                    imgKey: 1,
+                    imgUrl: 1,
+                    fileType: 1,
+                    isAIGenerated: 1,
+                    aiModel: 1,
+                    aiProvider: 1,
+                    aiPrompt: 1,
+                    aiGeneratedAt: 1,
+                    likes: 1,
+                    dislikes: 1,
+                    bookMark: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    type: "post" // Mark as regular post
+                }
+            },
+            // 2. Union with comments that have images
+            {
+                $unionWith: {
+                    coll: "postcomments", // Ensure this matches your collection name in MongoDB
+                    pipeline: [
+                        {
+                            $match: {
+                                $or: [
+                                    { "content.imageUrl.fileUrl": { $exists: true, $ne: "" } },
+                                    { "mediaAttachments.fileUrl": { $exists: true, $ne: "" } }
+                                ]
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 1,
+                                userId: 1,
+                                postId: 1, // We need this to link back
+                                // Try to get description from userText, aiText, or just generic
+                                desc: {
+                                    $ifNull: [
+                                        { $arrayElemAt: ["$content.userText", 0] },
+                                        { $arrayElemAt: ["$content.aiText", 0] },
+                                        ""
+                                    ]
+                                },
+                                // Extract image URL (prioritize content.imageUrl over mediaAttachments)
+                                imgUrl: {
+                                    $cond: {
+                                        if: { $ne: [{ $arrayElemAt: ["$content.imageUrl.fileUrl", 0] }, null] },
+                                        then: { $arrayElemAt: ["$content.imageUrl.fileUrl", 0] },
+                                        else: { $arrayElemAt: ["$mediaAttachments.fileUrl", 0] }
+                                    }
+                                },
+                                fileType: "image", // Assume image for now
+                                likes: 1,
+                                dislikes: 1,
+                                createdAt: 1,
+                                updatedAt: 1,
+                                type: "comment_ref", // Mark as comment reference
+                                isCommentRef: { $literal: true },
+                                refPostId: "$postId",
+                                refCommentId: "$_id"
+                            }
+                        }
+                    ]
+                }
+            },
+            // 3. Sort by createdAt descending
+            { $sort: { createdAt: -1 } },
+            // 4. Pagination
+            { $skip: skip },
+            { $limit: limit + 1 } // Fetch one extra to check for hasMore
+        ];
+
+        const mixedResults = await postdb.aggregate(pipeline);
 
         // Check if there are more posts
-        const hasMore = userposts.length > limit;
-        const postsToReturn = hasMore ? userposts.slice(0, limit) : userposts;
+        const hasMore = mixedResults.length > limit;
+        const postsToReturn = hasMore ? mixedResults.slice(0, limit) : mixedResults;
 
         res.status(200).json({
             status: 200,
@@ -342,7 +416,7 @@ router.get('/allget', async (req, res) => {
     }
     catch (error) {
         console.error("Error retrieving all posts:", error);
-        res.status(422).json({ status: 422, error });
+        res.status(422).json({ status: 422, error: error.message });
     }
 });
 
@@ -416,14 +490,14 @@ router.post('/:id/like', async (req, res) => {
                 { _id: postId },
                 updateOperation
             );
-                notifiyUser({
-                    parentId: postId,
-                    userId,
-                    postId: postId,
-                    desc: "",
-                    type: "post",
-                    action: "like"
-                });
+            notifiyUser({
+                parentId: postId,
+                userId,
+                postId: postId,
+                desc: "",
+                type: "post",
+                action: "like"
+            });
             res.status(200).json({
                 message: "Post liked successfully"
             });

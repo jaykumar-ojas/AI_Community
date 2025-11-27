@@ -2,16 +2,16 @@ const express = require("express");
 const dotenv = require("dotenv"); // Import dotenv
 const app = express();
 const cors = require("cors");
-const cookieparser= require("cookie-parser")
+const cookieparser = require("cookie-parser")
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 // const serverless = require("serverless-http");
 const io = new Server(server, {
   cors: {
-    origin: ["https://pixxelmind.com", "http://localhost:3000", "http://192.168.31.212:3000","https://www.pixxelmind.com"],
+    origin: ["https://pixxelmind.com", "http://localhost:3000", "http://192.168.31.212:3000", "https://www.pixxelmind.com"],
     methods: ["GET", "POST"],
-    credentials:true
+    credentials: true
   }
 });
 
@@ -19,10 +19,10 @@ const io = new Server(server, {
 const awsRoute = require("./routes/awsRoute");
 const postRoute = require("./routes/postRoute");
 const googleRoute = require("./routes/googleRoute");
-const userRouter= require("./routes/userRoute")
+const userRouter = require("./routes/userRoute")
 const otpRouter = require("./routes/otpRoute");
 const forgetOtpRoute = require("./routes/forgetOtpRoute");
-const commentsRouter = require("./routes/comments"); 
+const commentsRouter = require("./routes/comments");
 const forumRoutes = require("./routes/forumRoutes");
 const llmRoutes = require("./routes/llmRoute");
 const llm = require("./routes/llmRoutes");
@@ -62,11 +62,11 @@ app.use(express.json());
 // for cors
 app.use(
   cors({
-      origin: ["http://localhost:3000","http://192.168.54.207:3000","http://192.168.43.202:3000","http://10.126.13.207:3000", "http://192.168.31.212:3000", "https://pixxelmind.com", "https://www.pixxelmind.com"], // Frontend URL
-      methods:"GET,PUT,POST,DELETE,UPDATE",
-      credentials: true,
+    origin: ["http://localhost:3000", "http://192.168.54.207:3000", "http://192.168.43.202:3000", "http://10.126.13.207:3000", "http://192.168.31.212:3000", "https://pixxelmind.com", "https://www.pixxelmind.com"], // Frontend URL
+    methods: "GET,PUT,POST,DELETE,UPDATE",
+    credentials: true,
   })
-); 
+);
 
 // for sending cookies user credentials
 app.use(cookieparser());
@@ -83,26 +83,26 @@ app.get("/", (req, res) => {
 
 // app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-app.use("/",userRouter);
-app.use("/",awsRoute);
-app.use("/",postRoute);
-app.use("/",googleRoute);
-app.use("/",otpRouter);
-app.use("/",forgetOtpRoute);
+app.use("/", userRouter);
+app.use("/", awsRoute);
+app.use("/", postRoute);
+app.use("/", googleRoute);
+app.use("/", otpRouter);
+app.use("/", forgetOtpRoute);
 app.use("/", commentsRouter);
 app.use("/forum", forumRoutes);
 app.use("/", llmRoutes);
 app.use("/", llm);
 app.use("/", batchRoutes);
 app.use("/", subscriptionRoutes);
-app.use("/",notificationRoutes);
-app.use("/",bookMarkRoutes);
+app.use("/", notificationRoutes);
+app.use("/", bookMarkRoutes);
 app.use("/", aiModelRoutes);
-app.use("/",shareRoute);
-app.use("/",seedingRoute);
-app.use("/",xmlRoute);
-app.use("/",promoCodeRoute);
-app.use("/",feedbackRoute);
+app.use("/", shareRoute);
+app.use("/", seedingRoute);
+app.use("/", xmlRoute);
+app.use("/", promoCodeRoute);
+app.use("/", feedbackRoute);
 
 
 
