@@ -29,7 +29,7 @@ async function generateBFL(prompt, model, aspectRatio = "1:1", interval = 3000) 
     });
 
     if (poll.data.status === "Ready") {
-      return {imageUrl:poll.data.result.sample}; // ✅ Final image URL
+      return { imageUrl: poll.data.result.sample }; // ✅ Final image URL
     }
     if (poll.data.status === "Failed") {
       throw new Error("Image generation failed.");

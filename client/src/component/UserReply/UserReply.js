@@ -40,7 +40,7 @@ const CONTEXT_MESSAGES = [
   "Weaving context magic…",
 ];
 
-const UserReply = ({ forum = false }) => {
+const UserReply = ({ forum = false, openCommunityModal, standalone = false, onShareRequest }) => {
   const { showNotification } = useNotification();
   const { loginData } = useContext(LoginContext);
   const { emitNewReply, emitNewComment } = useWebSocket();
@@ -49,7 +49,10 @@ const UserReply = ({ forum = false }) => {
   const dynamicId = forum ? params.topicId : params.id;
   const dynamicId1 = forum ? decodeId(params.topicId) : params.id;
 
-  const localStorageKey = `userReplyData_${forum ? dynamicId1 : dynamicId}`;
+  // Use different localStorage key for standalone mode
+  const localStorageKey = standalone
+    ? 'userReplyData_standalone'
+    : `userReplyData_${forum ? dynamicId1 : dynamicId}`;
 
   const forumContext = useContext(ForumContext);
   const commentContext = useContext(CommentContext);
@@ -81,6 +84,8 @@ const UserReply = ({ forum = false }) => {
   const [messageIndex, setMessageIndex] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
   const scrollContainerRef = useRef(null);
+  // In standalone mode, no community is selected initially
+  const communitySelected = standalone ? true : (forum ? params.topicId : params.id);
 
   // Rotating context messages
   useEffect(() => {
@@ -128,7 +133,7 @@ const UserReply = ({ forum = false }) => {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        
+
         // Restore all states
         setNewReply(parsed.newReply || "");
         setSelectedFiles(parsed.selectedFiles || []);
@@ -139,7 +144,7 @@ const UserReply = ({ forum = false }) => {
         setIsContextAware(parsed.isContextAware || false);
         setLoading(parsed.loading || false);
         setContextLoading(parsed.contextLoading || false);
-        
+
         // ✅ FIXED: Restore postingData with proper image URLs
         const restoredPostingData = (parsed.postingData || []).map(item => {
           if (item.imageBlob && !item.imageUrl) {
@@ -157,9 +162,9 @@ const UserReply = ({ forum = false }) => {
           }
           return item;
         });
-        
+
         setPostingData(restoredPostingData);
-        
+
       } catch (err) {
         console.error("Failed to parse saved UserReply data", err);
       }
@@ -170,7 +175,7 @@ const UserReply = ({ forum = false }) => {
   // ✅ Save data to localStorage (debounced) - ONLY AFTER INITIALIZATION
   useEffect(() => {
     if (!isInitialized) return;
-    
+
     const timeout = setTimeout(() => {
       const dataToSave = {
         newReply,
@@ -351,8 +356,8 @@ const UserReply = ({ forum = false }) => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          err.response?.data?.error ||
-          "An error occurred while generating content"
+        err.response?.data?.error ||
+        "An error occurred while generating content"
       );
       setPostingData((prev) => prev.filter(item => !item.isLoading));
     } finally {
@@ -371,7 +376,7 @@ const UserReply = ({ forum = false }) => {
       };
 
       const modelInfo = await fetchModelInfo(model);
-      
+
       const response = await fetch(`${baseUrl}/generateContent/stream`, {
         method: 'POST',
         headers: {
@@ -397,10 +402,10 @@ const UserReply = ({ forum = false }) => {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              
+
               if (data.type === 'chunk' && data.content) {
                 fullText += data.content;
-                
+
                 // Update the latest posting data item
                 setPostingData((prev) => {
                   const next = [...prev];
@@ -412,7 +417,7 @@ const UserReply = ({ forum = false }) => {
                   }
                   return next;
                 });
-                
+
                 // Immediately trigger scroll after state update
                 setTimeout(() => {
                   if (scrollContainerRef?.current) {
@@ -482,8 +487,8 @@ const UserReply = ({ forum = false }) => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          err.response?.data?.error ||
-          "An error occurred while generating context-aware content"
+        err.response?.data?.error ||
+        "An error occurred while generating context-aware content"
       );
       setContextLoading(false);
     }
@@ -571,6 +576,22 @@ const UserReply = ({ forum = false }) => {
     }
   };
 
+  // Handle share request in standalone mode
+  const handleShareClick = () => {
+    if (onShareRequest) {
+      let updatedPostingData = [...postingData];
+      if (newReply.trim()) {
+        updatedPostingData.push({
+          userText: newReply.trim(),
+          aiText: "",
+          prompt: "",
+          imageUrl: "",
+        });
+      }
+      onShareRequest(updatedPostingData, selectedFiles);
+    }
+  };
+
   const clearConversationHistory = () => {
     setConversationHistory([]);
     setPostingData([]);
@@ -580,7 +601,7 @@ const UserReply = ({ forum = false }) => {
     <div className="relative bottom-0 left-0 right-0 border border-gray-500 dark:border-gray-900 rounded-md  dark:bg-nav_hover2  bg-transparent  z-40">
       {error && <ErrorBar message={error} onClose={() => setError("")} />}
 
-      <div 
+      <div
         ref={scrollContainerRef}
         className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-500 scrollbar-track-bg-red-100 dark:scrollbar-track-bg_comment_box"
       >
@@ -593,18 +614,29 @@ const UserReply = ({ forum = false }) => {
         <div className="flex md:my-1">
           <textarea
             className="flex-1 px-2 text-gray-900 dark:text-low_text font-poppins text-[13px] bg-transparent focus:outline-none focus:ring-0 rounded-md overflow-y-auto break-words"
-            placeholder="Write your reply..."
+            placeholder={
+              standalone
+                ? "Chat with AI models..."
+                : communitySelected
+                  ? "Write your reply..."
+                  : "Join a community to chat with AI models"
+            }
             value={newReply}
-            onChange={(e) => setNewReply(e.target.value)}
-            onInput={(e) => {
-              e.target.style.height = "auto";
-              e.target.style.height = `${Math.min(
-                e.target.scrollHeight,
-                120
-              )}px`;
+            onChange={(e) => {
+              if (!standalone && !communitySelected) {
+                openCommunityModal();   // 🚀 triggers modal
+                return;                 // ❌ stop typing
+              }
+              setNewReply(e.target.value);
+            }}
+            onClick={() => {
+              if (!standalone && !communitySelected) {
+                openCommunityModal();   // 🚀 if they click, show modal
+              }
             }}
             disabled={isLoading || loading || contextLoading}
           />
+
         </div>
 
         <div className="flex justify-between items-center">
@@ -641,9 +673,8 @@ const UserReply = ({ forum = false }) => {
                 </span>
               )}
               <ChevronDown
-                className={`sm:h-4 sm:w-4 h-3 w-3 text-gray-800 dark:text-low_text transition-transform ${
-                  isDropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`sm:h-4 sm:w-4 h-3 w-3 text-gray-800 dark:text-low_text transition-transform ${isDropdownOpen ? "rotate-180" : ""
+                  }`}
               />
             </button>
             {isDropdownOpen && (
@@ -662,22 +693,20 @@ const UserReply = ({ forum = false }) => {
                   onClick={() => setIsContextAware(!isContextAware)}
                   className={`
                   relative inline-flex sm:h-6 h-4 sm:w-11 w-8 items-center rounded-full transition-colors duration-400 ease-in-out 
-                  ${
-                    isContextAware
+                  ${isContextAware
                       ? "bg-gradient-to-r from-theme_color to-pink-600"
                       : "bg-gray-300 dark:bg-nav_hover"
-                  }
+                    }
                 `}
                   disabled={contextLoading}
                 >
                   <span
                     className={`
                     inline-block sm:h-4  sm:w-4 h-3 w-3 transform rounded-full bg-low_text transition-transform duration-200 ease-in-out shadow-lg
-                    ${
-                      isContextAware
+                    ${isContextAware
                         ? "sm:translate-x-6 translate-x-4"
                         : "translate-x-1"
-                    }
+                      }
                   `}
                   >
                     {isContextAware && (
@@ -687,15 +716,14 @@ const UserReply = ({ forum = false }) => {
                 </button>
                 <div className="mb-1 sm:mb-0">
                   <span
-                    className={`sm:text-sm text-[9px]  font-medium transition-colors  ${
-                      isContextAware
-                        ? "text-theme_color"
-                        : "text-gray-800 dark:text-gray-200"
-                    }`}
+                    className={`sm:text-sm text-[9px]  font-medium transition-colors  ${isContextAware
+                      ? "text-theme_color"
+                      : "text-gray-800 dark:text-gray-200"
+                      }`}
                   >
                     Context Engine
                   </span>
-                  <span className={` sm:text-xs text-[8px]  font-bold ${isContextAware ? "bg-clip-text bg-gradient-to-r mt-2 from-theme_color2  to-pink-500 text-transparent ":"text-low_text"}`}>
+                  <span className={` sm:text-xs text-[8px]  font-bold ${isContextAware ? "bg-clip-text bg-gradient-to-r mt-2 from-theme_color2  to-pink-500 text-transparent " : "text-low_text"}`}>
                     (beta)
                   </span>
                 </div>
@@ -739,11 +767,27 @@ const UserReply = ({ forum = false }) => {
                     <CubeSpinner size="w-8 h-8" color="orange" />
                   </div>
                 ) : (
-                  <div className="flex  font-playfair bg-theme_color p-2 py-0 rounded-md  font-bold leading-relaxed "><span className="text-[15px] text-white ">Generate</span> <SparklesIcon  size={20}/></div>
+                  <div className="flex  font-playfair bg-theme_color p-2 py-0 rounded-md  font-bold leading-relaxed "><span className="text-[15px] text-white ">Generate</span> <SparklesIcon size={20} /></div>
                 )}
               </button>
+            ) : standalone ? (
+              // Show Share button in standalone mode
+              <button
+                type="button"
+                onClick={handleShareClick}
+                className="text-gray-800 dark:text-low_text rounded-full p-2 text-sm hover:bg-theme_color2 hover:dark:text-white hover:text-gray-200 "
+                disabled={
+                  isLoading ||
+                  loading ||
+                  contextLoading ||
+                  (postingData.length === 0 && !newReply.trim())
+                }
+                title="Share to community"
+              >
+                <Send size={20} className="rotate-45" />
+              </button>
             ) : (
-              // Show Post button when no model selected
+              // Show Post button when no model selected in normal mode
               <button
                 type="button"
                 onClick={handleSubmit}

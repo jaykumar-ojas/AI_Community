@@ -3,26 +3,26 @@ const express = require("express");
 const { trim } = require("validator");
 
 const postSchema = new mongoose.Schema({
-    userId:{
-        type:String,
-        required:true,
-        trim:true
+    userId: {
+        type: String,
+        required: true,
+        trim: true
     },
-    desc:{
-        type:String,
-        trim:true
+    desc: {
+        type: String,
+        trim: true
     },
-    imgKey:{
-        type:String,
+    imgKey: {
+        type: String,
     },
-    imgUrl:{
-        type:String,
+    imgUrl: {
+        type: String,
     },
-    imgUrlCreatedAt:{
-        type:Date,
+    imgUrlCreatedAt: {
+        type: Date,
     },
-    fileType:{
-        type:String,
+    fileType: {
+        type: String,
         enum: ['image', 'video', 'audio'],
         default: 'image'
     },
@@ -54,9 +54,9 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-    bookMark:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
+    bookMark: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
     }]
 
 }, {
@@ -70,7 +70,7 @@ postSchema.pre('save', function (next) {
     next();
 });
 
-const postdb = new mongoose.model("userPosts",postSchema);
+const postdb = new mongoose.model("userPosts", postSchema);
 
-module.exports= postdb;
+module.exports = postdb;
 

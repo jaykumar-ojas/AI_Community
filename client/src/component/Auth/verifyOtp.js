@@ -63,9 +63,9 @@ const EmailVerification = () => {
         })
       });
       const res = await data.json();
-     console.log(res);
+    // console.log(res);
       if(res.status===200){
-       console.log(res);
+     //  console.log(res);
         history(`/update-password/${res.token}`);
       }
       else if(res.status===401){

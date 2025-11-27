@@ -21,13 +21,12 @@ const RecurrsionLoopComment = ({
   reply,
   depth = 0,
   isLastChild,
-  setThreadView = () => {},
-  setLastThreadContext = () => {},
+  setThreadView = () => { },
+  setLastThreadContext = () => { },
+  scrollToId, // Accept as prop
 }) => {
   const [view, setView] = useState(true);
   const hasChildren = reply?.children && reply?.children.length > 0;
-  const params = useParams();
-  const scrollToId = params['comment'];
   const commentRef = useRef(null);
 
   useEffect(() => {
@@ -35,19 +34,19 @@ const RecurrsionLoopComment = ({
       // delay to avoid race condition with rendering
       const timer = setTimeout(() => {
         commentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-  
+
         // adjust upwards a bit so it's slightly hidden
         setTimeout(() => {
           window.scrollBy({ top: -40, behavior: "smooth" });
         }, 300);
-  
+
         // highlight effect
         commentRef.current.classList.add("bg-amber-50", "rounded");
         setTimeout(() => {
           commentRef.current?.classList.remove("bg-amber-50", "rounded");
         }, 2000);
       }, 1000); // <-- delay before running scroll logic
-  
+
       return () => clearTimeout(timer);
     }
   }, [scrollToId, reply?._id]);

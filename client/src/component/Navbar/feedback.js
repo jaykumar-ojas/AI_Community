@@ -252,8 +252,8 @@ const FeedbackPage=()=>{
                 disabled={isSubmitting}
                 className={`px-5 py-2 rounded-lg text-white text-sm w-full sm:w-auto ${
                   isSubmitting
-                    ? "bg-indigo-400 cursor-not-allowed"
-                    : "bg-indigo-600 hover:bg-indigo-700"
+                    ? "bg-theme_color2 cursor-not-allowed"
+                    : "bg-theme_color3 hover:bg-theme_color"
                 }`}
               >
                 {isSubmitting ? "Submitting..." : "Submit feedback"}

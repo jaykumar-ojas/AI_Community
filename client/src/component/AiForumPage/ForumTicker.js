@@ -22,10 +22,10 @@ const fetchTopics = async (sortType, limit) => {
         headers: getAuthHeaders(),
       }
     );
-    console.log("i m coming from the data");
+   // console.log("i m coming from the data");
     return response.data.topics || [];
   } catch (error) {
-    console.log("sorry i m stuck");
+    //console.log("sorry i m stuck");
     if (!handleAuthError(error)) {
       console.error("Error fetching topics:", error);
     }
@@ -62,7 +62,7 @@ const ForumTicker = ({ sortType = "popular", limit = 20 }) => {
     return () => el.removeEventListener("scroll", checkScroll);
   }, []);
 
-  console.log(fetchedTopics);
+ // console.log(fetchedTopics);
 
   // Check scroll position to show/hide navigation buttons
 

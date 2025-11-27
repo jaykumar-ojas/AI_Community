@@ -4,7 +4,7 @@ import { LoginContext } from "../ContextProvider/context";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const PromoCard = ({ userId: propUserId } = {}) => {
-  const {loginData} = useContext(LoginContext);
+  const { loginData } = useContext(LoginContext);
   const [code, setCode] = useState("");
   const [status, setStatus] = useState(null); // null | "applied" | "invalid"
   const [loading, setLoading] = useState(false);
@@ -55,29 +55,29 @@ const PromoCard = ({ userId: propUserId } = {}) => {
     }
   };
 
-  const  createPromoCode= async()=> {
-  try {
-    const response = await fetch("http://localhost:8099/promocode", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        code: "SNEHA2025",
-        startDate: "2025-01-01",
-        endDate: "2026-01-31",
-        creditValue: 500,
-        priority: 3
-      })
-    });
+  const createPromoCode = async () => {
+    try {
+      const response = await fetch("http://localhost:8099/promocode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          code: "AICREATORSUNITED",
+          startDate: "2025-11-27",
+          endDate: "2025-12-10",
+          creditValue: 4000,
+          priority: 3
+        })
+      });
 
-    const data = await response.json();
-    console.log("Promo Response:", data);
+      const data = await response.json();
+      console.log("Promo Response:", data);
 
-  } catch (error) {
-    console.error("Error creating promo:", error);
+    } catch (error) {
+      console.error("Error creating promo:", error);
+    }
   }
-}
 
 
   const reset = () => {
@@ -101,9 +101,9 @@ const PromoCard = ({ userId: propUserId } = {}) => {
               Enter Promo Code
             </h3>
             <p className="mt-1 text-xs text-white/70">
-  Apply promo codes here. Enjoy extra credits with codes like{" "}
-  <span className="font-medium">PIXX10</span>.
-</p>
+              Apply promo codes here. Enjoy extra credits with codes like{" "}
+              <span className="font-medium">PIXX10</span>.
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
