@@ -11,7 +11,7 @@ const TopicList = ({ topics: initialTopics, emptyMessage }) => {
   const [topics, setTopics] = useState(initialTopics);
   const location = useLocation();
 
-  const isForumRoute = location.pathname.startsWith("/forum");
+  const isForumRoute = location.pathname.startsWith("/community");
 
   useEffect(() => {
     const unsubscribe = subscribeToEvent("topic_deleted", (deletedTopicId) => {
@@ -29,10 +29,10 @@ const TopicList = ({ topics: initialTopics, emptyMessage }) => {
 
   return (
     <div>
-    {isForumRoute ? (<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+    {isForumRoute ? (<div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {topics.length > 0 ? (
         topics.map((topic) =>
-            <TopicData2 key={topic._id} topic={topic} />
+            <TopicData2 key={topic._id} topic={topic}/>
           
         )
       ) : (

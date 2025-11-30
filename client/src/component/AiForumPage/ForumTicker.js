@@ -92,12 +92,12 @@ const ForumTicker = ({ sortType = "popular", limit = 20 }) => {
         <h2 className="text-lg md:text-md font-semibold text-gray-900 dark:text-low_text font-inter">
           Popular Communities
         </h2>
-        {/* <button
-          onClick={() => navigate("/forum")}
+        <button
+          onClick={() => navigate("/community")}
           className="text-sm md:text-sm text-theme_color hover:text-theme_color2 font-medium transition-colors"
         >
           View All →
-        </button> */}
+        </button>
       </div>
       {canScrollLeft && (
         <button
@@ -115,7 +115,7 @@ const ForumTicker = ({ sortType = "popular", limit = 20 }) => {
       <div ref={scrollRef} className="overflow-x-auto no-scrollbar pb-2">
         <div className="flex md:gap-2">
           {fetchedTopics.map((topic) => (
-            <TopicData2 topic={topic}/>
+            <TopicData2 topic={topic} ticker={true}/>
             
           ))}
         </div>

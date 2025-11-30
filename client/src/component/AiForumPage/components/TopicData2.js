@@ -18,7 +18,7 @@ import { useNotification } from "../../ContextProvider/NotificationContext";
 import axios from "axios";
 import { encodeId } from "../../../utils/hashids";
 
-const TopicData2 = ({ topic }) => {
+const TopicData2 = ({ topic,ticker=false }) => {
   const navigate = useNavigate();
   const { loginData } = useContext(LoginContext);
   const [isJoined,setIsJoined] = useState(false);
@@ -42,11 +42,11 @@ const TopicData2 = ({ topic }) => {
     <div
       key={topic._id}
       onClick={() => handleTopicClick(topic)}
-      className="group flex-shrink-0 w-[280px] md:w-[300px] bg-white dark:bg-nav_hover border border-gray-200 dark:border-nav_hover3 rounded-xl overflow-hidden cursor-pointer"
+      className={`group flex-shrink-0 ${ticker ? "w-[280px] md:w-[300px]" : "w-full"} bg-white dark:bg-nav_hover border border-gray-200 dark:border-nav_hover3 rounded-xl overflow-hidden cursor-pointer`}
     >
       {/* Image */}
       {topic.imageUrl || topic.mediaAttachments?.length > 0 ? (
-        <div className="relative h-[120px] md:h-[130px] overflow-hidden">
+        <div className={`relative ${ticker ? "h-[120px] md:h-[130px]" : "max-h-64"} overflow-hidden`}>
           {/* If it's an image */}
           {(topic.imageUrl ||
             topic.mediaAttachments[0]?.fileType?.startsWith("image")) && (
@@ -71,7 +71,7 @@ const TopicData2 = ({ topic }) => {
             )}
         </div>
       ) : (
-        <div className="h-[120px] md:h-[130px] bg-gradient-to-br from-theme_color to-theme_color2 flex items-center justify-center"></div>
+        <div className={`${ticker ? "h-[120px] md:h-[130px]" : "h-64"} bg-gradient-to-br from-blue-400 to-zinc-800 flex items-center justify-center`}></div>
       )}
 
       {/* Content */}
