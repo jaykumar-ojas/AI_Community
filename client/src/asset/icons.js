@@ -55,14 +55,14 @@ export const DownvoteIcon = ({ isDownvoted }) => {
   );
 };
 
-export const ReloadIcon = ({})=>{
+export const ReloadIcon = ({ }) => {
   return (
-  <svg className="" fill="white" stroke="white" height="20" viewBox="0 0 48 48" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M35.3 12.7c-2.89-2.9-6.88-4.7-11.3-4.7-8.84 0-15.98 7.16-15.98 16s7.14 16 15.98 16c7.45 0 13.69-5.1 15.46-12h-4.16c-1.65 4.66-6.07 8-11.3 8-6.63 0-12-5.37-12-12s5.37-12 12-12c3.31 0 6.28 1.38 8.45 3.55l-6.45 6.45h14v-14l-4.7 4.7z"></path></svg>
+    <svg className="" fill="white" stroke="white" height="20" viewBox="0 0 48 48" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M35.3 12.7c-2.89-2.9-6.88-4.7-11.3-4.7-8.84 0-15.98 7.16-15.98 16s7.14 16 15.98 16c7.45 0 13.69-5.1 15.46-12h-4.16c-1.65 4.66-6.07 8-11.3 8-6.63 0-12-5.37-12-12s5.37-12 12-12c3.31 0 6.28 1.38 8.45 3.55l-6.45 6.45h14v-14l-4.7 4.7z"></path></svg>
   )
 }
 
 
-export const DeleteIcon = ({ isHovered,size="6" }) => {
+export const DeleteIcon = ({ isHovered, size = "6" }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -167,34 +167,34 @@ export const SearchIcon = ({ isActive }) => {
 //   );
 // };
 
-export const LeftIcon = ()=>{
-  return(
-     <svg
-     height={15}
-     width={15}
-     stroke="currentColor"
-     fill ="currentColor"
+export const LeftIcon = () => {
+  return (
+    <svg
+      height={15}
+      width={15}
+      stroke="currentColor"
+      fill="currentColor"
       viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-        ></path>
-      </svg>
+      <path
+        d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
+      ></path>
+    </svg>
   )
 }
 
-export const RightArrowIcon = ()=>{
-  return(
-     <svg
-     height={15}
-     width={15}
-     stroke="currentColor"
-     fill ="currentColor"
-     className="rotate-180"
+export const RightArrowIcon = () => {
+  return (
+    <svg
+      height={15}
+      width={15}
+      stroke="currentColor"
+      fill="currentColor"
+      className="rotate-180"
       viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-        ></path>
-      </svg>
+      <path
+        d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
+      ></path>
+    </svg>
   )
 }
 
@@ -219,7 +219,7 @@ export const CommentIcon = ({ h = 5, w = 5, ...props }) => {
 
 
 
-export const heartSvg = (filled ) => (
+export const heartSvg = (filled) => (
   <svg
     viewBox="0 0 24 24"
     fill={filled ? "#ff4757" : "none"} // red fill if liked
@@ -279,7 +279,7 @@ export const thumbsDownSvg = (filled = false) => {
   );
 };
 
-export const AttachIcon = ({ isActive, height=5,smHeight=4}) => (
+export const AttachIcon = ({ isActive, height = 5, smHeight = 4 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     className={`h-${smHeight} w-${smHeight} sm:h-${height} sm:w-${height} mr-1 cursor-pointer`}
@@ -333,20 +333,20 @@ export const GenerateIcon = ({ isActive }) => (
 export const SparklesIcon = ({ size = 24, className = "" }) => {
   return (
     <svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 24 24"
-  fill="#FFD700"
-  width={size}
-  height={size}
-  className={className}
->
-  {/* big sparkle */}
-  <path d="M12 2 14.4 8.8 22 11.9 14.4 15.2 12 22 9.6 15.2 2 11.9 9.6 8.8 12 2Z" />
-  {/* small sparkle */}
-  <path d="M18 3 19.3 6.4 23 7.8 19.3 9.1 18 12.5 16.7 9.1 13 7.8 16.7 6.4 18 3Z" />
-  {/* tiny sparkle */}
-  <path d="M6 6 6.9 8.3 9.3 9.2 6.9 10.1 6 12.4 5.1 10.1 2.7 9.2 5.1 8.3 6 6Z" />
-</svg>
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="#FFD700"
+      width={size}
+      height={size}
+      className={className}
+    >
+      {/* big sparkle */}
+      <path d="M12 2 14.4 8.8 22 11.9 14.4 15.2 12 22 9.6 15.2 2 11.9 9.6 8.8 12 2Z" />
+      {/* small sparkle */}
+      <path d="M18 3 19.3 6.4 23 7.8 19.3 9.1 18 12.5 16.7 9.1 13 7.8 16.7 6.4 18 3Z" />
+      {/* tiny sparkle */}
+      <path d="M6 6 6.9 8.3 9.3 9.2 6.9 10.1 6 12.4 5.1 10.1 2.7 9.2 5.1 8.3 6 6Z" />
+    </svg>
 
   );
 };
@@ -581,14 +581,22 @@ export const BookmarkIcon = ({ isBookmarked }) => {
 
 
 
-export const DynamicNumberSVG = ({ value, size=8 }) => {
+export const DynamicNumberSVG = ({ value, size = 8 }) => {
   return (
-   <div className={`loader border-r-2 rounded-full border-yellow-500 bg-yellow-300 
-aspect-square w-${size} text-xs font-bold flex justify-center items-center text-yellow-900`}>{value}</div>
+    <div
+      className={`
+        loader border-r-2 rounded-full border-yellow-500 bg-yellow-300 
+        aspect-square w-${size} text-md font-bold flex justify-center 
+        items-center text-yellow-900 
+      `}
+    >
+      {value > 1000 ? "∞" : value}
+    </div>
   );
 };
 
-export const AiShowIcon = (props ) => (
+
+export const AiShowIcon = (props) => (
   <svg
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
@@ -596,7 +604,7 @@ export const AiShowIcon = (props ) => (
     className={props.className}
     style={props.style}
   >
-  <defs>
+    <defs>
       {/* Neon gradient */}
       <linearGradient id="techGradient" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#00f5ff" />     {/* Cyan */}
@@ -622,41 +630,41 @@ export const AiShowIcon = (props ) => (
 );
 
 
-export const PostLikeIcon = ({isLiked , size=36})=>{
+export const PostLikeIcon = ({ isLiked, size = 36 }) => {
   return (
-     <svg
-        key={isLiked}
-        viewBox="0 0 256 256"
-        width={size}
-        height={size}
-        className={`inline-block rounded-full p-1 transition-transform duration-200 block animate-pop ${isLiked ? "text-[#ff5353]" : "text-black dark:text-gray-200"}`}
-        aria-hidden={false}
-        role="img"
-      >
-        <rect fill="none" height="256" width="256"></rect>
-        <path
-          d="M224.6,51.9a59.5,59.5,0,0,0-43-19.9,60.5,60.5,0,0,0-44,17.6L128,59.1l-7.5-7.4C97.2,28.3,59.2,26.3,35.9,47.4a59.9,59.9,0,0,0-2.3,87l83.1,83.1a15.9,15.9,0,0,0,22.6,0l81-81C243.7,113.2,245.6,75.2,224.6,51.9Z"
-          strokeWidth={15}
-          stroke="currentColor"
-          // When liked, apply the fill color; otherwise keep it none
-          className={isLiked ? "heart-fill" : "heart-unfilled"}
-          fill={isLiked ? "#ff5353" : "none"}
-        ></path>
-      </svg>
+    <svg
+      key={isLiked}
+      viewBox="0 0 256 256"
+      width={size}
+      height={size}
+      className={`inline-block rounded-full p-1 transition-transform duration-200 block animate-pop ${isLiked ? "text-[#ff5353]" : "text-black dark:text-gray-200"}`}
+      aria-hidden={false}
+      role="img"
+    >
+      <rect fill="none" height="256" width="256"></rect>
+      <path
+        d="M224.6,51.9a59.5,59.5,0,0,0-43-19.9,60.5,60.5,0,0,0-44,17.6L128,59.1l-7.5-7.4C97.2,28.3,59.2,26.3,35.9,47.4a59.9,59.9,0,0,0-2.3,87l83.1,83.1a15.9,15.9,0,0,0,22.6,0l81-81C243.7,113.2,245.6,75.2,224.6,51.9Z"
+        strokeWidth={15}
+        stroke="currentColor"
+        // When liked, apply the fill color; otherwise keep it none
+        className={isLiked ? "heart-fill" : "heart-unfilled"}
+        fill={isLiked ? "#ff5353" : "none"}
+      ></path>
+    </svg>
   )
 }
 
 
-export const ShareIcon = ({h=24,w=24}) =>{
+export const ShareIcon = ({ h = 24, w = 24 }) => {
   return (
-    <svg height={h} width={w} xmlns="http://www.w3.org/2000/svg"  version="1.1" viewBox="0 0 1024 1024" className="icon">
+    <svg height={h} width={w} xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1024 1024" className="icon">
 
-    <path fill="currentColor" stroke="currentColor" strokeWidth={4} d="M767.99994 585.142857q75.995429 0 129.462857 53.394286t53.394286 129.462857-53.394286 129.462857-129.462857 53.394286-129.462857-53.394286-53.394286-129.462857q0-6.875429 1.170286-19.456l-205.677714-102.838857q-52.589714 49.152-124.562286 49.152-75.995429 0-129.462857-53.394286t-53.394286-129.462857 53.394286-129.462857 129.462857-53.394286q71.972571 0 124.562286 49.152l205.677714-102.838857q-1.170286-12.580571-1.170286-19.456 0-75.995429 53.394286-129.462857t129.462857-53.394286 129.462857 53.394286 53.394286 129.462857-53.394286 129.462857-129.462857 53.394286q-71.972571 0-124.562286-49.152l-205.677714 102.838857q1.170286 12.580571 1.170286 19.456t-1.170286 19.456l205.677714 102.838857q52.589714-49.152 124.562286-49.152z"></path>
-  </svg>
+      <path fill="currentColor" stroke="currentColor" strokeWidth={4} d="M767.99994 585.142857q75.995429 0 129.462857 53.394286t53.394286 129.462857-53.394286 129.462857-129.462857 53.394286-129.462857-53.394286-53.394286-129.462857q0-6.875429 1.170286-19.456l-205.677714-102.838857q-52.589714 49.152-124.562286 49.152-75.995429 0-129.462857-53.394286t-53.394286-129.462857 53.394286-129.462857 129.462857-53.394286q71.972571 0 124.562286 49.152l205.677714-102.838857q-1.170286-12.580571-1.170286-19.456 0-75.995429 53.394286-129.462857t129.462857-53.394286 129.462857 53.394286 53.394286 129.462857-53.394286 129.462857-129.462857 53.394286q-71.972571 0-124.562286-49.152l-205.677714 102.838857q1.170286 12.580571 1.170286 19.456t-1.170286 19.456l205.677714 102.838857q52.589714-49.152 124.562286-49.152z"></path>
+    </svg>
   )
 }
 
-export const FaceBookIcon = ()=>{
+export const FaceBookIcon = () => {
   return (
     <svg
       viewBox="0 0 320 512"
@@ -671,7 +679,7 @@ export const FaceBookIcon = ()=>{
   )
 };
 
-export const TwitterIcon = () =>{
+export const TwitterIcon = () => {
   return (
     <svg
       height="1.8em"
@@ -687,7 +695,7 @@ export const TwitterIcon = () =>{
   )
 }
 
-export const InstaIcon = () =>{
+export const InstaIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -710,31 +718,31 @@ export const DiscordIcon = () => {
   )
 }
 
-export const WhatsAppIcon = () =>{
+export const WhatsAppIcon = () => {
   return (
     <svg
-        className="whatsapp"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        height="20"
-        width="20"
-      >
-        <path
-          d="M19.001 4.908A9.817 9.817 0 0 0 11.992 2C6.534 2 2.085 6.448 2.08 11.908c0 1.748.458 3.45 1.321 4.956L2 22l5.255-1.377a9.916 9.916 0 0 0 4.737 1.206h.005c5.46 0 9.908-4.448 9.913-9.913A9.872 9.872 0 0 0 19 4.908h.001ZM11.992 20.15A8.216 8.216 0 0 1 7.797 19l-.3-.18-3.117.818.833-3.041-.196-.314a8.2 8.2 0 0 1-1.258-4.381c0-4.533 3.696-8.23 8.239-8.23a8.2 8.2 0 0 1 5.825 2.413 8.196 8.196 0 0 1 2.41 5.825c-.006 4.55-3.702 8.24-8.24 8.24Zm4.52-6.167c-.247-.124-1.463-.723-1.692-.808-.228-.08-.394-.123-.556.124-.166.246-.641.808-.784.969-.143.166-.29.185-.537.062-.247-.125-1.045-.385-1.99-1.23-.738-.657-1.232-1.47-1.38-1.716-.142-.247-.013-.38.11-.504.11-.11.247-.29.37-.432.126-.143.167-.248.248-.413.082-.167.043-.31-.018-.433-.063-.124-.557-1.345-.765-1.838-.2-.486-.404-.419-.557-.425-.142-.009-.309-.009-.475-.009a.911.911 0 0 0-.661.31c-.228.247-.864.845-.864 2.067 0 1.22.888 2.395 1.013 2.56.122.167 1.742 2.666 4.229 3.74.587.257 1.05.408 1.41.523.595.19 1.13.162 1.558.1.475-.072 1.464-.6 1.673-1.178.205-.58.205-1.075.142-1.18-.061-.104-.227-.165-.475-.29Z"
+      className="whatsapp"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      height="20"
+      width="20"
+    >
+      <path
+        d="M19.001 4.908A9.817 9.817 0 0 0 11.992 2C6.534 2 2.085 6.448 2.08 11.908c0 1.748.458 3.45 1.321 4.956L2 22l5.255-1.377a9.916 9.916 0 0 0 4.737 1.206h.005c5.46 0 9.908-4.448 9.913-9.913A9.872 9.872 0 0 0 19 4.908h.001ZM11.992 20.15A8.216 8.216 0 0 1 7.797 19l-.3-.18-3.117.818.833-3.041-.196-.314a8.2 8.2 0 0 1-1.258-4.381c0-4.533 3.696-8.23 8.239-8.23a8.2 8.2 0 0 1 5.825 2.413 8.196 8.196 0 0 1 2.41 5.825c-.006 4.55-3.702 8.24-8.24 8.24Zm4.52-6.167c-.247-.124-1.463-.723-1.692-.808-.228-.08-.394-.123-.556.124-.166.246-.641.808-.784.969-.143.166-.29.185-.537.062-.247-.125-1.045-.385-1.99-1.23-.738-.657-1.232-1.47-1.38-1.716-.142-.247-.013-.38.11-.504.11-.11.247-.29.37-.432.126-.143.167-.248.248-.413.082-.167.043-.31-.018-.433-.063-.124-.557-1.345-.765-1.838-.2-.486-.404-.419-.557-.425-.142-.009-.309-.009-.475-.009a.911.911 0 0 0-.661.31c-.228.247-.864.845-.864 2.067 0 1.22.888 2.395 1.013 2.56.122.167 1.742 2.666 4.229 3.74.587.257 1.05.408 1.41.523.595.19 1.13.162 1.558.1.475-.072 1.464-.6 1.673-1.178.205-.58.205-1.075.142-1.18-.061-.104-.227-.165-.475-.29Z"
         stroke="currentColor"></path>
-      </svg>
+    </svg>
   )
 }
 
-export const LinkediIcon = () =>{
+export const LinkediIcon = () => {
   return (
     <svg viewBox="0 0 448 512" height={20} width={20} className="socialSvg linkdinSvg"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z" fill="#0077B5"></path></svg>
   )
 }
 
-export const RedditIcon = () =>{
+export const RedditIcon = () => {
   return (
-     <svg
+    <svg
       viewBox="0 0 512 512"
       fill="white"
       height="1.6em"
@@ -749,147 +757,147 @@ export const RedditIcon = () =>{
 
 
 
-export const FounderBadge = ({ width =40 , height = 40 }) => {
+export const FounderBadge = ({ width = 40, height = 40 }) => {
   return (
-      <svg viewBox="0 0 300 380" width={width} height={height} xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="goldMetal" cx="50%" cy="40%">
-            <stop offset="0%" style={{ stopColor: '#FFF9E6', stopOpacity: 1 }} />
-            <stop offset="30%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
-            <stop offset="60%" style={{ stopColor: '#DAA520', stopOpacity: 1 }} />
-            <stop offset="85%" style={{ stopColor: '#B8860B', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#8B6914', stopOpacity: 1 }} />
-          </radialGradient>
-          
-          <radialGradient id="scallop" cx="50%" cy="50%">
-            <stop offset="0%" style={{ stopColor: '#FFE87C', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#F4C430', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#B8860B', stopOpacity: 1 }} />
-          </radialGradient>
-          
-          <radialGradient id="centerGold" cx="45%" cy="35%">
-            <stop offset="0%" style={{ stopColor: '#FFFACD', stopOpacity: 1 }} />
-            <stop offset="40%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
-            <stop offset="70%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#CC8400', stopOpacity: 1 }} />
-          </radialGradient>
-          
-          <linearGradient id="ribbonRed" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#FF6B6B', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#EE5A5A', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#DC143C', stopOpacity: 1 }} />
-          </linearGradient>
-          
-          <linearGradient id="ribbonHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style={{ stopColor: '#FF8888', stopOpacity: 0.8 }} />
-            <stop offset="50%" style={{ stopColor: '#FF6B6B', stopOpacity: 0.3 }} />
-            <stop offset="100%" style={{ stopColor: '#EE5A5A', stopOpacity: 0 }} />
-          </linearGradient>
-          
-          <linearGradient id="starGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#FF8C00', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#CC6600', stopOpacity: 1 }} />
-          </linearGradient>
-          
-          <filter id="shadow">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
-            <feOffset dx="0" dy="8" result="offsetblur"/>
-            <feFlood floodColor="#000000" floodOpacity="0.3"/>
-            <feComposite in2="offsetblur" operator="in"/>
-            <feMerge>
-              <feMergeNode/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-          
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-        
-        {/* Left Ribbon */}
-        <g filter="url(#shadow)">
-          <path d="M 120 200 Q 90 250, 80 320 Q 80 340, 70 360 L 70 380 Q 85 365, 100 360 Q 110 355, 115 340 Q 120 310, 140 260 Z" 
-                fill="url(#ribbonRed)"/>
-          <path d="M 120 200 Q 90 250, 80 320 Q 80 340, 70 360 L 75 360 Q 88 345, 95 330 Q 105 300, 130 250 Z" 
-                fill="url(#ribbonHighlight)" 
-                opacity="0.6"/>
-          <path d="M 125 210 Q 100 255, 88 315" 
-                fill="none" 
-                stroke="#B22222" 
-                strokeWidth="2" 
-                opacity="0.4"/>
+    <svg viewBox="0 0 300 380" width={width} height={height} xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="goldMetal" cx="50%" cy="40%">
+          <stop offset="0%" style={{ stopColor: '#FFF9E6', stopOpacity: 1 }} />
+          <stop offset="30%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+          <stop offset="60%" style={{ stopColor: '#DAA520', stopOpacity: 1 }} />
+          <stop offset="85%" style={{ stopColor: '#B8860B', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#8B6914', stopOpacity: 1 }} />
+        </radialGradient>
+
+        <radialGradient id="scallop" cx="50%" cy="50%">
+          <stop offset="0%" style={{ stopColor: '#FFE87C', stopOpacity: 1 }} />
+          <stop offset="50%" style={{ stopColor: '#F4C430', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#B8860B', stopOpacity: 1 }} />
+        </radialGradient>
+
+        <radialGradient id="centerGold" cx="45%" cy="35%">
+          <stop offset="0%" style={{ stopColor: '#FFFACD', stopOpacity: 1 }} />
+          <stop offset="40%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+          <stop offset="70%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#CC8400', stopOpacity: 1 }} />
+        </radialGradient>
+
+        <linearGradient id="ribbonRed" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style={{ stopColor: '#FF6B6B', stopOpacity: 1 }} />
+          <stop offset="50%" style={{ stopColor: '#EE5A5A', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#DC143C', stopOpacity: 1 }} />
+        </linearGradient>
+
+        <linearGradient id="ribbonHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style={{ stopColor: '#FF8888', stopOpacity: 0.8 }} />
+          <stop offset="50%" style={{ stopColor: '#FF6B6B', stopOpacity: 0.3 }} />
+          <stop offset="100%" style={{ stopColor: '#EE5A5A', stopOpacity: 0 }} />
+        </linearGradient>
+
+        <linearGradient id="starGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style={{ stopColor: '#FF8C00', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#CC6600', stopOpacity: 1 }} />
+        </linearGradient>
+
+        <filter id="shadow">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="8" />
+          <feOffset dx="0" dy="8" result="offsetblur" />
+          <feFlood floodColor="#000000" floodOpacity="0.3" />
+          <feComposite in2="offsetblur" operator="in" />
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Left Ribbon */}
+      <g filter="url(#shadow)">
+        <path d="M 120 200 Q 90 250, 80 320 Q 80 340, 70 360 L 70 380 Q 85 365, 100 360 Q 110 355, 115 340 Q 120 310, 140 260 Z"
+          fill="url(#ribbonRed)" />
+        <path d="M 120 200 Q 90 250, 80 320 Q 80 340, 70 360 L 75 360 Q 88 345, 95 330 Q 105 300, 130 250 Z"
+          fill="url(#ribbonHighlight)"
+          opacity="0.6" />
+        <path d="M 125 210 Q 100 255, 88 315"
+          fill="none"
+          stroke="#B22222"
+          strokeWidth="2"
+          opacity="0.4" />
+      </g>
+
+      {/* Right Ribbon */}
+      <g filter="url(#shadow)">
+        <path d="M 180 200 Q 210 250, 220 320 Q 220 340, 230 360 L 230 380 Q 215 365, 200 360 Q 190 355, 185 340 Q 180 310, 160 260 Z"
+          fill="url(#ribbonRed)" />
+        <path d="M 180 200 Q 210 250, 220 320 Q 220 340, 230 360 L 225 360 Q 212 345, 205 330 Q 195 300, 170 250 Z"
+          fill="url(#ribbonHighlight)"
+          opacity="0.6" />
+        <path d="M 175 210 Q 200 255, 212 315"
+          fill="none"
+          stroke="#B22222"
+          strokeWidth="2"
+          opacity="0.4" />
+      </g>
+
+      {/* Scalloped Edge Circle */}
+      <g filter="url(#shadow)">
+        <g>
+          <circle cx="150" cy="70" r="20" fill="url(#scallop)" />
+          <circle cx="185" cy="78" r="20" fill="url(#scallop)" />
+          <circle cx="213" cy="100" r="20" fill="url(#scallop)" />
+          <circle cx="228" cy="130" r="20" fill="url(#scallop)" />
+          <circle cx="230" cy="165" r="20" fill="url(#scallop)" />
+          <circle cx="218" cy="198" r="20" fill="url(#scallop)" />
+          <circle cx="193" cy="223" r="20" fill="url(#scallop)" />
+          <circle cx="162" cy="235" r="20" fill="url(#scallop)" />
+          <circle cx="150" cy="240" r="20" fill="url(#scallop)" />
+          <circle cx="138" cy="235" r="20" fill="url(#scallop)" />
+          <circle cx="107" cy="223" r="20" fill="url(#scallop)" />
+          <circle cx="82" cy="198" r="20" fill="url(#scallop)" />
+          <circle cx="70" cy="165" r="20" fill="url(#scallop)" />
+          <circle cx="72" cy="130" r="20" fill="url(#scallop)" />
+          <circle cx="87" cy="100" r="20" fill="url(#scallop)" />
+          <circle cx="115" cy="78" r="20" fill="url(#scallop)" />
         </g>
-        
-        {/* Right Ribbon */}
-        <g filter="url(#shadow)">
-          <path d="M 180 200 Q 210 250, 220 320 Q 220 340, 230 360 L 230 380 Q 215 365, 200 360 Q 190 355, 185 340 Q 180 310, 160 260 Z" 
-                fill="url(#ribbonRed)"/>
-          <path d="M 180 200 Q 210 250, 220 320 Q 220 340, 230 360 L 225 360 Q 212 345, 205 330 Q 195 300, 170 250 Z" 
-                fill="url(#ribbonHighlight)" 
-                opacity="0.6"/>
-          <path d="M 175 210 Q 200 255, 212 315" 
-                fill="none" 
-                stroke="#B22222" 
-                strokeWidth="2" 
-                opacity="0.4"/>
-        </g>
-        
-        {/* Scalloped Edge Circle */}
-        <g filter="url(#shadow)">
-          <g>
-            <circle cx="150" cy="70" r="20" fill="url(#scallop)"/>
-            <circle cx="185" cy="78" r="20" fill="url(#scallop)"/>
-            <circle cx="213" cy="100" r="20" fill="url(#scallop)"/>
-            <circle cx="228" cy="130" r="20" fill="url(#scallop)"/>
-            <circle cx="230" cy="165" r="20" fill="url(#scallop)"/>
-            <circle cx="218" cy="198" r="20" fill="url(#scallop)"/>
-            <circle cx="193" cy="223" r="20" fill="url(#scallop)"/>
-            <circle cx="162" cy="235" r="20" fill="url(#scallop)"/>
-            <circle cx="150" cy="240" r="20" fill="url(#scallop)"/>
-            <circle cx="138" cy="235" r="20" fill="url(#scallop)"/>
-            <circle cx="107" cy="223" r="20" fill="url(#scallop)"/>
-            <circle cx="82" cy="198" r="20" fill="url(#scallop)"/>
-            <circle cx="70" cy="165" r="20" fill="url(#scallop)"/>
-            <circle cx="72" cy="130" r="20" fill="url(#scallop)"/>
-            <circle cx="87" cy="100" r="20" fill="url(#scallop)"/>
-            <circle cx="115" cy="78" r="20" fill="url(#scallop)"/>
-          </g>
-          
-          <circle cx="150" cy="155" r="85" fill="url(#goldMetal)"/>
-        </g>
-        
-        {/* Inner Circle Ring */}
-        <circle cx="150" cy="155" r="72" fill="none" stroke="url(#scallop)" strokeWidth="3" opacity="0.6"/>
-        
-        {/* Center Light Circle */}
-        <circle cx="150" cy="155" r="65" fill="url(#centerGold)" filter="url(#glow)"/>
-        
-        {/* Inner Ring Detail */}
-        <circle cx="150" cy="155" r="58" fill="none" stroke="#FFE87C" strokeWidth="2" opacity="0.7"/>
-        
-        {/* Center Star */}
-        <g filter="url(#glow)">
-          <path d="M150 115 L160 140 L187 143 L166 162 L172 189 L150 175 L128 189 L134 162 L113 143 L140 140 Z" 
-                fill="url(#starGradient)"/>
-          <path d="M150 120 L158 140 L178 142 L162 157 L166 177 L150 166 L134 177 L138 157 L122 142 L142 140 Z" 
-                fill="#FF9933" 
-                opacity="0.5"/>
-        </g>
-        
-        {/* Subtle Edge Shadows on Badge */}
-        <circle cx="150" cy="155" r="85" fill="none" stroke="#8B6914" strokeWidth="2" opacity="0.4"/>
-        
-        {/* Ribbon Folds */}
-        <g opacity="0.3">
-          <path d="M 120 200 L 125 210 L 120 220" fill="none" stroke="#8B0000" strokeWidth="1.5"/>
-          <path d="M 180 200 L 175 210 L 180 220" fill="none" stroke="#8B0000" strokeWidth="1.5"/>
-        </g>
-      </svg>
+
+        <circle cx="150" cy="155" r="85" fill="url(#goldMetal)" />
+      </g>
+
+      {/* Inner Circle Ring */}
+      <circle cx="150" cy="155" r="72" fill="none" stroke="url(#scallop)" strokeWidth="3" opacity="0.6" />
+
+      {/* Center Light Circle */}
+      <circle cx="150" cy="155" r="65" fill="url(#centerGold)" filter="url(#glow)" />
+
+      {/* Inner Ring Detail */}
+      <circle cx="150" cy="155" r="58" fill="none" stroke="#FFE87C" strokeWidth="2" opacity="0.7" />
+
+      {/* Center Star */}
+      <g filter="url(#glow)">
+        <path d="M150 115 L160 140 L187 143 L166 162 L172 189 L150 175 L128 189 L134 162 L113 143 L140 140 Z"
+          fill="url(#starGradient)" />
+        <path d="M150 120 L158 140 L178 142 L162 157 L166 177 L150 166 L134 177 L138 157 L122 142 L142 140 Z"
+          fill="#FF9933"
+          opacity="0.5" />
+      </g>
+
+      {/* Subtle Edge Shadows on Badge */}
+      <circle cx="150" cy="155" r="85" fill="none" stroke="#8B6914" strokeWidth="2" opacity="0.4" />
+
+      {/* Ribbon Folds */}
+      <g opacity="0.3">
+        <path d="M 120 200 L 125 210 L 120 220" fill="none" stroke="#8B0000" strokeWidth="1.5" />
+        <path d="M 180 200 L 175 210 L 180 220" fill="none" stroke="#8B0000" strokeWidth="1.5" />
+      </g>
+    </svg>
   );
 };
 

@@ -56,7 +56,7 @@ const NewTopicModal = ({ onClose }) => {
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const formData = new FormData();
       formData.append('title', newTopic.title);
@@ -74,7 +74,7 @@ const NewTopicModal = ({ onClose }) => {
         formData.append('media', file);
       });
 
-      const response = await axios.post(TOPICS_URL, formData, { 
+      const response = await axios.post(TOPICS_URL, formData, {
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'multipart/form-data'
@@ -104,7 +104,7 @@ const NewTopicModal = ({ onClose }) => {
         <div className="flex justify-between items-center p-4 pb-0">
           <h3 className="text-2xl font-bold">Create A Community</h3>
           <div className='flex gap-2'>
-          <button
+            <button
               onClick={() => setShowAiContent(true)}
               className="py-1 px-2 bg-pink-600 text-white font-playfair font-semibold rounded-lg hover:bg-pink-800 flex items-center justify-center"
             >
@@ -113,11 +113,11 @@ const NewTopicModal = ({ onClose }) => {
               </svg>
               Generate with AI
             </button>
-          <button onClick={onClose} className="hover:text-gray-600">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+            <button onClick={onClose} className="hover:text-gray-600">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -141,24 +141,24 @@ const NewTopicModal = ({ onClose }) => {
           <div className="mb-4">
             <label className="block text-xl font-semibold mb-1">Content</label>
             <div className="relative">
-            <textarea
-              className="w-full px-3 py-2 font-poppins bg-nav_hover2 text-low_text text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-theme_color4 min-h-28"
-              value={newTopic.content}
-              onChange={(e) => setNewTopic({ ...newTopic, content: e.target.value })}
-            />
+              <textarea
+                className="w-full px-3 py-2 font-poppins bg-nav_hover2 text-low_text text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-theme_color4 min-h-28"
+                value={newTopic.content}
+                onChange={(e) => setNewTopic({ ...newTopic, content: e.target.value })}
+              />
             </div>
             {newTopic.imageUrl && (
               <div className="mt-2">
-                <img 
-                  src={newTopic.imageUrl} 
-                  alt="Generated topic image" 
+                <img
+                  src={newTopic.imageUrl}
+                  alt="Generated topic image"
                   className="w-20 h-20 inline-block"
                 />
               </div>
             )}
           </div>
 
-            <label className='flex'>
+          <label className='flex'>
             <input
               type="file"
               multiple
@@ -167,24 +167,24 @@ const NewTopicModal = ({ onClose }) => {
               className="hidden"
             />
             <div className='flex cursor-pointer p-1 px-2 gap-1 rounded-lg bg-nav_hover3 hover:bg-nav_hover2'>
-            <AttachIcon height={8} smHeight={5}/>
-            Attach
+              <AttachIcon height={8} smHeight={5} />
+              Attach
             </div>
-            
-            </label>
-            {selectedFiles.length > 0 && (
-              <div className="mt-2">
-                <p className="text-sm text-gray-600">Selected files:</p>
-                <ul className="mt-1 space-y-1">
-                  {selectedFiles.map((file, index) => (
-                    <li key={index} className="text-sm text-gray-500">
-                      {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-             
+
+          </label>
+          {selectedFiles.length > 0 && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-600">Selected files:</p>
+              <ul className="mt-1 space-y-1">
+                {selectedFiles.map((file, index) => (
+                  <li key={index} className="text-sm text-gray-500">
+                    {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
         </div>
 
         <div className="flex justify-end gap-2 p-4 ">
@@ -202,15 +202,15 @@ const NewTopicModal = ({ onClose }) => {
       </div>
 
       {showAiContent && (
-        <AiContentGenerator 
-          onClose={() => setShowAiContent(false)} 
-          setNewTopic={(content) => {  
+        <AiContentGenerator
+          onClose={() => setShowAiContent(false)}
+          setNewTopic={(content) => {
             setNewTopic(content);
             // If content has modelInfo, store it
             if (content.modelInfo) {
               setModelInfo(content.modelInfo);
             }
-          }} 
+          }}
         />
       )}
     </div>

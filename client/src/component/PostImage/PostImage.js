@@ -17,7 +17,7 @@ const PostImageContent = () => {
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const { loginData } = useContext(LoginContext);
-  const { file, fileType, desc, completedCrop, aiMetadata,clearPost } =
+  const { file, fileType, desc, completedCrop, aiMetadata, clearPost } =
     useContext(PostContext);
   const {
     setFile,
@@ -197,25 +197,25 @@ const PostImageContent = () => {
               Share.
             </span>
           </div>
-           <div className="relative bg-transparent flex justify-end gap-4 text-xs">
-                <button
-                  onClick={handleClear}
-                  className="border dark:border-nav_hover border-gray-400  bg-gray-300 dark:bg-nav_hover2 p-1.5 px-2 text-gray-500 dark:text-low_text font-bold rounded-md hover:bg-nav_hover disabled:opacity-50"
-                  disabled={isUploading}
-                >
-                  Clear
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  className="border border-theme_color2 bg-theme_color2 px-2  text-white font-bold rounded-md hover:bg-theme_color disabled:opacity-50 "
-                  disabled={isUploading}
-                >
-                  {isUploading ? "Uploading..." : "Post"}
-                </button>
-              </div>
-            </div>
+          <div className="relative bg-transparent flex justify-end gap-4 text-xs">
+            <button
+              onClick={handleClear}
+              className="border dark:border-nav_hover border-gray-400  bg-gray-300 dark:bg-nav_hover2 p-1.5 px-2 text-gray-500 dark:text-low_text font-bold rounded-md hover:bg-nav_hover disabled:opacity-50"
+              disabled={isUploading}
+            >
+              Clear
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="border border-theme_color2 bg-theme_color2 px-2  text-white font-bold rounded-md hover:bg-theme_color disabled:opacity-50 "
+              disabled={isUploading}
+            >
+              {isUploading ? "Uploading..." : "Post"}
+            </button>
+          </div>
+        </div>
 
-          
+
 
         {/* drag and drop and other things */}
         <div className="mt-4">
@@ -228,9 +228,8 @@ const PostImageContent = () => {
             >
               <span>Generate with AI</span>
               <ChevronDown
-                className={`h-5 w-5 transform transition-transform duration-300 ${
-                  showGenerateAI ? "rotate-180" : "rotate-0"
-                }`}
+                className={`h-5 w-5 transform transition-transform duration-300 ${showGenerateAI ? "rotate-180" : "rotate-0"
+                  }`}
               />
             </button>
             {showGenerateAI && (
@@ -249,7 +248,7 @@ const PostImageContent = () => {
 };
 
 const PostImage = () => (
-    <PostImageContent />
+  <PostImageContent />
 );
 
 export default PostImage;

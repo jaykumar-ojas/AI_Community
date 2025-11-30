@@ -4,7 +4,7 @@ import { LoginContext } from "../ContextProvider/context";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const PromoCard = ({ userId: propUserId } = {}) => {
-  const {loginData} = useContext(LoginContext);
+  const { loginData } = useContext(LoginContext);
   const [code, setCode] = useState("");
   const [status, setStatus] = useState(null); // null | "applied" | "invalid"
   const [loading, setLoading] = useState(false);
@@ -101,9 +101,9 @@ const PromoCard = ({ userId: propUserId } = {}) => {
               Enter Promo Code
             </h3>
             <p className="mt-1 text-xs text-white/70">
-  Apply promo codes here. Enjoy extra credits with codes like{" "}
-  <span className="font-medium">PIXX10</span>.
-</p>
+              Apply promo codes here. Enjoy extra credits with codes like{" "}
+              <span className="font-medium">PIXX10</span>.
+            </p>
           </div>
 
           <div className="flex items-center gap-2">

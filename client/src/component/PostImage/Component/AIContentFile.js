@@ -250,7 +250,7 @@ const AIContentFile = () => {
         }
         const err = new Error(
           errBody?.message ||
-            `Failed to generate image (status ${response.status})`
+          `Failed to generate image (status ${response.status})`
         );
         err.status = response.status;
         err.body = errBody;
@@ -342,7 +342,7 @@ const AIContentFile = () => {
         // Keep your existing flagged-content fallback
         showNotification(
           "This prompt may contain flagged content (e.g., personal names). Please revise the prompt or switch to a different model : " +
-            (error.message || error)
+          (error.message || error)
         );
       }
 
@@ -403,9 +403,8 @@ const AIContentFile = () => {
                   )}
                 </div>
                 <ChevronDown
-                  className={`h-4 w-4 text-low_text transition-transform ${
-                    isDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`h-4 w-4 text-low_text transition-transform ${isDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
@@ -423,11 +422,10 @@ const AIContentFile = () => {
                         <button
                           key={modelKey}
                           onClick={() => handleSelectModel(modelKey)}
-                          className={`flex items-center gap-2 px-3 py-2 text-sm font-manrope font-semibold first:rounded-t-lg last:rounded-b-lg ${
-                            selectedImageModel === modelKey
+                          className={`flex items-center gap-2 px-3 py-2 text-sm font-manrope font-semibold first:rounded-t-lg last:rounded-b-lg ${selectedImageModel === modelKey
                               ? "text-gray-900 dark:text-theme_color font-semibold"
                               : "text-gray-700 dark:text-white dark:hover:text-theme_color2"
-                          }`}
+                            }`}
                         >
                           {config.iconUrl ? (
                             <img
@@ -459,14 +457,13 @@ const AIContentFile = () => {
                   <span className="font-medium text-gray-700 dark:text-low_text text-sm">
                     {selectedAspectRatio
                       ? availableRatios.find(
-                          (r) => r.value === selectedAspectRatio
-                        )?.label || selectedAspectRatio
+                        (r) => r.value === selectedAspectRatio
+                      )?.label || selectedAspectRatio
                       : "Select Ratio"}
                   </span>
                   <ChevronDown
-                    className={`h-4 w-4 text-low_text transition-transform ${
-                      isAspectRatioDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`h-4 w-4 text-low_text transition-transform ${isAspectRatioDropdownOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
@@ -477,11 +474,10 @@ const AIContentFile = () => {
                         <button
                           key={index}
                           onClick={() => handleSelectAspectRatio(ratio.value)}
-                          className={`px-3 py-2 text-sm text-left transform origin-left transition-transform duration-150 ease-in-out hover:scale-[1.1] first:rounded-t-lg last:rounded-b-lg ${
-                            selectedAspectRatio === ratio.value
+                          className={`px-3 py-2 text-sm text-left transform origin-left transition-transform duration-150 ease-in-out hover:scale-[1.1] first:rounded-t-lg last:rounded-b-lg ${selectedAspectRatio === ratio.value
                               ? "text-gray-900 dark:text-theme_color font-semibold"
                               : "text-gray-700 dark:text-low_text hover:text-theme_color2 dark:hover:text-theme_color2"
-                          }`}
+                            }`}
                         >
                           {ratio.label}
                         </button>

@@ -17,13 +17,13 @@ async function generateTextopenai(prompt, model, aspectRatio) {
     messages: [{ role: "user", content: prompt }],
   });
   console.log("OpenAI response:", response);
-  return {text: response.choices[0].message.content};
+  return { text: response.choices[0].message.content };
 }
 
 async function* generateTextopenaiStream(prompt, model, aspectRatio) {
   console.log("Generating text with streaming OpenAI model:", model);
   const openai = await getOpenAI();
-  
+
   const stream = await openai.chat.completions.create({
     model,
     messages: [{ role: "user", content: prompt }],
@@ -39,28 +39,28 @@ async function* generateTextopenaiStream(prompt, model, aspectRatio) {
 }
 
 async function generateImageBase64openai(prompt, model, aspectRatio) {
-  try{
+  try {
     console.log("i  coming here");
-  const openai = await getOpenAI();
-  console.log(" im here");
-  const response = await openai.images.generate({
-    model,
-    prompt,
-    size: aspectRatio || "1024x1024",
-    response_format: "b64_json" 
-  });
-  console.log("i come backg rom calling ,", response);
-  if (!response.data[0]?.b64_json) {
-    throw new Error("No image was generated.");
-  }
-  console.log("i alos get data");
+    const openai = await getOpenAI();
+    console.log(" im here");
+    const response = await openai.images.generate({
+      model,
+      prompt,
+      size: aspectRatio || "1024x1024",
+      response_format: "b64_json"
+    });
+    console.log("i come backg rom calling ,", response);
+    if (!response.data[0]?.b64_json) {
+      throw new Error("No image was generated.");
+    }
+    console.log("i alos get data");
 
-  return {imageData :response.data[0].b64_json};
+    return { imageData: response.data[0].b64_json };
   }
-  catch(error){
-    console.log("i got error",error);
+  catch (error) {
+    console.log("i got error", error);
   }
-  
+
 }
 
 // async function generateImageBase64(prompt, model, aspectRatio) {
@@ -88,12 +88,12 @@ async function generateImageBase64openai(prompt, model, aspectRatio) {
 async function generateImageBase64(prompt, model = "gpt-image-1", aspectRatio = "1024x1024") {
   try {
     console.log("Generating image with model:", model);
-     const openai = await getOpenAI();
+    const openai = await getOpenAI();
     const result = await openai.images.generate({
       model,
       prompt,
       size: aspectRatio,
-    //  background: "transparent",
+      //  background: "transparent",
       quality: "high",
     });
 
@@ -102,7 +102,7 @@ async function generateImageBase64(prompt, model = "gpt-image-1", aspectRatio = 
     }
 
     const image_base64 = result.data[0].b64_json;
-    return {imageData:image_base64}; // base64 string
+    return { imageData: image_base64 }; // base64 string
   } catch (error) {
     console.error("Error generating image:", error);
     throw error;
