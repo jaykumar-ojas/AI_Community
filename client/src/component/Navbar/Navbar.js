@@ -61,10 +61,9 @@ const fetchUnreadCount = async ({ userId, baseUrl }) => {
 
 const navigation = [
   { name: "Home", href: "/" },
-  { name: `generate image`, href: "/post" },
+  { name: `Create`, href: "/post" },
+  {name: 'Community', href:'/community'},
   { name: "AI Chat", href: "/ai-chat" },
-  {name: 'Community', href:'/forum'}
-  { name: "Feedback", href: "/feedback" },
 ];
 
 function classNames(...classes) {
@@ -135,9 +134,9 @@ export default function Navbar({ showForum, setShowForum }) {
       //isSpecial: true, // Special styling for add button
     },
     {
-      name: "Forum",
+      name: "Community",
       // onClick: handleForumToggle,
-      href: "/forum",
+      href: "/community",
       icon: () => (
         <svg
           className="w-6 h-6"
@@ -229,22 +228,30 @@ export default function Navbar({ showForum, setShowForum }) {
               </div>
 
               {/* User icon bell icon */}
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                
                 {/* Notification and Profile Dropdown */}
-                <div className="flex items-center space-x-4">
-                  {loginData && <Menu as="div" className="relative z-10">
-                    <MenuButton className="flex w-full items-center focus:outline-none">
-                      <DynamicNumberSVG
-                        value={loginData ? loginData?.validuserone?.credit : 50}
-                      />
-                    </MenuButton>
-                    <MenuItems className="absolute right-0 mt-2 w-96">
-                      <MenuItem >
-                        <PromoCard />
-                      </MenuItem>
-
-                    </MenuItems>
-                  </Menu>}
+                <div className="flex items-center space-x-2">
+                  {/* <Link to="/challenges" className="
+                            rounded-md  text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover
+                          px-2  font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200">challanges</Link> */}
+                  <Link to="/feedback" className="
+                            rounded-md  text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover
+                          px-2  font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200">feedback</Link>
+                  
+                   {loginData && <Menu as="div" className="relative z-10">
+                      <MenuButton className="flex w-full items-center focus:outline-none">
+                       <DynamicNumberSVG
+                    value={loginData ? loginData?.validuserone?.credit : 50}
+                  />
+                      </MenuButton>
+                      <MenuItems className="absolute right-0 mt-2 w-96">
+                        <MenuItem >
+                          <PromoCard/>
+                        </MenuItem>
+                       
+                      </MenuItems>
+                    </Menu>}
                   <Menu as="div" className="relative z-10">
                     <MenuButton
                       className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition"
@@ -275,6 +282,7 @@ export default function Navbar({ showForum, setShowForum }) {
                       />
                     </MenuItems>
                   </Menu>
+                  
                   {isAuthenticated() && loginData ? (
                     <Menu as="div" className="relative z-10">
                       <MenuButton className="flex items-center focus:outline-none">
@@ -315,17 +323,6 @@ export default function Navbar({ showForum, setShowForum }) {
                     </Menu>
                   ) : (
                     <>
-                      {/* <Link
-                        to="/feedback"
-                        className={classNames(
-                          location.pathname === "/feedback"
-                            ? "text-theme_dark_color dark:text-theme_color"
-                            : "text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover",
-                          "px-2 font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200"
-                        )}
-                      >
-                      
-                      </Link> */}
                       <Link
                         to="/login"
                         className="px-3 py-2 rounded-md text-sm"
@@ -379,17 +376,33 @@ export default function Navbar({ showForum, setShowForum }) {
 
               {/* User icon bell icon */}
               <div className="flex items-center space-x-2">
-                {loginData && (
-                  <DynamicNumberSVG
+                 {loginData && <Menu as="div" className="relative z-10">
+                      <MenuButton className="flex w-full items-center focus:outline-none">
+                       <DynamicNumberSVG
                     value={loginData ? loginData?.validuserone?.credit : 50}
-                    size={5}
                   />
-                )}
+                      </MenuButton>
+                      <MenuItems className="absolute right-0 mt-2 w-64">
+                        <MenuItem >
+                          <PromoCard/>
+                        </MenuItem>
+                       
+                      </MenuItems>
+                    </Menu>}
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-4">
                   <Menu as="div" className="relative z-10">
-                    <MenuButton onClick={() => { navigate('/notification') }} className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
+                    <MenuButton onClick={()=>{navigate('/notification')}} className="flex items-center focus:outline-none text-[#1a1a1a] hover:text-theme_color  dark:hover:text-theme_color dark:text-low_text p-2 dark:hover:bg-[#0d0d0d] hover:bg-gray-200 rounded-full transition">
+                      
                       <BellIcon className="h-6 w-6 " />
+                      {unread > 0 && (
+                          <span
+                            className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white bg-red-600 rounded-full shadow-sm"
+                            aria-hidden="true"
+                          >
+                            {unread > 10 ? "10+" : unread}
+                          </span>
+                        )}
                     </MenuButton>
                     {/* <MenuItems
                       as="div"
@@ -537,9 +550,6 @@ export default function Navbar({ showForum, setShowForum }) {
           })}
         </div>
       </div>
-
-      {/* Add padding bottom to content on mobile to prevent overlap with bottom nav */}
-      {/* <div className="sm:hidden h-16"></div> */}
     </>
   );
 }

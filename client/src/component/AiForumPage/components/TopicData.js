@@ -41,9 +41,10 @@ const TopicData = ({ topic }) => {
     }
   },[topic])
 
-  const handleTopicClick = (topic) => {
-    navigate(`/forum/topic/${encodeId(topic._id)}`);
-  };
+  const handleTopicClick = (topic, e) => {
+
+  navigate(`/forum/topic/${encodeId(topic._id)}`);
+};
 
   const handleDeleteTopic = async (topicId) => {
     if (!loginData || !loginData.validuserone) {
@@ -86,7 +87,11 @@ const TopicData = ({ topic }) => {
   return (
     <div
       key={topic._id}
-    //   onClick={() => handleTopicClick(topic)}
+     onClick={(e) => {
+    // if click originated inside an element with class 'no-nav', don't navigate
+    if (e.target.closest && e.target.closest('.no-nav')) return;
+    handleTopicClick(topic, e);
+  }}
       className="group relative bg-white dark:bg-nav_hover border border-gray-200 dark:border-gray-900 rounded-2xl p-3 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-300 cursor-pointer overflow-hidden"
     >
       {/* Hover gradient overlay */}
@@ -169,7 +174,7 @@ const TopicData = ({ topic }) => {
         </div>
 
         {/* Right Section (Views + Like/Dislike) */}
-        <div className="flex items-center flex-shrink-0 gap-1">
+        <div className="">
           {/* <div className="bg-gray-100 dark:bg-nav_hover2 text-gray-700 dark:text-low_text px-2 py-0.5 rounded-full flex items-center gap-1">
             {topic.likes?.length} <Like />
           </div>

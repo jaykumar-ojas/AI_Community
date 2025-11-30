@@ -36,6 +36,8 @@ const seedingRoute = require('./routes/seedingRoute');
 const xmlRoute = require("./routes/xmlRoute");
 const promoCodeRoute = require("./routes/promoCode");
 const feedbackRoute = require("./routes/feedbackRoute");
+const challengeRoutes = require("./routes/challangeRoutes");
+const challengeContentRoute = require("./routes/challangeContentRoutes");
 
 
 
@@ -98,11 +100,13 @@ app.use("/", subscriptionRoutes);
 app.use("/", notificationRoutes);
 app.use("/", bookMarkRoutes);
 app.use("/", aiModelRoutes);
-app.use("/", shareRoute);
-app.use("/", seedingRoute);
-app.use("/", xmlRoute);
-app.use("/", promoCodeRoute);
-app.use("/", feedbackRoute);
+app.use("/",shareRoute);
+app.use("/",seedingRoute);
+app.use("/",xmlRoute);
+app.use("/",promoCodeRoute);
+app.use("/",feedbackRoute);
+app.use("/",challengeRoutes);
+app.use("/",challengeContentRoute);
 
 
 

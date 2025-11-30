@@ -35,6 +35,10 @@ import FeedbackPage from "./component/Navbar/feedback";
 import { ModelsProvider } from "./component/PostImage/ModelsContext";
 import PostProvider from "./component/PostImage/PostContext";
 import NotificationComponent from "./component/Notification/Notification";
+import Challenges from "./component/Challanges/Challanges";
+import DailyChallenges from "./component/Challanges/component/DailyChallange";
+import WeeklyChallenges from "./component/Challanges/component/WeekelyChallange";
+import CreateChallenge from "./component/Challanges/component/CreateChallenge";
 import AIChatPage from "./pages/AiChatPage/AIChatPage";
 
 const Layout = () => {
@@ -89,12 +93,24 @@ const router = createBrowserRouter([
       { path: "t/:topicId", element: <TopicContent /> },
       { path: "loader", element: <PixelLoader /> },
       { path: "sample-user/:id", element: <UserProfile /> },
-      { path: "post", element: <PostImage /> },
-      { path: "userPost/edit/:id?", element: <UserEdit /> },
-      { path: "forum", element: <ForumSystem /> },
-      { path: "ai-chat", element: <AIChatPage /> },
-      { path: "feedback", element: <FeedbackPage /> },
-      { path: "notification", element: <NotificationComponent /> }
+      { path: "post", element:<PostImage/>},
+      {path: "userPost/edit/:id?", element: <UserEdit/>},
+      {path: "community", element: <ForumSystem/>},
+      {path: "forum", element: <ForumSystem/>},
+       { path: "ai-chat", element: <AIChatPage /> },
+      {path: "feedback", element: <FeedbackPage/>},
+      {path:"notification", element:<NotificationComponent/>},
+      {
+        path: "challenges",
+        element: <Challenges/>,
+        children: [
+          // { index: true, element: <DailyChallenges/> }, // default
+          {path :"create", element:<CreateChallenge/>},
+          { path: "daily", element: <DailyChallenges /> },
+          { path: "weekly", element: <WeeklyChallenges/>}
+        ]
+      }
+      
     ]
   },
   { path: "/login", element: <BackgroundWrapper><Login /></BackgroundWrapper> },
