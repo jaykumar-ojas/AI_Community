@@ -232,9 +232,9 @@ export default function Navbar({ showForum, setShowForum }) {
                 
                 {/* Notification and Profile Dropdown */}
                 <div className="flex items-center space-x-2">
-                  {/* <Link to="/challenges" className="
+                   <Link to="/challenges" className="
                             rounded-md  text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover
-                          px-2  font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200">challanges</Link> */}
+                          px-2  font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200">challanges</Link>
                   <Link to="/feedback" className="
                             rounded-md  text-[#1a1a1a] dark:text-low_text hover:text-theme_hover dark:hover:text-theme_hover
                           px-2  font-[Arial,sans-serif] font-semibold text-md transition-colors duration-200">feedback</Link>
