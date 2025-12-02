@@ -115,8 +115,8 @@ export default function DailyChallenges() {
                 <div className="w-36 text-right">
                   <button
                     onClick={() => {
-                      setSelectedId(ch?.challengeId);
-                      // navigate(`/challenges/${ch.challengeId}`);
+                      alert("i m coming inside");
+                      navigate(`/challenges/daily/${ch?._id}`)
                     }}
                     className="mb-2 block w-full px-3 py-2 rounded-lg border border-white/6 bg-white/4 text-gray-100 hover:bg-white/6 transition"
                   >

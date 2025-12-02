@@ -40,6 +40,7 @@ import DailyChallenges from "./component/Challanges/component/DailyChallange";
 import WeeklyChallenges from "./component/Challanges/component/WeekelyChallange";
 import CreateChallenge from "./component/Challanges/component/CreateChallenge";
 import AIChatPage from "./pages/AiChatPage/AIChatPage";
+import ChallengeContent from "./component/Challanges/component/ChallengeContent";
 
 const Layout = () => {
   const location = useLocation();
@@ -97,17 +98,18 @@ const router = createBrowserRouter([
       {path: "userPost/edit/:id?", element: <UserEdit/>},
       {path: "community", element: <ForumSystem/>},
       {path: "forum", element: <ForumSystem/>},
-       { path: "ai-chat", element: <AIChatPage /> },
+      { path: "ai-chat", element: <AIChatPage /> },
       {path: "feedback", element: <FeedbackPage/>},
       {path:"notification", element:<NotificationComponent/>},
       {
         path: "challenges",
         element: <Challenges/>,
         children: [
-          // { index: true, element: <DailyChallenges/> }, // default
+          { index: true, element: <DailyChallenges/> },
           {path :"create", element:<CreateChallenge/>},
           { path: "daily", element: <DailyChallenges /> },
-          { path: "weekly", element: <WeeklyChallenges/>}
+          { path: "weekly", element: <WeeklyChallenges/>},
+          { path:"daily/:id" , element:<ChallengeContent/>},
         ]
       }
       
