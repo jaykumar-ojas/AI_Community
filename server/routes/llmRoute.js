@@ -2,25 +2,25 @@ const express = require("express");
 const router = new express.Router();
 const axios = require('axios');
 const mongoose = require('mongoose');
-const authenticate = require("../middleware/authenticate"); 
+const authenticate = require("../middleware/authenticate");
 const {
-    openai,
-    model,
-    promptEnhancer,
-    promptEnhancerAI,
-    imageToText,
-    textSuggestion,
-    imageGenerator,
-    fetchAncestorContext,
-    formatContextForAI,
-    generateTextResponse,
-    addImageDescriptions,
-    handleImageDescriptionRequest,
-    describeImage,
-    getFirstNWords,
-    extractContentText,
-    extractMediaDescriptions,
-    textSuggestionWithContext
+  openai,
+  model,
+  promptEnhancer,
+  promptEnhancerAI,
+  imageToText,
+  textSuggestion,
+  imageGenerator,
+  fetchAncestorContext,
+  formatContextForAI,
+  generateTextResponse,
+  addImageDescriptions,
+  handleImageDescriptionRequest,
+  describeImage,
+  getFirstNWords,
+  extractContentText,
+  extractMediaDescriptions,
+  textSuggestionWithContext
 } = require("../middleware/LLMmiddleware");
 
 // router.post('/suggest/:id', (req, res, next) => {
@@ -74,7 +74,7 @@ router.post('/suggest/:id', authenticate, fetchAncestorContext, textSuggestionWi
     success: true,
     finalprompt: req.contextForAI.suggestion,
     aiPrompt: req.contextForAI.promptText,
-   // structuredJSON: req.contextForAI.structuredJSON
+    // structuredJSON: req.contextForAI.structuredJSON
   });
 });
 
@@ -125,7 +125,7 @@ router.post("/generateTopicContent", async (req, res) => {
     Please provide the output in this format:
     Title: [Generated Title Here]
     
-    [Generated a discription not more than 3-4 lines]`;
+    [Generated a discription not more than 2 lines]`;
 
     console.log("sending prompt to AI for the topic gneration: ", final_Prompt);
 
@@ -160,6 +160,7 @@ router.post("/generateTopicContent", async (req, res) => {
     }
 
     // Generate an image based on the topic
+    console.log("Generating image for topic: ", title);
     const imagePrompt = `Create a visually appealing image that represents: ${title}`;
     const imageUrl = await imageGenerator(imagePrompt);
 
@@ -170,7 +171,7 @@ router.post("/generateTopicContent", async (req, res) => {
       const modelData = await AiModel.findOne({
         modelName: { $regex: modelName, $options: 'i' }
       });
-      
+
       if (modelData) {
         modelInfo = {
           modelName: modelData.modelName,
@@ -521,7 +522,7 @@ router.post("/enhance-prompt", async (req, res) => {
 
     // Use the existing promptEnhancerAI middleware function
     const enhancedPrompt = await promptEnhancerAI(prompt);
-    console.log('enhaqncing gn',enhancedPrompt);
+    console.log('enhaqncing gn', enhancedPrompt);
 
     if (!enhancedPrompt) {
       throw new Error("Failed to enhance prompt");
@@ -576,8 +577,8 @@ router.get('/forum/:id', async (req, res) => {
 
     // ✅ Use the new fields
     const structuredContext = req.structuredContext || null;
-    
-   // const contextForAI = req.contextForAI || null;
+
+    // const contextForAI = req.contextForAI || null;
 
     let response = {
       success: true,
@@ -585,7 +586,7 @@ router.get('/forum/:id', async (req, res) => {
         id,
         contextType: 'forum',
         structuredContext,   // <-- include this
-     //   timestamp: new Date().toISOString(),
+        //   timestamp: new Date().toISOString(),
       }
     };
 
