@@ -394,6 +394,52 @@ router.get('/allget', async (req, res) => {
                     ]
                 }
             },
+            {
+                $unionWith: {
+                    coll: "forumreplies",
+                    pipeline: [
+                        {
+                            $match: {
+                                content: {
+                                    $elemMatch: {
+                                        model: { $exists: true, $ne: "" }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "forumtopics",
+                                localField: "topicId",
+                                foreignField: "_id",
+                                as: "topic"
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: "$topic",
+                                preserveNullAndEmptyArrays: true
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 1,
+                                userId: 1,
+                                userName: 1,
+                                topicId: 1,
+                                topicTitle: "$topic.title",
+                                content: 1,
+                                mediaAttachments: 1,
+                                likes: 1,
+                                dislikes: 1,
+                                createdAt: 1,
+                                updatedAt: 1,
+                                type: { $literal: "forum_ai" }
+                            }
+                        }
+                    ]
+                }
+            },
             // 3. Sort by createdAt descending
             { $sort: { createdAt: -1 } },
             // 4. Pagination
@@ -407,9 +453,52 @@ router.get('/allget', async (req, res) => {
         const hasMore = mixedResults.length > limit;
         const postsToReturn = hasMore ? mixedResults.slice(0, limit) : mixedResults;
 
+        const normalizeId = (val) => {
+            if (!val) return val;
+            return typeof val === "object" && typeof val.toString === "function" ? val.toString() : val;
+        };
+
+        const normalizedPosts = postsToReturn.map((doc) => {
+            const likes = Array.isArray(doc.likes) ? doc.likes.map(normalizeId) : [];
+            const dislikes = Array.isArray(doc.dislikes) ? doc.dislikes.map(normalizeId) : [];
+            const baseDoc = {
+                ...doc,
+                likes,
+                dislikes,
+                userId: normalizeId(doc.userId),
+            };
+
+            if (doc.type === "forum_ai") {
+                const replyId = normalizeId(doc._id);
+                const topicId = normalizeId(doc.topicId);
+                return {
+                    ...baseDoc,
+                    _id: replyId,
+                    replyId,
+                    topicId,
+                    forumRef: {
+                        topicId,
+                        replyId,
+                        topicSlug: topicId ? encodeId(topicId) : null,
+                        replySlug: replyId ? encodeId(replyId) : null
+                    }
+                };
+            }
+
+            if (doc.isCommentRef) {
+                return {
+                    ...baseDoc,
+                    refPostId: normalizeId(doc.refPostId),
+                    refCommentId: normalizeId(doc.refCommentId)
+                };
+            }
+
+            return baseDoc;
+        });
+
         res.status(200).json({
             status: 200,
-            userposts: postsToReturn,
+            userposts: normalizedPosts,
             hasMore,
             page
         });

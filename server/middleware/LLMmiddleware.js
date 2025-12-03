@@ -1,4 +1,4 @@
-const {GoogleGenerativeAI} = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { OpenAI } = require("openai");
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
@@ -21,48 +21,48 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(
   process.env.GEMINI_API_KEY
 );
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_KEY, // Replace with your OpenAI API key
 });
 
 function fileToGenerativePart(fileBuffer, mimeType) {
-    return {
-      inlineData: {
-        data: fileBuffer.toString("base64"),
-        mimeType,
-      },
-    };
+  return {
+    inlineData: {
+      data: fileBuffer.toString("base64"),
+      mimeType,
+    },
+  };
+}
+
+
+
+const promptEnhancer = async (req, res, next) => {
+  try {
+
+
+
+    const userPrompt = req.body.prompt;
+    //  const  description  = req.description || " ";
+    // if (!description) {
+    //   return res.status(400).json({ error: "Prompt is required" });
+    // }
+    const CONSTANT_PROMPT = "As a professional prompt engineer give prompt to generate image by this descirption and strict limit of 100 words: only give prompt not anything else. Description: or further adjustment questions only prompt";
+    const final_prompt = CONSTANT_PROMPT + userPrompt;
+
+    const result = await model.generateContent(final_prompt);
+    const responseText = result.response.text();
+
+    req.updatedPrompt = responseText;
+    next();
+    // res.json({ response: responseText });
+  } catch (error) {
+    console.error("Error generating text:", error);
+    res.status(500).json({ error: "Failed to generate text" });
   }
-
-
-
-const promptEnhancer =async(req,res,next)=>{
-    try {
-
-  
-        
-        const userPrompt = req.body.prompt;
-      //  const  description  = req.description || " ";
-        // if (!description) {
-        //   return res.status(400).json({ error: "Prompt is required" });
-        // }
-        const CONSTANT_PROMPT = "As a professional prompt engineer give prompt to generate image by this descirption and strict limit of 100 words: only give prompt not anything else. Description: or further adjustment questions only prompt";
-        const final_prompt = CONSTANT_PROMPT +  userPrompt;
-    
-        const result = await model.generateContent(final_prompt);
-        const responseText = result.response.text();
-        
-        req.updatedPrompt = responseText;
-        next();
-        // res.json({ response: responseText });
-      } catch (error) {
-        console.error("Error generating text:", error);
-        res.status(500).json({ error: "Failed to generate text" });
-      }
 };
 
-const textSuggestion = async(text) => {
+const textSuggestion = async (text) => {
   try {
     if (!text) {
       throw new Error("Text field is required");
@@ -71,16 +71,12 @@ const textSuggestion = async(text) => {
     const userPrompt = "Analyze the given text and provide a helpful, engaging response that adds value to the discussion. The response should be informative and maintain a conversational tone:";
     const final_prompt = userPrompt + "\n\n" + text;
 
-    // Call OpenAI API
-    const response = await openai.chat.completions.create({
-      model: "gpt-4", // Using GPT-4 for better responses
-      messages: [{ role: "user", content: final_prompt }],
-      temperature: 0.7,
-      max_tokens: 500
-    });
+    // Call Gemini API
+    const result = await model.generateContent(final_prompt);
+    const response = result.response.text();
 
     // Return the AI response
-    return response.choices[0].message.content;
+    return response;
   } catch (error) {
     console.error("Error generating text:", error);
     throw error; // Let the route handler deal with the error
@@ -96,24 +92,11 @@ const describeImage = async (imageBuffer) => {
       return null;
     }
 
-    const base64Image = imageBuffer.toString("base64");
     const mimeType = detectMimeType(imageBuffer) || "image/png";
 
-    console.log("Sending image to OpenAI for detailed description...");
+    console.log("Sending image to Gemini for detailed description...");
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4.1", // most powerful model
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert visual interpreter. Provide extremely detailed and accurate image descriptions in JSON format."
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `Provide a highly detailed and precise description of this image.
+    const prompt = `Provide a highly detailed and precise description of this image.
 Focus on:
 - Key objects and their attributes (color, shape, size, texture)
 - People (appearance, clothing, facial expressions, actions, poses)
@@ -128,41 +111,33 @@ Return the result as JSON with these fields:
   "lighting": "...",
   "mood": "...",
   "detailed_description": "..."
-}`
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:${mimeType};base64,${base64Image}`,
-              },
-            },
-          ],
-        },
-      ],
-      max_completion_tokens: 1500, // ✅ correct param name
-      response_format: { type: "json_object" }, // enforce JSON
+}`;
+
+    const imagePart = fileToGenerativePart(imageBuffer, mimeType);
+
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }, imagePart] }],
+      generationConfig: { responseMimeType: "application/json" }
     });
 
-    if (response?.choices?.[0]?.message?.content) {
-      const raw = response.choices[0].message.content;
+    const responseText = result.response.text();
+
+    if (responseText) {
       console.log("Successfully received image description");
 
       try {
-        return JSON.parse(raw); // structured JSON
+        return JSON.parse(responseText); // structured JSON
       } catch (parseErr) {
         console.warn("Response was not valid JSON, returning raw text");
-        return raw;
+        return responseText;
       }
     } else {
-      console.error("Invalid response structure from OpenAI");
+      console.error("Invalid response structure from Gemini");
       return null;
     }
 
   } catch (error) {
     console.error("Error in describeImage function:", error);
-    if (error.response) {
-      console.error("OpenAI error details:", error.response.data);
-    }
     return null;
   }
 };
@@ -179,7 +154,7 @@ const downloadImage = async (url) => {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
     });
-    
+
     return Buffer.from(response.data);
   } catch (error) {
     console.error("Error downloading image from URL:", url, error.message);
@@ -196,21 +171,21 @@ const detectMimeType = (buffer) => {
     'R0lGODlh': 'image/gif',
     'UklGRg==': 'image/webp'
   };
-  
+
   const base64 = buffer.toString('base64');
-  
+
   for (const [signature, mimeType] of Object.entries(signatures)) {
     if (base64.startsWith(signature)) {
       return mimeType;
     }
   }
-  
+
   return 'image/png'; // Default fallback
 };
 
 const extractImageUrls = (document) => {
   const imageUrls = [];
-  
+
   // Extract from content array
   if (document.content && Array.isArray(document.content)) {
     document.content.forEach((item, index) => {
@@ -224,7 +199,7 @@ const extractImageUrls = (document) => {
       }
     });
   }
-  
+
   // Extract from mediaAttachments
   if (document.mediaAttachments && Array.isArray(document.mediaAttachments)) {
     document.mediaAttachments.forEach((attachment, index) => {
@@ -238,24 +213,24 @@ const extractImageUrls = (document) => {
       }
     });
   }
-  
+
   return imageUrls;
 };
 
 const addImageDescriptions = async (objectId, db) => {
   try {
     console.log("Processing document with ObjectId:", objectId);
-    
+
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(objectId)) {
       throw new Error("Invalid ObjectId provided");
     }
-    
+
     // Check if database connection is valid
     if (!db) {
       throw new Error("Database connection is not available");
     }
-    
+
     // List available collections for debugging
     try {
       const collections = await db.listCollections().toArray();
@@ -263,12 +238,12 @@ const addImageDescriptions = async (objectId, db) => {
     } catch (err) {
       console.error("Error listing collections:", err);
     }
-    
+
     // Try different possible collection names
     const possibleCollections = ['forumreplies', 'postcomments'];
     let collection = null;
     let document = null;
-    
+
     for (const collectionName of possibleCollections) {
       try {
         collection = db.collection(collectionName);
@@ -282,7 +257,7 @@ const addImageDescriptions = async (objectId, db) => {
         continue;
       }
     }
-    
+
     if (!document) {
       console.error("Document not found with ObjectId:", objectId, "in any collection");
       return {
@@ -291,34 +266,34 @@ const addImageDescriptions = async (objectId, db) => {
         document: null
       };
     }
-    
+
     console.log("Document found, processing content and mediaAttachments arrays...");
-    
+
     let processedCount = 0;
     let updatedContent = document.content ? [...document.content] : [];
     let updatedMediaAttachments = document.mediaAttachments ? [...document.mediaAttachments] : [];
-    
+
     // Process content array to find items with imageUrl
     if (Array.isArray(document.content)) {
       for (let i = 0; i < updatedContent.length; i++) {
         const contentItem = updatedContent[i];
-        
+
         // Check if this content item has an imageUrl
         if (contentItem.imageUrl && contentItem.imageUrl.fileUrl) {
           try {
             console.log(`Processing content image ${i}: ${contentItem.imageUrl.fileName || 'unnamed'}`);
-        
-        // Download image
+
+            // Download image
             const imageBuffer = await downloadImage(contentItem.imageUrl.fileUrl);
-        
-        if (!imageBuffer) {
+
+            if (!imageBuffer) {
               console.log(`Failed to download image for content item ${i}`);
-          continue;
-        }
-        
-        // Get description
-        const description = await describeImage(imageBuffer);
-        
+              continue;
+            }
+
+            // Get description
+            const description = await describeImage(imageBuffer);
+
             if (description) {
               // Add description to the content item
               updatedContent[i] = {
@@ -328,39 +303,39 @@ const addImageDescriptions = async (objectId, db) => {
               processedCount++;
               console.log(`Added description to content item ${i}`);
             }
-        
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-      } catch (error) {
+
+            // Small delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+          } catch (error) {
             console.error(`Error processing image for content item ${i}:`, error);
           }
         }
       }
     }
-    
+
     // Process mediaAttachments array
     if (Array.isArray(document.mediaAttachments)) {
       for (let i = 0; i < updatedMediaAttachments.length; i++) {
         const mediaItem = updatedMediaAttachments[i];
-        
+
         console.log("Processing media attachment:", mediaItem);
         // Check if this media item has a fileUrl
         if (mediaItem.fileUrl) {
           try {
             console.log(`Processing media attachment ${i}: ${mediaItem.fileName || 'unnamed'}`);
-            
+
             // Download image
             const imageBuffer = await downloadImage(mediaItem.fileUrl);
-            
+
             if (!imageBuffer) {
               console.log(`Failed to download image for media attachment ${i}`);
               continue;
             }
-            
+
             // Get description
             const description = await describeImage(imageBuffer);
-            
+
             if (description) {
               // Add description to the media item
               updatedMediaAttachments[i] = {
@@ -370,17 +345,17 @@ const addImageDescriptions = async (objectId, db) => {
               processedCount++;
               console.log(`Added description to media attachment ${i}`);
             }
-            
+
             // Small delay to avoid rate limiting
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
           } catch (error) {
             console.error(`Error processing image for media attachment ${i}:`, error);
           }
         }
       }
     }
-    
+
     if (processedCount === 0) {
       console.log("No images found in content or mediaAttachments arrays");
       return {
@@ -389,31 +364,31 @@ const addImageDescriptions = async (objectId, db) => {
         document: document
       };
     }
-    
+
     // Update document with modified arrays
     const updateData = {
-          lastDescriptionUpdate: new Date()
+      lastDescriptionUpdate: new Date()
     };
-    
+
     if (updatedContent.length > 0) {
       updateData.content = updatedContent;
-        } 
-    
+    }
+
     if (updatedMediaAttachments.length > 0) {
       updateData.mediaAttachments = updatedMediaAttachments;
-      }
-    
+    }
+
     const updateResult = await collection.updateOne(
       { _id: new ObjectId(objectId) },
       { $set: updateData }
     );
-    
+
     if (updateResult.modifiedCount === 1) {
       console.log(`Successfully updated document with ${processedCount} image descriptions`);
-      
+
       // Fetch and return updated document
       const updatedDocument = await collection.findOne({ _id: new ObjectId(objectId) });
-      
+
       return {
         success: true,
         message: `Successfully processed ${processedCount} images`,
@@ -422,7 +397,7 @@ const addImageDescriptions = async (objectId, db) => {
     } else {
       throw new Error("Failed to update document in database");
     }
-    
+
   } catch (error) {
     console.error("Error in addImageDescriptions:", error);
     return {
@@ -436,9 +411,9 @@ const addImageDescriptions = async (objectId, db) => {
 const handleImageDescriptionRequest = async (req, res) => {
   try {
     const { objectId } = req.params;
-    
+
     console.log("handleImageDescriptionRequest called with objectId:", objectId);
-    
+
     if (!objectId) {
       return res.status(400).json({
         success: false,
@@ -449,22 +424,22 @@ const handleImageDescriptionRequest = async (req, res) => {
     // For image description requests, check if it's a topic or forum reply
     // Only decode hashids for topics, not for forum replies
     let decodedObjectId;
-    
+
     // Check if this is a topic by looking for a flag in the request
     const isTopic = req.body && req.body.isTopic;
-    
+
     if (isTopic) {
       // Decode hashid for topics
       try {
         decodedObjectId = decodeId(objectId);
         console.log('Decoded topic objectId:', { original: objectId, decoded: decodedObjectId });
-        
+
         // Handle case where decodeId returns an array
         if (Array.isArray(decodedObjectId) && decodedObjectId.length > 0) {
           decodedObjectId = decodedObjectId[0];
           console.log('Extracted first ID from array:', decodedObjectId);
         }
-        
+
       } catch (error) {
         console.log('Failed to decode topic hashid:', objectId, error.message);
         return res.status(400).json({
@@ -486,7 +461,7 @@ const handleImageDescriptionRequest = async (req, res) => {
       decodedObjectId = objectId;
       console.log('Using forum reply ID as-is (no decoding):', decodedObjectId);
     }
-    
+
     // Check if mongoose connection is ready
     if (!mongoose.connection || !mongoose.connection.db) {
       console.error("Mongoose connection not ready");
@@ -495,19 +470,19 @@ const handleImageDescriptionRequest = async (req, res) => {
         error: "Database connection not available"
       });
     }
-    
-         // Use mongoose connection instead of req.db
-     const db = mongoose.connection.db;
-     console.log("Database connection obtained, calling addImageDescriptions...");
-     if (isTopic) {
-       console.log("Using decoded ObjectId for topic database query:", decodedObjectId);
-     } else {
-       console.log("Using forum reply ID as-is for database query:", decodedObjectId);
-     }
-    
+
+    // Use mongoose connection instead of req.db
+    const db = mongoose.connection.db;
+    console.log("Database connection obtained, calling addImageDescriptions...");
+    if (isTopic) {
+      console.log("Using decoded ObjectId for topic database query:", decodedObjectId);
+    } else {
+      console.log("Using forum reply ID as-is for database query:", decodedObjectId);
+    }
+
     const result = await addImageDescriptions(decodedObjectId, db);
     console.log("addImageDescriptions result:", result);
-    
+
     if (result && result.success) {
       res.status(200).json(result);
     } else {
@@ -518,7 +493,7 @@ const handleImageDescriptionRequest = async (req, res) => {
         error: errorMessage
       });
     }
-    
+
   } catch (error) {
     console.error("Error in handleImageDescriptionRequest:", error);
     console.error("Error stack:", error.stack);
@@ -531,38 +506,11 @@ const handleImageDescriptionRequest = async (req, res) => {
 };
 
 
-async function generateTextResponse(context, userPrompt) {
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4.1",
-      messages: [
-        {
-          role: "system",
-          content: `You are a helpful assistant in a forum discussion. 
-                   Use the provided conversation context to understand the discussion 
-                   and give a relevant, context.`
-        },
-        {
-          role: "user",
-          content: `${context}\n\nThe user has asked: "${userPrompt}"\n\nPlease provide a helpful response that takes the conversation context into account.`
-        }
-      ],
-      max_tokens: 1000
-    });
-    
-    return response.choices[0].message.content;
-  } catch (error) {
-    console.error("Error generating text response:", error);
-    return null;
-  }
-}
-
-
 function getFirstNWords(text, n) {
   if (!text || typeof text !== 'string') {
     return '';
   }
-  
+
   const words = text.split(/\s+/).filter(word => word.length > 0);
   return words.slice(0, n).join(' ');
 }
@@ -571,20 +519,20 @@ function extractContentText(contentArray) {
   if (!contentArray || !Array.isArray(contentArray)) {
     return '';
   }
-  
+
   return contentArray.map(item => {
     let text = '';
     if (item.userText) text += item.userText + ' ';
     if (item.aiText) text += item.aiText + ' ';
     if (item.prompt) text += item.prompt + ' ';
-    
+
     // Handle imageUrl with description
     if (item.imageUrl && item.description) {
       text += `[Image: ${item.description}] `;
     } else if (item.imageUrl && !item.description) {
       text += '[Image attached] ';
     }
-    
+
     return text.trim();
   }).filter(text => text.length > 0).join(' ');
 }
@@ -593,7 +541,7 @@ function extractMediaDescriptions(mediaAttachments) {
   if (!mediaAttachments || !Array.isArray(mediaAttachments)) {
     return '';
   }
-  
+
   return mediaAttachments
     .map(media => media.description || '')
     .filter(desc => desc.length > 0)
@@ -645,45 +593,45 @@ async function fetchAncestorContext(req, res, next) {
     }
 
 
-   // fetch starting node
-let startingNode = await SelectedModel.findById(decodedId).lean();
-console.log("Starting node fetched:", startingNode ? "found" : "not found");
+    // fetch starting node
+    let startingNode = await SelectedModel.findById(decodedId).lean();
+    console.log("Starting node fetched:", startingNode ? "found" : "not found");
 
-// collect ancestor chain only if startingNode exists
-const maxDepth = 5;
-const ancestorChain = [];
-let parentContext = null;
+    // collect ancestor chain only if startingNode exists
+    const maxDepth = 5;
+    const ancestorChain = [];
+    let parentContext = null;
 
-if (startingNode) {
-  let currentId = decodedId;
-  let depth = 0;
+    if (startingNode) {
+      let currentId = decodedId;
+      let depth = 0;
 
-  while (currentId && depth <= maxDepth) {
-    const node = await SelectedModel.findById(currentId).lean();
-    console.log(`Ancestor at depth ${depth}:`, node ? "found" : "not found");
-    if (!node) break;
+      while (currentId && depth <= maxDepth) {
+        const node = await SelectedModel.findById(currentId).lean();
+        console.log(`Ancestor at depth ${depth}:`, node ? "found" : "not found");
+        if (!node) break;
 
-    ancestorChain.push({ node, depth });
-    currentId = node.parentReplyId;
-    depth++;
-  }
+        ancestorChain.push({ node, depth });
+        currentId = node.parentReplyId;
+        depth++;
+      }
 
-  // add parent topic/post context
-  if (startingNode[parentIdFieldName]) {
-    parentContext = await parentContextModel.findById(
-      startingNode[parentIdFieldName]
-    ).lean();
-  }
-} else {
-  // 🟢 fallback: no reply/comment found, treat decodedId as parentContextId
-  console.log("No starting node found, treating decodedId as parent context id...");
-  parentContext = await parentContextModel.findById(decodedId).lean();
-}
+      // add parent topic/post context
+      if (startingNode[parentIdFieldName]) {
+        parentContext = await parentContextModel.findById(
+          startingNode[parentIdFieldName]
+        ).lean();
+      }
+    } else {
+      // 🟢 fallback: no reply/comment found, treat decodedId as parentContextId
+      console.log("No starting node found, treating decodedId as parent context id...");
+      parentContext = await parentContextModel.findById(decodedId).lean();
+    }
 
 
     // 🔑 transform into structured JSON by user
     const structuredContext = {};
-    const assignPriority = (depth) => 20 - depth*5; // depth=0 → high priority
+    const assignPriority = (depth) => 20 - depth * 5; // depth=0 → high priority
 
     // parent context first (highest priority)
     if (parentContext) {
@@ -693,7 +641,7 @@ if (startingNode) {
           // userId: parentContext.userId?.toString(),
           // userName: parentContext.userName,
           title: parentContext.title || "",
-          content: parentContext.desc ||  "",
+          content: parentContext.desc || "",
           // createdAt: parentContext.createdAt,
           // depth: -1,
           // isParentContext: true,
@@ -701,75 +649,75 @@ if (startingNode) {
       };
     }
 
-        for (const { node, depth } of ancestorChain) {
-          // build a cleaned content array
-          console.log(`Processing node at depth ${depth} by user ${node.userName || 'Unknown'}`);
-          const cleanedContent = [];
+    for (const { node, depth } of ancestorChain) {
+      // build a cleaned content array
+      console.log(`Processing node at depth ${depth} by user ${node.userName || 'Unknown'}`);
+      const cleanedContent = [];
 
-          // Handle node.content
-          if (Array.isArray(node.content)) {
-            node.content.forEach((item) => {
-              const filtered = {
-                userText: item.userText || null,
-                prompt: item.prompt || null,
-                aiText: item.aiText || null,
-                model: item.model || null,
-              };
-
-              // keep description if it exists
-              if (item.description) {
-                filtered.description = item.description;
-              }
-
-              // Only push if it has something useful
-              if (
-                filtered.userText ||
-                filtered.prompt ||
-                filtered.aiText ||
-                filtered.model ||
-                filtered.description
-              ) {
-                cleanedContent.push(filtered);
-              }
-            });
-          }
-
-          // Handle media attachments
-          if (Array.isArray(node.mediaAttachments)) {
-            node.mediaAttachments.forEach((m) => {
-              if (m.description) {
-                cleanedContent.push({
-                  userText: null,
-                  prompt: null,
-                  aiText: null,
-                  model: null,
-                  description: m.description,
-                });
-              }
-            });
-          }
-
-          const key = `${node.userName || "Unknown"}_${node.id || node._id}`;
-
-          // Assign structured context
-          structuredContext[key] = {
-            priority: assignPriority(depth),
-            description: {
-              sources: {
-                content: cleanedContent, // ✅ cleaned, minimal content
-              },
-            },
+      // Handle node.content
+      if (Array.isArray(node.content)) {
+        node.content.forEach((item) => {
+          const filtered = {
+            userText: item.userText || null,
+            prompt: item.prompt || null,
+            aiText: item.aiText || null,
+            model: item.model || null,
           };
-        }
 
-       console.log("Structured context constructed:", structuredContext);
+          // keep description if it exists
+          if (item.description) {
+            filtered.description = item.description;
+          }
+
+          // Only push if it has something useful
+          if (
+            filtered.userText ||
+            filtered.prompt ||
+            filtered.aiText ||
+            filtered.model ||
+            filtered.description
+          ) {
+            cleanedContent.push(filtered);
+          }
+        });
+      }
+
+      // Handle media attachments
+      if (Array.isArray(node.mediaAttachments)) {
+        node.mediaAttachments.forEach((m) => {
+          if (m.description) {
+            cleanedContent.push({
+              userText: null,
+              prompt: null,
+              aiText: null,
+              model: null,
+              description: m.description,
+            });
+          }
+        });
+      }
+
+      const key = `${node.userName || "Unknown"}_${node.id || node._id}`;
+
+      // Assign structured context
+      structuredContext[key] = {
+        priority: assignPriority(depth),
+        description: {
+          sources: {
+            content: cleanedContent, // ✅ cleaned, minimal content
+          },
+        },
+      };
+    }
+
+    console.log("Structured context constructed:", structuredContext);
     // attach to req
     req.structuredContext = {
       conversationContext: structuredContext,
       newUserPrompt: req.body.newPrompt || "",
       finalInstruction: `Based on the above structured conversation context and the new user request, create a detailed, coherent, contextually-aware prompt for downstream generative models.`,
     };
-   console.log("Structured context prepared:", req.structuredContext);
+    console.log("Structured context prepared:", req.structuredContext);
     next();
   } catch (err) {
     console.error("Error in fetchAncestorContext:", err);
@@ -845,49 +793,48 @@ Guidelines for your response:
 
     // 🔥 Call AI to get suggestion
     //un commnet in live
-    const aiResponse = await openai.chat.completions.create({
-      model: "gpt-4.1",
-      messages: [
-        {
-          role: "system",
-          content: `You are a Prompt Engineering Expert dont write i am giving this suggestions here are my results like this just directly give prompt as humans. 
-Everything you generate will be passed directly to the next model for content generation, so it must always be a highly enriched, detailed, and contextually aware prompt. Never mention missing inputs, limitations, or irrelevant content — always assume the required information exists and expand it into the strongest possible prompt for optimal results.
-If you encouter generate image or something like that decide by yourself and create a prompt for image genration or text genration accordingly as user wants and send prompt only dont say anything else.`,
-        },
+    // 🔥 Call AI to get suggestion
+    //un commnet in live
+    const result = await model.generateContent({
+      contents: [
         {
           role: "user",
-          content: aiPrompt,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 5000,
+          parts: [
+            {
+              text: `You are a Prompt Engineering Expert dont write i am giving this suggestions here are my results like this just directly give prompt as humans. 
+Everything you generate will be passed directly to the next model for content generation, so it must always be a highly enriched, detailed, and contextually aware prompt. Never mention missing inputs, limitations, or irrelevant content — always assume the required information exists and expand it into the strongest possible prompt for optimal results.
+If you encouter generate image or something like that decide by yourself and create a prompt for image genration or text genration accordingly as user wants and send prompt only dont say anything else.` },
+            { text: aiPrompt }
+          ]
+        }
+      ]
     });
 
-   const suggestion = aiResponse.choices?.[0]?.message?.content?.trim() || "";
-      
-//   let suggestion = null; // declare outside
+    const suggestion = result.response.text().trim() || "";
 
-// setTimeout(() => {
-//   suggestion = "hello";
-//   console.log("AI suggestion generated successfully", suggestion);
+    //   let suggestion = null; // declare outside
 
-//   // Now you can safely attach it after it's ready
-//   req.contextForAI = {
-//     structuredJSON: structured,
-//     promptText: aiPrompt,
-//     suggestion, // now this has value
-//   };
-//   next();
-//   // You can continue with the rest of your logic here
-// }, 10000); // runs after 10 seconds
+    // setTimeout(() => {
+    //   suggestion = "hello";
+    //   console.log("AI suggestion generated successfully", suggestion);
+
+    //   // Now you can safely attach it after it's ready
+    //   req.contextForAI = {
+    //     structuredJSON: structured,
+    //     promptText: aiPrompt,
+    //     suggestion, // now this has value
+    //   };
+    //   next();
+    //   // You can continue with the rest of your logic here
+    // }, 10000); // runs after 10 seconds
 
 
-  req.contextForAI = {
-    structuredJSON: structured,
-    promptText: aiPrompt,
-    suggestion, // attach AI-generated suggestion here
-};
-next();
+    req.contextForAI = {
+      structuredJSON: structured,
+      promptText: aiPrompt,
+      suggestion, // attach AI-generated suggestion here
+    };
+    next();
 
   } catch (err) {
     console.error("Error in textSuggestionWithContext:", err);
@@ -904,18 +851,14 @@ const promptEnhancerAI = async (prompt) => {
     if (!prompt) {
       throw new Error("Prompt is required");
     }
-    console.log('prompt',prompt);
+    console.log('prompt', prompt);
     const userPrompt = "Improve this image generation prompt to create a more detailed, vivid, and artistic description: give me prompt and only prompt dont say anything else.";
     const final_prompt = userPrompt + "\n\n" + prompt;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4.1", 
-      messages: [{ role: "user", content: final_prompt }],
-      temperature: 0.7,
-      max_tokens: 1000
-    });
-    console.log('responce', response.choices[0].message.content);
-    return response.choices[0].message.content;
+    const result = await model.generateContent(final_prompt);
+    const response = result.response.text();
+    console.log('responce', response);
+    return response;
   } catch (error) {
     console.error("Error enhancing prompt:", error);
     throw error;
@@ -925,23 +868,16 @@ const promptEnhancerAI = async (prompt) => {
 // Add the missing extractImageDescription function
 const extractImageDescription = async (context, userPrompt) => {
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert at creating detailed image descriptions for AI image generation. Extract what the user wants to see in an image based on their request and the conversation context."
-        },
-        {
-          role: "user",
-          content: `Context: ${context}\n\nUser request: ${userPrompt}\n\nCreate a detailed, vivid description of what image should be generated. Focus on visual elements, style, composition, and mood.`
-        }
-      ],
-      max_tokens: 500,
-      temperature: 0.7
-    });
+    const prompt = `You are an expert at creating detailed image descriptions for AI image generation. Extract what the user wants to see in an image based on their request and the conversation context.
     
-    return response.choices[0].message.content;
+Context: ${context}
+
+User request: ${userPrompt}
+
+Create a detailed, vivid description of what image should be generated. Focus on visual elements, style, composition, and mood.`;
+
+    const result = await model.generateContent(prompt);
+    return result.response.text();
   } catch (error) {
     console.error("Error extracting image description:", error);
     return userPrompt; // Fallback to original prompt
@@ -954,9 +890,9 @@ function formatContextForAI(ancestorContext) {
   }
 
   const { nodes, summary } = ancestorContext;
-  
+
   let prompt = `CONVERSATION CONTEXT (${summary.totalNodes} messages, depth: ${summary.depthReached}):\n\n`;
-  
+
   nodes.forEach(node => {
     let label;
     if (node.isStartNode) {
@@ -968,30 +904,30 @@ function formatContextForAI(ancestorContext) {
     } else {
       label = `📖 ${node.depth} levels back`;
     }
-    
+
     const mediaInfo = node.mediaCount > 0 ? ` 📎${node.mediaCount}` : '';
-    
+
     prompt += `${label}${mediaInfo} - ${node.userName}:\n`;
     prompt += `"${node.content}"\n\n`;
   });
-  
+
   if (summary.totalMedia > 0) {
     prompt += `📎 Total media attachments: ${summary.totalMedia}\n`;
   }
-  
+
   return prompt;
 }
 
-const imageGenerator = async(text)=>{
-  try{
-    if(!text){
+const imageGenerator = async (text) => {
+  try {
+    if (!text) {
       console.error("No text provided for image generation");
       return null;
     }
     console.log("Generating image with prompt:", text);
 
     // Create a new OpenAI instance with the API key
-   
+
     // Call the OpenAI API to generate an image
     const response = await openai.images.generate({
       model: "dall-e-3", // Using dall-e-2 which has fewer content restrictions
@@ -999,7 +935,7 @@ const imageGenerator = async(text)=>{
       n: 1,
       size: "1024x1024",
     });
-  
+
     // Extract the image URL from the response
     if (response && response.data && response.data[0] && response.data[0].url) {
       const imageUrl = response.data[0].url;
@@ -1010,32 +946,32 @@ const imageGenerator = async(text)=>{
       return null;
     }
   }
-  catch(error){
+  catch (error) {
     console.error("Error in imageGenerator function:", error);
     return null;
   }
 }
 
 
-module.exports ={
-    openai,
-    model,
-    describeImage,
-    promptEnhancer,
-    imageGenerator,
-    promptEnhancerAI,
-    textSuggestion,
-    fetchAncestorContext,
-    formatContextForAI,
-    generateTextResponse,
-    addImageDescriptions,
-    handleImageDescriptionRequest,
-    describeImage,
-    extractImageDescription,
-    detectMimeType,
-    getFirstNWords,
-    extractContentText,
-    extractMediaDescriptions,
-    textSuggestionWithContext
+module.exports = {
+  openai,
+  model,
+  describeImage,
+  promptEnhancer,
+  imageGenerator,
+  promptEnhancerAI,
+  textSuggestion,
+  fetchAncestorContext,
+  formatContextForAI,
+
+  addImageDescriptions,
+  handleImageDescriptionRequest,
+  describeImage,
+  extractImageDescription,
+  detectMimeType,
+  getFirstNWords,
+  extractContentText,
+  extractMediaDescriptions,
+  textSuggestionWithContext
 };
 

@@ -3,7 +3,6 @@ import ShowReplyContent from "./ShowReplyContent";
 import { LoginContext } from "../../ContextProvider/context";
 import UserIconCard from "../../Card/UserIconCard";
 import UserNameCard from "../../Card/UserNameCard";
-import { useLocation, useParams } from "react-router-dom";
 
 const MAX_DEPTH = 3; // keep your depth limit if you used it earlier
 
@@ -26,17 +25,13 @@ const RecurrsionLoop = ({
   onReplyDeleted,
   setThreadView,
   setLastThreadContext = () => {},
+  scrollToId = null,
 }) => {
   const { loginData } = useContext(LoginContext);
   const [showReply, setShowReply] = useState(false);
   const hasChildren = reply?.children && reply?.children.length > 0;
   const [view, setView] = useState(true);
   const commentRef = useRef(null);
-  const location = useLocation();
-  const params = useParams("comment");
-  const scrollToId = params["comment"];
-  
- 
 
   useEffect(() => {
   if (scrollToId && reply?._id === scrollToId && commentRef.current) {

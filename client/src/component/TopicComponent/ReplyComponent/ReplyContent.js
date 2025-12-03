@@ -8,6 +8,7 @@ import {
   organizeReplies,
   REPLIES_URL,
 } from "../../AiForumPage/components/ForumUtils";
+import { decodeId } from "../../../utils/hashids";
 import axios from "axios";
 import RecurrsionLoop from "./RecurrsionLoop";
 import { useWebSocket } from "../../AiForumPage/components/WebSocketContext";
@@ -24,7 +25,8 @@ const ReplyContent = () => {
   const { topicId } = useParams();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const scrollToId = params.get("comment");
+  const scrollParam = params.get("comment");
+  const scrollToId = scrollParam ? decodeId(scrollParam) || scrollParam : null;
 
   const [expandedThreads, setExpandedThreads] = useState({});
   const [threadView, setThreadView] = useState();
@@ -187,6 +189,7 @@ const ReplyContent = () => {
             handleViewThread={setThreadView}
             setThreadView={setThreadView}
             setLastThreadContext={setLastThreadContext} // pass here as well
+            scrollToId={scrollToId}
           />
         )}
       </div>
