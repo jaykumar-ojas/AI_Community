@@ -135,6 +135,12 @@ const imageModelsConfig = {
     emoji: "🍌",
     aspectRatios: ["1:1"],
   },
+  "gemini-3-pro-image-preview": {
+    displayName: "Gemini 3 Pro Image Preview",
+    provider: "google",
+    emoji: "🍌",
+    aspectRatios: ["1:1"],
+  },
 
   // --- Grok ---
   "grok-2-image": {

@@ -35,6 +35,8 @@ const authenticate = async(req, res, next) => {
             req.rootuser = rootuser;
             req.userId = rootuser._id;
             
+            req.prevcredit = rootuser.credit || 100;
+
             next();
         } catch (jwtError) {
             console.log("please reLogin");

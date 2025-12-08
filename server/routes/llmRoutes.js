@@ -191,7 +191,8 @@ router.post("/generateContent", authenticate, validateRequest, validateCredit, a
     //   }, 10000); // 5 seconds
     // });
 
-    let credit = 0;
+    let credit = req.prevcredit
+    console.log("previous credut:", req.prevcredit);
     if (response?.text || response?.imageUrl || response?.imageData) {
       const modelCredit = modelCreditConfig[type][model].cost;
       credit = await reduceCredit(req.userId, modelCredit);
@@ -311,13 +312,12 @@ router.get("/models-info", (req, res) => {
       "gemini-2.5-pro": "Gemini 2.5 Pro",
       "gemini-2.5-flash": "Gemini 2.5 Flash",
       "gemini-2.0-flash-lite": "Gemini 2.0 Flash Lite",
+      "gemini-3-pro-preview": "Gemini 3 Pro Preview",
       "imagen-4.0-generate-001": "Imagen 4.0",
       "imagen-4.0-ultra-generate-001": "Imagen 4.0 Ultra",
       "imagen-4.0-fast-generate-001": "Imagen 4.0 Fast",
-      "imagen-3.0-generate-002": "Imagen 3.0",
       "gemini-2.5-flash-image-preview": "Gemini 2.5 Image Preview",
-      "gemini-2.0-flash-preview-image-generation":
-        "Gemini 2.0 Image Generation",
+      "gemini-3-pro-image-preview": "Gemini 3 Pro Image Preview",
 
       // --- meta ---
       "llama-3.1-8b-instant": "LLaMA 3.1 8B Instant",
@@ -348,7 +348,6 @@ router.get("/models-info", (req, res) => {
       "flux-kontext-max": "Flux Kontext Max",
       "flux-pro-1.1-ultra": "Flux Pro 1.1 Ultra",
       "flux-pro-1.1": "Flux Pro 1.1",
-      "flux-pro": "Flux Pro",
       "flux-dev": "Flux Dev",
     };
 

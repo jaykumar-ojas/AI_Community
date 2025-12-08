@@ -12,7 +12,7 @@ const googleSchema = new mongoose.Schema({
     backgroundImage: { type: String, default: "" },
     backgroundImageUrl: { type: String, default: "" },
     founding_member:{ type: Boolean, default:false},
-    credit:{type:Number,default:300},
+    credit:{type:Number,default:100},
     promoCode: [
   {
     code: {

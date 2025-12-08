@@ -1,4 +1,4 @@
-const  llmConfig  = require('./config/modelconfig'); // Update path
+const { llmConfig } = require('./config/modelconfig'); // Update path
 const { uploadImageFromUrl } = require('./middleware/awsmiddleware'); // Update path
 const AiModel = require('./models/aimodels'); // Update path
 const mongoose = require('mongoose');
