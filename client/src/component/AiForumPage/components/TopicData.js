@@ -95,7 +95,7 @@ const TopicData = ({ topic }) => {
       className="group relative bg-white dark:bg-nav_hover border border-gray-200 dark:border-gray-900 rounded-2xl p-3 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-300 cursor-pointer overflow-hidden"
     >
       {/* Hover gradient overlay */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-r from-blue-500 to-purple-500 transition duration-300 rounded-2xl"></div>
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-r from-blue-500 to-purple-500 transition duration-300 rounded-2xl pointer-events-none"></div>
 
       {/* Title */}
       <div className="flex justify-between items-start">

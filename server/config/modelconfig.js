@@ -30,6 +30,7 @@ const llmConfig = {
       "gemini-2.5-pro":  googletext,
       "gemini-2.5-flash":  googletext,
       "gemini-2.0-flash-lite":  googletext,
+      "gemini-3-pro-preview":  googletext,
     },
     "meta": {
       "llama-3.1-8b-instant": metagen,
@@ -77,9 +78,8 @@ const llmConfig = {
       "imagen-4.0-generate-001":  google_imagen,
       "imagen-4.0-ultra-generate-001":  google_imagen,
       "imagen-4.0-fast-generate-001":  google_imagen,
-      "imagen-3.0-generate-002":  google_imagen,
       "gemini-2.5-flash-image-preview":  generateGeminibanana,
-      "gemini-2.0-flash-preview-image-generation":  generateGeminibanana,
+      "gemini-3-pro-image-preview":  generateGeminibanana,
     },
     "stable": {
       "sd-ultra": ultra,
@@ -94,7 +94,6 @@ const llmConfig = {
       "flux-kontext-max": generateBFL,
       "flux-pro-1.1-ultra": generateBFL,
       "flux-pro-1.1": generateBFL,
-      "flux-pro": generateBFL,
       "flux-dev": generateBFL,
     },
     // "alibaba": {

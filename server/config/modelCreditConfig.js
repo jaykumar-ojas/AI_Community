@@ -12,6 +12,7 @@ const modelCreditConfig = {
     "gemini-2.5-flash": { cost: 5 },
     "gemini-2.0-flash": { cost: 4 },
     "gemini-2.0-flash-lite": { cost: 3 },
+    "gemini-3-pro-preview": { cost: 9 },
 
     "meta-llama/llama-4-maverick-17b-128e-instruct": { cost: 6 },
     "meta-llama/llama-4-scout-17b-16e-instruct": { cost: 5 },
@@ -56,6 +57,7 @@ const modelCreditConfig = {
 
     "gemini-2.5-flash-image-preview": { cost: 9 },
     "gemini-2.0-flash-preview-image-generation": { cost: 8 },
+    "gemini-3-pro-image-preview": { cost: 10 },
 
     "sd-ultra": { cost: 15 },
     "core": { cost: 12 },

@@ -297,7 +297,7 @@ const Card = ({ post }) => {
     
         {/* 🌟 ABSOLUTE OVERLAY (hidden normally, visible on hover) */}
         <div className="
-          absolute inset-0 p-4 
+          absolute inset-0 p-4 z-20
           flex flex-col justify-between
           opacity-0 group-hover:opacity-100
           transition duration-300 pointer-events-none
@@ -311,7 +311,7 @@ const Card = ({ post }) => {
             </div>
           </div>
     
-          {/* Footer (like + open button) */}
+          {/* Footer (like button) */}
           <div className="flex items-center justify-between pointer-events-auto">
             <button
               className="flex bg-black/5 dark:bg-white/5 items-center gap-1 px-2 py-1 rounded-full"
@@ -331,16 +331,6 @@ const Card = ({ post }) => {
                 {postData?.likes?.length || 0}
               </span>
             </button>
-    
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCardClick();
-              }}
-              className="text-[11px] font-semibold text-theme_color hover:text-theme_color2 transition-colors"
-            >
-              Open in forum →
-            </button>
           </div>
         </div>
     
@@ -351,6 +341,17 @@ const Card = ({ post }) => {
         >
           <ReplyData2 content={postData?.content} />
         </div>
+
+        {/* Always visible "Open in forum" button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCardClick();
+          }}
+          className="absolute bottom-4 right-6 z-30 text-[11px] font-bold text-theme_color hover:text-theme_color2 transition-colors pointer-events-auto"
+        >
+          View more →
+        </button>
     
       </div>
     </div>

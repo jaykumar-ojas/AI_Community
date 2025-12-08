@@ -60,12 +60,12 @@ const reduceCredit = async (userId,credit) => {
     }
 };
 
-const DEFAULT_CREDIT = 300;
+const DEFAULT_CREDIT = 100;
 const DEFAULT_CHUNK_SIZE = 500;
 
 
 async function resetCreditsForModel(model, opts = {}) {
-  const DEFAULT_CREDIT = 300;
+  const DEFAULT_CREDIT = 100;
   const DEFAULT_CHUNK_SIZE = 500;
 
   const defaultCredit = typeof opts.defaultCredit === "number" ? opts.defaultCredit : DEFAULT_CREDIT;

@@ -90,7 +90,7 @@ const ShowUrl = ({ url, modelInfo }) => {
 //   );
 // };
 // ---- local text helpers ----
-const DisplayContent = ({ displayContent }) => {
+const DisplayContent = ({ displayContent, shouldAutoSwitch = false }) => {
   const renderWithCodeBlocks = (text) => {
     if (!text) return null;
 
@@ -115,7 +115,7 @@ const DisplayContent = ({ displayContent }) => {
       }
       parts.push(
         <div key={`code-${match.index}`} className="my-2 w-full min-w-0 ">
-          <CodePreview code={code} language={lang} />
+          <CodePreview code={code} language={lang} autoSwitchToPreview={shouldAutoSwitch} />
         </div>
       );
       lastIndex = match.index + match[0].length;
@@ -252,7 +252,7 @@ const ReplyData = ({ content }) => {
    {!expanded ? (
   <>
     <div className="max-h-[200px] overflow-hidden relative">  {/* Changed from h-6 */}
-      <DisplayContent displayContent={displayContent} />
+      <DisplayContent displayContent={displayContent} shouldAutoSwitch={false} />
       {/* Optional gradient overlay */}
       <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div>
     </div>
@@ -283,7 +283,7 @@ const ReplyData = ({ content }) => {
   </>
 )  : (
         <div ref={contentRef}>
-          <DisplayContent displayContent={displayContent} />
+          <DisplayContent displayContent={displayContent} shouldAutoSwitch={true} />
           {showSeeMore && (
             <button
               onClick={() => setExpanded(false)}

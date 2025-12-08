@@ -41,7 +41,7 @@ const shouldShowPreview = (language, code) => {
          isMermaidCode(language);
 };
 
-export const CodePreview = ({ code, language }) => {
+export const CodePreview = ({ code, language, autoSwitchToPreview = false }) => {
   const [activeTab, setActiveTab] = useState("code");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
@@ -52,6 +52,8 @@ export const CodePreview = ({ code, language }) => {
   const iframeRef = useRef(null);
   const codeRef = useRef(null);
   const mermaidRef = useRef(null);
+  const hasAutoSwitched = useRef(false);
+
 
   const isExecutable = isExecutableLanguage(language);
   const isWebCode = hasWebPreview(language);
@@ -403,15 +405,28 @@ useEffect(() => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Auto-switch to preview for React, Three.js, and Mermaid
-  useEffect(() => {
-    if ((isReact || isThreeJs || isMermaid) && activeTab === "code") {
-      // Small delay to allow user to see the code first
-      const timer = setTimeout(() => setActiveTab("preview"), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isReact, isThreeJs, isMermaid]);
+ // Auto-switch to preview for React, Three.js, and Mermaid only when autoSwitchToPreview is true
+  // useEffect(() => {
+  //   if (autoSwitchToPreview && (isReact || isThreeJs || isMermaid) && activeTab === "code") {
+  //     // Small delay to allow user to see the code first
+  //     const timer = setTimeout(() => setActiveTab("preview"), 100);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [autoSwitchToPreview, isReact, isThreeJs, isMermaid, activeTab]);
 
+  const firstMount = useRef(true);
+
+  useEffect(() => {
+    if (!autoSwitchToPreview) return;
+  
+    // Only trigger on very first mount
+    if (firstMount.current && (isReact || isThreeJs || isMermaid)) {
+      firstMount.current = false;
+      setActiveTab("preview");
+    }
+  }, []);
+  
+  
   // Static Code Block (non-executable)
   if (!hasPreview) {
     return (
@@ -446,8 +461,12 @@ useEffect(() => {
           </button>
         </div>
         <div className="h-[200px] sm:h-[280px] md:h-[320px] overflow-auto">
-          <pre className="p-3 sm:p-4 text-xs sm:text-sm overflow-x-auto w-full min-w-0">
-            <code ref={codeRef} className={`language-${language || "plaintext"}`}>
+          <pre className="p-3 sm:p-4 text-xs sm:text-sm w-full min-w-0 whitespace-pre-wrap break-words">
+            <code 
+              ref={codeRef} 
+              className={`language-${language || "plaintext"} break-words`}
+              style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
+            >
               {code}
             </code>
           </pre>
@@ -550,11 +569,12 @@ useEffect(() => {
       {/* Content Area */}
       <div className="h-[200px] sm:h-[280px] md:h-[320px] overflow-auto">
         {activeTab === "code" ? (
-          <div className="h-full bg-gray-900 text-gray-100 rounded-b-lg">
-            <pre className="p-2 sm:p-3 w-full max-w-full min-w-0 overflow-auto text-[11px] sm:text-xs leading-relaxed break-words whitespace-pre-wrap">
+          <div className="h-full bg-gray-900 text-gray-100 rounded-b-lg overflow-auto">
+            <pre className="p-2 sm:p-3 w-full max-w-full min-w-0 text-[11px] sm:text-xs leading-relaxed whitespace-pre-wrap break-words">
               <code
                 ref={codeRef}
-                className={`language-${language || "plaintext"}`}
+                className={`language-${language || "plaintext"} break-words`}
+                style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
               >
                 {code}
               </code>

@@ -63,11 +63,11 @@ const PromoCard = ({ userId: propUserId } = {}) => {
 //         "Content-Type": "application/json"
 //       },
 //       body: JSON.stringify({
-//         code: "PAYALSUPERSTAR800",
+//         code: "INITIALUSER300",
 //         startDate: "2025-01-01",
-//         endDate: "2026-01-31",
-//         creditValue: 800,
-//         priority: 3
+//         endDate: "2027-01-31",
+//         creditValue: 300,
+//         priority: 1
 //       })
 //     });
 
@@ -184,8 +184,8 @@ const PromoCard = ({ userId: propUserId } = {}) => {
                 ✅ Promo applied!
                 {appliedInfo && (
                   <span className="ml-2 text-sm opacity-90">
-                    (credits: {appliedInfo.creditValue ?? "—"}, priority:{" "}
-                    {appliedInfo.priority ?? "—"})
+                    (credits: {appliedInfo.creditValue ?? "—"})
+                    {/* {appliedInfo.priority ?? "—"}) */}
                   </span>
                 )}
               </div>

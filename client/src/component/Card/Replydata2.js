@@ -272,14 +272,14 @@ const ReplyData2 = ({ content }) => {
       </div>
     )}
 
-    {showSeeMore && (
-      <button
-        onClick={() => setExpanded(true)}
-        className="text-theme_color3 dark:theme_color4 font-medium text-xs hover:underline mt-2"
-      >
-        View More
-      </button>
-    )}
+    {/* {showSeeMore && (
+      // <button
+      //   onClick={() => setExpanded(true)}
+      //   className="text-theme_color3 dark:theme_color4 font-medium text-xs hover:underline mt-2"
+      // >
+      //   View More
+      // </button>
+    )} */}
   </>
 )  : (
         <div ref={contentRef}>

@@ -63,7 +63,7 @@ const UserJoined = ({ topic, isJoined = false, setIsJoined }) => {
     }
   };
 
-  if (!topic || !loginData) {
+  if (!topic ) {
     return (
       <div className="flex items-center justify-center gap-2">
         <div className="flex text-xs text-low_text items-center justify-center">

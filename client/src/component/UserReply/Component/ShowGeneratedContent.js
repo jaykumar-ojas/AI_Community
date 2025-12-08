@@ -183,6 +183,7 @@ const ShowAiText = ({ aiText, modelInfo, isStreaming = false }) => {
                     key={`code-${idx}`}
                     code={block.code}
                     language={block.language}
+                    autoSwitchToPreview={isStreaming}
                   />
                 );
               }
