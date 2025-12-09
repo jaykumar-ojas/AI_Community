@@ -5,54 +5,39 @@ import { getAuthHeaders } from "../../AiForumPage/components/ForumUtils";
 import { UseSetUserCredit } from "../../GlobalFunction/GlobalFunctionForResue";
 import { useNotification } from "../../ContextProvider/NotificationContext";
 import { LoginContext } from "../../ContextProvider/context";
-import { ModelsContext } from "../ModelsContext";
+import { ModelsContext } from "../../PostImage/ModelsContext";
+import { useParams } from "react-router-dom";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-const AIContentFile = () => {
+const ChallengePost = ({ onClose = () => {} }) => {
+  const { id } = useParams();
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [selectedImageModel, setSelectedImageModel] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [aiMetadata, setAiMetadata] = useState("");
+  const [file, setFile] = useState();
+  const [fileType, setFileType] = useState();
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const originalFileRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { isGeneratingImage, setIsGeneratingImage } = useContext(PostContext);
-  const [isEnhancing, setIsEnhancing] = useState(false);
   const { availableModels, isLoadingModels } = useContext(ModelsContext);
-  const { originalFileRef, setDesc } = useContext(PostContext);
-  const [provider, setProvider] = useState("");
   const setUserCredit = UseSetUserCredit();
-  const [selectedAspectRatio, setSelectedAspectRatio] = useState("");
-  const [isAspectRatioDropdownOpen, setIsAspectRatioDropdownOpen] =
-    useState(false);
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState("auto");
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const aspectRatioDropdownRef = useRef(null);
+  const containerRef = useRef(null); // NEW: modal container ref for outside click detection
   const { showNotification } = useNotification();
   const { loginData } = useContext(LoginContext);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-      if (
-        aspectRatioDropdownRef.current &&
-        !aspectRatioDropdownRef.current.contains(event.target)
-      ) {
-        setIsAspectRatioDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const imageModels = availableModels.image || {};
 
   const handleSelectModel = (modelKey) => {
     setSelectedImageModel(modelKey);
     setIsDropdownOpen(false);
-
-    // Reset aspect ratio when model changes
     setSelectedAspectRatio("");
-
-    // Auto-select first aspect ratio if available
     const modelConfig = imageModels[modelKey];
     if (
       modelConfig?.aspectRatios &&
@@ -66,7 +51,27 @@ const AIContentFile = () => {
     }
   };
 
+  // ---------- Outside click & Escape key handling ----------
+  useEffect(() => {
+    const handleOutside = (e) => {
+      // if click target is outside containerRef, call onClose
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        onClose();
+      }
+    };
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
+    };
 
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [onClose]);
+
+  // ---------- generateAIImage (unchanged logic) ----------
   const generateAIImage = async () => {
     if (!loginData) {
       showNotification("you are not logged in", "info");
@@ -104,17 +109,14 @@ const AIContentFile = () => {
         body: JSON.stringify(requestBody),
       });
 
-      // If non-2xx, try to parse body for details and throw enriched error
       if (!response.ok) {
         let errBody = null;
         try {
           errBody = await response.json();
-        } catch (e) {
-          /* ignore parse errors */
-        }
+        } catch (e) {}
         const err = new Error(
           errBody?.message ||
-          `Failed to generate image (status ${response.status})`
+            `Failed to generate image (status ${response.status})`
         );
         err.status = response.status;
         err.body = errBody;
@@ -124,7 +126,6 @@ const AIContentFile = () => {
       const result = await response.json();
       setUserCredit(result?.credit);
 
-      // If backend reports failure, include its message/code
       if (!result.success) {
         const err = new Error(result.message || "Image generation failed");
         err.code = result.code || null;
@@ -139,13 +140,13 @@ const AIContentFile = () => {
         throw err;
       }
 
-      let file;
+      let createdFile;
       if (imageData) {
         const byteArray = Uint8Array.from(atob(imageData), (c) =>
           c.charCodeAt(0)
         );
         const blob = new Blob([byteArray], { type: "image/png" });
-        file = new File([blob], `ai-generated-${Date.now()}.png`, {
+        createdFile = new File([blob], `ai-generated-${Date.now()}.png`, {
           type: "image/png",
         });
       } else if (imageUrl) {
@@ -154,39 +155,32 @@ const AIContentFile = () => {
         )}`;
         const imgResponse = await fetch(proxyUrl);
         const blob = await imgResponse.blob();
-        file = new File([blob], `ai-generated-${Date.now()}.png`, {
+        createdFile = new File([blob], `ai-generated-${Date.now()}.png`, {
           type: "image/png",
         });
       }
 
-      if (!file) throw new Error("No image file created");
+      if (!createdFile) throw new Error("No image file created");
 
-      const modelConfig = imageModels[selectedImageModel];
-      const aiMetadata = {
+      const meta = {
         model: selectedImageModel,
         provider: selectedImageModel || "Unknown",
         prompt: aiPrompt,
         displayName: selectedImageModel,
         aspectRatio: selectedAspectRatio,
       };
-      if (setAiMetadata) setAiMetadata(aiMetadata);
+      if (setAiMetadata) setAiMetadata(meta);
 
-      originalFileRef.current = file;
-      setFile(file);
+      originalFileRef.current = createdFile;
+      setFile(createdFile);
       setFileType("image");
-      setPreviewUrl(URL.createObjectURL(file));
-
-      setDesc((prev) => (prev ? `${prev}\n\n${aiPrompt}` : `${aiPrompt}`));
+      setPreviewUrl(URL.createObjectURL(createdFile));
       setAiPrompt("");
 
       setTimeout(() => {
         setIsGeneratingImage(false);
-        setTimeout(() => {
-          setShowCropper(true);
-        }, 300);
       }, 1000);
     } catch (error) {
-      // Determine user-friendly message based on error details
       const msg = error && error.message ? error.message.toLowerCase() : "";
 
       if (
@@ -203,10 +197,9 @@ const AIContentFile = () => {
       ) {
         showNotification("Not enough credits", "info");
       } else {
-        // Keep your existing flagged-content fallback
         showNotification(
           "This prompt may contain flagged content (e.g., personal names). Please revise the prompt or switch to a different model : " +
-          (error.message || error)
+            (error.message || error)
         );
       }
 
@@ -214,175 +207,272 @@ const AIContentFile = () => {
     }
   };
 
-  const availableRatios = getAvailableAspectRatios();
+  // ---------- handleSubmit (unchanged, except ensure it doesn't close modal automatically) ----------
+  const handleSubmit = async (e) => {
+    try {
+      if (!loginData) {
+        showNotification("User not logged in");
+        return;
+      }
+
+      if (!file) {
+        showNotification("Please add a description or upload a file", "error");
+        return;
+      }
+
+      setIsUploading(true);
+      let fileToUpload = file;
+
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
+      formData.append(
+        "userId",
+        loginData.validuserone?._id || loginData.validateUser?._id
+      );
+      formData.append("desc", aiPrompt);
+      formData.append("challengeId", id);
+
+      if (aiMetadata) {
+        formData.append("aiModel", aiMetadata.model);
+        formData.append("aiProvider", aiMetadata.provider);
+        formData.append("aiPrompt", aiMetadata.prompt);
+      }
+
+      const data = await fetch(`${baseUrl}/upload-image-challenge`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!data.ok) {
+        const errorText = await data.text();
+        console.error("Server error:", data.status, errorText);
+        throw new Error(`Server error: ${data.status} - ${errorText}`);
+      }
+
+      const res = await data.json();
+
+      if (res.status === 201) {
+        setFile(null);
+        setAiPrompt("");
+        setPreviewUrl(null);
+        setFileType(null);
+        setAiMetadata(null);
+        showNotification("Post uploaded successfully!", "success");
+        // You may want to close modal on success:
+        // onClose();
+      } else {
+        console.error("Upload failed:", res);
+        showNotification(
+          `Failed to upload post: ${res.error || "Unknown error"}`,
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error("Error during upload:", error);
+      showNotification(
+        `Upload error: ${error.message || "Unknown error occurred"}`,
+        "error"
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
-    <>
-      <div className="md:px-6">
-        <div className="flex flex-col gap-4 mb-4">
-          {/* Header Row */}
-          <div className="flex justify-between items-center">
-            <div className="md:text-lg text-md font-merriweather font-semibold text-gray-700 dark:text-low_text">
-              AI Image Generation
+    <div className="fixed inset-0 z-50 flex bg-black/80 items-start md:items-center justify-center p-4">
+      <div
+        ref={containerRef}
+        className="w-full max-w-4xl bg-nav_hover rounded-xl shadow-2xl border-2 border-nav_hover3 overflow-auto relative"
+        onClick={(e) => e.stopPropagation()} // prevent accidental outer handlers
+      >
+        {/* Close (X) */}
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-3 top-3 text-gray-300 bg-gray-800/50 hover:bg-gray-800 px-2 py-1 rounded"
+        >
+          ✕
+        </button>
+
+        <div className="p-4 md:p-6">
+          {/* Top row: actions */}
+          <div className="flex items-center justify-between mb-4 gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSubmit}
+                disabled={isUploading}
+                className="px-4 py-2 rounded-md bg-green-500 text-black font-semibold disabled:opacity-60"
+              >
+                {isUploading ? "Posting..." : "Post"}
+              </button>
+
+              <button
+                onClick={() => {
+                  setPreviewUrl("");
+                  setFile(null);
+                  setAiMetadata(null);
+                }}
+                className="px-3 py-2 rounded-md bg-gray-700 text-gray-100"
+              >
+                Clear
+              </button>
             </div>
           </div>
 
-          {/* Model and Aspect Ratio Selection Row */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* Model Dropdown */}
-            <div className="relative flex-1" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full flex items-center justify-between gap-2 border border-gray-300 dark:bg-black bg-white px-3 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  {selectedImageModel ? (
-                    <>
-                      {imageModels[selectedImageModel]?.iconUrl ? (
-                        <img
-                          src={imageModels[selectedImageModel].iconUrl}
-                          alt={imageModels[selectedImageModel].displayName}
-                          className="h-5 w-5 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span>
-                          {imageModels[selectedImageModel]?.emoji || "🖼️"}
-                        </span>
-                      )}
-                      <span className="font-semibold font-jetbrains f text-gray-700 dark:text-low_text text-sm">
-                        {imageModels[selectedImageModel]?.displayName}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <img
-                        className="h-5 w-24 object-cover rounded-full"
-                        src={modelIcon}
-                        alt="Default model"
-                      />
-                      <span className="dark:text-low_text font-bold font-jetbrains text-gray-800  text-sm">
-                        Select Model
-                      </span>
-                    </>
-                  )}
-                </div>
-                <ChevronDown
-                  className={`h-4 w-4 text-low_text transition-transform ${isDropdownOpen ? "rotate-180" : ""
-                    }`}
-                />
-              </button>
-
-              {/* Model Dropdown Menu */}
-              {isDropdownOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                  {isLoadingModels ? (
-                    <div className="flex items-center justify-center p-4 bg-white dark:bg-black">
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-purple-500 border-b-transparent"></div>
-                      <span className="ml-2 text-sm">Loading...</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg">
-                      {Object.entries(imageModels).map(([modelKey, config]) => (
-                        <button
-                          key={modelKey}
-                          onClick={() => handleSelectModel(modelKey)}
-                          className={`flex items-center gap-2 px-3 py-2 text-sm font-manrope font-semibold first:rounded-t-lg last:rounded-b-lg ${selectedImageModel === modelKey
-                              ? "text-gray-900 dark:text-theme_color font-semibold"
-                              : "text-gray-700 dark:text-white dark:hover:text-theme_color2"
-                            }`}
-                        >
-                          {config.iconUrl ? (
-                            <img
-                              src={config.iconUrl}
-                              alt={config.displayName}
-                              className="h-4 w-4 rounded-full object-cover"
-                            />
-                          ) : (
-                            <span>{config.emoji}</span>
-                          )}
-                          <span >{config.displayName}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Aspect Ratio Dropdown */}
-            {selectedImageModel && availableRatios.length > 0 && (
-              <div className="relative flex-1" ref={aspectRatioDropdownRef}>
+          {/* Main content area: 50/50 on md+, stacked on small screens */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Left column: controls (50%) */}
+            <div className="w-full md:w-1/2 flex flex-col gap-4">
+              {/* model select dropdown */}
+              <div className="relative" ref={dropdownRef}>
                 <button
-                  onClick={() =>
-                    setIsAspectRatioDropdownOpen(!isAspectRatioDropdownOpen)
-                  }
-                  className="w-full flex items-center justify-between gap-2 border border-gray-300 dark:bg-black bg-white px-3 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
+                  onClick={() => setIsDropdownOpen((s) => !s)}
+                  className="w-full flex items-center justify-between gap-2 border border-gray-600 bg-bg_dark px-3 py-2 rounded-lg shadow-sm hover:shadow-md transition-all text-gray-100"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={isDropdownOpen}
                 >
-                  <span className="font-medium text-gray-700 dark:text-low_text text-sm">
-                    {selectedAspectRatio
-                      ? availableRatios.find(
-                        (r) => r.value === selectedAspectRatio
-                      )?.label || selectedAspectRatio
-                      : "Select Ratio"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {selectedImageModel ? (
+                      <>
+                        {imageModels[selectedImageModel]?.iconUrl ? (
+                          <img
+                            src={imageModels[selectedImageModel].iconUrl}
+                            alt={
+                              imageModels[selectedImageModel].displayName ||
+                              "model"
+                            }
+                            className="h-5 w-5 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-sm">
+                            {imageModels[selectedImageModel]?.emoji || "🖼️"}
+                          </span>
+                        )}
+                        <span className="font-semibold text-sm">
+                          {imageModels[selectedImageModel]?.displayName}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <img
+                          className="h-5 w-20 object-cover rounded-full"
+                          src={modelIcon}
+                          alt="Select model"
+                        />
+                        <span className="text-sm font-bold text-gray-100">
+                          Select Model
+                        </span>
+                      </>
+                    )}
+                  </div>
+
                   <ChevronDown
-                    className={`h-4 w-4 text-low_text transition-transform ${isAspectRatioDropdownOpen ? "rotate-180" : ""
-                      }`}
+                    className={`h-4 w-4 text-gray-300 transition-transform ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
-                {isAspectRatioDropdownOpen && (
-                  <div className="absolute left-0 right-0 top-full mt-1 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                    <div className="flex flex-col bg-white dark:bg-nav_hover border border-gray-200 dark:border-nav_hover2 rounded-lg">
-                      {availableRatios.map((ratio, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSelectAspectRatio(ratio.value)}
-                          className={`px-3 py-2 text-sm text-left transform origin-left transition-transform duration-150 ease-in-out hover:scale-[1.1] first:rounded-t-lg last:rounded-b-lg ${selectedAspectRatio === ratio.value
-                              ? "text-gray-900 dark:text-theme_color font-semibold"
-                              : "text-gray-700 dark:text-low_text hover:text-theme_color2 dark:hover:text-theme_color2"
+                {isDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-2 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto bg-gray-900 border border-gray-700">
+                    {isLoadingModels ? (
+                      <div className="flex items-center justify-center p-4 text-gray-300">
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-purple-500 border-b-transparent mr-2" />
+                        Loading models...
+                      </div>
+                    ) : (
+                      <div className="flex flex-col">
+                        {Object.entries(imageModels).map(([modelKey, config]) => (
+                          <button
+                            key={modelKey}
+                            onClick={() => {
+                              handleSelectModel(modelKey);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 flex items-center gap-2 text-sm ${
+                              selectedImageModel === modelKey
+                                ? "bg-gray-800 text-white"
+                                : "text-gray-200 hover:bg-gray-800"
                             }`}
-                        >
-                          {ratio.label}
-                        </button>
-                      ))}
-                    </div>
+                            type="button"
+                          >
+                            {config.iconUrl ? (
+                              <img
+                                src={config.iconUrl}
+                                alt={config.displayName || modelKey}
+                                className="h-5 w-5 rounded-full object-cover"
+                              />
+                            ) : (
+                              <span>{config.emoji || "🧠"}</span>
+                            )}
+                            <span>{config.displayName || modelKey}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* Prompt Input + Buttons */}
-        <div className="flex flex-col gap-3">
-          <textarea
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            placeholder="Describe the image you want to create..."
-            className="w-full font-poppins p-4 bg-gray-200 dark:placeholder-gray-400 placeholder-gray-600 dark:bg-nav_hover border border-nav_hover2 dark:border-nav_hover2 rounded-lg  focus:outline-none focus:ring-2 focus:ring-nav_hover2 resize-none text-gray-800 dark:text-low_text text-sm"
-            rows="5"
-          />
-          <div className="flex flex-row gap-4">
-            <button
-              onClick={enhancePrompt}
-              disabled={isEnhancing || !aiPrompt.trim()}
-              className="flex-1 px-4 py-2 bg-pink-800 font-playfair font-bold text-white text-sm font-semibold rounded-xl shadow-md transition-all disabled:opacity-70"
-            >
-              {isEnhancing ? "Enhancing..." : "Enhance Prompt"}
-            </button>
-            <button
-              onClick={generateAIImage}
-              disabled={isGeneratingImage || !aiPrompt.trim()}
-              className="flex-1 px-4 py-2 bg-theme_color font-bold font-playfair text-white text-sm font-semibold rounded-xl shadow-md transition-all disabled:opacity-70"
-            >
-              {isGeneratingImage ? "Generating..." : "Generate"}
-            </button>
+              {/* Prompt textarea */}
+              <textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="Prompt..."
+                rows={6}
+                className="w-full p-3 rounded-lg bg-bg_dark border border-nav_hover3 text-low_text placeholder-gray-500 "
+              />
+
+              {/* Generate + Upload buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={generateAIImage}
+                  disabled={isGeneratingImage || !aiPrompt.trim()}
+                  className="flex-1 px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold disabled:opacity-60"
+                >
+                  {isGeneratingImage ? "Generating..." : "Generate"}
+                </button>
+
+                <label className="inline-flex items-center px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 cursor-pointer text-gray-200">
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={(e) => {
+                      const f = e.target.files && e.target.files[0];
+                      if (!f) return;
+                      originalFileRef.current = f;
+                      setFile(f);
+                      setFileType(f.type?.split("/")[0] || "image");
+                      setPreviewUrl(URL.createObjectURL(f));
+                    }}
+                    className="hidden"
+                  />
+                  Upload
+                </label>
+              </div>
+            </div>
+
+            {/* Right column: preview (50%) */}
+            <div className="w-full md:w-1/2 border-2 border-dotted border-gray-700 rounded-lg flex items-center justify-center p-4 bg-bg_dark">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="preview"
+                  className="max-h-80 w-full object-contain rounded-md"
+                />
+              ) : (
+                <div className="text-center text-low_text">
+                  <div className="mb-2">Image preview</div>
+                  <div className="text-xs">No image yet — generate or upload one</div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
-export default AIContentFile;
+export default ChallengePost;

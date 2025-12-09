@@ -24,6 +24,21 @@ const WeeklyChallangeSchema = new mongoose.Schema({
         default: Date.now,
         },
     },
+    aiModel: {
+      type: String,
+      trim: true,
+    },
+    aiProvider: {
+      type: String,
+      trim: true,
+    },
+    aiPrompt: {
+      type: String,
+      trim: true,
+    },
+    aiGeneratedAt: {
+      type: Date,
+    },
     videoUrl: {
         fileName: String,
         fileType: String,
@@ -39,7 +54,13 @@ const WeeklyChallangeSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "users",
         },
-    ]
+    ],
+    completedBy: [
+        {
+        userId: mongoose.Schema.Types.ObjectId,
+        completedAt: Date,
+        },
+    ],
 },
  { timestamps: true }
 );
