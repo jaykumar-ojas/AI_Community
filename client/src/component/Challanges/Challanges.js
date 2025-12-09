@@ -11,7 +11,7 @@ export default function ChallengesLayout() {
   }
 
   return (
-    <div className="text-low_text">
+    <div className="text-low_text h-[calc(100vh-4rem)]">
       <div className="flex gap-6">
         {/* Sidebar */}
         <aside className="w-[20%] h-[calc(100vh-4rem)] sticky rounded-2xl shadow-lg border border-transparent/20 backdrop-blur-sm bg-nav_hover bg-opacity-30 p-4">
@@ -57,7 +57,7 @@ export default function ChallengesLayout() {
         </aside>
 
         {/* Main content area that changes by route */}
-        <main className="flex-1 min-h-[70vh]">
+        <main className="flex-1 h-[calc(100vh-4.1rem)] overflow-y-auto">
           {/* pass shared state via outlet context */}
           <Outlet context={{ completed, toggleComplete, selectedId, setSelectedId }} />
         </main>

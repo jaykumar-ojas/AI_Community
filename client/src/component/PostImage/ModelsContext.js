@@ -11,47 +11,63 @@ const fetchIconUrl = async (modelName) => {
     const res = await fetch(`${baseUrl}/aimodels/search?modelName=${encodeURIComponent(modelName)}`);
     if (!res.ok) return null;
     const data = await res.json();
-    return data.success ? data.data.iconUrl : null;
+    return data?.success ? data.data.iconUrl : null;
   } catch {
     return null;
   }
 };
 
 export const ModelsProvider = ({ children }) => {
-  const [availableModels, setAvailableModels] = useState({ image: {} });
+  const [availableModels, setAvailableModels] = useState({ image: {}, text: {} });
   const [isLoadingModels, setIsLoadingModels] = useState(true);
 
   useEffect(() => {
-    const fetchModels = async () => {
+    const fetchAndEnrich = async () => {
+      setIsLoadingModels(true);
+
       try {
         const response = await fetch(`${baseUrl}/models-info`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            const models = data.data.image || {};
-            const enrichedModels = {};
-            for (const [key, config] of Object.entries(models)) {
-              const iconUrl = await fetchIconUrl(key);
-              const localConfig = imageModelsConfig[key] || {};
-              enrichedModels[key] = {
-                ...config,
-                ...localConfig,
-                iconUrl: iconUrl || null,
-              };
-            }
-            setAvailableModels({ image: enrichedModels });
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching models:", error);
-        setAvailableModels({ image: imageModelsConfig });
+        if (!response.ok) throw new Error("Failed to fetch models-info");
+        const payload = await response.json();
+        if (!payload.success) throw new Error(payload.error || "No models data");
+
+        const respImage = payload.data?.image ?? {};
+        const respText = payload.data?.text ?? {};
+
+        // helper to enrich a model map (modelKey -> cfg)
+        const enrichMap = async (map, localConfigMap = {}) => {
+          const entries = Object.entries(map || {});
+          // run icon fetches in parallel
+          const promises = entries.map(async ([key, cfg]) => {
+            const iconUrl = await fetchIconUrl(key);
+            const localCfg = localConfigMap[key] || {};
+            return [key, { ...cfg, ...localCfg, iconUrl: iconUrl || null }];
+          });
+
+          const resolved = await Promise.all(promises);
+          const out = {};
+          for (const [k, v] of resolved) out[k] = v;
+          return out;
+        };
+
+        // Enrich both image and text (imageModelsConfig provides local overrides for images;
+        // we can reuse it for text too if you have text local configs, otherwise pass {}).
+        const [enrichedImage, enrichedText] = await Promise.all([
+          enrichMap(respImage, imageModelsConfig),
+          enrichMap(respText, {}), // if you have textModelsConfig, pass it here
+        ]);
+
+        setAvailableModels({ image: enrichedImage, text: enrichedText });
+      } catch (err) {
+        console.error("Error fetching models-info:", err);
+        // fallback: use local imageModelsConfig as image and keep text empty
+        setAvailableModels({ image: imageModelsConfig, text: {} });
       } finally {
         setIsLoadingModels(false);
       }
     };
 
-    // 👇 prefetch right when app starts
-    fetchModels();
+    fetchAndEnrich();
   }, []);
 
   return (

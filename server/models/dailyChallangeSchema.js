@@ -1,48 +1,73 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const DailyChallangeSchema = new mongoose.Schema({
-    challangeId:{
-        type: 'String',
-        required: true
+const DailyChallangeSchema = new mongoose.Schema(
+  {
+    challangeId: {
+      type: "String",
+      required: true,
     },
-    userId:{
-        type:'String',
-        required:true,
+    userId: {
+      type: "String",
+      required: true,
     },
-    text:{
-        type:'String',
-        default : "",
+    text: {
+      type: "String",
+      default: "",
     },
     imageUrl: {
-        fileName: String,
-        fileType: String,
-        fileUrl: String,
-        fileSize: Number,
-        uploadedAt: {
+      fileName: String,
+      fileType: String,
+      fileUrl: String,
+      fileSize: Number,
+      uploadedAt: {
         type: Date,
         default: Date.now,
-        },
+      },
+    },
+    aiModel: {
+      type: String,
+      trim: true,
+    },
+    aiProvider: {
+      type: String,
+      trim: true,
+    },
+    aiPrompt: {
+      type: String,
+      trim: true,
+    },
+    aiGeneratedAt: {
+      type: Date,
     },
     videoUrl: {
-        fileName: String,
-        fileType: String,
-        fileUrl: String,
-        fileSize: Number,
-        uploadedAt: {
+      fileName: String,
+      fileType: String,
+      fileUrl: String,
+      fileSize: Number,
+      uploadedAt: {
         type: Date,
         default: Date.now,
-        },
+      },
     },
-    likes:[
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "users",
-        },
-    ]
-},
- { timestamps: true }
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+      },
+    ],
+    completedBy: [
+      {
+        userId: mongoose.Schema.Types.ObjectId,
+        completedAt: Date,
+      },
+    ],
+  },
+  { timestamps: true }
 );
 
-const DailyChallengeDb = mongoose.model("dailyChallangeData",DailyChallangeSchema);
+const DailyChallengeDb = mongoose.model(
+  "dailyChallangeData",
+  DailyChallangeSchema
+);
 
-module.exports =  DailyChallengeDb;
+module.exports = DailyChallengeDb;

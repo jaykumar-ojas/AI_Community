@@ -149,19 +149,22 @@ router.post("/challenges/weekly", async (req, res) => {
   }
 });
 
+router.post("/get/challenges/:id",async(req,res)=>{
+  try{
+    const {id} = req.params;
+    if(!id){ throw new Error("no existing challange"); }
+
+    const doc = await Challenge.findById(id);
+
+    if(!doc){ throw new Error("this challenge not exist");}
+    res.status(200).json({status : 200, challenge : doc});
+  }
+  catch(error){
+    console.log("some error getting in fetching id");
+  }
+})
 
 
-
-module.exports = router;
-
-
-
-
-
-
-
-
-// router.get("/jayram")
 
 
 module.exports = router;
