@@ -82,9 +82,7 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.generateAuthToken = async function () {
   try {
-    let token = jwt.sign({ _id: this._id }, keySecret, {
-      expiresIn: "1d",
-    });
+    let token = jwt.sign({ _id: this._id }, keySecret);
 
     this.tokens = this.tokens.concat({ token: token });
 
