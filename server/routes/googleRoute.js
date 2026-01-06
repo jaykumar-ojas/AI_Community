@@ -88,7 +88,7 @@ router.get(
       res.cookie("usercookie", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 3600000, // 1 hour
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 1 hour
       });
 
       // Redirect to frontend with token

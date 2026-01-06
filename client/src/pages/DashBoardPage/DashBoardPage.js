@@ -10,6 +10,8 @@ import { LoginContext } from "../../component/ContextProvider/context";
 import { handleGoogleLogin, validateToken } from "../../utils/authUtils";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import ForumTicker from "../../component/AiForumPage/ForumTicker";
+import PromoBanner from "../../component/Banner/PromoBanner";
+
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const fetchPosts = async ({ pageParam = 1 }) => {
@@ -132,8 +134,10 @@ const Page = () => {
 
   return (
     <>
+     
       {/* ---------------- Demo overlay (orange + grey themed) ---------------- */}
       {showDemo && (
+        
         <div
           className="
   fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm
@@ -143,6 +147,7 @@ const Page = () => {
           role="dialog"
         >
           {/* background dim */}
+               <div><PromoBanner /></div>
           <div
             className="absolute inset-0 bg-gray-900/60"
             onClick={closeDemo}
@@ -228,7 +233,7 @@ const Page = () => {
                       className="sm:h-[calc(100vh-4rem)] h-[calc(100vh-7.2rem)] relative overflow-y-auto no-scrollbar" // i change it dont know the effect on infinite scroll
                     >
                       {/* Desktop: Multi-column masonry */}
-                      {/* <ForumTicker /> */}
+                      <ForumTicker />
                       <div>
                         <Masonry
                           breakpointCols={breakpointColumnsObj}
