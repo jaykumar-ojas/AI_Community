@@ -119,32 +119,6 @@ router.post("/login",async(req,res)=>{
     }
 })
 
-// getUserById
-// router.get("/getUserById/:userId",async(req,res)=>{
-//     console.log("i am coming to backend");
-//     try{
-//         const {userId} = req.params;
-//         console.log(userId,"this is userId");
-//         if(userId){ throw new Error("userId is required"); }
-
-//         const user = await userdb.findById(userId) || await googledb.findById(userId);
-//         console.log("i find user");
-//         if(!user){  throw new Error("user not exist");}
-//         console.log("i come here");
-//         const profUrl = await generateSignedUrl(user.profilePicture);
-//         const backgroundUrl = await generateSignedUrl(user.backgroundImage);
-
-//         user.profilePictureUrl = profUrl || user.image;
-//         user.backgroundImageUr = backgroundUrl;
-
-//         console.log(user);
-//         res.status(200).json({status:200, user :user});
-//     }
-//     catch(error){
-//         console.log("i get error")
-//         res.status(422).json({status:422,error:error});
-//     }
-// })
 
 router.get("/getUserById/:userId", async (req, res) => {
     try {
