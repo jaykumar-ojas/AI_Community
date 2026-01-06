@@ -291,13 +291,19 @@ const Card = ({ post }) => {
       ? new Date(postData.createdAt).toLocaleString()
       : null;
 
-    return (
-      <div className="group relative px-1 mb-2 md:px-0 md:mb-0">
-      <div className="relative w-full h-full rounded-3xl border border-gray-200/80 dark:border-gray-700/70 bg-white/80 dark:bg-nav_hover/70 backdrop-blur-xl shadow-sm hover:shadow-2xl transition duration-300 p-4">
+    return ( 
+      <div
+           className="group relative px-1 mb-2 md:px-0 md:mb-0">
+      <div onClick={handleCardClick} className="relative w-full h-full rounded-lg border border-gray-200/80 dark:border-nav_hover2 dark:bg-nav_hover shadow-sm hover:shadow-xl transition duration-300">
     
         {/* 🌟 ABSOLUTE OVERLAY (hidden normally, visible on hover) */}
-        <div className="
-          absolute inset-0 p-4 z-20
+        <div
+         onClick={(e) => {
+            e.stopPropagation();
+            handleCardClick();
+          }}
+         className="
+          absolute inset-0 p-1 z-20
           flex flex-col justify-between
           opacity-0 group-hover:opacity-100
           transition duration-300 pointer-events-none
@@ -305,7 +311,7 @@ const Card = ({ post }) => {
           {/* Header */}
           <div className="flex items-start justify-between gap-3 pointer-events-auto">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full overflow-hidden border border-white/50 dark:border-gray-700/70">
+              <div className="h-8 w-8 rounded-full overflow-hidden border border-white/50 dark:border-gray-700/70">
                 <UserIconCard id={postData?.userId} />
               </div>
             </div>
@@ -336,7 +342,7 @@ const Card = ({ post }) => {
     
         {/* 🟩 ALWAYS VISIBLE CONTENT */}
         <div
-          className="relative z-10 rounded-2xl border border-gray-100 dark:border-gray-700 bg-white/90 dark:bg-bg_comment_box/80 p-3"
+          className="relative z-10 p-3"
           onClick={(e) => e.stopPropagation()}
         >
           <ReplyData2 content={postData?.content} />
